@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let component_a = world.get_type_by_name.call("test_utils::test_data::TestComponent");
 
 for (result, i) in world.query.call().component.call(component_a).without.call(component_a).build.call() {

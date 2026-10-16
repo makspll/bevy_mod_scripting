@@ -17,7 +17,7 @@ In order to attach a script and make it runnable simply add a `ScriptComponent` 
     commands.entity(my_entity).insert(ScriptComponent::new(vec![my_script_handle, another_script_handle]));
 ```
 
-When this script is run the `entity` global will represent the entity the script is attached to. This allows you to interact with the entity in your script easilly.
+In the script, `import_namespace("bms").current_entity()` returns the entity the script is attached to.
 
 <div class="warning">
 Be wary of path separators, by default script ID's are derived from asset paths, which are platform dependent. Make sure to use `std::path::PathBuf` if you are targetting multiple platforms.

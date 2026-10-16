@@ -1,5 +1,7 @@
 local SimpleStruct = import_namespace("test_utils").SimpleStruct
 local SimpleTupleStruct = import_namespace("test_utils").SimpleTupleStruct
+local bms = import_namespace("bms")
+local world = bms.world
 
 local constructed = SimpleStruct.new({ foo = 123 })
 assert(constructed.foo == 123, "expected foo to be 123 but got " .. tostring(constructed.foo))
@@ -18,7 +20,7 @@ assert(positional[1] == 9, "expected first field to be 9 but got " .. tostring(p
 
 -- `construct` works for every type, the same way
 local struct_type = world.get_type_by_name("test_utils::test_data::SimpleStruct")
-local constructed_via_global = construct(struct_type, { foo = 3 })
+local constructed_via_global = bms.construct(struct_type, { foo = 3 })
 assert(constructed_via_global.foo == 3, "expected foo to be 3 but got " .. tostring(constructed_via_global.foo))
 local tuple_type = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct")
-assert(construct(tuple_type, { 4 })[1] == 4, "expected construct to accept positional fields")
+assert(bms.construct(tuple_type, { 4 })[1] == 4, "expected construct to accept positional fields")

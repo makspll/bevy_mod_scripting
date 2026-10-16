@@ -1,6 +1,7 @@
 //! Abstractions to help with creating bindings between bevy and scripting languages.
 
 pub mod allocator;
+pub mod builtins;
 pub mod callback_runners;
 pub mod construct;
 pub mod conversions;

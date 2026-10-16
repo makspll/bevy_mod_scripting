@@ -18,6 +18,7 @@ pub fn script_bindings(
     // let (impl_generics, ty_generics, where_clause) = impl_block.generics.split_for_impl();
 
     let type_ident_with_generics = &impl_block.self_ty;
+    let impl_block_self_ty = impl_block.self_ty.clone();
     let mut function_registrations = Vec::with_capacity(impl_block.items.len());
     for i in &impl_block.items {
         match i {
@@ -102,27 +103,43 @@ pub fn script_bindings(
         None => Default::default(),
     };
 
-    let use_dummy = if args.use_dummy_registry {
+    // functions of `impl NamespaceMembers` are members of the namespace given, not functions on a type
+    let is_namespace_members = matches!(
+        &*impl_block_self_ty,
+        syn::Type::Path(path) if path.path.segments.last().is_some_and(|s| s.ident == "NamespaceMembers")
+    );
+
+    let out = if is_namespace_members {
+        let Some(namespace) = &args.namespace else {
+            return syn::Error::new(
+                impl_span,
+                "`impl NamespaceMembers` registers functions into a script namespace, which needs `namespace = \"...\"`",
+            )
+            .to_compile_error()
+            .into();
+        };
         quote_spanned! {impl_span=>
-            .with_dummy_registry()
+            #visibility fn #function_name(world: &mut World) {
+                #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::in_namespace(world, #namespace)
+                    #(#function_registrations)*;
+            }
+
+            #impl_block
         }
     } else {
-        Default::default()
-    };
+        quote_spanned! {impl_span=>
+            #visibility fn #function_name(world: &mut World) {
+                #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
+                    #(#function_registrations)*;
 
-    let out = quote_spanned! {impl_span=>
-        #visibility fn #function_name(world: &mut World) {
-            #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
-                #use_dummy
-                #(#function_registrations)*;
+                #mark_as_generated
+                #mark_as_core
+                #mark_as_significant
+                #set_namespace
+            }
 
-            #mark_as_generated
-            #mark_as_core
-            #mark_as_significant
-            #set_namespace
+            #impl_block
         }
-
-        #impl_block
     };
 
     out.into()
@@ -141,9 +158,6 @@ struct Args {
     pub core: bool,
     /// If true registers a marker type against the type registry to state that the type is significant (if unregistered is not set)
     pub significant: bool,
-    /// If true will register into the [`DummyScriptFunctionRegistry`] instead of the full one.
-    /// This is useful for documenting functions without actually making them available, if you're exposing them another way.
-    pub use_dummy_registry: bool,
     /// If set, puts the type in the given script namespace (if it is not in one already), instead of the one named after its crate
     pub namespace: Option<syn::LitStr>,
 
@@ -159,7 +173,6 @@ impl Default for Args {
             generated: Default::default(),
             core: Default::default(),
             significant: Default::default(),
-            use_dummy_registry: Default::default(),
             namespace: Default::default(),
             shared_args: Default::default(),
         }
@@ -202,11 +215,6 @@ impl Args {
 
         if meta.path.is_ident("namespace") {
             self.namespace = Some(meta.value()?.parse()?);
-            return Ok(());
-        }
-
-        if meta.path.is_ident("use_dummy_registry") {
-            self.use_dummy_registry = true;
             return Ok(());
         }
 

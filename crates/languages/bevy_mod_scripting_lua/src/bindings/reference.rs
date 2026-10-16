@@ -139,13 +139,13 @@ impl UserData for LuaReflectReference {
 
 /// A type itself, i.e. what [`bevy_mod_scripting_bindings::ScriptValue::Type`] is in Lua. Indexing it reaches the type's static members, i.e. `Entity.from_raw(..)`.
 #[derive(Debug, Clone, Copy, PartialEq, mlua::FromLua)]
-pub struct LuaStaticReflectReference(pub TypeId);
+pub struct LuaTypeRef(pub TypeId);
 
-impl UserData for LuaStaticReflectReference {
+impl UserData for LuaTypeRef {
     fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
         m.add_meta_function(
             MetaMethod::Index,
-            |_, (self_, key): (LuaStaticReflectReference, LuaScriptValue)| {
+            |_, (self_, key): (LuaTypeRef, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Index");
                 with_world(|world| {
                     dispatch::static_index(world, self_.0, key.into(), LUA_CALLER_CONTEXT)

@@ -371,6 +371,11 @@ pub struct TypeInstance {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct LuaModule {
     pub name: String,
+    /// The Lua expression of the table the class's functions are defined on, i.e. `Vec3` for `math.Vec3`, or `MyEnum.Variant`
+    pub table: String,
+    /// The namespace the module belongs to, which decides the file it is written to. Empty for the root namespace
+    #[serde(skip)]
+    pub namespace: String,
     pub class: Option<LuaClass>,
     pub globals: Vec<TypeInstance>,
     pub functions: Vec<FunctionSignature>,
@@ -395,7 +400,7 @@ pub struct LuaModule {
 ///
 /// return MyClass
 /// ```
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Default)]
 pub struct LuaDefinitionFile {
     pub modules: Vec<LuaModule>,
     pub diagnostics: Vec<DiagnosticToggle>,

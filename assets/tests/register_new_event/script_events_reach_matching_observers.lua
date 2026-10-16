@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local got_a = {}
 local got_b = {}
 local EventA, EventB, observer_a

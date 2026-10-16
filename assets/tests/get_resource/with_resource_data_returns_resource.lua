@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local resource = world.get_type_by_name("test_utils::test_data::TestResource")
 
 local retrieved = world.get_resource(resource)

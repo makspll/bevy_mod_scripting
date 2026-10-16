@@ -9,13 +9,12 @@ use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_bindings::{
-    AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
-    FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
-    ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration,
-    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
-    ScriptTypeCatalogue, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
+    AnyTypeRegistrationV, DynamicScriptFunctionMut, EnumVariantRef, FunctionInfo, InteropError,
+    NamespaceMembers, PartialReflectExt, QueuedScriptCallback, ReflectReference,
+    ScriptBundleRegistration, ScriptComponentRegistration, ScriptEventRegistration,
+    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration,
+    Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
-    function::into::IntoScript,
     function::{
         bound::BoundFields,
         from::{R, V},
@@ -23,7 +22,6 @@ use bevy_mod_scripting_bindings::{
         into_ref::IntoScriptErased,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
-    script_path,
     script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
@@ -33,7 +31,6 @@ use bevy_mod_scripting_core::{
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
 use bevy_mod_scripting_world::WorldGuard;
-use bevy_platform::collections::HashMap;
 use bevy_reflect::PartialReflect;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 
@@ -1808,161 +1805,45 @@ impl Handle<ScriptAsset> {
     }
 }
 
-/// globals which are being registered at lower level within each language plugin.
+/// The functions of BMS which don't belong to a type, i.e. `import_namespace("bms").log_info("hi")`
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
-    name = "global_namespace_dummy_functions",
-    unregistered,
-    use_dummy_registry
+    name = "bms_namespace_functions",
+    namespace = "bms"
 )]
-impl GlobalNamespace {
-    /// Registers a "frozen" callback handler,
-    ///
-    /// For example, this code:
-    ///
-    /// ```lua
-    /// register_callback("on_script_unloaded", my_unload_handler)
-    ///
-    /// function my_unload_handler()
-    ///     print("handling unload!")
-    /// end
-    /// ```
-    ///
-    /// would call the `my_unload_handler` function, whenever the `on_script_unloaded` callback is triggered, which is when your script is about to be unloaded.
-    ///
-    /// Registered callbacks take precedence over free-standing function callbacks, i.e. the below top level function:
-    /// ```lua
-    /// function on_script_unloaded()
-    ///     print("freestanding unload handler!")
-    /// end
-    /// ```
-    ///
-    /// would be a valid handler, but if a registered callback existed, it would be called instead.
+impl NamespaceMembers {
+    /// The entity the running script is attached to, or nil if it isn't attached to one.
     ///
     /// Arguments:
-    /// * `callback`: the callback label to register this function against.
-    /// * `function`: the callback function which will be stored as a handler for this callback label.
-    fn register_callback(callback: String, function: DynamicScriptFunction) {
-        // to avoid clippy unused errors.
-        println!("dummy called!: {callback:?}, {function:?}");
-    }
-}
-
-/// Globals registered by us
-#[script_bindings(
-    remote,
-    bms_bindings_path = "bevy_mod_scripting_bindings",
-    name = "global_namespace_functions",
-    unregistered
-)]
-impl GlobalNamespace {
-    /// Imports a namespace, returning a table of the types, events and exported functions in it by name.
-    ///
-    /// This is how scripts reach types: the bevy types with bindings live in a namespace per category (`math`, `ecs`, `time`, `transform`,
-    /// `color`, `input`, `window`, `asset`, `camera`, `render`, `sprite`, `text`, `ui`, `gizmos`, `animation`, `audio`, `state`),
-    /// BMS' own types in `bms`, and any other type in the namespace named after the crate defining it.
-    /// The empty string is the root namespace, which holds types without a crate such as primitives.
-    /// Namespaces defined by scripts start with `script.`, and contain the components, events and functions
-    /// scripts registered or exported into them.
-    ///
-    /// Each type in the table can be used to call the type's static functions and to access its enum variants,
-    /// and wherever a type is expected, i.e. `world.add_default_component`.
-    ///
-    /// ```lua
-    /// local Vec3 = import_namespace("math").Vec3
-    /// local transform = import_namespace("transform").Transform.from_translation(Vec3.new(1, 2, 3))
-    ///
-    /// local game = import_namespace("script.game")
-    /// game.spawn_enemy(5)
-    /// world.trigger_event(game.EnemySpawned, {})
-    /// ```
-    ///
-    /// Fails with a list of similar namespaces if the namespace does not exist.
-    ///
-    /// Arguments:
-    /// * `path`: the name of the namespace to import.
+    /// * `ctxt`: The function call context.
     /// Returns:
-    /// * `namespace`: a table of the types, events and functions in the namespace keyed by name.
-    fn import_namespace(
-        ctxt: FunctionCallContext,
-        path: String,
-    ) -> Result<ScriptValue, InteropError> {
-        profiling::function_scope!("import_namespace");
-        let world = ctxt.world()?;
-        let catalogue = world.type_catalogue().clone().get(world.clone())?;
-        let types = catalogue.namespace_view(&path);
-        let (exports, events) = {
-            let registry = world.component_registry();
-            let registry = registry.read();
-            let exports = registry
-                .iter_exports_in(&path)
-                .map(|e| e.name.clone())
-                .collect::<Vec<_>>();
-            let events = registry
-                .iter_events_in(&path)
-                .map(|(name, event)| (name.to_owned(), event.clone()))
-                .collect::<Vec<_>>();
-            (exports, events)
-        };
-        if types.is_none() && exports.is_empty() && events.is_empty() {
-            return Err(namespace_not_found(&catalogue, &world, &path));
-        }
-
-        let mut table = HashMap::default();
-        for (name, registration) in types.into_iter().flatten() {
-            table.insert(name, registration.into_script(world.clone())?);
-        }
-        for (name, event) in events {
-            table.insert(name, V(event).into_script(world.clone())?);
-        }
-        for name in exports {
-            let function = exported_function(script_path(&path, &name));
-            table.insert(name, ScriptValue::Function(function));
-        }
-        Ok(ScriptValue::Map(table))
+    /// * `entity`: The entity, or nil.
+    fn current_entity(ctxt: FunctionCallContext) -> Result<Option<V<Entity>>, InteropError> {
+        Ok(ctxt
+            .world()?
+            .current_attachment()
+            .0
+            .and_then(|attachment| attachment.entity())
+            .map(V))
     }
 
-    /// Exports a callback of the calling script as a function in a script namespace, so that any script (in any language) can call it.
+    /// The asset handle of the running script, or nil outside of a script callback.
     ///
-    /// The callback is a normal script callback: either a function registered with `register_callback`, or a top level function with that name.
-    /// Calls run in the exporting script, through the same machinery as other callbacks, and return what the callback returns.
-    /// Only functions can be exported, share plain data by returning it from a function.
-    ///
-    /// ```lua
-    /// register_callback("spawn_enemy_impl", function(health)
-    ///     return world.spawn()
-    /// end)
-    /// export_namespace("script.game", "spawn_enemy", "spawn_enemy_impl")
-    ///
-    /// -- in another script, once the first one has run
-    /// local entity = import_namespace("script.game").spawn_enemy(5)
-    /// ```
-    ///
-    /// Exporting the same name again from the same script replaces the export, as happens when a script runs again.
-    /// A script cannot call its own exports (or those of scripts sharing its context) from inside its own callbacks, as the context is busy,
-    /// that fails with an error.
+    /// If the asset is ever unloaded, the handle will be less useful.
     ///
     /// Arguments:
-    /// * `namespace`: the script namespace to export into, it must start with `script.`.
-    /// * `name`: the name of the function within the namespace.
-    /// * `callback`: the label of the callback of this script to export.
+    /// * `ctxt`: The function call context.
     /// Returns:
-    /// * `result`: Nothing if the function was exported.
-    fn export_namespace(
+    /// * `script`: The handle, or nil.
+    fn current_script(
         ctxt: FunctionCallContext,
-        namespace: String,
-        name: String,
-        callback: String,
-    ) -> Result<(), InteropError> {
-        profiling::function_scope!("export_namespace");
-        let world = ctxt.world()?;
-        let owner = world.current_attachment().0.ok_or_else(|| {
-            InteropError::string(
-                "Cannot export a function outside of a script callback, as it needs a script to run it in".to_owned(),
-            )
-        })?;
-        world.register_script_export(&namespace, &name, callback, owner)
+    ) -> Result<Option<V<Handle<ScriptAsset>>>, InteropError> {
+        Ok(ctxt
+            .world()?
+            .current_attachment()
+            .0
+            .map(|attachment| V(attachment.script())))
     }
 
     /// Attempts to construct the given type, given an arbitrary map of values.
@@ -2198,8 +2079,7 @@ pub fn register_core_functions(app: &mut App) {
 
         register_script_handle_functions(world);
 
-        register_global_namespace_functions(world);
-        register_global_namespace_dummy_functions(world);
+        register_bms_namespace_functions(world);
     }
 }
 
@@ -2215,51 +2095,4 @@ fn value_is_variant(
             .is_some_and(|info| info.type_id() == variant.type_id)
             && EnumVariantRef::from_value(variant.type_id, value) == Some(variant)
     })
-}
-
-/// Builds the error for importing a namespace which does not exist.
-fn namespace_not_found(
-    catalogue: &ScriptTypeCatalogue,
-    world: &WorldGuard,
-    path: &str,
-) -> InteropError {
-    let mut message = format!("namespace \"{path}\" does not exist.");
-    if path.starts_with("script.") {
-        message.push_str(
-            " Script namespaces only exist once a loaded script has registered or exported something into them, \
-            make sure that script has loaded and run before importing it.",
-        );
-    } else {
-        message.push_str(
-            " Bevy types are grouped by category (i.e. `math`, `transform`), BMS' types live in `bms` and other types in the namespace named after their crate. \
-            Namespaces only contain types registered in the type registry: check that the bindings plugin of the category is added and the type is registered.",
-        );
-    }
-    let export_namespaces = world
-        .component_registry()
-        .read()
-        .export_and_event_namespaces()
-        .map(str::to_owned)
-        .collect::<Vec<_>>();
-    let similar = catalogue.similar_namespaces_with(path, &export_namespaces);
-    if !similar.is_empty() {
-        message.push_str(&format!(" Did you mean: {}?", similar.join(", ")));
-    }
-    InteropError::string(message)
-}
-
-/// A function calling the function with the given full path exported by a script, in the script that exported it.
-///
-/// The export is looked up on every call, so it picks up replacements, and fails clearly if the export is gone.
-fn exported_function(path: String) -> DynamicScriptFunction {
-    (move |ctxt: FunctionCallContext, args: VecDeque<ScriptValue>| -> ScriptValue {
-        match ctxt
-            .world()
-            .and_then(|world| world.call_script_export(&path, Vec::from(args)))
-        {
-            Ok(value) => value,
-            Err(error) => ScriptValue::Error(error),
-        }
-    })
-    .into()
 }

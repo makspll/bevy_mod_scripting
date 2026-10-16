@@ -413,12 +413,12 @@ impl CustomType for RhaiReflectReference {
 
 #[derive(Clone, Debug, Copy, PartialEq)]
 /// A type itself, i.e. what [`ScriptValue::Type`] is in Rhai. Indexing it reaches the type's static members.
-pub struct RhaiStaticReflectReference(pub TypeId);
+pub struct RhaiTypeRef(pub TypeId);
 
-impl CustomType for RhaiStaticReflectReference {
+impl CustomType for RhaiTypeRef {
     fn build(mut builder: rhai::TypeBuilder<Self>) {
         builder
-            .with_name(std::any::type_name::<RhaiStaticReflectReference>())
+            .with_name(std::any::type_name::<RhaiTypeRef>())
             .with_indexer_get(|self_: &mut Self, index: Dynamic| {
                 let key = ScriptValue::from_dynamic(index)?;
                 with_world(|world| {

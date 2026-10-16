@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local SimpleEnum = import_namespace("test_utils").SimpleEnum
 local SimpleStruct = import_namespace("test_utils").SimpleStruct
 

@@ -3,11 +3,11 @@
 When interfacing with bevy, we do this via reflection.
 While the bevy bindings do not cover constructors for every single type that bevy or other libraries provide, reflection allows us to construct some (not all types implement `FromReflect`) types from dynamic structs.
 
-BMS exposes this ability to all script writers via the `new` function available on every type, as well as the more verbose `construct` global function.
+BMS exposes this ability to all script writers via the `new` function available on every type, as well as the more verbose `bms.construct`.
 
 ## `Type.new`
 
-Every type available as a global has a `new` function, taking a table of the fields to set:
+Every type has a `new` function, taking a table of the fields to set. Types are reached through their [namespace](./namespaces.md), i.e. `import_namespace("my_game").MyStruct`:
 
 ```rust,ignore
 pub struct MyStruct {
@@ -17,6 +17,7 @@ pub struct MyStruct {
 ```
 
 ```lua
+local MyStruct = import_namespace("my_game").MyStruct
 local my_struct = MyStruct.new({
     my_field = "hello",
     other_field = 5,
@@ -58,7 +59,7 @@ The generated Lua language server files mark exactly these fields as optional, s
 
 `new` is a single function shared by all types, and is made available on every type.
 A function with the same name registered on the type itself always takes priority, i.e. `Vec3.new(x, y, z)` is the `Vec3` constructor from the math bindings, not the shared one.
-For such types use [`construct`](#construct), which works for every type.
+For such types use [`bms.construct`](#bmsconstruct), which works for every type.
 
 In Rhai `new` is a reserved word, and is available as `new_`, as for all other functions named like a keyword.
 
@@ -125,26 +126,28 @@ Functions on the type take priority over variants, so a variant named like a fun
 Use `world.get_enum_variant` to get at it in that case:
 
 ```lua
+local world = import_namespace("bms").world
 local variant = world.get_enum_variant(import_namespace("my_game").MyEnum, "Name")
 ```
 
-## `construct`
+## `bms.construct`
 
-The `construct` global function constructs types from a registration.
+The `bms.construct` function constructs types from a registration.
 It works for every type, including those whose own `new` function shadows the shared one, and is useful if you only have the type as a value:
 
 ```lua
+local bms = import_namespace("bms")
 local my_game = import_namespace("my_game") -- the crate defining the types
-local concrete_my_struct = construct(my_game.MyStruct, {
+local concrete_my_struct = bms.construct(my_game.MyStruct, {
     my_field = "hello"
 })
 
-local variantA = construct(my_game.MyEnum, {
+local variantA = bms.construct(my_game.MyEnum, {
     variant = "VariantA",
     field = "hello"
 })
 
-local vec = construct(import_namespace("math").Vec3, { x = 1, y = 2, z = 3 })
+local vec = bms.construct(import_namespace("math").Vec3, { x = 1, y = 2, z = 3 })
 ```
 
 Missing fields are filled in from defaults in the same way as for `new`.
@@ -184,4 +187,4 @@ Each enum variant has a class of its own, i.e. `MyEnum.VariantA`, so `MyEnum.Var
 The table of `MyEnum.new{ variant = "VariantA", ... }` is not described, as the language server cannot narrow its fields down by the `variant` given.
 Prefer `MyEnum.VariantA:new{...}`, which is checked.
 
-Since the type of `construct`'s first argument is only known when the script runs, its table is not described.
+Since the type of `bms.construct`'s first argument is only known when the script runs, its table is not described.

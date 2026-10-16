@@ -1,3 +1,5 @@
+local world = import_namespace("bms").world
+
 -- the test app has no input resources, so nothing is pressed
 local KeyCode = import_namespace("input").KeyCode
 local MouseButton = import_namespace("input").MouseButton

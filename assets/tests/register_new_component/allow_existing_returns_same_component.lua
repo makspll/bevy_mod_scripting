@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local first = world.register_new_component("script.test", "ScriptComponentAllowExisting")
 local second = world.register_new_component("script.test", "ScriptComponentAllowExisting", true)
 

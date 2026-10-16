@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local calls = 0
 local first_payload
 

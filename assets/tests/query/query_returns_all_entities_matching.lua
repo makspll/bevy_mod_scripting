@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local entity_a = world.spawn()
 local entity_b = world.spawn()
 local entity_c = world.spawn()

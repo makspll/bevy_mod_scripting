@@ -1,12 +1,14 @@
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
+local bms = import_namespace("bms")
+local world = bms.world
 runs = {}
 
 function on_test()
     local post_update_schedule = world.get_schedule_by_name("PostUpdate")
-    local script_attachment = ScriptAttachment.new_entity_script(entity, script_asset)
+    local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
     world.add_system(
         post_update_schedule,
-        system_builder("my_exclusive_system", script_attachment):exclusive()
+        bms.system_builder("my_exclusive_system", script_attachment):exclusive()
     )
 
     return true

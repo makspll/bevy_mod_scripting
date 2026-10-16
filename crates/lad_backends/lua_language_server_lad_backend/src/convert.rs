@@ -12,99 +12,87 @@ use crate::{
     },
 };
 
-pub fn convert_ladfile_to_lua_declaration_file(
+/// Converts a LAD file to a declaration file per namespace, keyed by namespace, the root namespace (`""`, with the builtins) first.
+///
+/// Classes are named after their namespace, i.e. `math.Vec3`, like `import_namespace("math").Vec3` in scripts.
+pub fn convert_ladfile_to_lua_declaration_files(
     ladfile: &ladfile::LadFile,
-) -> Result<LuaDefinitionFile, anyhow::Error> {
-    let mut definition_file = LuaDefinitionFile {
-        modules: vec![],
-        diagnostics: vec![],
-    };
-
-    let lua_classes = polymorphic_lua_classes(ladfile);
-    definition_file
-        .modules
-        .extend(class_modules(ladfile, &lua_classes));
-    definition_file
-        .modules
-        .extend(generic_type_modules(ladfile));
-    definition_file.modules.extend(fields_modules(ladfile));
+) -> Result<IndexMap<String, LuaDefinitionFile>, anyhow::Error> {
+    let mut modules = vec![];
+    modules.extend(class_modules(ladfile));
+    modules.extend(generic_type_modules(ladfile));
+    modules.extend(fields_modules(ladfile));
 
     // `import_namespace` needs the namespace classes, so they are built before the globals
-    let namespaces = namespace_modules(ladfile, &lua_classes);
+    let namespaces = namespace_modules(ladfile);
     let mut globals_module = globals_module(ladfile);
     link_import_namespace(&mut globals_module, &namespaces);
-    definition_file.modules.extend(namespaces);
-    definition_file.modules.push(globals_module);
+    modules.extend(namespaces);
+    modules.push(globals_module);
 
-    Ok(definition_file)
+    let mut files: IndexMap<String, LuaDefinitionFile> = IndexMap::new();
+    files.insert(String::new(), LuaDefinitionFile::default());
+    for module in modules {
+        files
+            .entry(module.namespace.clone())
+            .or_default()
+            .modules
+            .push(module);
+    }
+    Ok(files)
 }
 
-/// The lua class, and documented functions, of each rust type which is not an instantiation of a generic type.
-fn polymorphic_lua_classes(
+/// The name of the class of a type: qualified by its namespace, i.e. `math.Vec3`, like `import_namespace("math").Vec3` in scripts.
+pub fn lua_class_name(ladfile: &LadFile, type_id: &LadTypeId) -> String {
+    if let Some(lad_type) = ladfile.types.get(type_id) {
+        qualified(&lad_type.namespace, &lad_type.identifier)
+    } else if let Some(generic_type) = ladfile.generic_types.get(type_id) {
+        qualified(&generic_type.namespace, &generic_type.identifier)
+    } else {
+        type_id.to_string()
+    }
+}
+
+/// `name` in the given namespace, i.e. `math.Vec3`. Names in the root namespace stay as they are.
+fn qualified(namespace: &str, name: &str) -> String {
+    if namespace.is_empty() {
+        name.to_owned()
+    } else {
+        format!("{namespace}.{name}")
+    }
+}
+
+/// The lua class, and documented functions, of each type which is not an instantiation of a generic type.
+fn type_lua_classes(
     ladfile: &ladfile::LadFile,
 ) -> IndexMap<LadTypeId, (LuaClass, Vec<FunctionSignature>)> {
-    // // ignore primitive types
-    // let exclude_primitives = true;
-    let rust_types = ladfile.polymorphizied_types(false);
-
-    // convert each rust type to a lua class with generics
-
-    let mut lua_classes: IndexMap<LadTypeId, (LuaClass, Vec<FunctionSignature>)> =
-        IndexMap::with_capacity(ladfile.types.len());
-
-    for (key, types) in rust_types.iter() {
-        // instantiations of generic types are described by the class of the generic type
-        if types.iter().all(|id| {
-            ladfile
-                .types
-                .get(*id)
-                .is_some_and(|ty| ty.generic_type.is_some())
-        }) {
-            continue;
-        }
-
-        // right now one class == one lad type id, when we can properly denormorphize types, we will
-        // be able to have multiple lad type ids per class
-        let lua_classes_for_type =
-            match convert_polymorphic_type_to_lua_classes(key, types.iter().copied(), ladfile) {
-                Ok(r) => r,
-                Err(e) => {
-                    log::warn!("{e}");
-                    continue;
-                }
-            };
-
-        lua_classes.extend(
-            lua_classes_for_type
-                .into_iter()
-                .map(|(id, class, funcs)| (id, (class, funcs))),
-        );
-    }
-
-    lua_classes
+    ladfile
+        .documented_types()
+        .map(|(type_id, lad_type)| {
+            (
+                type_id.clone(),
+                type_to_lua_class(type_id, lad_type, ladfile),
+            )
+        })
+        .collect()
 }
 
-/// A module per class of a rust type, followed by the modules of its enum variants.
-fn class_modules(
-    ladfile: &ladfile::LadFile,
-    lua_classes: &IndexMap<LadTypeId, (LuaClass, Vec<FunctionSignature>)>,
-) -> Vec<LuaModule> {
+/// A module per class of a type, followed by the modules of its enum variants.
+fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     let mut modules = vec![];
-    for (type_id, lad_type) in ladfile.types.iter() {
-        let (lua_class, functions) = match lua_classes.get(type_id) {
-            Some(val) => val.clone(),
-            None => continue,
+    for (type_id, (lua_class, functions)) in type_lua_classes(ladfile) {
+        let Some(lad_type) = ladfile.types.get(&type_id) else {
+            continue;
         };
-        // TODO: support all types
-        // .get(type_id)
-        // .ok_or_else(|| anyhow::anyhow!("Lua class not found for type ID: {}", type_id))?;
         modules.push(LuaModule {
             name: lad_type.identifier.to_owned(),
-            class: Some(lua_class.clone()),
+            table: lad_type.identifier.to_owned(),
+            namespace: lad_type.namespace.clone(),
+            class: Some(lua_class),
             functions,
             ..Default::default()
         });
-        modules.extend(enum_variant_modules(ladfile, type_id, lad_type));
+        modules.extend(enum_variant_modules(ladfile, &type_id, lad_type));
     }
     modules
 }
@@ -117,8 +105,10 @@ fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
         .values()
         .map(|generic_type| LuaModule {
             name: generic_type.identifier.clone(),
+            table: generic_type.identifier.clone(),
+            namespace: generic_type.namespace.clone(),
             class: Some(LuaClass {
-                name: generic_type.identifier.clone(),
+                name: qualified(&generic_type.namespace, &generic_type.identifier),
                 parents: vec!["ReflectReference".to_string()],
                 generics: generic_type.params.clone(),
                 documentation: generic_type.documentation.clone(),
@@ -164,46 +154,13 @@ fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     modules
 }
 
-/// The `globals` module: the global instances and the global functions.
+/// The `globals` module: the builtin functions, the only globals.
 fn globals_module(ladfile: &ladfile::LadFile) -> LuaModule {
     let mut globals_module = LuaModule {
         name: "globals".to_string(),
         ..Default::default()
     };
-    for (name, instance) in ladfile.globals.iter() {
-        let class = match lad_instance_to_lua_type(ladfile, &instance.type_kind) {
-            Ok(c) => c,
-            Err(e) => {
-                log::warn!("Error generating global {name}: {e}. Using `any` type");
-                LuaType::Any
-            }
-        };
-
-        let description = if instance.is_static {
-            "A static class allowing calls through the \".\" operator only. "
-        } else {
-            "An global instance of this type"
-        };
-
-        // ignore primitives
-        if matches!(class, LuaType::Primitive(..)) {
-            continue;
-        }
-
-        globals_module
-            .globals
-            .push(crate::lua_declaration_file::TypeInstance {
-                name: name.to_string(),
-                definition: class,
-                description: Some(description.into()),
-            })
-    }
-
-    for (_, function) in ladfile
-        .functions
-        .iter()
-        .filter(|(_, function)| function.namespace.is_global())
-    {
+    for (_, function) in ladfile.builtin_functions() {
         let converted = match lad_function_to_lua_function(ladfile, function) {
             Ok(converted) => converted,
             Err(err) => {
@@ -261,39 +218,24 @@ fn link_import_namespace(globals_module: &mut LuaModule, namespaces: &[LuaModule
 //     (class, static_class)
 // }
 
-// TODO: once https://github.com/bevyengine/bevy/issues/17117 is solved, we will be able to figure out
-// where the generic types are actually used, for now we only know what they are per type.
-pub fn convert_polymorphic_type_to_lua_classes<'a>(
-    polymorphic_type_key: &ladfile::PolymorphicTypeKey,
-    monomorphized_types: impl Iterator<Item = &'a ladfile::LadTypeId>,
+/// The class of a type, with its fields, operators and variants, and the functions documented on its table.
+fn type_to_lua_class(
+    lad_type_id: &LadTypeId,
+    lad_type: &ladfile::LadTypeDefinition,
     ladfile: &ladfile::LadFile,
-) -> Result<Vec<(LadTypeId, LuaClass, Vec<FunctionSignature>)>, anyhow::Error> {
-    let monomorphized_types: Vec<_> = monomorphized_types.collect();
-    if monomorphized_types.len() > 1 || polymorphic_type_key.arity != 0 {
-        // TODO: support generics, currently bevy doesn't let you track back generic instantiations to their definition
-        return Err(anyhow::anyhow!(
-            "Type {} with arity {} is not supported yet, ignoring.",
-            polymorphic_type_key.identifier,
-            polymorphic_type_key.arity
-        ));
-    }
+) -> (LuaClass, Vec<FunctionSignature>) {
+    let documentation = ladfile
+        .get_type_documentation(lad_type_id)
+        .map(ToOwned::to_owned);
 
-    let mut types = Vec::default();
-    if let Some(lad_type_id) = monomorphized_types.first() {
-        // only types of arity 0 get here, so there are no generics to name
-        let generics = vec![];
+    let mut lua_fields = vec![];
+    let mut lua_functions = vec![];
+    let mut lua_operators = vec![];
+    let mut parents = vec![];
+    let name = lua_class_name(ladfile, lad_type_id);
 
-        let documentation = ladfile
-            .get_type_documentation(lad_type_id)
-            .map(ToOwned::to_owned);
-
-        let mut lua_fields = vec![];
-        let mut lua_functions = vec![];
-        let mut lua_operators = vec![];
-        let mut parents = vec![];
-        let name = polymorphic_type_key.identifier.to_string();
-
-        if let Some(lad_type) = ladfile.types.get(*lad_type_id) {
+    {
+        {
             // add fields for the type
             match &lad_type.layout {
                 ladfile::LadTypeLayout::Opaque => {}
@@ -405,20 +347,18 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
             //     parents.push(String::from("ScriptResourceRegistration"))
             // }
         }
-
-        let class = LuaClass {
-            name,
-            parents,
-            fields: lua_fields,
-            generics,
-            documentation,
-            exact: false,
-            operators: lua_operators,
-        };
-
-        types.push(((*lad_type_id).clone(), class, lua_functions));
     }
-    Ok(types)
+
+    let class = LuaClass {
+        name,
+        parents,
+        fields: lua_fields,
+        generics: vec![],
+        documentation,
+        exact: false,
+        operators: lua_operators,
+    };
+    (class, lua_functions)
 }
 
 /// Converts the function implementing an operator to that operator, if it has the expected signature.
@@ -592,16 +532,14 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
         let ladfile = self.ladfile;
         if let Some((generic_type, args)) = ladfile.get_generic_instance(lad_type_id) {
             Ok(LuaType::Generic {
-                name: generic_type.identifier.clone(),
+                name: qualified(&generic_type.namespace, &generic_type.identifier),
                 args: args
                     .iter()
                     .map(|arg| lad_generic_argument_to_lua_type(ladfile, &arg.type_id))
                     .collect(),
             })
         } else if ladfile.get_type_generics(lad_type_id).is_none() {
-            Ok(LuaType::Alias(
-                ladfile.get_type_identifier(lad_type_id, None).to_string(),
-            ))
+            Ok(LuaType::Alias(lua_class_name(ladfile, lad_type_id)))
         } else {
             Err(anyhow::anyhow!(
                 "Generic fields are not supported: {lad_type_id}",
@@ -698,8 +636,14 @@ fn lad_generic_argument_to_lua_type(ladfile: &LadFile, type_id: &LadTypeId) -> L
         .unwrap_or(LuaType::Any)
 }
 
-/// The class scripts see for enum variants, which variant classes extend.
-const ENUM_VARIANT_CLASS: &str = "EnumVariantRef";
+/// The class scripts see for enum variants, which variant classes extend: the class of `EnumVariantRef`, i.e. `bms.EnumVariantRef`.
+fn enum_variant_class(ladfile: &LadFile) -> String {
+    ladfile
+        .documented_types()
+        .find(|(_, lad_type)| lad_type.identifier == "EnumVariantRef")
+        .map(|(type_id, _)| lua_class_name(ladfile, type_id))
+        .unwrap_or_else(|| "EnumVariantRef".to_owned())
+}
 
 fn lad_variant_name(variant: &ladfile::LadVariant) -> &str {
     match variant {
@@ -722,7 +666,6 @@ fn variant_class_name(enum_name: &str, variant: &str) -> String {
     format!("{enum_name}.{variant}")
 }
 
-/// The class describing the fields of a type, or of a variant of an enum, i.e. `MyType.Fields` or `MyEnum.Variant.Fields`.
 fn fields_class_name(
     ladfile: &LadFile,
     type_id: &LadTypeId,
@@ -733,7 +676,7 @@ fn fields_class_name(
             "Fields of generic types are not supported: {type_id}"
         ));
     }
-    let name = ladfile.get_type_identifier(type_id, None);
+    let name = lua_class_name(ladfile, type_id);
     Ok(match variant {
         Some(variant) => format!("{}.Fields", variant_class_name(&name, variant)),
         None => format!("{name}.Fields"),
@@ -770,7 +713,9 @@ fn enum_variant_modules(
     let ladfile::LadTypeLayout::Enum(variants) = &lad_type.layout else {
         return vec![];
     };
-    let enum_name = ladfile.get_type_identifier(type_id, None).to_string();
+    let enum_name = lua_class_name(ladfile, type_id);
+    let enum_table = lad_type.identifier.clone();
+    let variant_parent = enum_variant_class(ladfile);
     // functions on the enum shadow variants of the same name
     let shadowed = |name: &str| {
         lad_type
@@ -779,17 +724,7 @@ fn enum_variant_modules(
             .filter_map(|id| ladfile.functions.get(id))
             .any(|f| f.identifier == name)
     };
-    let variant_functions = ladfile
-        .functions
-        .values()
-        .filter_map(|f| match &f.namespace {
-            ladfile::LadFunctionNamespace::Variant {
-                type_id: enum_id,
-                variant,
-            } if enum_id == type_id => Some((variant.as_ref(), f)),
-            _ => None,
-        })
-        .collect::<Vec<_>>();
+    let variant_functions = ladfile.variant_functions(type_id).collect::<Vec<_>>();
 
     variants
         .iter()
@@ -822,9 +757,11 @@ fn enum_variant_modules(
 
             LuaModule {
                 name: class_name.clone(),
+                table: format!("{enum_table}.{variant_name}"),
+                namespace: lad_type.namespace.clone(),
                 class: Some(LuaClass {
                     name: class_name,
-                    parents: vec![ENUM_VARIANT_CLASS.to_string()],
+                    parents: vec![variant_parent.clone()],
                     fields: vec![],
                     generics: vec![],
                     documentation: Some(format!(
@@ -909,6 +846,8 @@ fn fields_module(
     };
     Ok(LuaModule {
         name: class_name.clone(),
+        table: class_name.clone(),
+        namespace: lad_type.namespace.clone(),
         class: Some(LuaClass {
             name: class_name,
             parents: vec![],
@@ -931,6 +870,7 @@ const NO_FIELDS_CLASS: &str = "NoFields";
 fn no_fields_module() -> LuaModule {
     LuaModule {
         name: NO_FIELDS_CLASS.to_string(),
+        table: NO_FIELDS_CLASS.to_string(),
         class: Some(LuaClass {
             name: NO_FIELDS_CLASS.to_string(),
             parents: vec![],
@@ -950,58 +890,79 @@ fn no_fields_module() -> LuaModule {
 /// The classes of the tables `import_namespace` returns, named `namespace.<name>`.
 const NAMESPACE_CLASS_PREFIX: &str = "namespace.";
 
-/// A class per native namespace, with a field for each type in it.
+/// A class per namespace, for the table `import_namespace` returns: a field for each type and value in it, and its functions.
 ///
 /// The root namespace (types without a crate, such as primitives) is left out, as are
 /// script namespaces: they only exist at runtime so there is nothing to describe.
-fn namespace_modules(
-    ladfile: &ladfile::LadFile,
-    lua_classes: &IndexMap<LadTypeId, (LuaClass, Vec<FunctionSignature>)>,
-) -> Vec<LuaModule> {
-    let mut namespaces: IndexMap<&str, Vec<ClassField>> = IndexMap::new();
-    for (type_id, lad_type) in ladfile.types.iter() {
-        let Some((class, _)) = lua_classes.get(type_id) else {
-            continue;
-        };
-        let name = lad_type.identifier.as_str();
-        if lad_type.namespace.is_empty()
-            || !lad_type.metadata.is_reflect
-            || !lad_type.generics.is_empty()
-            || ForbiddenKeywords::is_forbidden_err(name).is_err()
-            || !name.chars().all(|c| c.is_alphanumeric() || c == '_')
-        {
-            continue;
-        }
-        namespaces
-            .entry(lad_type.namespace.as_str())
-            .or_default()
-            .push(ClassField {
-                name: name.to_string(),
-                ty: LuaType::Alias(class.name.clone()),
-                scope: FieldScope::Public,
-                optional: false,
-                description: None,
-            });
-    }
+fn namespace_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
+    let usable_name = |name: &str| {
+        ForbiddenKeywords::is_forbidden_err(name).is_ok()
+            && name.chars().all(|c| c.is_alphanumeric() || c == '_')
+    };
+    let field = |name: &str, ty: LuaType| ClassField {
+        name: name.to_string(),
+        ty,
+        scope: FieldScope::Public,
+        optional: false,
+        description: None,
+    };
 
-    namespaces
-        .into_iter()
-        .map(|(namespace, fields)| {
+    ladfile
+        .namespaces
+        .iter()
+        .filter(|(namespace, _)| !namespace.is_empty())
+        .map(|(namespace, lad_namespace)| {
+            let mut fields = vec![];
+            for (name, type_id) in &lad_namespace.types {
+                if usable_name(name) && ladfile.types.contains_key(type_id) {
+                    fields.push(field(name, LuaType::Alias(lua_class_name(ladfile, type_id))));
+                }
+            }
+            for (name, value) in &lad_namespace.values {
+                if !usable_name(name) {
+                    continue;
+                }
+                let ty = lad_instance_to_lua_type(ladfile, &value.type_kind).unwrap_or_else(|e| {
+                    log::warn!("Error generating value {name} of namespace {namespace}: {e}. Using `any` type");
+                    LuaType::Any
+                });
+                fields.push(field(name, ty));
+            }
+            let functions = lad_namespace
+                .functions
+                .values()
+                .filter_map(|id| ladfile.functions.get(id))
+                .filter_map(|function| match lad_function_to_lua_function(ladfile, function) {
+                    Ok(function) => Some(function),
+                    Err(err) => {
+                        log::warn!(
+                            "Error generating function {} of namespace {namespace}: {err}. Ignoring function.",
+                            function.identifier
+                        );
+                        None
+                    }
+                })
+                .collect();
+
             let name = format!("{NAMESPACE_CLASS_PREFIX}{namespace}");
             LuaModule {
                 name: name.clone(),
+                // a table of its own only to declare the functions on, the namespace class is what `import_namespace` returns
+                table: name.replace('.', "_"),
+                namespace: namespace.to_string(),
                 class: Some(LuaClass {
                     name,
                     parents: vec![],
                     fields,
                     generics: vec![],
                     documentation: Some(format!(
-                        "The types in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
+                        "The `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
                     )),
-                    exact: true,
+                    // LuaLS doesn't attach the functions declared on the table to an `(exact)` class
+                    exact: false,
                     operators: vec![],
                 }),
-                type_only: true,
+                functions,
                 ..Default::default()
             }
         })
@@ -1213,12 +1174,18 @@ mod test {
         file
     }
 
+    /// All the declaration files, one after another
     fn render(file: &LadFile) -> String {
-        let declaration_file = convert_ladfile_to_lua_declaration_file(file).unwrap();
-        let context = tera::Context::from_serialize(&declaration_file).unwrap();
-        crate::templating::render_template("declaration_file.tera", &context)
+        convert_ladfile_to_lua_declaration_files(file)
             .unwrap()
-            .replace('\r', "")
+            .values()
+            .map(|declaration_file| {
+                let context = tera::Context::from_serialize(declaration_file).unwrap();
+                crate::templating::render_template("declaration_file.tera", &context)
+                    .unwrap()
+                    .replace('\r', "")
+            })
+            .collect()
     }
 
     /// The block of lines starting with the given line, up to the next blank line
@@ -1259,11 +1226,20 @@ mod test {
         set_field_defaults(&mut file, "PlainStructType", &[false]);
         let rendered = render(&file);
 
-        let new = block(&rendered, "---@param payload PlainStructType.Fields");
-        assert!(new.contains("---@return PlainStructType"), "{new}");
+        let new = block(
+            &rendered,
+            "---@param payload ladfile_builder.PlainStructType.Fields",
+        );
+        assert!(
+            new.contains("---@return ladfile_builder.PlainStructType"),
+            "{new}"
+        );
 
         // the fields class is only a shape, there is no such global table
-        let fields = block(&rendered, "---@class (exact) PlainStructType.Fields");
+        let fields = block(
+            &rendered,
+            "---@class (exact) ladfile_builder.PlainStructType.Fields",
+        );
         assert!(!rendered.contains("PlainStructType.Fields = {}"));
 
         // nothing can fill in the field, so it is required
@@ -1273,7 +1249,10 @@ mod test {
         let plain = type_id(&file, "PlainStructType");
         file.types[&plain].metadata.default = Some(LadDefault { variant: None });
         let rendered = render(&file);
-        let fields = block(&rendered, "---@class (exact) PlainStructType.Fields");
+        let fields = block(
+            &rendered,
+            "---@class (exact) ladfile_builder.PlainStructType.Fields",
+        );
         assert!(
             fields.contains("---@field  int_field? integer")
                 && fields.contains("---@field  [any] 'never'"),
@@ -1286,6 +1265,14 @@ mod test {
         let mut file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
         let unit = type_id(&file, "UnitType");
         file.types[&unit].namespace = "other_crate".into();
+        file.namespaces["ladfile_builder"]
+            .types
+            .shift_remove("UnitType");
+        file.namespaces
+            .entry("other_crate".into())
+            .or_default()
+            .types
+            .insert("UnitType".into(), unit);
 
         let import_namespace = LadFunctionId::new_string_id("import_namespace".into());
         file.functions.insert(
@@ -1313,11 +1300,14 @@ mod test {
         );
         let rendered = render(&file);
 
-        let namespace = block(&rendered, "---@class (exact) namespace.ladfile_builder");
-        assert!(namespace.contains("---@field  PlainStructType PlainStructType"));
-        assert!(!namespace.contains("UnitType"), "{namespace}");
-        let other = block(&rendered, "---@class (exact) namespace.other_crate");
-        assert!(other.contains("---@field  UnitType UnitType"), "{other}");
+        let namespace = block(&rendered, "---@class namespace.ladfile_builder");
+        assert!(namespace.contains("---@field  PlainStructType ladfile_builder.PlainStructType"));
+        assert!(!namespace.contains("---@field  UnitType"), "{namespace}");
+        let other = block(&rendered, "---@class namespace.other_crate");
+        assert!(
+            other.contains("---@field  UnitType other_crate.UnitType"),
+            "{other}"
+        );
 
         // the root namespace has no class
         assert!(!rendered.contains("namespace.\n"), "{rendered}");
@@ -1341,49 +1331,66 @@ mod test {
         set_field_defaults(&mut file, "EnumType", &[false, true, false]);
         let rendered = render(&file);
 
-        let enum_class = block(&rendered, "---@class EnumType ");
+        let enum_class = block(&rendered, "---@class ladfile_builder.EnumType ");
         assert!(
-            enum_class.contains("---@field  Unit EnumType.Unit"),
+            enum_class.contains("---@field  Unit ladfile_builder.EnumType.Unit"),
             "{enum_class}"
         );
         assert!(
-            enum_class.contains("---@field  Struct EnumType.Struct"),
+            enum_class.contains("---@field  Struct ladfile_builder.EnumType.Struct"),
             "{enum_class}"
         );
 
         // variants without fields get a class like any other, taking no fields
         assert!(
-            rendered.contains("---@class EnumType.Unit : EnumVariantRef"),
+            rendered.contains(
+                "---@class ladfile_builder.EnumType.Unit : ladfile_builder.EnumVariantRef"
+            ),
             "{rendered}"
         );
         // and share one class for their fields, of which there are none
-        let unit = block(&rendered, "---@param variant EnumType.Unit");
+        let unit = block(&rendered, "---@param variant ladfile_builder.EnumType.Unit");
         assert!(unit.contains("---@param payload NoFields"), "{unit}");
-        assert!(unit.contains("---@return EnumType"), "{unit}");
-        assert!(!rendered.contains("EnumType.Unit.Fields"), "{rendered}");
+        assert!(
+            unit.contains("---@return ladfile_builder.EnumType"),
+            "{unit}"
+        );
+        assert!(
+            !rendered.contains("ladfile_builder.EnumType.Unit.Fields"),
+            "{rendered}"
+        );
         let no_fields = block(&rendered, "---@class (exact) NoFields");
         assert!(
             no_fields.contains("---@field  [any] 'never'"),
             "{no_fields}"
         );
 
-        let new = block(&rendered, "---@param variant EnumType.Struct");
+        let new = block(
+            &rendered,
+            "---@param variant ladfile_builder.EnumType.Struct",
+        );
         assert!(
-            new.contains("---@param payload EnumType.Struct.Fields"),
+            new.contains("---@param payload ladfile_builder.EnumType.Struct.Fields"),
             "{new}"
         );
-        assert!(new.contains("---@return EnumType"), "{new}");
+        assert!(new.contains("---@return ladfile_builder.EnumType"), "{new}");
         assert!(
             new.contains("function EnumType.Struct.new(variant,payload)"),
             "{new}"
         );
 
-        let struct_fields = block(&rendered, "---@class (exact) EnumType.Struct.Fields");
+        let struct_fields = block(
+            &rendered,
+            "---@class (exact) ladfile_builder.EnumType.Struct.Fields",
+        );
         assert!(
             struct_fields.contains("---@field  field? integer"),
             "{struct_fields}"
         );
-        let tuple_fields = block(&rendered, "---@class (exact) EnumType.TupleStruct.Fields");
+        let tuple_fields = block(
+            &rendered,
+            "---@class (exact) ladfile_builder.EnumType.TupleStruct.Fields",
+        );
         assert!(
             tuple_fields.contains("---@field  [1]? integer"),
             "{tuple_fields}"
@@ -1394,7 +1401,10 @@ mod test {
         );
 
         // unbound, the constructor is as generic as at runtime
-        let generic = block(&rendered, "---@param variant EnumVariantRef");
+        let generic = block(
+            &rendered,
+            "---@param variant ladfile_builder.EnumVariantRef",
+        );
         assert!(
             generic.contains("---@param payload table<string, any>"),
             "{generic}"
@@ -1408,8 +1418,20 @@ mod test {
 
         // the language server cannot narrow the fields by the `variant` given, so they are not described
         let new = block(&rendered, "---@param payload table");
-        assert!(new.contains("---@return EnumType"), "{new}");
-        assert!(!rendered.contains("EnumType.Fields"), "{rendered}");
+        assert!(new.contains("---@return ladfile_builder.EnumType"), "{new}");
+        assert!(
+            !rendered.contains("ladfile_builder.EnumType.Fields"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn functions_keep_their_documentation() {
+        let rendered = render(&file_with_constructors());
+        assert!(
+            rendered.contains("--- Constructs a value.\n---@param payload"),
+            "{rendered}"
+        );
     }
 
     #[test]
@@ -1418,19 +1440,19 @@ mod test {
         let rendered = render(&file);
 
         let declarations = rendered
-            .matches("---@class OpaqueGenericType<T> : ReflectReference")
+            .matches("---@class ladfile_builder.OpaqueGenericType<T> : ReflectReference")
             .count();
         assert_eq!(declarations, 1, "{rendered}");
 
         // the instantiations are described by the generic class, and the type has no table of its own
         assert!(
-            !rendered.contains("---@class OpaqueGenericType\n"),
+            !rendered.contains("---@class ladfile_builder.OpaqueGenericType\n"),
             "{rendered}"
         );
         assert!(!rendered.contains("OpaqueGenericType = {}"), "{rendered}");
 
         // and as there is nothing to construct, it is not in the namespace either
-        let namespace = block(&rendered, "---@class (exact) namespace.ladfile_builder");
+        let namespace = block(&rendered, "---@class namespace.ladfile_builder");
         assert!(!namespace.contains("OpaqueGenericType"), "{namespace}");
     }
 
@@ -1441,15 +1463,15 @@ mod test {
 
         // as a field, an argument and a return type
         assert!(
-            rendered.contains("---@field  generic? OpaqueGenericType<integer>"),
+            rendered.contains("---@field  generic? ladfile_builder.OpaqueGenericType<integer>"),
             "{rendered}"
         );
         assert!(
-            rendered.contains("---@param arg2 OpaqueGenericType<integer>"),
+            rendered.contains("---@param arg2 ladfile_builder.OpaqueGenericType<integer>"),
             "{rendered}"
         );
         assert!(
-            rendered.contains("---@return OpaqueGenericType<integer>"),
+            rendered.contains("---@return ladfile_builder.OpaqueGenericType<integer>"),
             "{rendered}"
         );
     }
@@ -1480,9 +1502,9 @@ mod test {
             format!(
                 "{:?}",
                 LuaType::Generic {
-                    name: "OpaqueGenericType".into(),
+                    name: "ladfile_builder.OpaqueGenericType".into(),
                     args: vec![LuaType::Generic {
-                        name: "OpaqueGenericType".into(),
+                        name: "ladfile_builder.OpaqueGenericType".into(),
                         args: vec![LuaType::Primitive(LuaPrimitiveType::Integer)],
                     }],
                 }
@@ -1495,7 +1517,7 @@ mod test {
             format!(
                 "{:?}",
                 LuaType::Generic {
-                    name: "OpaqueGenericType".into(),
+                    name: "ladfile_builder.OpaqueGenericType".into(),
                     args: vec![LuaType::Any],
                 }
             )

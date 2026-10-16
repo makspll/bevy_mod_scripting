@@ -1,7 +1,8 @@
+local bms = import_namespace("bms")
 function on_test()
-    local unpacked_a, unpacked_b = unpack_args({ 1, 2 })
+    local unpacked_a, unpacked_b = bms.unpack_args({ 1, 2 })
 
-    local packed = pack_args(1, 2)
+    local packed = bms.pack_args(1, 2)
 
     assert(packed[1] == unpacked_a,
         "Expected packed[1] to be: " .. tostring(unpacked_a) .. " Got: " .. tostring(packed[1]))

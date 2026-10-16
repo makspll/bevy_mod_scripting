@@ -63,10 +63,8 @@ pub(crate) enum SectionData<'a> {
     Namespace {
         namespace: &'a str,
     },
-    /// A link directory to all global functions within the ladfile
+    /// The builtins: the values and functions every script has without importing anything
     FunctionSummary,
-    /// A link directory to all global instances within the ladfile
-    InstancesSummary,
     TypeDetail {
         lad_type_id: &'a LadTypeId,
         lad_type: &'a LadTypeDefinition,
@@ -187,8 +185,7 @@ impl<'a> Section<'a> {
             }
             SectionData::TypeSummary { .. } => "Types".to_owned(),
             SectionData::Namespace { namespace } => namespace_title(namespace).to_owned(),
-            SectionData::FunctionSummary { .. } => "Functions".to_owned(),
-            SectionData::InstancesSummary { .. } => "Globals".to_owned(),
+            SectionData::FunctionSummary { .. } => "Builtins".to_owned(),
             SectionData::TypeDetail { lad_type_id, .. } => {
                 print_type(self.ladfile, *lad_type_id, None, None)
             }
@@ -199,12 +196,23 @@ impl<'a> Section<'a> {
         }
     }
 
-    /// The functions which are global, as opposed to the ones on types and on variants of enums
+    /// The builtin functions, as opposed to the ones on types, variants of enums and in namespaces
     fn global_functions(&self) -> Vec<&'a LadFunction> {
         self.ladfile
-            .functions
-            .values()
-            .filter(|function| matches!(function.namespace, LadFunctionNamespace::Global))
+            .builtin_functions()
+            .map(|(_, function)| function)
+            .collect()
+    }
+
+    /// The functions which are members of the namespace, i.e. `import_namespace("bms").log_info`
+    fn namespace_functions(&self, namespace: &str) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+        self.ladfile
+            .namespaces
+            .get(namespace)
+            .into_iter()
+            .flat_map(|lad_namespace| lad_namespace.functions.values())
+            .filter_map(|id| self.ladfile.functions.get(id))
+            .map(|function| (None, function))
             .collect()
     }
 
@@ -245,7 +253,7 @@ impl<'a> Section<'a> {
         )
     }
 
-    /// The namespaces types are in, sorted, with the root namespace last
+    /// The namespaces types or namespace members are in, sorted, with the root namespace last
     fn namespaces(&self) -> Vec<&'a str> {
         let mut namespaces = self
             .documented_types()
@@ -255,6 +263,12 @@ impl<'a> Section<'a> {
                     .generic_types
                     .values()
                     .map(|generic_type| generic_type.namespace.as_str()),
+            )
+            .chain(
+                self.ladfile
+                    .namespaces
+                    .keys()
+                    .map(|namespace| namespace.as_ref()),
             )
             .collect::<Vec<_>>();
         namespaces.sort_by_key(|namespace| (namespace.is_empty(), *namespace));
@@ -304,11 +318,6 @@ impl<'a> Section<'a> {
         match self.data {
             SectionData::Summary { .. } => {
                 vec![
-                    Section::new(
-                        child_parent_path.clone(),
-                        self.ladfile,
-                        SectionData::InstancesSummary,
-                    ),
                     Section::new(
                         child_parent_path.clone(),
                         self.ladfile,
@@ -363,6 +372,19 @@ impl<'a> Section<'a> {
                             )
                         }),
                 )
+                .chain(self.namespace_functions(namespace).into_iter().map(
+                    |(variant, function)| {
+                        Section::new(
+                            child_parent_path.clone(),
+                            self.ladfile,
+                            SectionData::FunctionDetail {
+                                function,
+                                types_directory: PathBuf::from("../../types"),
+                                variant,
+                            },
+                        )
+                    },
+                ))
                 .collect(),
 
             SectionData::FunctionSummary => self
@@ -380,9 +402,6 @@ impl<'a> Section<'a> {
                     )
                 })
                 .collect(),
-            SectionData::InstancesSummary { .. } => {
-                vec![]
-            }
             SectionData::TypeDetail {
                 lad_type_id,
                 lad_type,
@@ -408,15 +427,6 @@ impl<'a> Section<'a> {
     pub(crate) fn section_items(&self) -> Vec<SectionItem<'_>> {
         match self.data {
             SectionData::Summary { .. } => self.summary_items(),
-            SectionData::InstancesSummary => {
-                let instances = self.ladfile.globals.iter().collect::<Vec<_>>();
-                let types_directory = PathBuf::from("./types");
-                vec![SectionItem::InstancesSummary {
-                    instances,
-                    ladfile: self.ladfile,
-                    types_directory,
-                }]
-            }
             SectionData::TypeSummary => self.type_summary_items(),
             SectionData::Namespace { namespace } => self.namespace_items(namespace),
             SectionData::FunctionSummary => self.function_summary_items(),
@@ -442,7 +452,7 @@ impl<'a> Section<'a> {
         }
     }
 
-    /// The summary page, linking to the types, functions and globals pages
+    /// The summary page, linking to the types and builtins pages
     fn summary_items(&self) -> Vec<SectionItem<'a>> {
         let title = self.title().clone();
 
@@ -461,22 +471,12 @@ impl<'a> Section<'a> {
                         }
                     ]);
                     builder.row(markdown_vec![
-                        Markdown::new_paragraph("Global Functions").code(),
+                        Markdown::new_paragraph("Builtins").code(),
                         Markdown::Link {
                             text: Box::new(
-                                "Documents all the global functions present in the bindings"
+                                "The values and functions every script has without importing anything"
                             ),
-                            url: format!("./{}/functions.md", linkify_filename(title.clone())),
-                            anchor: false
-                        }
-                    ]);
-                    builder.row(markdown_vec![
-                        Markdown::new_paragraph("Globals").code(),
-                        Markdown::Link {
-                            text: Box::new(
-                                "Documents all global variables present in the bindings"
-                            ),
-                            url: format!("./{}/globals.md", linkify_filename(title.clone())),
+                            url: format!("./{}/builtins.md", linkify_filename(title.clone())),
                             anchor: false
                         }
                     ]);
@@ -526,16 +526,16 @@ impl<'a> Section<'a> {
         }]
     }
 
-    /// The page of a namespace, listing its types
+    /// The page of a namespace, listing its types and functions
     fn namespace_items(&self, namespace: &str) -> Vec<SectionItem<'a>> {
         let intro = if namespace.is_empty() {
             "The types without a crate, such as primitives.".to_owned()
         } else {
             format!(
-                "The types in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
+                "The types and functions in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
             )
         };
-        vec![
+        let mut items = vec![
             SectionItem::Markdown {
                 markdown: Box::new(move |builder| {
                     builder.raw(intro.clone());
@@ -548,16 +548,42 @@ impl<'a> Section<'a> {
                 types_directory: ".".to_owned(),
                 ladfile: self.ladfile,
             },
-        ]
+        ];
+        let values = self
+            .ladfile
+            .namespaces
+            .get(namespace)
+            .map(|lad_namespace| lad_namespace.values.iter().collect::<Vec<_>>())
+            .unwrap_or_default();
+        if !values.is_empty() {
+            items.push(SectionItem::InstancesSummary {
+                instances: values,
+                ladfile: self.ladfile,
+                types_directory: PathBuf::from("."),
+            });
+        }
+        let functions = self.namespace_functions(namespace);
+        if !functions.is_empty() {
+            items.push(SectionItem::Markdown {
+                markdown: Box::new(|builder| {
+                    builder.heading(2, "Functions");
+                }),
+            });
+            items.push(SectionItem::FunctionsSummary {
+                functions,
+                functions_directory: linkify_filename(self.title()),
+            });
+        }
+        items
     }
 
-    /// The page of the global functions
+    /// The page of the builtins: the functions every script has without importing anything
     fn function_summary_items(&self) -> Vec<SectionItem<'a>> {
         vec![
             SectionItem::Markdown {
                 markdown: Box::new(|builder| {
-                    builder.heading(2, "Non-Associated Functions");
-                    builder.text("Global functions that are not associated with any type and callable from anywhere in the script.");
+                    builder.raw("The only globals of scripts. Everything else is imported from a namespace, see the namespace pages under Types, i.e. `import_namespace(\"bms\").world`.");
+                    builder.append("\n\n");
                 }),
             },
             SectionItem::FunctionsSummary {
@@ -566,7 +592,7 @@ impl<'a> Section<'a> {
                     .into_iter()
                     .map(|function| (None, function))
                     .collect(),
-                functions_directory: "functions".to_owned(),
+                functions_directory: linkify_filename(self.title()),
             },
         ]
     }
@@ -938,49 +964,26 @@ fn types_summary_markdown(
     });
 }
 
-/// Tables of the global values, the non-static instances and the static type references
+/// A table of the values in a namespace, i.e. `world` in `bms`
 fn instances_summary_markdown(
     instances: &[(&Cow<'static, str>, &LadInstance)],
     ladfile: &LadFile,
     types_directory: &Path,
     builder: &mut MarkdownBuilder,
 ) {
-    builder.heading(2, "Global Values");
-    builder.text("Global values that are accessible anywhere inside scripts. You should avoid naming conflicts with these and trying to overwrite or edit them.");
-    // make a table of instances as a quick reference, make them link to instance details sub-sections
-
-    // first build a non-static instance table
-    let instances = instances
-        .iter()
-        .map(|(k, v)| {
-            let name = k.to_string();
-            let types_directory = types_directory.to_path_buf();
-            let escaped = print_type(ladfile, &v.type_kind, None, Some((types_directory, true)));
-            (v.is_static, name, escaped)
-        })
-        .collect::<Vec<_>>();
-
-    builder.heading(3, "Instances");
-    builder.text("Instances containing actual accessible values.");
+    builder.heading(2, "Values");
     builder.table(|builder| {
-        builder.headers(vec!["Instance", "Type"]);
-        for (_, name, instance) in instances.iter().filter(|(a, _, _)| !*a) {
+        builder.headers(vec!["Name", "Type"]);
+        for (name, instance) in instances {
+            let printed = print_type(
+                ladfile,
+                &instance.type_kind,
+                None,
+                Some((types_directory.to_path_buf(), true)),
+            );
             builder.row(markdown_vec![
-                Markdown::new_paragraph(name).code(),
-                Markdown::Raw(instance.clone())
-            ]);
-        }
-    });
-
-    builder.heading(3, "Static Instances");
-    builder
-        .text("Static type references, existing for the purpose of typed static function calls.");
-    builder.table(|builder| {
-        builder.headers(vec!["Instance", "Type"]);
-        for (_, name, instance) in instances.iter().filter(|(a, _, _)| *a) {
-            builder.row(markdown_vec![
-                Markdown::new_paragraph(name).code(),
-                Markdown::Raw(instance.clone())
+                Markdown::new_paragraph(name.to_string()).code(),
+                Markdown::Raw(printed)
             ]);
         }
     });
@@ -1091,7 +1094,7 @@ mod test {
         let listed = namespace_pages(&ladfile)
             .iter()
             .map(|namespace| match namespace.section_items().as_slice() {
-                [_, SectionItem::TypesSummary { types, .. }] => types.len(),
+                [_, SectionItem::TypesSummary { types, .. }, ..] => types.len(),
                 items => panic!("expected a types summary, got {items:?}"),
             })
             .sum::<usize>();
@@ -1318,7 +1321,7 @@ mod test {
         assert!(titles.contains(&"hello_world".to_owned()), "{titles:?}");
 
         let items = functions.section_items();
-        let [_, SectionItem::FunctionsSummary { functions, .. }] = items.as_slice() else {
+        let Some(SectionItem::FunctionsSummary { functions, .. }) = items.last() else {
             panic!("expected a functions summary, got {items:?}");
         };
         assert_eq!(functions.len(), titles.len());

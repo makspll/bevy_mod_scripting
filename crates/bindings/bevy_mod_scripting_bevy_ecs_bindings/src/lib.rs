@@ -1,6 +1,6 @@
 //! Script bindings for the bevy ECS: entities, names and hierarchy.
 //!
-//! Most of the ECS is available through the `world` global, see the core bindings.
+//! Most of the ECS is available through `import_namespace("bms").world`, see the core bindings.
 
 use std::sync::Arc;
 

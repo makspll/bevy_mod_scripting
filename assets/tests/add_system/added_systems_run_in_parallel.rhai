@@ -1,19 +1,21 @@
+let bms = import_namespace.call("bms");
+let world = bms.world;
 fn on_test() {
     let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");
     
-    let script_attachment = ScriptAttachment.new_entity_script.call(entity, script_asset);
+    let script_attachment = ScriptAttachment.new_entity_script.call(bms.current_entity.call(), bms.current_script.call());
     let test_system = post_update_schedule.get_system_by_name.call("on_test_post_update");
     
     let system_a = world.add_system.call(
         post_update_schedule,
-        system_builder.call("custom_system_a", script_attachment)
+        bms.system_builder.call("custom_system_a", script_attachment)
             .after.call(test_system)
     );
         
     let system_b = world.add_system.call(
         post_update_schedule,
-        system_builder.call("custom_system_b", script_attachment)
+        bms.system_builder.call("custom_system_b", script_attachment)
             .after.call(test_system)
     );
         

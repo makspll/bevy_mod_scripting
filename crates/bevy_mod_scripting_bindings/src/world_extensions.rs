@@ -1167,8 +1167,8 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 
         // operators not defined on the type itself fall back to the generic ones on `ReflectReference`, i.e. `eq`
         let func = registry
-            .get_function(FunctionScope::OnType(type_id), name)
-            .or_else(|name| registry.get_function(FunctionScope::all_references(), name));
+            .get_function(type_id, name)
+            .or_else(|name| registry.get_function(TypeId::of::<ReflectReference>(), name));
         match func {
             Ok(func) => func.call(args, context),
             Err(name) => Err(InteropError::missing_function(
@@ -1187,8 +1187,8 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let registry = registry.read();
 
         registry
-            .iter_namespace(FunctionScope::OnType(type_id))
-            .chain(registry.iter_namespace(FunctionScope::all_references()))
+            .iter_type(type_id)
+            .chain(registry.iter_type(TypeId::of::<ReflectReference>()))
             .map(|(key, func)| (key.name.clone(), func.clone()))
             .collect()
     }
@@ -1627,7 +1627,7 @@ impl FunctionLookups for WorldAccessGuard<'_> {
 
         let mut name = name.into();
         for type_id in type_ids {
-            name = match registry.get_function(FunctionScope::OnType(type_id), name) {
+            name = match registry.get_function(type_id, name) {
                 Ok(func) => return Ok(func.clone()),
                 Err(name) => name,
             };

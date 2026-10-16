@@ -14,12 +14,12 @@ use ::{
 };
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
-    DynamicScriptFunction, ReflectReference, ScriptComponentRegistration,
+    DynamicScriptFunction, NamespaceMembers, ReflectReference, ScriptComponentRegistration,
     ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue, WorldExtensions,
     error::InteropError,
     function::{
         from::{R, V},
-        namespace::{GlobalNamespace, NamespaceBuilder},
+        namespace::NamespaceBuilder,
         script_function::{DynamicScriptFunctionMut, FunctionCallContext},
     },
 };
@@ -141,7 +141,8 @@ pub fn register_test_functions(world: &mut App) {
             },
         );
 
-    NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
+    // helpers of the script tests, `import_namespace("test_utils").noop()`
+    NamespaceBuilder::<NamespaceMembers>::in_namespace(world, "test_utils")
         .register("_make_invalid_entity", |s: FunctionCallContext| {
             let world = s.world().unwrap();
 

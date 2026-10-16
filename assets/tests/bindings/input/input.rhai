@@ -1,3 +1,5 @@
+let world = import_namespace.call("bms").world;
+
 // the test app has no input resources, so nothing is pressed
 let KeyCode = import_namespace.call("input").KeyCode;
 let MouseButton = import_namespace.call("input").MouseButton;

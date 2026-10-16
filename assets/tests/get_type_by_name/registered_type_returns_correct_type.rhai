@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let type = world.get_type_by_name.call("test_utils::test_data::TestComponent");
 
 assert(type_of(type) != "()", "Registered type was not found");

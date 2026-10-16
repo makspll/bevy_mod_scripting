@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let resource = world.get_type_by_name.call("test_utils::test_data::TestResource");
 
 let retrieved = world.get_resource.call(resource);

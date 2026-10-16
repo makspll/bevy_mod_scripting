@@ -18,6 +18,7 @@ Bevy doesn't support reflecting schedules, so BMS rolls it's own schedule regist
 Once you've registered your schedule you will be able to interact with it in scripts like below:
 
 ```lua
+local world = import_namespace("bms").world
 local update_schedule = world.get_schedule_by_name("Update")
 local systems = update:systems()
 local system_with_name = update:get_system_by_name("my_system")
@@ -25,10 +26,12 @@ local system_with_name = update:get_system_by_name("my_system")
 
 ## Inserting Systems
 
-To insert a system you will need to use the `system_builder` global function like below:
+To insert a system you will need to use `bms.system_builder` like below:
 
 ```lua
-local system = system_builder("my_system", script_id)
+local bms = import_namespace("bms")
+local attachment = bms.ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+local system = bms.system_builder("my_system", attachment)
     :exclusive()
     :after(some_other_system)
     :before(another_system)
@@ -37,6 +40,7 @@ local system = system_builder("my_system", script_id)
 This will let you call `world.add_system` like so:
 
 ```lua
+local world = import_namespace("bms").world
 world.add_system(update_schedule,system)
 ```
 
@@ -53,7 +57,9 @@ The order in which those functions are called, will define the order in which ar
 
 For example:
 ```lua
-system_builder("my_system")
+local bms = import_namespace("bms")
+local world = bms.world
+bms.system_builder("my_system")
     :query(
         world.query()
             :component(ComponentA)

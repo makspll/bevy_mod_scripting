@@ -1,3 +1,5 @@
+local world = import_namespace("bms").world
+local test_utils = import_namespace("test_utils")
 local entity_a = world.spawn()
 local entity_b = world.spawn()
 local entity_c = world.spawn()
@@ -14,13 +16,13 @@ local components = {
     simple_enum,
 }
 
-reseed()
+test_utils.reseed()
 
 for i = 1, 100 do
     local entity = world.spawn()
     local left_to_pick = {1,2,3,4}
     for j = 1, 3 do
-        local index = random_int(1, #left_to_pick)
+        local index = test_utils.random_int(1, #left_to_pick)
         local component = components[left_to_pick[index]]
         table.remove(left_to_pick, index)
         world.add_default_component(entity, component)

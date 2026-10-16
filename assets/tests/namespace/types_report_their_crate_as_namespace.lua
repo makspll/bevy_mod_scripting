@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 function on_test()
     -- bevy types are grouped by category
     local transform = world.get_type_by_name("bevy_transform::components::transform::Transform")

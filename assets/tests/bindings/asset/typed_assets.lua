@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local ScriptAsset = import_namespace("bms").ScriptAsset
 local TestAsset = import_namespace("test_utils").TestAsset
 

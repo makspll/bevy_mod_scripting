@@ -4,7 +4,6 @@ mod from_script;
 mod get_type_dependencies;
 mod into_script;
 mod script_bindings;
-mod script_globals;
 mod script_type;
 mod typed_through;
 
@@ -15,8 +14,7 @@ use syn::{Ident, ImplItemFn, ItemImpl};
 pub use self::{
     arg_meta::arg_meta, debug_with_type_info::debug_with_type_info, from_script::from_script,
     get_type_dependencies::get_type_dependencies, into_script::into_script,
-    script_bindings::script_bindings, script_globals::script_globals, script_type::script_type,
-    typed_through::typed_through,
+    script_bindings::script_bindings, script_type::script_type, typed_through::typed_through,
 };
 
 #[allow(dead_code)]
@@ -91,14 +89,6 @@ pub(crate) fn impl_fn_to_namespace_builder_registration(fun: &ImplItemFn) -> Tok
         fun,
         Ident::new("register_documented", Span::call_site()),
         true,
-    )
-}
-
-pub(crate) fn impl_fn_to_global_registry_registration(fun: &ImplItemFn) -> TokenStream {
-    process_impl_fn(
-        fun,
-        Ident::new("register_documented", Span::call_site()),
-        false,
     )
 }
 

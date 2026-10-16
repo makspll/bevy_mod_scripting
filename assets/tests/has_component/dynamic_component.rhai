@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let NewComponent = world.register_new_component.call("script.test", "ScriptComponentA");
 let entity = world.spawn_.call();
 

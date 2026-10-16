@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local entity_a = world.spawn()
 local NewComponent = world.register_new_component("script.test", "NewComponent")
 

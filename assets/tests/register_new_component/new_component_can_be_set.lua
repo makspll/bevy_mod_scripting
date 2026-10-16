@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local DynamicComponent = import_namespace("bms").DynamicComponent
 function on_test()
     local NewComponent = world.register_new_component("script.test", "ScriptComponentA")

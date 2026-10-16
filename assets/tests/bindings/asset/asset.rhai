@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let script_asset = world.get_type_by_name.call("bevy_mod_scripting_asset::script_asset::ScriptAsset");
 assert(type_of(script_asset) != "()", "ScriptAsset is registered");
 

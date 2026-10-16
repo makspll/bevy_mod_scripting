@@ -1,3 +1,5 @@
+let world = import_namespace.call("bms").world;
+
 // toggles change the value stored on an entity, so store the visibility as a component first
 let Visibility = import_namespace.call("camera").Visibility;
 let visibility_type = world.get_type_by_name.call("bevy_camera::visibility::Visibility");

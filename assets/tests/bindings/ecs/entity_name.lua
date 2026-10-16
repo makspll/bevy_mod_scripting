@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local Entity = import_namespace("ecs").Entity
 local Name = import_namespace("ecs").Name
 local entity = world.spawn()

@@ -6,8 +6,7 @@ pub use bevy_mod_scripting_core::{
 };
 
 pub use bevy_mod_scripting_bindings::{
-    CoreScriptGlobalsPlugin,
-    function::namespace::{GlobalNamespace, NamespaceBuilder},
+    CoreScriptGlobalsPlugin, NamespaceMembers, function::namespace::NamespaceBuilder,
     script_value::ScriptValue,
 };
 

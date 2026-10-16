@@ -3,8 +3,8 @@ BMS provides a custom Language Agnostic Declaration format (LAD), which can be u
 
 If you use `#[script_bindings]` macros, these files will magically contain your code comments, bindings as well as everything else required to drive other powerful integrations.
 
-The declaration file is generated from the type registry and serves as a light abstraction layer simplifying the traversal of all 
-available types and globals as well as functions.
+The declaration file is generated from the type registry and serves as a light abstraction layer simplifying the traversal of all
+available types, namespaces and functions.
 
 You can customize how / where and if these files are stored using the main BMS plugin group:
 ```rust,ignore
@@ -35,7 +35,7 @@ You might not want to run this pipeline in your final binary, but rather bundle 
 
 It is powered by lua specific annotation or definition files which BMS can generate directly from its own LADfiles.
 
-To enable this simply enable the `lua_language_server_files` feature, and a `bindings.lua` definition file will be generated in the LADfile output directory in the `Startup` schedule.
+To enable this simply enable the `lua_language_server_files` feature, and a `bindings.d.lua` definition file, plus a `bindings.<namespace>.d.lua` file per namespace, will be generated in the LADfile output directory in the `Startup` schedule.
 
 Script writers can then use this generated file by pointing their `.luarc.json` file to these definitions:
 ```json

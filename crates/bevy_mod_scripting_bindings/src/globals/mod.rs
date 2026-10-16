@@ -1,343 +1,144 @@
-//! Contains abstractions for exposing "globals" to scripts, in a language-agnostic way.
+//! What scripts reach without going through a type: the namespaces they import (see [`catalogue`]), and the functions and values registered into those namespaces from Rust.
+//!
+//! The only globals are the builtins in [`crate::builtins`] (i.e. `import_namespace`), `world` is the `bms.world` namespace value.
 
-use super::{
-    function::arg_meta::{ScriptReturn, TypedScriptReturn},
+use crate::{
+    DynamicScriptFunction, docgen::typed_through::ThroughTypeInfo, error::InteropError,
     script_value::ScriptValue,
 };
-use crate::{
-    docgen::{TypedThrough, into_through_type_info, typed_through::ThroughTypeInfo},
-    error::InteropError,
-};
+use bevy_ecs::resource::Resource;
 use bevy_mod_scripting_world::WorldGuard;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
-use std::{any::TypeId, borrow::Cow, sync::Arc};
-use {bevy_ecs::resource::Resource, bevy_platform::collections::HashMap, bevy_reflect::Typed};
+use std::{borrow::Cow, collections::BTreeMap, sync::Arc};
 
 pub mod catalogue;
 pub mod core;
 pub use catalogue::*;
 pub use core::*;
 
-/// A send + sync wrapper around the [`ScriptGlobalsRegistry`].
+/// Marker type for registering functions into a script namespace instead of on a type:
+///
+/// ```rust,ignore
+/// #[script_bindings(namespace = "my_game")]
+/// impl NamespaceMembers {
+///     /// Scripts call this as `import_namespace("my_game").spawn_enemy(5)`
+///     fn spawn_enemy(ctxt: FunctionCallContext, hp: usize) -> Result<(), InteropError> { .. }
+/// }
+/// ```
+pub struct NamespaceMembers;
+
+/// Makes the value of a namespace member, see [`NamespaceValue`].
+pub type NamespaceValueMaker =
+    dyn Fn(WorldGuard) -> Result<ScriptValue, InteropError> + 'static + Send + Sync;
+
+/// A value in a namespace, made each time the namespace is imported.
+#[derive(Clone)]
+pub struct NamespaceValue {
+    /// Makes the value
+    pub maker: Arc<NamespaceValueMaker>,
+    /// The type of the value, for documentation
+    pub type_information: ThroughTypeInfo,
+    /// The documentation of the value
+    pub documentation: Option<Cow<'static, str>>,
+}
+
+/// The functions and values registered into one namespace
+#[derive(Default, Clone)]
+pub struct NamespaceContents {
+    /// Functions by name
+    pub functions: BTreeMap<Cow<'static, str>, DynamicScriptFunction>,
+    /// Values by name
+    pub values: BTreeMap<Cow<'static, str>, NamespaceValue>,
+}
+
+/// The functions and values registered into script namespaces from Rust, by namespace.
+///
+/// Script namespaces (`script.*`) are filled by scripts instead, see [`crate::ScriptComponentRegistry`].
+#[derive(Default)]
+pub struct ScriptNamespaceMembers {
+    namespaces: BTreeMap<Cow<'static, str>, NamespaceContents>,
+}
+
+impl ScriptNamespaceMembers {
+    /// Registers a function as a member of the namespace, replacing any member function with the same name
+    pub fn register_function(
+        &mut self,
+        namespace: impl Into<Cow<'static, str>>,
+        name: impl Into<Cow<'static, str>>,
+        function: DynamicScriptFunction,
+    ) {
+        self.namespaces
+            .entry(namespace.into())
+            .or_default()
+            .functions
+            .insert(name.into(), function);
+    }
+
+    /// Registers a value as a member of the namespace, replacing any member value with the same name
+    pub fn register_value(
+        &mut self,
+        namespace: impl Into<Cow<'static, str>>,
+        name: impl Into<Cow<'static, str>>,
+        value: NamespaceValue,
+    ) {
+        self.namespaces
+            .entry(namespace.into())
+            .or_default()
+            .values
+            .insert(name.into(), value);
+    }
+
+    /// The members of the given namespace, if it has any
+    pub fn get(&self, namespace: &str) -> Option<&NamespaceContents> {
+        self.namespaces.get(namespace)
+    }
+
+    /// Every namespace with members, in order
+    pub fn iter(&self) -> impl Iterator<Item = (&Cow<'static, str>, &NamespaceContents)> {
+        self.namespaces.iter()
+    }
+}
+
+/// A send + sync wrapper around the [`ScriptNamespaceMembers`].
 #[derive(Default, Resource, Clone)]
-pub struct AppScriptGlobalsRegistry(Arc<RwLock<ScriptGlobalsRegistry>>);
+pub struct AppScriptNamespaceMembers(Arc<RwLock<ScriptNamespaceMembers>>);
 
 #[profiling::all_functions]
-impl AppScriptGlobalsRegistry {
-    /// Returns a reference to the inner [`ScriptGlobalsRegistry`].
-    pub fn read(&self) -> RwLockReadGuard<'_, ScriptGlobalsRegistry> {
+impl AppScriptNamespaceMembers {
+    /// Returns a reference to the inner [`ScriptNamespaceMembers`].
+    pub fn read(&self) -> RwLockReadGuard<'_, ScriptNamespaceMembers> {
         self.0.read()
     }
 
-    /// Returns a mutable reference to the inner [`ScriptGlobalsRegistry`].
-    pub fn write(&self) -> RwLockWriteGuard<'_, ScriptGlobalsRegistry> {
+    /// Returns a mutable reference to the inner [`ScriptNamespaceMembers`].
+    pub fn write(&self) -> RwLockWriteGuard<'_, ScriptNamespaceMembers> {
         self.0.write()
-    }
-}
-
-/// A function that creates a global variable.
-pub type ScriptGlobalMakerFn<T> =
-    dyn Fn(WorldGuard) -> Result<T, InteropError> + 'static + Send + Sync;
-
-/// A global variable that can be exposed to scripts.
-pub struct ScriptGlobal {
-    /// The function that creates the global variable.
-    /// if not present, this is assumed to be a static global, one that
-    /// cannot be instantiated, but carries type information.
-    pub maker: Option<Arc<ScriptGlobalMakerFn<ScriptValue>>>,
-    /// The documentation for the global variable.
-    pub documentation: Option<Cow<'static, str>>,
-    /// The type ID of the global variable.
-    pub type_id: TypeId,
-    /// Rich type information the global variable.
-    pub type_information: ThroughTypeInfo,
-}
-
-/// A dummy global variable that documents globals set via alternative ways.
-pub struct ScriptGlobalDummy {
-    /// The type ID of the global variable.
-    pub type_id: TypeId,
-    /// Rich type information the global variable.
-    pub type_information: Option<ThroughTypeInfo>,
-
-    /// The documentation for the global dummy variable.
-    pub documentation: Option<Cow<'static, str>>,
-}
-
-/// A registry of global variables that can be exposed to scripts.
-#[derive(Default)]
-pub struct ScriptGlobalsRegistry {
-    globals: HashMap<Cow<'static, str>, ScriptGlobal>,
-    dummies: HashMap<Cow<'static, str>, ScriptGlobalDummy>,
-}
-
-#[profiling::all_functions]
-impl ScriptGlobalsRegistry {
-    /// Gets the global with the given name
-    pub fn get(&self, name: &str) -> Option<&ScriptGlobal> {
-        self.globals.get(name)
-    }
-
-    /// Gets the global with the given name mutably
-    pub fn get_mut(&mut self, name: &str) -> Option<&mut ScriptGlobal> {
-        self.globals.get_mut(name)
-    }
-
-    /// Counts the number of globals in the registry
-    pub fn len(&self) -> usize {
-        self.globals.len()
-    }
-
-    /// Checks if the registry is empty
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Iterates over the globals in the registry
-    pub fn iter(&self) -> impl Iterator<Item = (&Cow<'static, str>, &ScriptGlobal)> {
-        self.globals.iter()
-    }
-
-    /// Iterates over the globals in the registry mutably
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = (&Cow<'static, str>, &mut ScriptGlobal)> {
-        self.globals.iter_mut()
-    }
-
-    /// Iterates over the dummies in the registry
-    pub fn iter_dummies(&self) -> impl Iterator<Item = (&Cow<'static, str>, &ScriptGlobalDummy)> {
-        self.dummies.iter()
-    }
-
-    fn type_erase_maker<
-        T: ScriptReturn,
-        F: Fn(WorldGuard) -> Result<T, InteropError> + Send + Sync + 'static,
-    >(
-        maker: F,
-    ) -> Arc<ScriptGlobalMakerFn<ScriptValue>> {
-        Arc::new(move |world| T::into_script(maker(world.clone())?, world))
-    }
-
-    /// Inserts a global into the registry, returns the previous value if it existed
-    #[must_use]
-    pub fn register<
-        T: ScriptReturn + 'static + Typed,
-        F: Fn(WorldGuard) -> Result<T, InteropError> + 'static + Send + Sync,
-    >(
-        &mut self,
-        name: impl Into<Cow<'static, str>>,
-        maker: F,
-    ) -> Option<ScriptGlobal> {
-        self.globals.insert(
-            name.into(),
-            ScriptGlobal {
-                maker: Some(Self::type_erase_maker(maker)),
-                documentation: None,
-                type_id: TypeId::of::<T>(),
-                type_information: into_through_type_info(T::type_info()),
-            },
-        )
-    }
-
-    /// Registers a dummy global into the registry.
-    /// Dummies are not actually exposed to languages but exist purely for the purpose of documentation.
-    /// This can be useful for globals which you cannot expose normally.
-    ///
-    /// Dummy globals are stored as non-static instances, i.e. they're expected to be values not type references.
-    #[must_use]
-    pub fn register_dummy<T: 'static>(
-        &mut self,
-        name: impl Into<Cow<'static, str>>,
-        documentation: impl Into<Cow<'static, str>>,
-    ) -> Option<ScriptGlobalDummy> {
-        self.dummies.insert(
-            name.into(),
-            ScriptGlobalDummy {
-                documentation: Some(documentation.into()),
-                type_id: TypeId::of::<T>(),
-                type_information: None,
-            },
-        )
-    }
-
-    /// Typed equivalent to [`Self::register_dummy`].
-    #[must_use]
-    pub fn register_dummy_typed<T: 'static + TypedThrough>(
-        &mut self,
-        name: impl Into<Cow<'static, str>>,
-        documentation: impl Into<Cow<'static, str>>,
-    ) -> Option<ScriptGlobalDummy> {
-        self.dummies.insert(
-            name.into(),
-            ScriptGlobalDummy {
-                documentation: Some(documentation.into()),
-                type_id: TypeId::of::<T>(),
-                type_information: Some(T::through_type_info()),
-            },
-        )
-    }
-
-    /// Inserts a global into the registry, returns the previous value if it existed.
-    ///
-    /// This is a version of [`Self::register`] which stores type information regarding the global.
-    #[must_use]
-    pub fn register_documented<
-        T: TypedScriptReturn + 'static,
-        F: Fn(WorldGuard) -> Result<T, InteropError> + 'static + Send + Sync,
-    >(
-        &mut self,
-        name: impl Into<Cow<'static, str>>,
-        maker: F,
-        documentation: impl Into<Cow<'static, str>>,
-    ) -> Option<ScriptGlobal> {
-        self.globals.insert(
-            name.into(),
-            ScriptGlobal {
-                maker: Some(Self::type_erase_maker(maker)),
-                documentation: Some(documentation.into()),
-                type_id: TypeId::of::<T>(),
-                type_information: T::through_type_info(),
-            },
-        )
-    }
-
-    /// Registers a static global into the registry.
-    #[must_use]
-    pub fn register_static<T: 'static + Typed>(
-        &mut self,
-        name: Cow<'static, str>,
-    ) -> Option<ScriptGlobal> {
-        self.globals.insert(
-            name,
-            ScriptGlobal {
-                maker: None,
-                documentation: None,
-                type_id: TypeId::of::<T>(),
-                type_information: into_through_type_info(T::type_info()),
-            },
-        )
-    }
-
-    /// Registers a static global into the registry.
-    ///
-    /// This is a version of [`Self::register_static`] which stores rich type information regarding the global.
-    #[must_use]
-    pub fn register_static_documented<T: TypedScriptReturn + 'static>(
-        &mut self,
-        name: Cow<'static, str>,
-        documentation: Cow<'static, str>,
-    ) -> Option<ScriptGlobal> {
-        self.globals.insert(
-            name,
-            ScriptGlobal {
-                maker: None,
-                documentation: Some(documentation),
-                type_id: TypeId::of::<T>(),
-                type_information: T::through_type_info(),
-            },
-        )
-    }
-
-    /// Registers a static global into the registry.
-    ///
-    /// This is a version of [`Self::register_static_documented`] which does not require compile time type knowledge.
-    #[must_use]
-    pub fn register_static_documented_dynamic(
-        &mut self,
-        type_id: TypeId,
-        type_information: ThroughTypeInfo,
-        name: Cow<'static, str>,
-        documentation: Cow<'static, str>,
-    ) -> Option<ScriptGlobal> {
-        self.globals.insert(
-            name,
-            ScriptGlobal {
-                maker: None,
-                documentation: Some(documentation),
-                type_id,
-                type_information,
-            },
-        )
     }
 }
 
 #[cfg(test)]
 mod test {
-    use std::{any::Any, cell::RefCell, rc::Rc};
-
-    use bevy_ecs::world::World;
-
     use super::*;
+    use crate::{docgen::TypedThrough, function::script_function::DynamicScriptFunction};
 
     #[test]
-    fn test_script_globals_registry() {
-        let mut registry = ScriptGlobalsRegistry::default();
-
-        let maker = |_: WorldGuard| Ok(ScriptValue::from(42));
-        let maker2 = |_: WorldGuard| Ok(ScriptValue::from(43));
-
-        assert_eq!(registry.len(), 0);
-        assert!(registry.is_empty());
-
-        assert!(registry.register(Cow::Borrowed("foo"), maker).is_none());
-        assert_eq!(registry.len(), 1);
-
-        assert_eq!(
-            (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new_exclusive(
-                &mut World::new(),
-                std::array::from_fn(|_| Rc::new(RefCell::new(())) as Rc<RefCell<dyn Any>>)
-            ))
-            .unwrap(),
-            ScriptValue::from(42)
+    fn members_are_grouped_by_namespace() {
+        let mut members = ScriptNamespaceMembers::default();
+        let function: DynamicScriptFunction = (|_, _| ScriptValue::Unit).into();
+        members.register_function("my_game", "spawn", function);
+        members.register_value(
+            "my_game",
+            "difficulty",
+            NamespaceValue {
+                maker: Arc::new(|_| Ok(ScriptValue::Integer(1))),
+                type_information: i64::through_type_info(),
+                documentation: None,
+            },
         );
 
-        assert!(registry.register(Cow::Borrowed("foo"), maker2).is_some());
-        assert_eq!(registry.len(), 1);
-
-        assert_eq!(
-            (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new_exclusive(
-                &mut World::new(),
-                std::array::from_fn(|_| Rc::new(RefCell::new(())) as Rc<RefCell<dyn Any>>)
-            ))
-            .unwrap(),
-            ScriptValue::from(43)
-        );
-    }
-
-    #[test]
-    fn test_documentation_is_stored() {
-        let mut registry = ScriptGlobalsRegistry::default();
-
-        let maker = |_: WorldGuard| Ok(ScriptValue::from(42));
-
-        assert!(
-            registry
-                .register_documented(Cow::Borrowed("foo"), maker, Cow::Borrowed("This is a test"))
-                .is_none()
-        );
-
-        let global = registry.get("foo").unwrap();
-        assert_eq!(global.documentation.as_deref(), Some("This is a test"));
-    }
-
-    #[test]
-    fn test_static_globals() {
-        let mut registry = ScriptGlobalsRegistry::default();
-
-        _ = registry.register_static::<i32>(Cow::Borrowed("foo"));
-
-        let global = registry.get("foo").unwrap();
-        assert!(global.maker.is_none());
-        assert_eq!(global.type_id, TypeId::of::<i32>());
-
-        // the same but documented
-        _ = registry.register_static_documented::<i32>(
-            Cow::Borrowed("bar"),
-            Cow::Borrowed("This is a test"),
-        );
-
-        let global = registry.get("bar").unwrap();
-        assert!(global.maker.is_none());
-        assert_eq!(global.type_id, TypeId::of::<i32>());
-        assert_eq!(global.documentation.as_deref(), Some("This is a test"));
+        let contents = members.get("my_game").expect("namespace exists");
+        assert!(contents.functions.contains_key("spawn"));
+        assert!(contents.values.contains_key("difficulty"));
+        assert!(members.get("other").is_none());
     }
 }

@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local TestComponent = import_namespace("test_utils").TestComponent
 local entity_a = world.spawn()
 

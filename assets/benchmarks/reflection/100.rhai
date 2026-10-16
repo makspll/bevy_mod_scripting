@@ -1,7 +1,10 @@
+let bms = import_namespace.call("bms");
+let world = bms.world;
+let test_utils = import_namespace.call("test_utils");
 let Component = world.register_new_component.call("script.test", "DeepComponent");
 let new_entity = world.spawn_.call();
 
-reseed.call();
+test_utils.reseed.call();
 
 let keys = [
     "_0",
@@ -30,14 +33,14 @@ fn pre_bench() {
 
     // Choose keys for every step.
     for i in 0 .. steps {
-        let key = keys[random_int.call(0, keys.len() - 1)];
+        let key = keys[test_utils.random_int.call(0, keys.len() - 1)];
         step_keys.push(key);
     };
 
     // Build the nested table.
     let instance = make_path(step_keys, 0);
     world.remove_component.call(new_entity, Component);
-    world.insert_component.call(new_entity, Component, construct.call(world.get_type_by_name.call("bevy_mod_scripting_bindings::script_component::DynamicComponent"), #{ "data": instance }));
+    world.insert_component.call(new_entity, Component, bms.construct.call(world.get_type_by_name.call("bevy_mod_scripting_bindings::script_component::DynamicComponent"), #{ "data": instance }));
     current_reference = world.get_component.call(new_entity, Component);
 };
 

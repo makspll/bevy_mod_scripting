@@ -1,3 +1,5 @@
+local world = import_namespace("bms").world
+
 function on_test()
     local startup_schedule = world.get_schedule_by_name("Startup")
 

@@ -12,6 +12,7 @@ function on_test()
     assert(transform.Entity == nil)
 
     local bms = import_namespace("bms")
+    local world = bms.world
     assert(bms.ScriptAttachment ~= nil)
 
     -- imported types are the same ones as looked up by name

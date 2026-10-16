@@ -1,3 +1,4 @@
+local world = import_namespace("bms").world
 local CallbackLabel = import_namespace("bms").CallbackLabel
 local Recipients = import_namespace("bms").Recipients
 local ScriptCallbackMessage = import_namespace("bms").ScriptCallbackMessage

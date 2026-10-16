@@ -1,4 +1,4 @@
-//! Gamepads: the [`Gamepad`] component, and the `world` function which finds them.
+//! Gamepads: the [`Gamepad`] component, and the `world` function which finds them (`world` is `import_namespace("bms").world`).
 
 // `script_bindings` expects these in scope
 use bevy_ecs::{entity::Entity, reflect::AppTypeRegistry, world::World};

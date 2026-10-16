@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let entity_a = world.spawn_.call();
 let entity_b = world.spawn_.call();
 let entity_c = world.spawn_.call();

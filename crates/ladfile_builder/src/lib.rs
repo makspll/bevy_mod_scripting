@@ -171,64 +171,13 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
-    /// Add a global instance to the LAD file.
-    ///
-    /// Requires the type to be registered via [`Self::add_type`] or [`Self::add_type_info`] first to provide rich type information.
-    ///
-    /// If `is_static` is true, the instance will be treated as a static instance
-    /// and hence not support method call syntax or method calls (i.e. only functions without a self parameter can be called on them).
-    pub fn add_instance<T: 'static + TypedThrough>(
+    /// Adds a value of the given type to a script namespace, see [`Self::add_namespace_value`].
+    pub fn add_namespace_value_of<T: 'static + TypedThrough>(
         &mut self,
-        key: impl Into<Cow<'static, str>>,
-        is_static: bool,
+        namespace: impl Into<Cow<'static, str>>,
+        name: impl Into<Cow<'static, str>>,
     ) -> &mut Self {
-        let type_info = T::through_type_info();
-        let type_kind = self.lad_type_kind_from_through_type(&type_info);
-        self.file.globals.insert(
-            key.into(),
-            LadInstance {
-                type_kind,
-                is_static,
-            },
-        );
-        self
-    }
-
-    /// An untyped version of [`Self::add_instance`].
-    ///
-    /// Adds a global instance to the LAD file.
-    pub fn add_instance_dynamic(
-        &mut self,
-        key: impl Into<Cow<'static, str>>,
-        is_static: bool,
-        through_type: ThroughTypeInfo,
-    ) -> &mut Self {
-        let type_kind = self.lad_type_kind_from_through_type(&through_type);
-        self.file.globals.insert(
-            key.into(),
-            LadInstance {
-                type_kind,
-                is_static,
-            },
-        );
-        self
-    }
-
-    /// Adds a global instance to the LAD file with a custom lad type kind.
-    pub fn add_instance_manually(
-        &mut self,
-        key: impl Into<Cow<'static, str>>,
-        is_static: bool,
-        type_kind: LadTypeKind,
-    ) -> &mut Self {
-        self.file.globals.insert(
-            key.into(),
-            LadInstance {
-                type_kind,
-                is_static,
-            },
-        );
-        self
+        self.add_namespace_value(namespace, name, &T::through_type_info())
     }
 
     /// Adds a type which does not implement reflect to the list of types.
@@ -448,15 +397,73 @@ impl<'t> LadFileBuilder<'t> {
     /// ```
     ///
     /// And then removes them from the original block, instead putting it in each argument / return docstring
+    ///
+    /// Functions which are members of a namespace are added with [`Self::add_namespace_function`], as their info doesn't say which namespace.
     pub fn add_function_info(&mut self, function_info: &FunctionInfo) -> &mut Self {
         let function_id = self.lad_function_id_from_info(function_info);
         let namespace = match function_info.namespace {
-            FunctionScope::Global => LadFunctionNamespace::Global,
+            FunctionScope::Builtin | FunctionScope::Member => LadFunctionNamespace::Global,
             FunctionScope::OnType(type_id) => {
                 LadFunctionNamespace::Type(self.lad_id_from_type_id(type_id))
             }
         };
         self.insert_function(function_id, namespace, function_info)
+    }
+
+    /// Adds a function which is a member of a script namespace, i.e. `import_namespace("bms").log_info`.
+    pub fn add_namespace_function(
+        &mut self,
+        namespace: impl Into<Cow<'static, str>>,
+        function_info: &FunctionInfo,
+    ) -> &mut Self {
+        let namespace = namespace.into();
+        let function_id =
+            LadFunctionId::new_string_id(format!("{namespace}::{}", function_info.name));
+        self.file
+            .namespaces
+            .entry(namespace.clone())
+            .or_default()
+            .functions
+            .insert(function_info.name.clone(), function_id.clone());
+        self.insert_function(
+            function_id,
+            LadFunctionNamespace::Namespace { namespace },
+            function_info,
+        )
+    }
+
+    /// Adds a value which is a member of a script namespace.
+    pub fn add_namespace_value(
+        &mut self,
+        namespace: impl Into<Cow<'static, str>>,
+        name: impl Into<Cow<'static, str>>,
+        type_info: &ThroughTypeInfo,
+    ) -> &mut Self {
+        self.add_through_type_info(type_info);
+        let type_kind = self.lad_type_kind_from_through_type(type_info);
+        self.add_namespace_instance(namespace, name, type_kind)
+    }
+
+    /// Adds a value which is a member of a script namespace, with a type the builder can't describe itself, replacing any value with that name.
+    pub fn add_namespace_instance(
+        &mut self,
+        namespace: impl Into<Cow<'static, str>>,
+        name: impl Into<Cow<'static, str>>,
+        type_kind: LadTypeKind,
+    ) -> &mut Self {
+        self.file
+            .namespaces
+            .entry(namespace.into())
+            .or_default()
+            .values
+            .insert(
+                name.into(),
+                LadInstance {
+                    type_kind,
+                    is_static: false,
+                },
+            );
+        self
     }
 
     /// Adds a function on a variant of an enum, i.e. a function on `EnumVariantRef` whose placeholders
@@ -530,7 +537,7 @@ impl<'t> LadFileBuilder<'t> {
             }),
             // functions on variants are called on the variant, i.e. `MyEnum.Variant:new{}`
             LadFunctionNamespace::Variant { .. } => !arguments.is_empty(),
-            LadFunctionNamespace::Global => false,
+            LadFunctionNamespace::Global | LadFunctionNamespace::Namespace { .. } => false,
         };
 
         let lad_function = LadFunction {
@@ -638,7 +645,38 @@ impl<'t> LadFileBuilder<'t> {
                     }
                 }
                 // variants are not types, backends find their functions by namespace
-                LadFunctionNamespace::Global | LadFunctionNamespace::Variant { .. } => {}
+                LadFunctionNamespace::Global
+                | LadFunctionNamespace::Variant { .. }
+                | LadFunctionNamespace::Namespace { .. } => {}
+            }
+        }
+
+        // the types scripts import from each namespace, by the name `import_namespace` gives them
+        let mut types_by_id: Vec<_> = file.documented_types().collect();
+        types_by_id.sort_by_key(|(id, _)| *id);
+        let mut namespace_types = Vec::new();
+        for (type_id, lad_type) in types_by_id {
+            // primitives are values, and types which aren't reflected aren't in the type registry, so neither can be imported
+            if lad_type.metadata.mapped_to_primitive_kind.is_some() || !lad_type.metadata.is_reflect
+            {
+                continue;
+            }
+            namespace_types.push((
+                Cow::<'static, str>::Owned(lad_type.namespace.clone()),
+                Cow::<'static, str>::Owned(lad_type.identifier.clone()),
+                type_id.clone(),
+            ));
+        }
+        for (namespace, name, type_id) in namespace_types {
+            let types = &mut file.namespaces.entry(namespace).or_default().types;
+            match types.get(&name) {
+                // as at runtime, the first type with a name wins
+                Some(existing) => warn!(
+                    "{type_id} is not reachable from its namespace, {existing} has the same name"
+                ),
+                None => {
+                    types.insert(name, type_id);
+                }
             }
         }
 
@@ -673,6 +711,12 @@ impl<'t> LadFileBuilder<'t> {
 
             file.functions.sort_keys();
             file.generic_types.sort_keys();
+            file.namespaces.sort_keys();
+            for namespace in file.namespaces.values_mut() {
+                namespace.types.sort_keys();
+                namespace.functions.sort_keys();
+                namespace.values.sort_keys();
+            }
         }
 
         file
@@ -949,12 +993,8 @@ impl<'t> LadFileBuilder<'t> {
 
     fn lad_function_id_from_info(&mut self, function_info: &FunctionInfo) -> LadFunctionId {
         let namespace_string = match function_info.namespace {
-            bevy_mod_scripting_bindings::function::namespace::FunctionScope::Global => {
-                "".to_string()
-            }
-            bevy_mod_scripting_bindings::function::namespace::FunctionScope::OnType(type_id) => {
-                self.lad_id_from_type_id(type_id).to_string()
-            }
+            FunctionScope::Builtin | FunctionScope::Member => "".to_string(),
+            FunctionScope::OnType(type_id) => self.lad_id_from_type_id(type_id).to_string(),
         };
 
         LadFunctionId::new_string_id(format!("{}::{}", namespace_string, function_info.name))
@@ -1032,14 +1072,7 @@ mod test {
     use bevy_mod_scripting_bindings::ReflectReference;
     use std::collections::HashMap;
 
-    use bevy_mod_scripting_bindings::{
-        Union, V,
-        docgen::info::GetFunctionInfo,
-        function::{
-            from::R,
-            namespace::{GlobalNamespace, IntoFunctionScope},
-        },
-    };
+    use bevy_mod_scripting_bindings::{Union, V, docgen::info::GetFunctionInfo, function::from::R};
     use bevy_reflect::Reflect;
 
     use super::*;
@@ -1324,21 +1357,21 @@ mod test {
             |_: R<PlainStructType>, _: usize| PlainStructType { int_field: 2 };
         let plain_struct_function_info = plain_struct_function.get_function_info(
             "plain_struct_function".into(),
-            PlainStructType::into_function_scope(),
+            FunctionScope::OnType(TypeId::of::<PlainStructType>()),
         );
 
         let function = |_: ReflectReference, _: usize| 2usize;
         let function_info = function
             .get_function_info(
                 "hello_world".into(),
-                GenericStructType::<usize>::into_function_scope(),
+                FunctionScope::OnType(TypeId::of::<GenericStructType<usize>>()),
             )
             .with_docs("hello docs");
 
         let function_with_complex_args =
             |_: ReflectReference, _: (usize, String), _: Option<Vec<R<EnumType>>>| 2usize;
         let function_with_complex_args_info = function_with_complex_args
-            .get_function_info("hello_world".into(), GenericStructType::<usize>::into_function_scope())
+            .get_function_info("hello_world".into(), FunctionScope::OnType(TypeId::of::<GenericStructType::<usize>>()))
             .with_arg_names(&["ref_", "tuple", "option_vec_ref_wrapper"])
             .with_docs(
                 "Arguments: ".to_owned()
@@ -1356,7 +1389,7 @@ mod test {
 
         let global_function = |_: usize| 2usize;
         let global_function_info = global_function
-            .get_function_info("hello_world".into(), GlobalNamespace::into_function_scope())
+            .get_function_info("hello_world".into(), FunctionScope::Builtin)
             .with_arg_names(&["arg1"]);
 
         impl TypedThrough for OpaqueGenericType<usize> {
@@ -1371,7 +1404,7 @@ mod test {
         };
         let generic_function_info = generic_function.get_function_info(
             "swap_generic".into(),
-            HoldsOpaqueType::into_function_scope(),
+            FunctionScope::OnType(TypeId::of::<HoldsOpaqueType>()),
         );
 
         let mut lad_file = LadFileBuilder::new(&type_registry)
@@ -1394,9 +1427,15 @@ mod test {
             .add_type::<TupleStructType>()
             .add_type::<PlainStructType>()
             .add_type_info(EnumType::type_info())
-            .add_instance::<V<GenericStructType<usize>>>("my_static_instance", true)
-            .add_instance::<Vec<V<UnitType>>>("my_non_static_instance", false)
-            .add_instance::<HashMap<String, Union<String, String>>>("map", false)
+            .add_namespace_value_of::<V<GenericStructType<usize>>>(
+                "ladfile_builder",
+                "my_static_instance",
+            )
+            .add_namespace_value_of::<Vec<V<UnitType>>>("ladfile_builder", "my_non_static_instance")
+            .add_namespace_value_of::<HashMap<String, Union<String, String>>>(
+                "ladfile_builder",
+                "map",
+            )
             .build();
 
         // normalize the version so we don't have to update it every time
@@ -1470,7 +1509,7 @@ mod test {
 
         let load = |_path: String| -> BoundHandle { unreachable!() };
         let info = load
-            .get_function_info(Cow::Borrowed("load"), FunctionScope::Global)
+            .get_function_info(Cow::Borrowed("load"), FunctionScope::Builtin)
             .bind_placeholders(TestAsset::type_info(), None);
 
         let lad_file = LadFileBuilder::new_empty(&type_registry)

@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 let first = world.register_new_component.call("script.test", "ScriptComponentAllowExisting");
 let second = world.register_new_component.call("script.test", "ScriptComponentAllowExisting", true);
 

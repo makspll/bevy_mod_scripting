@@ -1,3 +1,4 @@
+let world = import_namespace.call("bms").world;
 info.call("Rhai: the game_of_life.rhai script just got loaded");
 
 
@@ -22,7 +23,7 @@ fn on_script_loaded() {
     let cells_len = cells.len.call();
     let x = 0;
     while x < 1000 {
-        let index = to_int(floor(rand.call()*cells_len)) ;
+        let index = to_int(floor(import_namespace.call("game_of_life").rand.call()*cells_len)) ;
         cells[index] = 255;
         x += 1;
     }

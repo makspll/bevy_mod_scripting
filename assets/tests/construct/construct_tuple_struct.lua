@@ -1,5 +1,7 @@
+local bms = import_namespace("bms")
+local world = bms.world
 local type = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct")
-local constructed = construct(type, {
+local constructed = bms.construct(type, {
     ["1"] = 123
 })
 

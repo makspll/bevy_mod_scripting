@@ -1,3 +1,5 @@
+local world = import_namespace("bms").world
+local test_utils = import_namespace("test_utils")
 local Vec3 = import_namespace("math").Vec3
 local vec = Vec3.new(1, 2, 3)
 
@@ -33,7 +35,7 @@ do
     local expected = expected_vec3_debug
     actual = strip_alloc_ids(actual)
     expected = strip_alloc_ids(expected)
-    assert_str_eq(actual, expected)
+    test_utils.assert_str_eq(actual, expected)
 end
 
 
@@ -64,11 +66,11 @@ do
     local expected = expected_test_resource_debug
     actual = strip_alloc_ids(actual)
     expected = strip_alloc_ids(expected)
-    assert_str_eq(actual, expected,
+    test_utils.assert_str_eq(actual, expected,
         "TestResource debug incorrect, expected " .. expected .. " but got " .. actual)
 end
 
 
-assert_str_eq(test_resource:display(), "TestResource { bytes: [0, 1, 2, 3, 4, 5] }",
+test_utils.assert_str_eq(test_resource:display(), "TestResource { bytes: [0, 1, 2, 3, 4, 5] }",
     "TestResource display incorrect, expected TestResource { bytes: [0, 1, 2, 3, 4, 5] } but got " ..
     test_resource:display())

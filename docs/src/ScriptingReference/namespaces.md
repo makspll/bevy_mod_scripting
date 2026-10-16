@@ -18,11 +18,13 @@ A category namespace holds every type of the bevy crates it covers, i.e. `math` 
 `import_namespace(namespace)` returns a table of the namespace's types (and, for script namespaces, events and exported functions) by short name. Each type can be used to call its static functions, to access its enum variants, and wherever a type is expected:
 
 ```lua
+local bms = import_namespace("bms")
+local world = bms.world
 local Vec3 = import_namespace("math").Vec3
 local transform = import_namespace("transform")
 
 local t = transform.Transform.from_translation(Vec3.new(0, 1, 0))
-world.add_default_component(entity, transform.Transform)
+world.add_default_component(bms.current_entity(), transform.Transform)
 ```
 
 Import once at the top of a script, and keep the types you use in locals. In Lua, don't name the table of the `math` namespace `math`: that would hide Lua's own `math` library.
@@ -50,12 +52,14 @@ registry.register_type_data_with::<MyType, ScriptNamespace, _>("my_namespace");
 Scripts register components and events into namespaces they pass explicitly. These start with `script.`, followed by dot-separated segments of letters, digits and underscores:
 
 ```lua
+local bms = import_namespace("bms")
+local world = bms.world
 local Enemy = world.register_new_component("script.game.ai", "Enemy")
 local Hit = world.register_new_event("script.game.ai", "Hit")
 
 -- anywhere, including other scripts
 local ai = import_namespace("script.game.ai")
-world.add_default_component(entity, ai.Enemy)
+world.add_default_component(bms.current_entity(), ai.Enemy)
 world.trigger_event(ai.Hit, { damage = 3 })
 ```
 
@@ -67,9 +71,11 @@ world.trigger_event(ai.Hit, { damage = 3 })
 Values of script components are `DynamicComponent`s, holding any value in `data`. Tables read from `data` are copies: assign a new table to change them.
 
 ```lua
-local DynamicComponent = import_namespace("bms").DynamicComponent
-world.insert_component(entity, Enemy, DynamicComponent.new({ data = { hp = 5 } }))
-local enemy = world.get_component(entity, Enemy)
+local bms = import_namespace("bms")
+local world = bms.world
+local DynamicComponent = bms.DynamicComponent
+world.insert_component(bms.current_entity(), Enemy, DynamicComponent.new({ data = { hp = 5 } }))
+local enemy = world.get_component(bms.current_entity(), Enemy)
 enemy.data = { hp = enemy.data.hp - 1 } -- `enemy.data.hp = 4` would not write through
 ```
 
@@ -79,6 +85,7 @@ enemy.data = { hp = enemy.data.hp - 1 } -- `enemy.data.hp = 4` would not write t
 
 ```lua
 -- script A
+local world = import_namespace("bms").world
 register_callback("spawn_enemy_impl", function(health)
     return world.spawn()
 end)
@@ -89,7 +96,7 @@ local enemy = import_namespace("script.game").spawn_enemy(5)
 ```
 
 * `callback` is a function registered with `register_callback`, or a top level function of that name. Only functions can be exported.
-* Calls run in the exporting script's context, like `run_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)), and return the callback's result.
+* Calls run in the exporting script's context, like `bms.run_script_callback` (see [Calling Other Scripts](./calling-other-scripts.md)), and return the callback's result.
 * A script cannot call its own exports, or those of scripts sharing its context, from one of its callbacks: its context is busy. Call the function directly instead.
 * Exports are looked up on every call, so replaced exports are picked up and removed ones fail with an error.
 * A path can only be exported by one script. Exporting it again from the same script replaces it. Exports can't share a path with a component.
