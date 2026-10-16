@@ -12,18 +12,18 @@ categories.workspace = true
 readme.workspace = true
 
 [features]
-bevy_animation = ["bevy_animation_bms_bindings"]
+bevy_animation = ["bevy_mod_scripting_bevy_animation_bindings"]
 bevy_asset = ["bevy_mod_scripting_bevy_asset_bindings"]
 bevy_camera = ["bevy_mod_scripting_bevy_camera_bindings"]
 bevy_color = ["bevy_mod_scripting_bevy_color_bindings"]
 bevy_ecs = ["bevy_mod_scripting_bevy_ecs_bindings"]
-bevy_gizmos = ["bevy_gizmos_bms_bindings"]
+bevy_gizmos = ["bevy_mod_scripting_bevy_gizmos_bindings"]
 bevy_input = ["bevy_mod_scripting_bevy_input_bindings"]
 bevy_window = ["bevy_mod_scripting_bevy_window_bindings"]
+bevy_audio = ["bevy_mod_scripting_bevy_audio_bindings"]
+bevy_state = ["bevy_mod_scripting_bevy_state_bindings"]
 bevy_math = ["bevy_mod_scripting_bevy_math_bindings"]
-bevy_picking = ["bevy_picking_bms_bindings"]
 bevy_render = ["bevy_mod_scripting_bevy_render_bindings"]
-bevy_scene = ["bevy_scene_bms_bindings"]
 bevy_sprite = ["bevy_mod_scripting_bevy_sprite_bindings"]
 bevy_text = ["bevy_mod_scripting_bevy_text_bindings"]
 bevy_time = ["bevy_mod_scripting_bevy_time_bindings"]
@@ -55,18 +55,18 @@ bevy_log = { workspace = true }
 bevy_platform = { workspace = true, features = ["std"] }
 bevy_reflect = { workspace = true, features = [] }
 
-bevy_animation_bms_bindings = { path = "../bindings/bevy_animation_bms_bindings", version = "0.23.0", optional = true }
+bevy_mod_scripting_bevy_animation_bindings = { path = "../bindings/bevy_mod_scripting_bevy_animation_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_asset_bindings = { path = "../bindings/bevy_mod_scripting_bevy_asset_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_camera_bindings = { path = "../bindings/bevy_mod_scripting_bevy_camera_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_color_bindings = { path = "../bindings/bevy_mod_scripting_bevy_color_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_ecs_bindings = { path = "../bindings/bevy_mod_scripting_bevy_ecs_bindings", version = "0.23.0", optional = true }
-bevy_gizmos_bms_bindings = { path = "../bindings/bevy_gizmos_bms_bindings", version = "0.23.0", optional = true }
+bevy_mod_scripting_bevy_gizmos_bindings = { path = "../bindings/bevy_mod_scripting_bevy_gizmos_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_input_bindings = { path = "../bindings/bevy_mod_scripting_bevy_input_bindings", version = "0.23.0", optional = true }
+bevy_mod_scripting_bevy_audio_bindings = { path = "../bindings/bevy_mod_scripting_bevy_audio_bindings", version = "0.23.0", optional = true }
+bevy_mod_scripting_bevy_state_bindings = { path = "../bindings/bevy_mod_scripting_bevy_state_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_window_bindings = { path = "../bindings/bevy_mod_scripting_bevy_window_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_math_bindings = { path = "../bindings/bevy_mod_scripting_bevy_math_bindings", version = "0.23.0", optional = true }
-bevy_picking_bms_bindings = { path = "../bindings/bevy_picking_bms_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_render_bindings = { path = "../bindings/bevy_mod_scripting_bevy_render_bindings", version = "0.23.0", optional = true }
-bevy_scene_bms_bindings = { path = "../bindings/bevy_scene_bms_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_sprite_bindings = { path = "../bindings/bevy_mod_scripting_bevy_sprite_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_text_bindings = { path = "../bindings/bevy_mod_scripting_bevy_text_bindings", version = "0.23.0", optional = true }
 bevy_mod_scripting_bevy_time_bindings = { path = "../bindings/bevy_mod_scripting_bevy_time_bindings", version = "0.23.0", optional = true }

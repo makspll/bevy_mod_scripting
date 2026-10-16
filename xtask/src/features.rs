@@ -37,9 +37,9 @@ pub enum Feature {
     BevyCameraBindings,
     BevyGizmosBindings,
     BevyWindowBindings,
-    BevyPickingBindings,
+    BevyAudioBindings,
     BevyRenderBindings,
-    BevySceneBindings,
+    BevyStateBindings,
     BevySpriteBindings,
     BevyTextBindings,
 
@@ -127,9 +127,9 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevyCameraBindings
             | Feature::BevyGizmosBindings
             | Feature::BevyWindowBindings
-            | Feature::BevyPickingBindings
+            | Feature::BevyAudioBindings
             | Feature::BevyRenderBindings
-            | Feature::BevySceneBindings
+            | Feature::BevyStateBindings
             | Feature::BevySpriteBindings
             | Feature::BevyTextBindings => FeatureGroup::BMSFeatureNotInPowerset,
             Feature::CoreFunctions
