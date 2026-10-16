@@ -4,7 +4,8 @@
 //! by searching for appropriate functions in the registry.
 
 /// Main operator enum
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum ScriptOperatorNames {
     /// a + b
     Addition,

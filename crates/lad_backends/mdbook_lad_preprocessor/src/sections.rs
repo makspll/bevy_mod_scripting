@@ -931,9 +931,8 @@ impl IntoMarkdown for SectionItem<'_> {
                 let headers = vec!["Name", "Type", "Documentation"];
                 builder.table(|builder| {
                     builder.headers(headers.clone());
-                    for (idx, arg) in function.arguments.iter().enumerate() {
+                    for arg in &function.arguments {
                         build_lad_function_argument_row(
-                            idx,
                             arg,
                             ladfile,
                             types_directory.clone(),
@@ -946,7 +945,6 @@ impl IntoMarkdown for SectionItem<'_> {
                 builder.table(|builder| {
                     builder.headers(headers.clone());
                     build_lad_function_argument_row(
-                        0,
                         &function.return_type,
                         ladfile,
                         types_directory.clone(),
@@ -959,28 +957,16 @@ impl IntoMarkdown for SectionItem<'_> {
 }
 
 fn build_lad_function_argument_row(
-    idx: usize,
     arg: &LadArgument,
     ladfile: &LadFile,
     types_directory: PathBuf,
     builder: &mut TableBuilder,
 ) {
-    // we exclude function call context as it's not something scripts pass down
-    if matches!(
-        arg.kind,
-        LadTypeKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
-    ) {
-        return;
-    }
-
     let types_directory = types_directory.to_owned();
     let escaped = print_type(ladfile, &arg.kind, None, Some((types_directory, false)));
 
-    let arg_name = arg
-        .name
-        .as_ref()
-        .cloned()
-        .unwrap_or_else(|| Cow::Owned(format!("arg{idx}")));
+    // arguments are always named, returns only if their docs name them
+    let arg_name = arg.name.as_deref().unwrap_or("return").to_owned();
 
     builder.row(markdown_vec![
         Markdown::new_paragraph(arg_name).bold(),

@@ -13,7 +13,10 @@ use bevy_mod_scripting_bindings::{
         info::FunctionInfo,
         typed_through::{BoundPlaceholder, ThroughTypeInfo, primitive_kind_of, primitive_type_id},
     },
-    function::{bound::asset_handle_type_info, namespace::FunctionScope},
+    function::{
+        bound::asset_handle_type_info, namespace::FunctionScope,
+        script_function::FunctionCallContext,
+    },
     into_through_type_info_with_registry,
 };
 pub use bevy_mod_scripting_bindings_domain::*; // re-export the thing we use
@@ -496,28 +499,45 @@ impl<'t> LadFileBuilder<'t> {
             }
         }
 
+        // the call context is filled in by BMS, scripts never pass it
+        let arguments: Vec<_> = function_info
+            .arg_info
+            .iter()
+            .filter(|arg| arg.type_id != TypeId::of::<FunctionCallContext>())
+            .enumerate()
+            .map(|(idx, arg)| {
+                let kind = match &arg.type_info {
+                    Some(through_type) => self.lad_type_kind_from_through_type(through_type),
+                    None => LadTypeKind::Unknown(self.lad_id_from_type_id(arg.type_id)),
+                };
+                LadArgument {
+                    kind,
+                    documentation: arg_docstrings.iter().find_map(|(name, doc)| {
+                        (Some(name.as_str()) == arg.name.as_deref())
+                            .then_some(Cow::Owned(doc.clone()))
+                    }),
+                    name: Some(
+                        arg.name
+                            .clone()
+                            .unwrap_or_else(|| Cow::Owned(format!("arg{}", idx + 1))),
+                    ),
+                }
+            })
+            .collect();
+        let receiver = match &namespace {
+            LadFunctionNamespace::Type(type_id) => arguments.first().is_some_and(|arg| {
+                matches!(&arg.kind, LadTypeKind::Ref(id) | LadTypeKind::Mut(id) | LadTypeKind::Val(id) if id == type_id)
+            }),
+            // functions on variants are called on the variant, i.e. `MyEnum.Variant:new{}`
+            LadFunctionNamespace::Variant { .. } => !arguments.is_empty(),
+            LadFunctionNamespace::Global => false,
+        };
+
         let lad_function = LadFunction {
             identifier: identifier.to_owned().into(),
             overload_index,
-            arguments: function_info
-                .arg_info
-                .clone()
-                .into_iter()
-                .map(|arg| {
-                    let kind = match &arg.type_info {
-                        Some(through_type) => self.lad_type_kind_from_through_type(through_type),
-                        None => LadTypeKind::Unknown(self.lad_id_from_type_id(arg.type_id)),
-                    };
-                    LadArgument {
-                        kind,
-                        documentation: arg_docstrings.iter().find_map(|(name, doc)| {
-                            (Some(name.as_str()) == arg.name.as_deref())
-                                .then_some(Cow::Owned(doc.clone()))
-                        }),
-                        name: arg.name,
-                    }
-                })
-                .collect(),
+            arguments,
+            receiver,
             return_type: LadArgument {
                 name: return_docstring.as_ref().cloned().map(|(n, _)| n.into()),
                 documentation: return_docstring.map(|(_, v)| v.into()),
@@ -535,7 +555,7 @@ impl<'t> LadFileBuilder<'t> {
             documentation: (!main_docstring.is_empty()).then_some(main_docstring.into()),
             namespace,
             metadata: LadFunctionMetadata {
-                is_operator: ScriptOperatorNames::parse(identifier).is_some(),
+                operator: ScriptOperatorNames::parse(identifier),
                 misc: Default::default(),
             },
         };

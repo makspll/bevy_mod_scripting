@@ -320,13 +320,13 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
                         }
                     };
 
-                    if function.metadata.is_operator {
-                        match lua_function_to_operator(&lua_function) {
+                    if let Some(operator) = function.metadata.operator {
+                        match lua_function_to_operator(operator, &lua_function) {
                             Some(Ok(op)) => lua_operators.push(op),
                             Some(Err(func)) => lua_functions.push(func),
                             None => {
                                 log::warn!(
-                                    "Error converting operator function: {} on namespace {:?}. Skipping",
+                                    "Operator function: {} on namespace {:?} doesn't have the signature of its operator, documenting it as a function only",
                                     function.identifier,
                                     function.namespace
                                 );
@@ -381,11 +381,13 @@ pub fn convert_polymorphic_type_to_lua_classes<'a>(
     Ok(types)
 }
 
-/// converts a lua function to an operator if it matches the expected strucutre
+/// Converts the function implementing an operator to that operator, if it has the expected signature.
+///
+/// Operators Lua declarations can only express as metamethod fields, i.e. `__eq`, are returned as functions.
 pub fn lua_function_to_operator(
+    operator: ScriptOperatorNames,
     func: &FunctionSignature,
 ) -> Option<Result<LuaOperator, FunctionSignature>> {
-    let operator = ScriptOperatorNames::parse(&func.name)?;
 
     // first arg is implied to be `self`
     let (metamethod, second_arg, ret) = match operator {
@@ -488,19 +490,8 @@ pub fn lad_function_to_lua_function(
     let params = function
         .arguments
         .iter()
-        .filter(|a| {
-            !matches!(
-                a.kind,
-                LadTypeKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
-            )
-        })
-        .enumerate()
-        .map(|(idx, a)| {
-            let ident = a
-                .name
-                .as_ref()
-                .map(|v| v.to_string())
-                .unwrap_or(format!("p{}", idx + 1));
+        .map(|a| {
+            let ident = a.name.as_deref().unwrap_or_default().to_owned();
             Ok(FunctionParam::new(
                 match ForbiddenKeywords::is_forbidden_err(&ident) {
                     Ok(_) => ident,
@@ -513,17 +504,6 @@ pub fn lad_function_to_lua_function(
         })
         .collect::<Result<Vec<_>, anyhow::Error>>()?;
 
-    let has_self = match &function.namespace {
-        ladfile::LadFunctionNamespace::Type(lad_type_id) => {
-            function.arguments.first().is_some_and(|a| match &a.kind {
-                LadTypeKind::Ref(i) | LadTypeKind::Mut(i) | LadTypeKind::Val(i) => lad_type_id == i,
-                _ => false,
-            })
-        }
-        // functions on variants are called on the variant, i.e. `MyEnum.Variant:new{}`
-        ladfile::LadFunctionNamespace::Variant { .. } => !function.arguments.is_empty(),
-        ladfile::LadFunctionNamespace::Global => false,
-    };
 
     let returns = lad_instance_to_lua_type(ladfile, &function.return_type.kind)?;
 
@@ -538,7 +518,7 @@ pub fn lad_function_to_lua_function(
         overloads: vec![],
         generics: vec![],
         documentation: function.documentation.as_ref().map(|d| d.to_string()),
-        has_self,
+        has_self: function.receiver,
     })
 }
 
@@ -1060,9 +1040,10 @@ mod test {
                 },
                 documentation: Some("Constructs a value.".into()),
                 metadata: LadFunctionMetadata {
-                    is_operator: false,
+                    operator: None,
                     misc: Default::default(),
                 },
+                receiver: false,
             },
         );
     }
@@ -1249,9 +1230,10 @@ mod test {
                 },
                 documentation: None,
                 metadata: LadFunctionMetadata {
-                    is_operator: false,
+                    operator: None,
                     misc: Default::default(),
                 },
+                receiver: false,
             },
         );
         let rendered = render(&file);
@@ -1388,7 +1370,7 @@ mod test {
             "{rendered}"
         );
         assert!(
-            rendered.contains("---@param p2 OpaqueGenericType<integer>"),
+            rendered.contains("---@param arg2 OpaqueGenericType<integer>"),
             "{rendered}"
         );
         assert!(

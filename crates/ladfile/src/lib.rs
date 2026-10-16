@@ -9,7 +9,7 @@ use std::{
     collections::{HashMap, HashSet},
 };
 
-pub use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind; // re-export the thing we use
+pub use bevy_mod_scripting_bindings_domain::{ReflectionPrimitiveKind, ScriptOperatorNames}; // re-export the things we use
 use indexmap::IndexMap;
 mod plugin;
 pub use plugin::*;
@@ -226,12 +226,16 @@ pub struct LadFunction {
     pub documentation: Option<Cow<'static, str>>,
     /// Function metadata
     pub metadata: LadFunctionMetadata,
+    /// Whether the function is called on a value, which is its first argument, i.e. `v:length()` in Lua.
+    #[serde(skip_serializing_if = "is_false", default)]
+    pub receiver: bool,
 }
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// Additional data relevant to functions
 pub struct LadFunctionMetadata {
-    /// True if the function represents a supported binary or unary operation
-    pub is_operator: bool,
+    /// The operator the function implements, if any, i.e. `add` for `+`
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub operator: Option<ScriptOperatorNames>,
     /// Extra metadata to be populated by external plugins
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
     pub misc: HashMap<String, String>,
@@ -292,7 +296,7 @@ pub struct LadArgument {
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub documentation: Option<Cow<'static, str>>,
 
-    /// The name of the argument
+    /// The name of the argument, always set for function arguments (`arg1`, `arg2`... if the function doesn't name them)
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub name: Option<Cow<'static, str>>,
 }
