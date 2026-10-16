@@ -34,6 +34,13 @@ pub struct LadFile {
     /// The types defined in the LAD file.
     pub types: IndexMap<LadTypeId, LadTypeDefinition>,
 
+    /// The generic types which types in the LAD file are instantiations of, i.e. `Handle` for `Handle<Image>`.
+    ///
+    /// Only the generic types a LAD file builder was told about are listed, other generic types
+    /// are only known by their instantiations.
+    #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
+    pub generic_types: IndexMap<LadTypeId, LadGenericType>,
+
     /// The functions defined in the LAD file.
     pub functions: IndexMap<LadFunctionId, LadFunction>,
 
@@ -49,9 +56,20 @@ impl LadFile {
             version: LAD_VERSION.into(),
             globals: IndexMap::new(),
             types: IndexMap::new(),
+            generic_types: IndexMap::new(),
             functions: IndexMap::new(),
             description: None,
         }
+    }
+
+    /// The generic type and the arguments of a type which is an instantiation of one, i.e. `Handle` and `[Image]` for `Handle<Image>`.
+    pub fn get_generic_instance(
+        &self,
+        type_id: &LadTypeId,
+    ) -> Option<(&LadGenericType, &[LadGeneric])> {
+        let lad_type = self.types.get(type_id)?;
+        let generic_type = self.generic_types.get(lad_type.generic_type.as_ref()?)?;
+        Some((generic_type, &lad_type.generics))
     }
 
     /// Retrieves the best type identifier suitable for a type id.
@@ -91,6 +109,11 @@ impl LadFile {
         self.types
             .get(type_id)
             .and_then(|t| t.documentation.as_deref())
+            .or_else(|| {
+                self.generic_types
+                    .get(type_id)
+                    .and_then(|t| t.documentation.as_deref())
+            })
     }
 
     /// Retrieves the metadata section for the given lad type id.
@@ -578,6 +601,10 @@ pub struct LadTypeDefinition {
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub generics: Vec<LadGeneric>,
 
+    /// The generic type this type is an instantiation of, see [`LadFile::generic_types`].
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub generic_type: Option<LadTypeId>,
+
     /// The documentation describing the type.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub documentation: Option<String>,
@@ -770,7 +797,42 @@ impl LadTypeDefinition {
     }
 }
 
-/// A generic type definition used in a LAD file.
+/// A generic type used in a LAD file, i.e. `Handle<A>`.
+///
+/// Its instantiations are types of their own, which point back to it, see [`LadTypeDefinition::generic_type`].
+/// The layout of the type is not described, backends treat it as opaque.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LadGenericType {
+    /// The identifier of the type, without generics, i.e. `Handle`.
+    pub identifier: String,
+
+    /// The source crate of the type
+    #[serde(rename = "crate", skip_serializing_if = "Option::is_none", default)]
+    pub crate_: Option<String>,
+
+    /// The full path of the type, without generics, i.e. `bevy_asset::handle::Handle`.
+    pub path: String,
+
+    /// The script namespace the type lives in, see [`LadTypeDefinition::namespace`].
+    #[serde(skip_serializing_if = "String::is_empty", default)]
+    pub namespace: String,
+
+    /// The names of the generic parameters, i.e. `["A"]`.
+    pub params: Vec<String>,
+
+    /// The documentation describing the type.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub documentation: Option<String>,
+}
+
+impl LadGenericType {
+    /// The type with its parameters, i.e. `Handle<A>`
+    pub fn name_with_params(&self) -> String {
+        format!("{}<{}>", self.identifier, self.params.join(", "))
+    }
+}
+
+/// The generic argument of an instantiation of a generic type.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LadGeneric {
     /// The id of the type assigned to this generic.

@@ -86,9 +86,10 @@ pub enum LuaType {
         value: Box<LuaType>,
     },
     Function(FunctionSignatureShort),
+    /// An instantiation of a generic class, i.e. `Handle<Image>`
     Generic {
         name: String,
-        parent: Option<Box<LuaType>>,
+        args: Vec<LuaType>,
     },
     Literal(String), // for literal types, e.g., '"left"'
     Any,
@@ -375,7 +376,7 @@ pub struct LuaModule {
     pub functions: Vec<FunctionSignature>,
     pub documentation: Option<String>,
     pub is_meta: bool,
-    /// If set, the class only describes a shape, i.e. a table argument, and no global table is declared for it
+    /// If set, the class only describes a shape, i.e. a table argument, and no table is declared for it
     pub type_only: bool,
 }
 

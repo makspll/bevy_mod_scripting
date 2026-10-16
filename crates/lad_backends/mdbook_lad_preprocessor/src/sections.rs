@@ -1,8 +1,9 @@
-use std::{borrow::Cow, collections::HashSet, path::PathBuf};
+use std::{borrow::Cow, path::PathBuf};
 
 use ladfile::{
-    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadInstance, LadTypeDefinition,
-    LadTypeId, LadTypeLayout, LadVisitable, ReflectionPrimitiveKind,
+    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadFunctionNamespace,
+    LadGenericType, LadInstance, LadTypeDefinition, LadTypeId, LadTypeLayout, LadVisitable,
+    ReflectionPrimitiveKind,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
@@ -53,8 +54,12 @@ pub(crate) enum SectionData<'a> {
     Summary {
         title: Option<String>,
     },
-    /// A link directory to all the types within the ladfile
+    /// A link directory to the namespaces of the types within the ladfile
     TypeSummary,
+    /// The types of a namespace, as returned by `import_namespace`. The empty namespace holds the types without a crate, i.e. primitives
+    Namespace {
+        namespace: &'a str,
+    },
     /// A link directory to all global functions within the ladfile
     FunctionSummary,
     /// A link directory to all global instances within the ladfile
@@ -63,9 +68,16 @@ pub(crate) enum SectionData<'a> {
         lad_type_id: &'a LadTypeId,
         lad_type: &'a LadTypeDefinition,
     },
+    /// A generic type, which is documented once for all its instantiations
+    GenericTypeDetail {
+        generic_type_id: &'a LadTypeId,
+        generic_type: &'a LadGenericType,
+    },
     FunctionDetail {
         types_directory: PathBuf,
         function: &'a LadFunction,
+        /// The variant of an enum the function is on, if any
+        variant: Option<&'a str>,
     },
 }
 
@@ -78,13 +90,35 @@ pub(crate) struct Section<'a> {
     pub data: SectionData<'a>,
 }
 
-/// Makes a filename safe to put in links
+/// The title of the page of a namespace, the empty namespace is the one of the types without a crate
+fn namespace_title(namespace: &str) -> &str {
+    if namespace.is_empty() {
+        "root"
+    } else {
+        namespace
+    }
+}
+
+/// The title of a function's page, which includes the variant for functions on variants of enums,
+/// as these all have the same names, i.e. `Variant.new`.
+fn function_title(variant: Option<&str>, function: &LadFunction) -> String {
+    match variant {
+        Some(variant) => format!("{variant}.{}", function.identifier_with_overload()),
+        None => function.identifier_with_overload().to_string(),
+    }
+}
+
+/// Makes a filename safe to put in links, and to create on any platform.
+///
+/// Type names can contain anything, i.e. the paths of unregistered types, `::`, `<`, `,`... but windows,
+/// for example, does not allow `:` in filenames. Extensions are added by callers, so `.` is not kept either.
 pub fn linkify_filename(name: impl Into<String>) -> String {
     name.into()
         .to_lowercase()
-        .replace(" ", "_")
-        .replace("<", "")
-        .replace(">", "")
+        .replace(' ', "_")
+        .chars()
+        .filter(|c| c.is_alphanumeric() || matches!(c, '_' | '-'))
+        .collect()
 }
 
 impl<'a> Section<'a> {
@@ -149,26 +183,113 @@ impl<'a> Section<'a> {
                 title.as_deref().unwrap_or("Bindings Summary").to_owned()
             }
             SectionData::TypeSummary { .. } => "Types".to_owned(),
+            SectionData::Namespace { namespace } => namespace_title(namespace).to_owned(),
             SectionData::FunctionSummary { .. } => "Functions".to_owned(),
             SectionData::InstancesSummary { .. } => "Globals".to_owned(),
             SectionData::TypeDetail { lad_type_id, .. } => {
                 print_type(self.ladfile, *lad_type_id, None, None)
             }
-            SectionData::FunctionDetail { function, .. } => {
-                function.identifier_with_overload().to_string()
-            }
+            SectionData::GenericTypeDetail { generic_type, .. } => generic_type.name_with_params(),
+            SectionData::FunctionDetail {
+                function, variant, ..
+            } => function_title(*variant, function),
         }
+    }
+
+    /// The functions which are global, as opposed to the ones on types and on variants of enums
+    fn global_functions(&self) -> Vec<&'a LadFunction> {
+        self.ladfile
+            .functions
+            .values()
+            .filter(|function| matches!(function.namespace, LadFunctionNamespace::Global))
+            .collect()
+    }
+
+    /// The functions on the variants of the given enum, with the variant they are on
+    fn variant_functions(&self, enum_id: &LadTypeId) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+        self.ladfile
+            .functions
+            .values()
+            .filter_map(|function| match &function.namespace {
+                LadFunctionNamespace::Variant { type_id, variant } if type_id == enum_id => {
+                    Some((Some(variant.as_ref()), function))
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// The functions with a page below the type's page, the ones on the type and the ones on its variants
+    fn type_functions(
+        &self,
+        lad_type_id: &LadTypeId,
+        lad_type: &'a LadTypeDefinition,
+    ) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+        lad_type
+            .associated_functions
+            .iter()
+            .filter_map(|f| Some((None, self.ladfile.functions.get(f)?)))
+            .chain(self.variant_functions(lad_type_id))
+            .collect()
     }
 
     pub(crate) fn is_code_heading(&self) -> bool {
         matches!(
             self.data,
-            SectionData::TypeDetail { .. } | SectionData::FunctionDetail { .. }
+            SectionData::TypeDetail { .. }
+                | SectionData::GenericTypeDetail { .. }
+                | SectionData::FunctionDetail { .. }
         )
     }
 
+    /// The namespaces types are in, sorted, with the root namespace last
+    fn namespaces(&self) -> Vec<&'a str> {
+        let mut namespaces = self
+            .documented_types()
+            .map(|(_, lad_type)| lad_type.namespace.as_str())
+            .chain(
+                self.ladfile
+                    .generic_types
+                    .values()
+                    .map(|generic_type| generic_type.namespace.as_str()),
+            )
+            .collect::<Vec<_>>();
+        namespaces.sort_by_key(|namespace| (namespace.is_empty(), *namespace));
+        namespaces.dedup();
+        namespaces
+    }
+
+    /// The ids of the types in the namespace which have a page of their own, generic types last
+    fn types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
+        self.documented_types()
+            .filter(|(_, lad_type)| lad_type.namespace == namespace)
+            .map(|(id, _)| id)
+            .chain(
+                self.ladfile
+                    .generic_types
+                    .iter()
+                    .filter(|(_, generic_type)| generic_type.namespace == namespace)
+                    .map(|(id, _)| id),
+            )
+            .collect()
+    }
+
+    /// The types with a page of their own, instantiations of generic types are documented by the page of the generic type
+    fn documented_types(&self) -> impl Iterator<Item = (&'a LadTypeId, &'a LadTypeDefinition)> {
+        self.ladfile
+            .types
+            .iter()
+            .filter(|(_, lad_type)| lad_type.generic_type.is_none())
+    }
+
     pub(crate) fn file_name(&self) -> String {
-        linkify_filename(self.title()) + ".md"
+        match self.data {
+            // namespaces share a directory with the types, which can have the name of a namespace, i.e. `Time` and `time`
+            SectionData::Namespace { .. } => {
+                format!("namespace_{}.md", linkify_filename(self.title()))
+            }
+            _ => linkify_filename(self.title()) + ".md",
+        }
     }
 
     pub(crate) fn children(&self) -> Vec<Section<'a>> {
@@ -198,12 +319,24 @@ impl<'a> Section<'a> {
                 ]
             }
             SectionData::TypeSummary => self
-                .ladfile
-                .types
-                .iter()
-                .map(|(lad_type_id, lad_type)| {
+                .namespaces()
+                .into_iter()
+                .map(|namespace| {
                     Section::new(
                         child_parent_path.clone(),
+                        self.ladfile,
+                        SectionData::Namespace { namespace },
+                    )
+                })
+                .collect(),
+            // the pages of the types stay next to the page of the namespace, so they link to each other
+            // in the same way no matter the namespace
+            SectionData::Namespace { namespace } => self
+                .documented_types()
+                .filter(|(_, lad_type)| lad_type.namespace == namespace)
+                .map(|(lad_type_id, lad_type)| {
+                    Section::new(
+                        self.parent_path.clone(),
                         self.ladfile,
                         SectionData::TypeDetail {
                             lad_type,
@@ -211,54 +344,61 @@ impl<'a> Section<'a> {
                         },
                     )
                 })
+                .chain(
+                    self.ladfile
+                        .generic_types
+                        .iter()
+                        .filter(|(_, generic_type)| generic_type.namespace == namespace)
+                        .map(|(generic_type_id, generic_type)| {
+                            Section::new(
+                                self.parent_path.clone(),
+                                self.ladfile,
+                                SectionData::GenericTypeDetail {
+                                    generic_type_id,
+                                    generic_type,
+                                },
+                            )
+                        }),
+                )
                 .collect(),
 
-            SectionData::FunctionSummary => {
-                let associated_functions = self
-                    .ladfile
-                    .types
-                    .iter()
-                    .flat_map(|t| &t.1.associated_functions)
-                    .collect::<HashSet<_>>();
-
-                let non_associated_functions = self
-                    .ladfile
-                    .functions
-                    .iter()
-                    .filter_map(|f| (!associated_functions.contains(f.0)).then_some(f.1));
-
-                non_associated_functions
-                    .map(|function| {
-                        Section::new(
-                            child_parent_path.clone(),
-                            self.ladfile,
-                            SectionData::FunctionDetail {
-                                function,
-                                types_directory: PathBuf::from("../types"),
-                            },
-                        )
-                    })
-                    .collect()
-            }
+            SectionData::FunctionSummary => self
+                .global_functions()
+                .into_iter()
+                .map(|function| {
+                    Section::new(
+                        child_parent_path.clone(),
+                        self.ladfile,
+                        SectionData::FunctionDetail {
+                            function,
+                            types_directory: PathBuf::from("../types"),
+                            variant: None,
+                        },
+                    )
+                })
+                .collect(),
             SectionData::InstancesSummary { .. } => {
                 vec![]
             }
-            SectionData::TypeDetail { lad_type, .. } => lad_type
-                .associated_functions
-                .iter()
-                .filter_map(|f| {
-                    let function = self.ladfile.functions.get(f)?;
-                    Some(Section::new(
+            SectionData::TypeDetail {
+                lad_type_id,
+                lad_type,
+            } => self
+                .type_functions(lad_type_id, lad_type)
+                .into_iter()
+                .map(|(variant, function)| {
+                    Section::new(
                         child_parent_path.clone(),
                         self.ladfile,
                         SectionData::FunctionDetail {
                             function,
                             types_directory: PathBuf::from("../../types"),
+                            variant,
                         },
-                    ))
+                    )
                 })
                 .collect(),
-            SectionData::FunctionDetail { .. } => vec![],
+            SectionData::GenericTypeDetail { .. } | SectionData::FunctionDetail { .. } => vec![],
         }
     }
 
@@ -321,27 +461,70 @@ impl<'a> Section<'a> {
                 }]
             }
             SectionData::TypeSummary => {
-                let types = self.ladfile.types.keys().collect::<Vec<_>>();
-                vec![SectionItem::TypesSummary {
-                    types,
-                    types_directory: PathBuf::from("./types").to_string_lossy().to_string(),
-                    ladfile: self.ladfile,
+                // the namespace pages are in the directory of the type pages, which is next to this page
+                let namespaces = self
+                    .namespaces()
+                    .into_iter()
+                    .map(|namespace| {
+                        let page = Section::new(
+                            PathBuf::new(),
+                            self.ladfile,
+                            SectionData::Namespace { namespace },
+                        );
+                        (
+                            page.title(),
+                            page.file_name(),
+                            self.types_in_namespace(namespace).len(),
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                vec![SectionItem::Markdown {
+                    markdown: Box::new(move |builder| {
+                        builder.heading(2, "Namespaces");
+                        builder.raw("Types are grouped by the namespace scripts import them from, i.e. `import_namespace(\"math\")`.");
+                        builder.append("\n\n");
+                        builder.table(|builder| {
+                            builder.headers(vec!["Namespace", "Types"]);
+                            for (title, file_name, count) in namespaces.iter() {
+                                builder.row(markdown_vec![
+                                    Markdown::Link {
+                                        text: Box::new(
+                                            Markdown::new_paragraph(title.clone()).code()
+                                        ),
+                                        url: format!("./types/{file_name}"),
+                                        anchor: false
+                                    },
+                                    Markdown::new_paragraph(count.to_string()),
+                                ]);
+                            }
+                        });
+                    }),
                 }]
             }
+            SectionData::Namespace { namespace } => {
+                let intro = if namespace.is_empty() {
+                    "The types without a crate, such as primitives.".to_owned()
+                } else {
+                    format!(
+                        "The types in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
+                    )
+                };
+                vec![
+                    SectionItem::Markdown {
+                        markdown: Box::new(move |builder| {
+                            builder.raw(intro.clone());
+                            builder.append("\n\n");
+                        }),
+                    },
+                    SectionItem::TypesSummary {
+                        types: self.types_in_namespace(namespace),
+                        // the pages of the types are next to this one
+                        types_directory: ".".to_owned(),
+                        ladfile: self.ladfile,
+                    },
+                ]
+            }
             SectionData::FunctionSummary => {
-                let associated_functions = self
-                    .ladfile
-                    .types
-                    .iter()
-                    .flat_map(|t| &t.1.associated_functions)
-                    .collect::<HashSet<_>>();
-
-                let non_associated_functions = self
-                    .ladfile
-                    .functions
-                    .iter()
-                    .filter_map(|f| (!associated_functions.contains(f.0)).then_some(f.1))
-                    .collect();
                 vec![
                     SectionItem::Markdown {
                         markdown: Box::new(|builder| {
@@ -350,24 +533,29 @@ impl<'a> Section<'a> {
                         }),
                     },
                     SectionItem::FunctionsSummary {
-                        functions: non_associated_functions,
+                        functions: self
+                            .global_functions()
+                            .into_iter()
+                            .map(|function| (None, function))
+                            .collect(),
                         functions_directory: "functions".to_owned(),
                     },
                 ]
             }
-            SectionData::TypeDetail { lad_type, .. } => {
-                let functions = lad_type
-                    .associated_functions
-                    .iter()
-                    .filter_map(|i| self.ladfile.functions.get(i))
-                    .collect::<Vec<_>>();
+            SectionData::TypeDetail {
+                lad_type_id,
+                lad_type,
+            } => {
+                let functions = self.type_functions(lad_type_id, lad_type);
                 vec![
                     SectionItem::Layout {
                         layout: &lad_type.layout,
                         ladfile: self.ladfile,
                         types_directory: PathBuf::from("./"),
                     },
-                    SectionItem::Description { lad_type },
+                    SectionItem::Description {
+                        documentation: lad_type.documentation.as_deref(),
+                    },
                     SectionItem::Markdown {
                         markdown: Box::new(|builder| {
                             builder.heading(2, "Associated Functions");
@@ -379,9 +567,37 @@ impl<'a> Section<'a> {
                     },
                 ]
             }
+            SectionData::GenericTypeDetail {
+                generic_type_id,
+                generic_type,
+            } => {
+                let instantiations = self
+                    .ladfile
+                    .types
+                    .iter()
+                    .filter(|(_, lad_type)| lad_type.generic_type.as_ref() == Some(generic_type_id))
+                    .map(|(id, _)| id)
+                    .collect();
+                vec![
+                    SectionItem::Markdown {
+                        markdown: Box::new(|builder| {
+                            builder.text("Opaque Type. 🔒");
+                        }),
+                    },
+                    SectionItem::Description {
+                        documentation: generic_type.documentation.as_deref(),
+                    },
+                    SectionItem::Instantiations {
+                        instantiations,
+                        ladfile: self.ladfile,
+                        types_directory: PathBuf::from("./"),
+                    },
+                ]
+            }
             SectionData::FunctionDetail {
                 function,
                 ref types_directory,
+                ..
             } => {
                 vec![SectionItem::FunctionDetails {
                     function,
@@ -420,10 +636,17 @@ pub enum SectionItem<'a> {
         types_directory: PathBuf,
     },
     Description {
-        lad_type: &'a LadTypeDefinition,
+        documentation: Option<&'a str>,
+    },
+    /// The instantiations of a generic type
+    Instantiations {
+        instantiations: Vec<&'a LadTypeId>,
+        ladfile: &'a LadFile,
+        types_directory: PathBuf,
     },
     FunctionsSummary {
-        functions: Vec<&'a LadFunction>,
+        /// The functions, with the variant of an enum they are on if any
+        functions: Vec<(Option<&'a str>, &'a LadFunction)>,
         functions_directory: String,
     },
     FunctionDetails {
@@ -449,6 +672,7 @@ impl std::fmt::Debug for SectionItem<'_> {
             SectionItem::Markdown { .. } => "Markdown",
             SectionItem::Layout { .. } => "Layout",
             SectionItem::Description { .. } => "Description",
+            SectionItem::Instantiations { .. } => "Instantiations",
             SectionItem::FunctionsSummary { .. } => "FunctionsSummary",
             SectionItem::FunctionDetails { .. } => "FunctionDetails",
             SectionItem::TypesSummary { .. } => "TypesSummary",
@@ -516,16 +740,40 @@ impl IntoMarkdown for SectionItem<'_> {
                     builder.text(opaque);
                 }
             }
-            SectionItem::Description {
-                lad_type: description,
-            } => {
+            SectionItem::Description { documentation } => {
                 builder.heading(2, "Description").quote(Markdown::Raw(
-                    description
-                        .documentation
-                        .as_deref()
-                        .unwrap_or(NO_DOCS_STRING)
-                        .to_owned(),
+                    documentation.unwrap_or(NO_DOCS_STRING).to_owned(),
                 ));
+            }
+            SectionItem::Instantiations {
+                instantiations,
+                ladfile,
+                types_directory,
+            } => {
+                builder.heading(2, "Instantiations");
+                builder.text("The arguments this generic type is used with.");
+                builder.list(
+                    false,
+                    instantiations
+                        .iter()
+                        .filter_map(|id| ladfile.types.get(*id))
+                        .map(|instantiation| {
+                            let arguments = instantiation
+                                .generics
+                                .iter()
+                                .map(|argument| {
+                                    print_type(
+                                        ladfile,
+                                        &argument.type_id,
+                                        None,
+                                        Some((types_directory.clone(), true)),
+                                    )
+                                })
+                                .collect::<Vec<_>>();
+                            Markdown::Raw(arguments.join(", "))
+                        })
+                        .collect(),
+                );
             }
             SectionItem::FunctionsSummary {
                 functions,
@@ -536,8 +784,8 @@ impl IntoMarkdown for SectionItem<'_> {
                 // make a table of functions as a quick reference, make them link to function details sub-sections
                 builder.table(|builder| {
                     builder.headers(vec!["Function", "Summary"]);
-                    for function in functions.iter() {
-                        let first_col = function.identifier_with_overload().to_string();
+                    for (variant, function) in functions.iter() {
+                        let first_col = function_title(*variant, function);
 
                         // first line with content from documentation trimmed to 100 chars
                         let second_col = function
@@ -552,7 +800,7 @@ impl IntoMarkdown for SectionItem<'_> {
                                 url: format!(
                                     "./{}/{}.md",
                                     functions_path,
-                                    function.identifier_with_overload()
+                                    linkify_filename(function_title(*variant, function))
                                 ),
                                 anchor: false
                             },
@@ -746,4 +994,349 @@ fn build_lad_function_argument_row(
                 .to_owned()
         )
     ]);
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn setup_ladfile() -> LadFile {
+        ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap()
+    }
+
+    /// The pages of the namespaces, which are the children of the types page
+    fn namespace_pages(ladfile: &LadFile) -> Vec<Section<'_>> {
+        Section::new(PathBuf::new(), ladfile, SectionData::TypeSummary).children()
+    }
+
+    /// The pages of the types, which are below the pages of their namespaces
+    fn type_pages(ladfile: &LadFile) -> Vec<Section<'_>> {
+        namespace_pages(ladfile)
+            .into_iter()
+            .flat_map(|namespace| namespace.children())
+            .collect()
+    }
+
+    #[test]
+    fn generic_types_have_a_page_and_their_instantiations_do_not() {
+        let ladfile = setup_ladfile();
+        let titles = type_pages(&ladfile)
+            .iter()
+            .map(|child| child.title())
+            .collect::<Vec<_>>();
+
+        assert!(
+            titles.contains(&"OpaqueGenericType<T>".to_owned()),
+            "{titles:?}"
+        );
+        assert!(
+            !titles
+                .iter()
+                .any(|title| title.starts_with("OpaqueGenericType<U")),
+            "{titles:?}"
+        );
+        // generic types which were not declared are only known by their instantiations
+        assert!(
+            titles.contains(&"GenericStructType<Usize>".to_owned()),
+            "{titles:?}"
+        );
+
+        // and the pages of the namespaces list the same
+        let listed = namespace_pages(&ladfile)
+            .iter()
+            .map(|namespace| match namespace.section_items().as_slice() {
+                [_, SectionItem::TypesSummary { types, .. }] => types.len(),
+                items => panic!("expected a types summary, got {items:?}"),
+            })
+            .sum::<usize>();
+        assert_eq!(listed, titles.len());
+    }
+
+    /// What windows can't have in a filename, and what would be taken for an extension or a path
+    const INVALID_IN_FILENAMES: &[char] = &['<', '>', ':', '"', '/', '\\', '|', '?', '*', '.', ','];
+
+    #[test]
+    fn filenames_can_be_created_on_every_platform() {
+        let name = linkify_filename(
+            r#"MeshExtractableData<alloc::vec::Vec<alloc::string::String>, "a|b?*"> v1.5\x/y"#,
+        );
+        assert!(!name.contains(INVALID_IN_FILENAMES), "{name}");
+        assert_eq!(
+            linkify_filename("MeshExtractableData<alloc::vec::Vec<alloc::string::String>>"),
+            "meshextractabledataallocvecvecallocstringstring"
+        );
+        // names which were fine before are unchanged
+        assert_eq!(
+            linkify_filename("GenericStructType<Usize>"),
+            "genericstructtypeusize"
+        );
+        assert_eq!(linkify_filename("Bindings Summary"), "bindings_summary");
+        assert_eq!(linkify_filename("hello_world-1"), "hello_world-1");
+    }
+
+    #[test]
+    fn pages_of_types_with_unknown_arguments_can_be_created_on_every_platform() {
+        let mut ladfile = setup_ladfile();
+
+        // a generic type which was not declared, with an argument the file doesn't know the type of,
+        // as is the case for containers, which are not types of their own
+        let generic_struct =
+            LadTypeId::new_string_id("ladfile_builder::test::GenericStructType<usize>".into());
+        let mut definition = ladfile.types[&generic_struct].clone();
+        definition.generics[0].type_id =
+            LadTypeId::new_string_id("alloc::vec::Vec<alloc::string::String>".into());
+        ladfile.types.insert(
+            LadTypeId::new_string_id("with_unknown_argument".into()),
+            definition,
+        );
+
+        let pages = type_pages(&ladfile);
+        let unknown = pages
+            .iter()
+            .find(|page| page.title().contains("alloc::vec::Vec"))
+            .expect("the page is there");
+        assert_eq!(
+            unknown.file_name(),
+            "genericstructtypeallocvecvecallocstringstring.md"
+        );
+
+        for page in pages {
+            let file_name = page.file_name();
+            let stem = file_name.strip_suffix(".md").unwrap();
+            assert!(!stem.contains(INVALID_IN_FILENAMES), "{file_name}");
+        }
+    }
+
+    #[test]
+    fn types_are_sectioned_by_namespace() {
+        let ladfile = setup_ladfile();
+        let namespaces = namespace_pages(&ladfile);
+
+        // the root namespace, which holds the primitives, comes last
+        let titles = namespaces
+            .iter()
+            .map(|page| page.title())
+            .collect::<Vec<_>>();
+        assert_eq!(titles, ["ladfile_builder", "root"]);
+        let file_names = namespaces
+            .iter()
+            .map(|page| page.file_name())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            file_names,
+            ["namespace_ladfile_builder.md", "namespace_root.md"]
+        );
+
+        let types = |namespace: &Section| {
+            namespace
+                .children()
+                .iter()
+                .map(|page| page.title())
+                .collect::<Vec<_>>()
+        };
+        let in_crate = types(&namespaces[0]);
+        for expected in [
+            "PlainStructType",
+            "EnumType",
+            "GenericStructType<Usize>",
+            "OpaqueGenericType<T>",
+        ] {
+            assert!(in_crate.contains(&expected.to_owned()), "{in_crate:?}");
+        }
+        assert!(!in_crate.contains(&"Bool".to_owned()), "{in_crate:?}");
+
+        let root = types(&namespaces[1]);
+        assert!(root.contains(&"Bool".to_owned()), "{root:?}");
+        assert!(!root.contains(&"PlainStructType".to_owned()), "{root:?}");
+    }
+
+    #[test]
+    fn the_pages_of_types_are_next_to_the_pages_of_their_namespace() {
+        fn paths(chapter: &Chapter, out: &mut Vec<PathBuf>) {
+            out.extend(chapter.path.clone());
+            for item in &chapter.sub_items {
+                if let BookItem::Chapter(chapter) = item {
+                    paths(chapter, out);
+                }
+            }
+        }
+
+        let mut ladfile = setup_ladfile();
+        // types can have the name of a namespace, i.e. `Time` and `time`
+        let plain = LadTypeId::new_string_id("ladfile_builder::test::PlainStructType".into());
+        let mut definition = ladfile.types[&plain].clone();
+        definition.identifier = "ladfile_builder".into();
+        ladfile
+            .types
+            .insert(LadTypeId::new_string_id("same_name".into()), definition);
+
+        let chapter = Section::new(PathBuf::from("lad"), &ladfile, SectionData::TypeSummary)
+            .into_chapter(None, 0);
+        let mut paths_found = Vec::new();
+        paths(&chapter, &mut paths_found);
+
+        let path = |path: &str| PathBuf::from(path);
+        assert_eq!(chapter.path, Some(path("lad/types.md")));
+        for expected in [
+            // namespaces below the types page
+            "lad/types/namespace_ladfile_builder.md",
+            "lad/types/namespace_root.md",
+            // types below the namespaces, in the same directory so they link to each other in the same way
+            "lad/types/plainstructtype.md",
+            "lad/types/opaquegenerictypet.md",
+            "lad/types/ladfile_builder.md",
+            "lad/types/bool.md",
+            // and the functions below the types
+            "lad/types/plainstructtype/plain_struct_function.md",
+        ] {
+            assert!(
+                paths_found.contains(&path(expected)),
+                "{expected} is not in {paths_found:?}"
+            );
+        }
+
+        // no two pages are in the same place
+        let unique = paths_found.iter().collect::<std::collections::HashSet<_>>();
+        assert_eq!(unique.len(), paths_found.len(), "{paths_found:?}");
+    }
+
+    #[test]
+    fn the_pages_list_the_namespaces_and_their_types() {
+        let ladfile = setup_ladfile();
+
+        let mut builder = MarkdownBuilder::new();
+        Section::new(PathBuf::new(), &ladfile, SectionData::TypeSummary).to_markdown(&mut builder);
+        let types = builder.build();
+        assert!(
+            types.contains("(./types/namespace_ladfile_builder.md)"),
+            "{types}"
+        );
+        assert!(types.contains("(./types/namespace_root.md)"), "{types}");
+
+        let namespaces = namespace_pages(&ladfile);
+        let mut builder = MarkdownBuilder::new();
+        namespaces[0].to_markdown(&mut builder);
+        let namespace = builder.build();
+        assert!(
+            namespace.contains("`import_namespace(\"ladfile_builder\")`"),
+            "{namespace}"
+        );
+        // the pages of the types are in the same directory
+        assert!(
+            namespace.contains("(././plainstructtype.md)"),
+            "{namespace}"
+        );
+        assert!(
+            namespace.contains("(././opaquegenerictypet.md)"),
+            "{namespace}"
+        );
+    }
+
+    /// The example file, with a function with the same name on two variants of an enum, i.e. constructors
+    fn ladfile_with_variant_functions() -> LadFile {
+        let mut ladfile = setup_ladfile();
+        let enum_id = LadTypeId::new_string_id("ladfile_builder::test::EnumType".into());
+        let template = ladfile
+            .functions
+            .values()
+            .find(|function| matches!(function.namespace, LadFunctionNamespace::Global))
+            .unwrap()
+            .clone();
+
+        for variant in ["Unit", "Struct"] {
+            let mut function = template.clone();
+            function.identifier = "new".into();
+            function.namespace = LadFunctionNamespace::Variant {
+                type_id: enum_id.clone(),
+                variant: variant.into(),
+            };
+            ladfile.functions.insert(
+                ladfile::LadFunctionId::new_string_id(format!("EnumType.{variant}.new")),
+                function,
+            );
+        }
+        ladfile
+    }
+
+    #[test]
+    fn functions_on_variants_are_not_global_functions() {
+        let ladfile = ladfile_with_variant_functions();
+        let functions = Section::new(PathBuf::new(), &ladfile, SectionData::FunctionSummary);
+
+        let titles = functions
+            .children()
+            .iter()
+            .map(|page| page.title())
+            .collect::<Vec<_>>();
+        assert!(!titles.contains(&"new".to_owned()), "{titles:?}");
+        assert!(titles.contains(&"hello_world".to_owned()), "{titles:?}");
+
+        let items = functions.section_items();
+        let [_, SectionItem::FunctionsSummary { functions, .. }] = items.as_slice() else {
+            panic!("expected a functions summary, got {items:?}");
+        };
+        assert_eq!(functions.len(), titles.len());
+        assert!(functions.iter().all(|(variant, _)| variant.is_none()));
+    }
+
+    #[test]
+    fn functions_on_variants_are_documented_with_their_enum() {
+        let ladfile = ladfile_with_variant_functions();
+        let types = type_pages(&ladfile);
+        let enum_page = types
+            .iter()
+            .find(|page| page.title() == "EnumType")
+            .expect("the enum has a page");
+
+        // each gets a page of its own, with a name that is not shared with the same function on other variants
+        let pages = enum_page.children();
+        let titles = pages.iter().map(|page| page.title()).collect::<Vec<_>>();
+        assert_eq!(titles, ["Unit.new", "Struct.new"]);
+        let file_names = pages
+            .iter()
+            .map(|page| page.file_name())
+            .collect::<Vec<_>>();
+        assert_eq!(file_names, ["unitnew.md", "structnew.md"]);
+
+        // and are linked from the page of the enum
+        let mut builder = MarkdownBuilder::new();
+        enum_page.to_markdown(&mut builder);
+        let markdown = builder.build();
+        assert!(
+            markdown.contains(r"[Unit\.new](./enumtype/unitnew.md)"),
+            "{markdown}"
+        );
+        assert!(
+            markdown.contains(r"[Struct\.new](./enumtype/structnew.md)"),
+            "{markdown}"
+        );
+    }
+
+    #[test]
+    fn generic_type_pages_describe_the_type_and_what_it_is_used_with() {
+        let ladfile = setup_ladfile();
+        let (generic_type_id, generic_type) = ladfile.generic_types.iter().next().unwrap();
+        let page = Section::new(
+            PathBuf::new(),
+            &ladfile,
+            SectionData::GenericTypeDetail {
+                generic_type_id,
+                generic_type,
+            },
+        );
+        assert_eq!(page.file_name(), "opaquegenerictypet.md");
+
+        let mut builder = MarkdownBuilder::new();
+        page.to_markdown(&mut builder);
+        let markdown = builder.build();
+
+        assert!(markdown.contains("# `OpaqueGenericType<T>`"), "{markdown}");
+        assert!(markdown.contains("Opaque Type"), "{markdown}");
+        assert!(
+            markdown.contains("> I am the documentation of a generic type."),
+            "{markdown}"
+        );
+        // the arguments of the instantiations, linked to their pages
+        assert!(markdown.contains("- [Usize](./usize.md)"), "{markdown}");
+    }
 }

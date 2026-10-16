@@ -31,6 +31,16 @@ pub fn convert_ladfile_to_lua_declaration_file(
         IndexMap::with_capacity(ladfile.types.len());
 
     for (key, types) in rust_types.iter() {
+        // instantiations of generic types are described by the class of the generic type
+        if types.iter().all(|id| {
+            ladfile
+                .types
+                .get(*id)
+                .is_some_and(|ty| ty.generic_type.is_some())
+        }) {
+            continue;
+        }
+
         // right now one class == one lad type id, when we can properly denormorphize types, we will
         // be able to have multiple lad type ids per class
         let lua_classes_for_type =
@@ -73,6 +83,22 @@ pub fn convert_ladfile_to_lua_declaration_file(
         definition_file
             .modules
             .extend(enum_variant_modules(ladfile, type_id, lad_type));
+    }
+
+    // generic types are opaque, so a class with the parameters is all there is to them
+    for generic_type in ladfile.generic_types.values() {
+        definition_file.modules.push(LuaModule {
+            name: generic_type.identifier.clone(),
+            class: Some(LuaClass {
+                name: generic_type.identifier.clone(),
+                parents: vec!["ReflectReference".to_string()],
+                generics: generic_type.params.clone(),
+                documentation: generic_type.documentation.clone(),
+                ..Default::default()
+            }),
+            type_only: true,
+            ..Default::default()
+        });
     }
 
     let mut no_fields = false;
@@ -539,7 +565,15 @@ pub fn lad_instance_to_lua_type(
         ladfile::LadFieldOrVariableKind::Ref(lad_type_id)
         | ladfile::LadFieldOrVariableKind::Mut(lad_type_id)
         | ladfile::LadFieldOrVariableKind::Val(lad_type_id) => {
-            if ladfile.get_type_generics(lad_type_id).is_none() {
+            if let Some((generic_type, args)) = ladfile.get_generic_instance(lad_type_id) {
+                LuaType::Generic {
+                    name: generic_type.identifier.clone(),
+                    args: args
+                        .iter()
+                        .map(|arg| lad_generic_argument_to_lua_type(ladfile, &arg.type_id))
+                        .collect(),
+                }
+            } else if ladfile.get_type_generics(lad_type_id).is_none() {
                 LuaType::Alias(ladfile.get_type_identifier(lad_type_id, None).to_string())
             } else {
                 return Err(anyhow::anyhow!(
@@ -594,6 +628,21 @@ pub fn lad_instance_to_lua_type(
             }
         }
     })
+}
+
+/// The argument of a generic type can be any type, including primitives and types the file doesn't know about.
+fn lad_generic_argument_to_lua_type(ladfile: &LadFile, type_id: &LadTypeId) -> LuaType {
+    if let Some(primitive) = ladfile.primitive_kind(type_id) {
+        return lad_primitive_to_lua_type(primitive);
+    }
+    if !ladfile.types.contains_key(type_id) {
+        return LuaType::Any;
+    }
+    lad_instance_to_lua_type(
+        ladfile,
+        &ladfile::LadFieldOrVariableKind::Val(type_id.clone()),
+    )
+    .unwrap_or(LuaType::Any)
 }
 
 /// The class scripts see for enum variants, which variant classes extend.
@@ -1313,5 +1362,132 @@ mod test {
         let new = block(&rendered, "---@param payload table");
         assert!(new.contains("---@return EnumType"), "{new}");
         assert!(!rendered.contains("EnumType.Fields"), "{rendered}");
+    }
+
+    #[test]
+    fn generic_types_are_declared_once_with_their_parameters() {
+        let file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
+        let rendered = render(&file);
+
+        let declarations = rendered
+            .matches("---@class OpaqueGenericType<T> : ReflectReference")
+            .count();
+        assert_eq!(declarations, 1, "{rendered}");
+
+        // the instantiations are described by the generic class, and the type has no table of its own
+        assert!(
+            !rendered.contains("---@class OpaqueGenericType\n"),
+            "{rendered}"
+        );
+        assert!(!rendered.contains("OpaqueGenericType = {}"), "{rendered}");
+
+        // and as there is nothing to construct, it is not in the namespace either
+        let namespace = block(&rendered, "---@class (exact) namespace.ladfile_builder");
+        assert!(!namespace.contains("OpaqueGenericType"), "{namespace}");
+    }
+
+    #[test]
+    fn instantiations_are_referenced_with_their_arguments() {
+        let file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
+        let rendered = render(&file);
+
+        // as a field, an argument and a return type
+        assert!(
+            rendered.contains("---@field  generic? OpaqueGenericType<integer>"),
+            "{rendered}"
+        );
+        assert!(
+            rendered.contains("---@param p2 OpaqueGenericType<integer>"),
+            "{rendered}"
+        );
+        assert!(
+            rendered.contains("---@return OpaqueGenericType<integer>"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn generic_arguments_can_be_nested_or_unknown() {
+        let mut file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
+        let instantiation = type_id(&file, "OpaqueGenericType");
+
+        // an instantiation with an instantiation as its argument, and one with an argument the file doesn't know
+        let mut add_instantiation = |id: &str, argument: LadTypeId| {
+            let mut definition = file.types[&instantiation].clone();
+            definition.generics[0].type_id = argument;
+            let id = LadTypeId::new_string_id(id.to_owned().into());
+            file.types.insert(id.clone(), definition);
+            id
+        };
+        let nested = add_instantiation("nested", instantiation.clone());
+        let unknown = add_instantiation(
+            "unknown",
+            LadTypeId::new_string_id("not::in::the::file".into()),
+        );
+
+        assert_eq!(
+            lad_instance_to_lua_type(&file, &LadFieldOrVariableKind::Val(nested))
+                .map(|ty| format!("{ty:?}"))
+                .unwrap(),
+            format!(
+                "{:?}",
+                LuaType::Generic {
+                    name: "OpaqueGenericType".into(),
+                    args: vec![LuaType::Generic {
+                        name: "OpaqueGenericType".into(),
+                        args: vec![LuaType::Primitive(LuaPrimitiveType::Integer)],
+                    }],
+                }
+            )
+        );
+        assert_eq!(
+            lad_instance_to_lua_type(&file, &LadFieldOrVariableKind::Val(unknown))
+                .map(|ty| format!("{ty:?}"))
+                .unwrap(),
+            format!(
+                "{:?}",
+                LuaType::Generic {
+                    name: "OpaqueGenericType".into(),
+                    args: vec![LuaType::Any],
+                }
+            )
+        );
+    }
+
+    #[test]
+    fn generic_types_nothing_declared_stay_untyped() {
+        let file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
+        let generic_struct = type_id(&file, "GenericStructType");
+        assert!(file.types[&generic_struct].generic_type.is_none());
+
+        // there is no class for the type to refer to
+        assert!(
+            lad_instance_to_lua_type(&file, &LadFieldOrVariableKind::Val(generic_struct)).is_err()
+        );
+        let rendered = render(&file);
+        assert!(
+            !rendered.contains("---@class GenericStructType"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn types_are_not_declared_as_globals() {
+        let file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
+        let rendered = render(&file);
+
+        // scripts reach types through their namespace, a global would only exist in the declarations.
+        // Nested names like `Enum.Variant` are fields of the table of the enum
+        let global_tables = rendered
+            .lines()
+            .filter(|line| line.ends_with(" = {}") && !line.starts_with("local "))
+            .filter(|line| !line.contains('.'))
+            .filter(|line| line.chars().next().is_some_and(char::is_uppercase))
+            .collect::<Vec<_>>();
+        assert!(global_tables.is_empty(), "{global_tables:?}");
+        assert!(
+            rendered.contains("local PlainStructType = {}"),
+            "{rendered}"
+        );
     }
 }

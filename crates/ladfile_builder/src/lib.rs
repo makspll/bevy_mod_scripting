@@ -18,7 +18,7 @@ use bevy_mod_scripting_bindings::{
         namespace::Namespace,
         script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     },
-    into_through_type_info,
+    into_through_type_info_with_registry,
 };
 pub use bevy_mod_scripting_bindings_domain::*; // re-export the thing we use
 use bevy_platform::collections::{HashMap, HashSet};
@@ -131,6 +131,16 @@ pub struct LadFileBuilder<'t> {
     type_registry: &'t TypeRegistry,
     sorted: bool,
     exclude_types_involving_unregistered_types: bool,
+    generic_types: Vec<GenericTypeSpec>,
+}
+
+/// A generic type declared with [`LadFileBuilder::add_generic_type`]
+struct GenericTypeSpec {
+    /// The path of the type, without generics
+    path: String,
+    /// The names of the parameters
+    params: Vec<String>,
+    documentation: String,
 }
 
 impl<'t> LadFileBuilder<'t> {
@@ -142,6 +152,7 @@ impl<'t> LadFileBuilder<'t> {
             type_registry,
             sorted: false,
             exclude_types_involving_unregistered_types: false,
+            generic_types: Vec::new(),
         }
     }
 
@@ -213,6 +224,7 @@ impl<'t> LadFileBuilder<'t> {
                 namespace: String::new(),
                 path: type_ident,
                 generics: vec![],
+                generic_type: None,
                 documentation: Some(docs.into().to_string()),
                 associated_functions: vec![],
                 layout: LadTypeLayout::Opaque,
@@ -332,6 +344,7 @@ impl<'t> LadFileBuilder<'t> {
                 namespace: String::new(),
                 path,
                 generics: vec![],
+                generic_type: None,
                 documentation: Some(documentation.trim().to_owned()),
                 associated_functions: vec![],
                 layout: LadTypeLayout::Opaque,
@@ -386,7 +399,18 @@ impl<'t> LadFileBuilder<'t> {
             }
         }
 
+        let crate_ = type_info
+            .type_path_table()
+            .crate_name()
+            .map(|s| s.to_owned());
+        let namespace = registration
+            .and_then(|r| r.data::<ScriptNamespace>())
+            .map(|n| n.0.to_string())
+            .or_else(|| crate_.clone())
+            .unwrap_or_default();
+
         let type_id = self.lad_id_from_type_id(type_info.type_id());
+        let generic_type = self.add_generic_type_of(type_info, &crate_, &namespace);
         let lad_type = LadTypeDefinition {
             identifier: type_info
                 .type_path_table()
@@ -401,22 +425,11 @@ impl<'t> LadFileBuilder<'t> {
                     name: param.name().to_string(),
                 })
                 .collect(),
+            generic_type,
             documentation: type_info.docs().map(|s| s.to_string()),
             associated_functions: Vec::new(),
-            crate_: type_info
-                .type_path_table()
-                .crate_name()
-                .map(|s| s.to_owned()),
-            namespace: registration
-                .and_then(|r| r.data::<ScriptNamespace>())
-                .map(|n| n.0.to_string())
-                .or_else(|| {
-                    type_info
-                        .type_path_table()
-                        .crate_name()
-                        .map(|s| s.to_owned())
-                })
-                .unwrap_or_default(),
+            crate_,
+            namespace,
             path: type_info.type_path_table().path().to_owned(),
             layout: self.lad_layout_from_type_info(type_info),
             generated,
@@ -432,6 +445,75 @@ impl<'t> LadFileBuilder<'t> {
         };
         self.file.types.insert(type_id, lad_type);
         self
+    }
+
+    /// Declares a generic type, so its instantiations are documented as such instead of as unrelated types.
+    ///
+    /// The pattern is the path of the type, followed by the names of its parameters prefixed with `$`,
+    /// i.e. `bevy_asset::handle::Handle<$A>`. It is matched against the instantiations in the type registry, which
+    /// only expose the arguments of a generic type and not its definition, so the layout of the type is not described.
+    ///
+    /// # Errors
+    /// If the pattern is malformed.
+    pub fn add_generic_type(
+        &mut self,
+        pattern: &str,
+        documentation: &str,
+    ) -> Result<&mut Self, String> {
+        let (path, params) = pattern
+            .trim()
+            .strip_suffix('>')
+            .and_then(|pattern| pattern.split_once('<'))
+            .ok_or_else(|| format!("`{pattern}` is not of the form `path::Type<$A, $B>`"))?;
+        let params = params
+            .split(',')
+            .map(|param| {
+                param
+                    .trim()
+                    .strip_prefix('$')
+                    .filter(|name| !name.is_empty())
+                    .map(str::to_owned)
+                    .ok_or_else(|| format!("`{param}` in `{pattern}` is not a `$Name`"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        self.generic_types.push(GenericTypeSpec {
+            path: path.to_owned(),
+            params,
+            documentation: documentation.to_owned(),
+        });
+        Ok(self)
+    }
+
+    /// If the type is an instantiation of a declared generic type, adds the generic type to the file and returns its id.
+    fn add_generic_type_of(
+        &mut self,
+        type_info: &TypeInfo,
+        crate_: &Option<String>,
+        namespace: &str,
+    ) -> Option<LadTypeId> {
+        let path = type_info.type_path_table().path();
+        let generic_path = path.split('<').next().unwrap_or(path);
+        let spec = self.generic_types.iter().find(|spec| {
+            spec.path == generic_path && spec.params.len() == type_info.generics().len()
+        })?;
+
+        let id = LadTypeId::new_string_id(spec.path.clone().into());
+        self.file
+            .generic_types
+            .entry(id.clone())
+            .or_insert_with(|| LadGenericType {
+                identifier: type_info
+                    .type_path_table()
+                    .ident()
+                    .unwrap_or_default()
+                    .to_string(),
+                crate_: crate_.clone(),
+                path: spec.path.clone(),
+                namespace: namespace.to_owned(),
+                params: spec.params.clone(),
+                documentation: Some(spec.documentation.clone()),
+            });
+        Some(id)
     }
 
     /// Adds all nested types within the given `ThroughTypeInfo`.
@@ -665,6 +747,12 @@ impl<'t> LadFileBuilder<'t> {
             match &function.namespace {
                 LadFunctionNamespace::Type(type_id) => {
                     if let Some(t) = file.types.get_mut(type_id) {
+                        if t.generic_type.is_some() {
+                            warn!(
+                                "Function {} is on {}, an instantiation of a generic type which is documented as opaque, so the function is not documented by backends.",
+                                function_id, type_id
+                            );
+                        }
                         t.associated_functions.push(function_id.clone());
                     } else {
                         warn!(
@@ -708,6 +796,7 @@ impl<'t> LadFileBuilder<'t> {
             });
 
             file.functions.sort_keys();
+            file.generic_types.sort_keys();
         }
 
         file
@@ -946,7 +1035,8 @@ impl<'t> LadFileBuilder<'t> {
     /// untyped structures, i.e. are going to be fully reflectable
     fn lad_type_kind_from_type_id(&mut self, type_id: TypeId) -> LadFieldOrVariableKind {
         if let Some(type_info) = self.type_registry.get_type_info(type_id) {
-            let through_type_info = into_through_type_info(type_info);
+            let through_type_info =
+                into_through_type_info_with_registry(type_info, self.type_registry);
             self.lad_type_kind_from_through_type(&through_type_info)
         } else {
             LadFieldOrVariableKind::Unknown(self.lad_id_from_type_id(type_id))
@@ -1362,11 +1452,28 @@ mod test {
             TupleStruct(usize, #[doc = "asd"] String),
         }
 
+        /// I am a generic type, which the builder is told about so only my arguments are known
+        #[derive(Reflect)]
+        #[reflect(no_field_bounds, from_reflect = false)]
+        struct OpaqueGenericType<T> {
+            #[reflect(ignore)]
+            phantom: std::marker::PhantomData<T>,
+        }
+
+        /// I hold an instantiation of a generic type
+        #[derive(Reflect)]
+        #[reflect(from_reflect = false)]
+        struct HoldsOpaqueType {
+            generic: OpaqueGenericType<usize>,
+        }
+
         type_registry.register::<GenericStructType<usize>>();
         type_registry.register::<UnitType>();
         type_registry.register::<TupleStructType>();
         type_registry.register::<EnumType>();
         type_registry.register::<PlainStructType>();
+        type_registry.register::<OpaqueGenericType<usize>>();
+        type_registry.register::<HoldsOpaqueType>();
 
         let plain_struct_function =
             |_: R<PlainStructType>, _: usize| PlainStructType { int_field: 2 };
@@ -1407,9 +1514,30 @@ mod test {
             .get_function_info("hello_world".into(), GlobalNamespace::into_namespace())
             .with_arg_names(&["arg1"]);
 
+        impl TypedThrough for OpaqueGenericType<usize> {
+            fn through_type_info() -> ThroughTypeInfo {
+                ThroughTypeInfo::TypeInfo(Self::type_info())
+            }
+        }
+        let generic_function = |_: R<HoldsOpaqueType>, _: V<OpaqueGenericType<usize>>| {
+            V::new(OpaqueGenericType::<usize> {
+                phantom: std::marker::PhantomData,
+            })
+        };
+        let generic_function_info = generic_function
+            .get_function_info("swap_generic".into(), HoldsOpaqueType::into_namespace());
+
         let mut lad_file = LadFileBuilder::new(&type_registry)
             .set_description("## Hello gentlemen\n I am  markdown file.\n - hello\n - world")
             .set_sorted(true)
+            .add_generic_type(
+                "ladfile_builder::test::OpaqueGenericType<$T>",
+                "I am the documentation of a generic type.",
+            )
+            .unwrap()
+            .add_function_info(&generic_function_info)
+            .add_type::<OpaqueGenericType<usize>>()
+            .add_type::<HoldsOpaqueType>()
             .add_function_info(&plain_struct_function_info)
             .add_function_info(&function_info)
             .add_function_info(&global_function_info)
@@ -1514,5 +1642,390 @@ mod test {
             handle.to_string().contains("Handle<"),
             "expected the handle type, got {handle}"
         );
+    }
+
+    // Every variant of the kind enum is listed exactly once here. The name lookup is an exhaustive match, so adding a variant
+    // does not compile until it is listed, and `every_kind_is_documented_by_fields_or_arguments` fails until it is exercised.
+    macro_rules! variant_names {
+        ($ty:ident, $all:ident, $name:ident: $($variant:ident),+) => {
+            const $all: &[&str] = &[$(stringify!($variant)),+];
+
+            fn $name(value: &$ty) -> &'static str {
+                match value {
+                    $($ty::$variant { .. } => stringify!($variant)),+
+                }
+            }
+        };
+    }
+
+    variant_names!(
+        LadFieldOrVariableKind, ALL_LAD_KINDS, lad_kind_name:
+        Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple, Array,
+        Primitive, Union, Unknown, Fields
+    );
+
+    /// Records every kind found anywhere in the given kind
+    fn collect_kinds(
+        kind: &LadFieldOrVariableKind,
+        seen: &mut std::collections::BTreeSet<&'static str>,
+    ) {
+        seen.insert(lad_kind_name(kind));
+        match kind {
+            LadFieldOrVariableKind::Option(inner)
+            | LadFieldOrVariableKind::Vec(inner)
+            | LadFieldOrVariableKind::HashSet(inner)
+            | LadFieldOrVariableKind::InteropResult(inner)
+            | LadFieldOrVariableKind::Array(inner, _) => collect_kinds(inner, seen),
+            LadFieldOrVariableKind::HashMap(key, value) => {
+                collect_kinds(key, seen);
+                collect_kinds(value, seen);
+            }
+            LadFieldOrVariableKind::Tuple(inner) | LadFieldOrVariableKind::Union(inner) => {
+                inner.iter().for_each(|kind| collect_kinds(kind, seen))
+            }
+            LadFieldOrVariableKind::Ref(_)
+            | LadFieldOrVariableKind::Mut(_)
+            | LadFieldOrVariableKind::Val(_)
+            | LadFieldOrVariableKind::UntypedTuple
+            | LadFieldOrVariableKind::Primitive(_)
+            | LadFieldOrVariableKind::Unknown(_)
+            | LadFieldOrVariableKind::Fields { .. } => {}
+        }
+    }
+
+    #[derive(bevy_asset::Asset, Reflect)]
+    struct FieldAsset;
+
+    #[derive(Reflect)]
+    struct FieldValue;
+
+    #[derive(Reflect)]
+    struct FieldUnregistered;
+
+    /// One field for each way a field can be typed, the registry is expected to know all of them but `FieldUnregistered`.
+    #[derive(Reflect)]
+    struct AllFieldKinds {
+        primitive: f32,
+        value: FieldValue,
+        unknown: FieldUnregistered,
+        vec: Vec<i32>,
+        map: bevy_platform::collections::HashMap<String, f32>,
+        set: bevy_platform::collections::HashSet<i32>,
+        array: [u8; 4],
+        option: Option<String>,
+        result: Result<i32, String>,
+        tuple: (i32, String),
+        handle: bevy_asset::Handle<FieldAsset>,
+        nested: Vec<bevy_platform::collections::HashSet<Option<i32>>>,
+    }
+
+    fn field_test_registry() -> TypeRegistry {
+        use bevy_platform::collections::{HashMap, HashSet};
+
+        let mut registry = TypeRegistry::default();
+        registry.register::<FieldValue>();
+        registry.register::<Vec<i32>>();
+        registry.register::<HashMap<String, f32>>();
+        registry.register::<HashSet<i32>>();
+        registry.register::<[u8; 4]>();
+        registry.register::<Option<String>>();
+        registry.register::<Result<i32, String>>();
+        registry.register::<(i32, String)>();
+        registry.register::<Vec<HashSet<Option<i32>>>>();
+        registry.register::<FieldAsset>();
+        registry.register::<bevy_asset::Handle<FieldAsset>>();
+        registry.register_type_data::<FieldAsset, bevy_asset::ReflectAsset>();
+        registry
+    }
+
+    /// The kinds of all the fields of `AllFieldKinds`, by field name, as documented in the LAD file.
+    fn documented_field_kinds(
+        registry: &TypeRegistry,
+    ) -> (
+        HashMap<String, LadFieldOrVariableKind>,
+        impl FnMut(TypeId) -> LadTypeId + use<'_>,
+    ) {
+        let mut builder = LadFileBuilder::new_empty(registry);
+        builder.add_type::<AllFieldKinds>();
+        let lad_file = builder.build();
+
+        let layout = lad_file
+            .types
+            .values()
+            .find(|ty| ty.identifier == "AllFieldKinds")
+            .map(|ty| ty.layout.clone())
+            .expect("the type is added");
+        let LadTypeLayout::MonoVariant(LadVariant::Struct { fields, .. }) = layout else {
+            panic!("expected a struct, got {layout:?}");
+        };
+
+        (
+            fields
+                .into_iter()
+                .map(|field| (field.name, field.type_))
+                .collect(),
+            move |type_id| builder.lad_id_from_type_id(type_id),
+        )
+    }
+
+    #[test]
+    fn fields_are_documented_with_the_kind_of_their_reflected_type() {
+        use LadFieldOrVariableKind as Kind;
+        use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
+
+        let registry = field_test_registry();
+        let (kinds, mut id) = documented_field_kinds(&registry);
+
+        let expected = [
+            ("primitive", Kind::Primitive(Primitive::F32)),
+            ("value", Kind::Val(id(TypeId::of::<FieldValue>()))),
+            // types the registry does not know about can not be described any further
+            (
+                "unknown",
+                Kind::Unknown(id(TypeId::of::<FieldUnregistered>())),
+            ),
+            ("vec", Kind::Vec(Box::new(Kind::Primitive(Primitive::I32)))),
+            (
+                "map",
+                Kind::HashMap(
+                    Box::new(Kind::Primitive(Primitive::String)),
+                    Box::new(Kind::Primitive(Primitive::F32)),
+                ),
+            ),
+            (
+                "set",
+                Kind::HashSet(Box::new(Kind::Primitive(Primitive::I32))),
+            ),
+            (
+                "array",
+                Kind::Array(Box::new(Kind::Primitive(Primitive::U8)), 4),
+            ),
+            (
+                "option",
+                Kind::Option(Box::new(Kind::Primitive(Primitive::String))),
+            ),
+            (
+                "result",
+                Kind::InteropResult(Box::new(Kind::Primitive(Primitive::I32))),
+            ),
+            (
+                "tuple",
+                Kind::Tuple(vec![
+                    Kind::Primitive(Primitive::I32),
+                    Kind::Primitive(Primitive::String),
+                ]),
+            ),
+            // the same as the documentation of a bound handle
+            (
+                "handle",
+                Kind::Val(id(TypeId::of::<bevy_asset::Handle<FieldAsset>>())),
+            ),
+            (
+                "nested",
+                Kind::Vec(Box::new(Kind::HashSet(Box::new(Kind::Option(Box::new(
+                    Kind::Primitive(Primitive::I32),
+                )))))),
+            ),
+        ];
+
+        assert_eq!(
+            kinds.len(),
+            expected.len(),
+            "a field of `AllFieldKinds` has no expectation"
+        );
+        for (field, expected) in expected {
+            pretty_assertions::assert_eq!(
+                kinds.get(field),
+                Some(&expected),
+                "the field `{field}` is documented incorrectly"
+            );
+        }
+    }
+
+    /// The kinds which can only come from the signature of a function, as fields are always plain values
+    fn documented_argument_kinds(
+        registry: &TypeRegistry,
+    ) -> Vec<(&'static str, LadFieldOrVariableKind, LadFieldOrVariableKind)> {
+        use LadFieldOrVariableKind as Kind;
+        use bevy_mod_scripting_bindings::{
+            VariadicTuple,
+            docgen::TypedThrough,
+            function::{
+                bound::{BoundFields, BoundHandle},
+                from::{M, R, Union, V},
+            },
+        };
+        use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
+
+        let mut builder = LadFileBuilder::new_empty(registry);
+        let value = builder.lad_id_from_type_id(TypeId::of::<FieldValue>());
+        let handle = builder.lad_id_from_type_id(TypeId::of::<bevy_asset::Handle<FieldAsset>>());
+
+        let cases = vec![
+            (
+                "ref",
+                R::<FieldValue>::through_type_info(),
+                Kind::Ref(value.clone()),
+            ),
+            (
+                "mut",
+                M::<FieldValue>::through_type_info(),
+                Kind::Mut(value.clone()),
+            ),
+            (
+                "val",
+                V::<FieldValue>::through_type_info(),
+                Kind::Val(value.clone()),
+            ),
+            (
+                "union",
+                Union::<V<FieldValue>, f32>::through_type_info(),
+                Kind::Union(vec![
+                    Kind::Val(value.clone()),
+                    Kind::Primitive(Primitive::F32),
+                ]),
+            ),
+            (
+                "variadic tuple",
+                VariadicTuple::through_type_info(),
+                Kind::UntypedTuple,
+            ),
+            (
+                "fields",
+                BoundFields::through_type_info().bind_placeholders(FieldValue::type_info(), None),
+                Kind::Fields {
+                    type_id: value.clone(),
+                    variant: None,
+                },
+            ),
+            (
+                "fields of a variant",
+                BoundFields::through_type_info()
+                    .bind_placeholders(FieldValue::type_info(), Some("Variant")),
+                Kind::Fields {
+                    type_id: value.clone(),
+                    variant: Some(Cow::Borrowed("Variant")),
+                },
+            ),
+            (
+                "bound handle",
+                BoundHandle::through_type_info().bind_placeholders(FieldAsset::type_info(), None),
+                Kind::Val(handle),
+            ),
+            (
+                "type info",
+                ThroughTypeInfo::TypeInfo(FieldValue::type_info()),
+                Kind::Unknown(value),
+            ),
+        ];
+
+        cases
+            .into_iter()
+            .map(|(name, info, expected)| {
+                (
+                    name,
+                    builder.lad_type_kind_from_through_type(&info),
+                    expected,
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn arguments_are_documented_with_the_kind_of_their_signature() {
+        let registry = field_test_registry();
+        for (case, actual, expected) in documented_argument_kinds(&registry) {
+            pretty_assertions::assert_eq!(actual, expected, "{case} is documented incorrectly");
+        }
+    }
+
+    #[test]
+    fn every_kind_is_documented_by_fields_or_arguments() {
+        let registry = field_test_registry();
+        let mut seen = std::collections::BTreeSet::new();
+
+        let (field_kinds, _) = documented_field_kinds(&registry);
+        for kind in field_kinds.values() {
+            collect_kinds(kind, &mut seen);
+        }
+        for (_, kind, _) in documented_argument_kinds(&registry) {
+            collect_kinds(&kind, &mut seen);
+        }
+
+        let missing: Vec<_> = ALL_LAD_KINDS
+            .iter()
+            .filter(|kind| !seen.contains(*kind))
+            .collect();
+        assert!(
+            missing.is_empty(),
+            "kinds which neither the fields nor the arguments tests document: {missing:?}"
+        );
+    }
+
+    #[derive(Reflect)]
+    #[reflect(no_field_bounds, from_reflect = false)]
+    struct TwoParams<A, B> {
+        #[reflect(ignore)]
+        phantom: std::marker::PhantomData<(A, B)>,
+    }
+
+    #[test]
+    fn malformed_generic_patterns_are_rejected() {
+        let registry = TypeRegistry::default();
+        let mut builder = LadFileBuilder::new_empty(&registry);
+
+        // parameters are needed
+        let error = builder.add_generic_type("a::b::C", "").err().unwrap();
+        assert!(error.contains("is not of the form"), "{error}");
+        let error = builder.add_generic_type("a::b::C<", "").err().unwrap();
+        assert!(error.contains("is not of the form"), "{error}");
+
+        // and they are prefixed with a dollar
+        let error = builder.add_generic_type("a::b::C<A>", "").err().unwrap();
+        assert!(error.contains("is not a `$Name`"), "{error}");
+        let error = builder
+            .add_generic_type("a::b::C<$A, $>", "")
+            .err()
+            .unwrap();
+        assert!(error.contains("is not a `$Name`"), "{error}");
+
+        // nothing was declared by the failed attempts
+        assert!(builder.add_generic_type("a::b::C<$A, $B>", "").is_ok());
+        assert_eq!(builder.generic_types.len(), 1);
+    }
+
+    #[test]
+    fn generic_types_match_by_path_and_number_of_parameters() {
+        let mut registry = TypeRegistry::default();
+        registry.register::<TwoParams<usize, f32>>();
+
+        for (pattern, matches) in [
+            ("ladfile_builder::test::TwoParams<$First, $Second>", true),
+            // the number of parameters has to match
+            ("ladfile_builder::test::TwoParams<$A>", false),
+            ("ladfile_builder::test::TwoParams<$A, $B, $C>", false),
+            // and the path, which includes the module
+            ("ladfile_builder::test::Other<$A, $B>", false),
+            ("TwoParams<$A, $B>", false),
+        ] {
+            let mut builder = LadFileBuilder::new_empty(&registry);
+            builder
+                .add_generic_type(pattern, "docs")
+                .unwrap()
+                .add_type::<TwoParams<usize, f32>>();
+            let file = builder.build();
+
+            let instantiation = file.types.values().next().unwrap();
+            assert_eq!(instantiation.generic_type.is_some(), matches, "{pattern}");
+            assert_eq!(file.generic_types.len(), matches as usize, "{pattern}");
+
+            if matches {
+                // the parameters are named by the pattern
+                let generic_type = file.generic_types.values().next().unwrap();
+                assert_eq!(generic_type.params, ["First", "Second"]);
+                assert_eq!(generic_type.identifier, "TwoParams");
+                assert_eq!(generic_type.documentation.as_deref(), Some("docs"));
+            }
+        }
     }
 }

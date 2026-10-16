@@ -1,11 +1,23 @@
 ---@meta
----@module "PlainStructType"
+---@module "HoldsOpaqueType"
+
+
+---@class HoldsOpaqueType : ReflectReference
+---  I hold an instantiation of a generic type
+---@field  generic? OpaqueGenericType<integer>
+local HoldsOpaqueType = {}
+
+---@param p1 HoldsOpaqueType
+---@param p2 OpaqueGenericType<integer>
+---@return OpaqueGenericType<integer>
+function HoldsOpaqueType.swap_generic(p1,p2) end
+
 
 
 ---@class PlainStructType : ReflectReference
 ---  I am a simple plain struct type
 ---@field  int_field? integer
-PlainStructType = {}
+local PlainStructType = {}
 
 ---@param p1 PlainStructType
 ---@param p2 integer
@@ -16,151 +28,151 @@ function PlainStructType.plain_struct_function(p1,p2) end
 
 ---@class Bool
 --- A boolean value
-Bool = {}
+local Bool = {}
 
 
 
 ---@class Char
 --- An 8-bit character
-Char = {}
+local Char = {}
 
 
 
 ---@class DynamicFunction
 --- A callable dynamic function
-DynamicFunction = {}
+local DynamicFunction = {}
 
 
 
 ---@class DynamicFunctionMut
 --- A stateful and callable dynamic function
-DynamicFunctionMut = {}
+local DynamicFunctionMut = {}
 
 
 
 ---@class F32
 --- A 32-bit floating point number
-F32 = {}
+local F32 = {}
 
 
 
 ---@class F64
 --- A 64-bit floating point number
-F64 = {}
+local F64 = {}
 
 
 
 ---@class FunctionCallContext
 --- Function call context, if accepted by a function, means the function can access the world in arbitrary ways.
-FunctionCallContext = {}
+local FunctionCallContext = {}
 
 
 
 ---@class I128
 --- A signed 128-bit integer
-I128 = {}
+local I128 = {}
 
 
 
 ---@class I16
 --- A signed 16-bit integer
-I16 = {}
+local I16 = {}
 
 
 
 ---@class I32
 --- A signed 32-bit integer
-I32 = {}
+local I32 = {}
 
 
 
 ---@class I64
 --- A signed 64-bit integer
-I64 = {}
+local I64 = {}
 
 
 
 ---@class I8
 --- A signed 8-bit integer
-I8 = {}
+local I8 = {}
 
 
 
 ---@class Isize
 --- A signed pointer-sized integer
-Isize = {}
+local Isize = {}
 
 
 
 ---@class OsString
 --- A heap allocated OS string
-OsString = {}
+local OsString = {}
 
 
 
 ---@class PathBuf
 --- A heap allocated file path
-PathBuf = {}
+local PathBuf = {}
 
 
 
 ---@class ReflectReference
 --- A reference to a reflectable type
-ReflectReference = {}
+local ReflectReference = {}
 
 
 
 ---@class ScriptValue
 --- A value representing the union of all representable values
-ScriptValue = {}
+local ScriptValue = {}
 
 
 
 ---@class Str
 --- A string slice
-Str = {}
+local Str = {}
 
 
 
 ---@class String
 --- A heap allocated string
-String = {}
+local String = {}
 
 
 
 ---@class U128
 --- An unsigned 128-bit integer
-U128 = {}
+local U128 = {}
 
 
 
 ---@class U16
 --- An unsigned 16-bit integer
-U16 = {}
+local U16 = {}
 
 
 
 ---@class U32
 --- An unsigned 32-bit integer
-U32 = {}
+local U32 = {}
 
 
 
 ---@class U64
 --- An unsigned 64-bit integer
-U64 = {}
+local U64 = {}
 
 
 
 ---@class U8
 --- An unsigned 8-bit integer
-U8 = {}
+local U8 = {}
 
 
 
 ---@class Usize
 --- An unsigned pointer-sized integer
-Usize = {}
+local Usize = {}
 
 
 
@@ -168,7 +180,7 @@ Usize = {}
 ---@field  Unit EnumType.Unit
 ---@field  Struct EnumType.Struct
 ---@field  TupleStruct EnumType.TupleStruct
-EnumType = {}
+local EnumType = {}
 
 
 
@@ -194,18 +206,25 @@ EnumType.TupleStruct = {}
 ---  I am a tuple test type
 ---@field  [1] integer
 ---@field  [2] string
-TupleStructType = {}
+local TupleStructType = {}
 
 
 
 ---@class UnitType : ReflectReference
 ---  I am a unit test type
-UnitType = {}
+local UnitType = {}
+
+
+
+---@class OpaqueGenericType<T> : ReflectReference
+--- I am the documentation of a generic type.
+
 
 
 
 ---@class (exact) namespace.ladfile_builder
 --- The types in the `ladfile_builder` namespace, as returned by `import_namespace("ladfile_builder")`.
+---@field  HoldsOpaqueType HoldsOpaqueType
 ---@field  PlainStructType PlainStructType
 ---@field  EnumType EnumType
 ---@field  TupleStructType TupleStructType

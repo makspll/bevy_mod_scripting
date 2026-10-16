@@ -138,6 +138,7 @@ impl App {
                 open,
                 no_rust_docs,
                 exclude_generated_bindings,
+                test_bindings,
             } => {
                 cmd.arg("docs");
                 if open {
@@ -148,6 +149,9 @@ impl App {
                 }
                 if exclude_generated_bindings {
                     cmd.arg("--exclude-generated-bindings");
+                }
+                if test_bindings {
+                    cmd.arg("--test-bindings");
                 }
             }
             Xtasks::Test { name, package } => {
@@ -170,9 +174,6 @@ impl App {
             }
             Xtasks::Example { example } => {
                 cmd.arg("example").arg(example);
-            }
-            Xtasks::Docgen => {
-                cmd.arg("docgen");
             }
             Xtasks::Install { binary } => {
                 cmd.arg("install").arg(binary.as_ref());
@@ -380,9 +381,6 @@ enum Xtasks {
         /// The example to run
         example: String,
     },
-    /// Generate the ladfile and Lua language server files into `assets/definitions`,
-    /// including the functions available to script tests
-    Docgen,
     /// Installs a binary produced by the workspace
     Install {
         /// The binary to install
@@ -392,7 +390,9 @@ enum Xtasks {
         )]
         binary: Binary,
     },
-    /// Build the rust crates.io docs as well as any other docs
+    /// Build the rust crates.io docs as well as any other docs, with all the bindings.
+    ///
+    /// This also generates the ladfile and the Lua language server files into `assets/definitions`
     Docs {
         /// Open in browser
         /// This will open the generated docs in the default browser
@@ -407,6 +407,10 @@ enum Xtasks {
         /// they are slow to document
         #[clap(long)]
         exclude_generated_bindings: bool,
+
+        /// Also document the functions available to the script tests, to get completions while writing tests
+        #[clap(long)]
+        test_bindings: bool,
     },
     /// Build the main workspace, and then run all tests
     Test {
@@ -502,7 +506,14 @@ impl Xtasks {
                 open,
                 no_rust_docs,
                 exclude_generated_bindings,
-            } => Self::docs(app_settings, open, no_rust_docs, exclude_generated_bindings),
+                test_bindings,
+            } => Self::docs(
+                app_settings,
+                open,
+                no_rust_docs,
+                exclude_generated_bindings,
+                test_bindings,
+            ),
             Xtasks::Test { name, package } => Self::test(app_settings, package, name),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init {
@@ -510,7 +521,6 @@ impl Xtasks {
                 tools,
             } => Self::init(app_settings, dont_update_ide, tools),
             Xtasks::Example { example } => Self::example(app_settings, example),
-            Xtasks::Docgen => Self::docgen(app_settings),
             Xtasks::Macros { macro_name } => match macro_name {
                 Macro::ScriptTests => {
                     let mut settings = app_settings.clone();
@@ -637,13 +647,17 @@ impl Xtasks {
         open: bool,
         no_rust_docs: bool,
         exclude_generated_bindings: bool,
+        test_bindings: bool,
     ) -> Result<()> {
         // find [package.metadata."docs.rs"] key in Cargo.toml
         info!("installing mdbook ladfile preprocessor binary");
         Self::install(app_settings.clone(), Binary::MdbookPreprocessor)?;
 
         info!("Running docgen example to generate ladfiles");
-        Self::example(app_settings.clone(), "docgen".to_owned())?;
+        let mut docgen_settings = app_settings.clone();
+        docgen_settings.features = docs_features();
+        let example_args = if test_bindings { &["testlib"][..] } else { &[] };
+        Self::example_with_args(docgen_settings, "docgen", example_args)?;
 
         // copy the `<workspace>/assets/bindings.lad.json` file to it's path in the book
         let ladfile_path =
@@ -1182,6 +1196,7 @@ impl Xtasks {
                 no_rust_docs: false,
                 // the generated crates are documented on docs.rs, no need to wait on them here
                 exclude_generated_bindings: true,
+                test_bindings: false,
             },
         });
 
@@ -1371,15 +1386,6 @@ impl Xtasks {
         }
     }
 
-    /// Generates the ladfile and Lua language server files, including the functions available to script tests
-    fn docgen(mut app_settings: GlobalArgs) -> Result<()> {
-        app_settings
-            .features
-            .0
-            .insert(Feature::LuaLanguageServerFiles);
-        Self::example_with_args(app_settings, "docgen", &["testlib"])
-    }
-
     fn example(app_settings: GlobalArgs, example: String) -> std::result::Result<(), Error> {
         Self::example_with_args(app_settings, &example, &[])
     }
@@ -1433,6 +1439,14 @@ impl Xtasks {
 
         Ok(())
     }
+}
+
+/// The features the docs are generated with.
+///
+/// The docgen example documents whatever bindings are compiled in, so it needs all of them,
+/// the default features only cover a few of the bevy crates.
+fn docs_features() -> Features {
+    Features::all_features()
 }
 
 /// Because we are likely already runnnig in the context of a cargo invocation,
@@ -1515,6 +1529,22 @@ mod tests {
     }
 
     #[test]
+    fn docs_document_every_binding() {
+        let features = docs_features();
+
+        for feature in <Feature as strum::VariantArray>::VARIANTS {
+            if feature.to_string().ends_with("_bindings") {
+                assert!(features.0.contains(feature), "{feature} is not documented");
+            }
+        }
+
+        // these are not part of the default features
+        assert!(features.0.contains(&Feature::BevyAssetBindings));
+        // and the files are only generated with this one
+        assert!(features.0.contains(&Feature::LuaLanguageServerFiles));
+    }
+
+    #[test]
     fn init_tools_flag_without_values_installs_none() {
         assert_eq!(parse_init_tools(&["--tools"]), Some(vec![]));
         assert_eq!(
@@ -1538,5 +1568,28 @@ mod tests {
             let args = args.split(' ').collect::<Vec<_>>();
             assert_eq!(parse_init_tools(&args), Some(vec![*tool]));
         }
+    }
+
+    #[test]
+    fn docs_can_include_the_test_bindings() {
+        let test_bindings = |args: &[&str]| {
+            let app = App::try_parse_from(["xtask", "docs"].iter().chain(args)).unwrap();
+            match app.subcmd {
+                Xtasks::Docs { test_bindings, .. } => test_bindings,
+                other => panic!("expected docs, got {other:?}"),
+            }
+        };
+        assert!(!test_bindings(&[]));
+        assert!(test_bindings(&["--test-bindings"]));
+
+        // the flag survives being passed on to another invocation, as the CI matrix does
+        let app = App::try_parse_from(["xtask", "docs", "--test-bindings"]).unwrap();
+        let command = app.into_command_string();
+        assert!(command.to_string_lossy().contains("--test-bindings"));
+    }
+
+    #[test]
+    fn docgen_is_part_of_docs() {
+        assert!(App::try_parse_from(["xtask", "docgen"]).is_err());
     }
 }

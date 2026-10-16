@@ -14,7 +14,7 @@ use bevy_mod_scripting_bindings::{
         bound::is_asset_type, namespace::Namespace, script_function::AppScriptFunctionRegistry,
     },
     globals::AppScriptGlobalsRegistry,
-    into_through_type_info,
+    into_through_type_info_with_registry,
 };
 use bevy_reflect::TypeInfo;
 use ladfile::{LadFieldOrVariableKind, LadFilePlugin, default_importance};
@@ -134,6 +134,15 @@ pub fn generate_lad_file(
         .set_exclude_including_unregistered(settings.exclude_types_containing_unregistered)
         .set_sorted(true);
 
+    // reflection only tells us the arguments of a generic type, so the generic types
+    // which scripts see have to be declared
+    if let Err(error) = builder.add_generic_type(
+        "bevy_asset::handle::Handle<$A>",
+        "A handle to an asset of type `A`.",
+    ) {
+        error!("Could not declare `Handle` as a generic type: {error}");
+    }
+
     // process world as a special value
     builder.add_nonreflect_type::<World>(
         Some("bevy_ecs"),
@@ -162,8 +171,8 @@ pub fn generate_lad_file(
         }
 
         // we don't really care about the Option in Option<T> as that is magically worked around in the entire API
-        // get the "pure" types
-        let through_type_info = into_through_type_info(type_info);
+        // get the "pure" types, sets only tell us the type id of the types they hold so need the registry
+        let through_type_info = into_through_type_info_with_registry(type_info, &type_registry);
         builder.add_through_type_info(&through_type_info);
 
         // find functions on the namespace
@@ -379,6 +388,11 @@ mod test {
             .register_type::<MixedFields>()
             .register_type::<usize>();
 
+        generate_from(app)
+    }
+
+    /// Generates the ladfile of the app
+    fn generate_from(mut app: App) -> LadFile {
         let captured = Arc::new(Mutex::new(None));
         let settings = LadFileSettings {
             processors: vec![Box::new(Capture(captured.clone()))],
@@ -560,5 +574,88 @@ mod test {
             .map(|f| (f.name.as_str(), f.has_default))
             .collect::<Vec<_>>();
         assert_eq!(has_default, [("defaulted", true), ("required", false)]);
+    }
+
+    #[derive(bevy_asset::Asset, Reflect)]
+    struct TestAsset;
+
+    /// A struct with a field for each container, which scripts see as the values they hold
+    #[derive(Reflect)]
+    struct Containers {
+        vec: Vec<TestStruct>,
+        option: Option<TestStruct>,
+        map: bevy_platform::collections::HashMap<String, TestStruct>,
+        tuple: (TestStruct, usize),
+        array: [TestStruct; 2],
+        set: bevy_platform::collections::HashSet<usize>,
+    }
+
+    #[derive(Reflect)]
+    #[reflect(no_field_bounds, from_reflect = false)]
+    struct UndeclaredGeneric<T> {
+        #[reflect(ignore)]
+        phantom: std::marker::PhantomData<T>,
+    }
+
+    #[test]
+    fn handles_are_a_declared_generic_type() {
+        let mut app = App::new();
+        app.register_type::<TestAsset>()
+            .register_type::<bevy_asset::Handle<TestAsset>>()
+            .register_type_data::<TestAsset, bevy_asset::ReflectAsset>();
+        let file = generate_from(app);
+
+        assert_eq!(file.generic_types.len(), 1, "{:?}", file.generic_types);
+        let (generic_id, generic_type) = file.generic_types.iter().next().unwrap();
+        assert_eq!(generic_type.identifier, "Handle");
+        assert_eq!(generic_type.path, "bevy_asset::handle::Handle");
+        assert_eq!(generic_type.params, ["A"]);
+        assert_eq!(generic_type.name_with_params(), "Handle<A>");
+        assert!(generic_type.documentation.is_some());
+
+        // the instantiation points at it, and its argument is the asset
+        let instantiations = file
+            .types
+            .values()
+            .filter(|ty| ty.generic_type.as_ref() == Some(generic_id))
+            .collect::<Vec<_>>();
+        assert_eq!(instantiations.len(), 1);
+        let argument = &instantiations[0].generics[0];
+        assert_eq!(argument.name, generic_type.params[0]);
+        assert_eq!(argument.type_id, type_id(&file, "TestAsset"));
+    }
+
+    #[test]
+    fn containers_are_not_types_or_generic_types() {
+        let mut app = App::new();
+        app.register_type::<Containers>();
+        let file = generate_from(app);
+
+        assert!(file.generic_types.is_empty(), "{:?}", file.generic_types);
+        // the registry has all of them, but they are described as what they hold
+        let containers = file
+            .types
+            .values()
+            .filter(|ty| {
+                ["Vec<", "Option<", "HashMap<", "HashSet<", "(", "["]
+                    .iter()
+                    .any(|c| ty.path.contains(c))
+            })
+            .map(|ty| ty.path.as_str())
+            .collect::<Vec<_>>();
+        assert!(containers.is_empty(), "{containers:?}");
+        type_id(&file, "TestStruct");
+    }
+
+    #[test]
+    fn undeclared_generic_types_are_only_known_by_their_instantiations() {
+        let mut app = App::new();
+        app.register_type::<UndeclaredGeneric<usize>>();
+        let file = generate_from(app);
+
+        let instantiation = &file.types[&type_id(&file, "UndeclaredGeneric")];
+        assert_eq!(instantiation.generics.len(), 1);
+        assert!(instantiation.generic_type.is_none());
+        assert!(file.generic_types.is_empty());
     }
 }

@@ -44,6 +44,17 @@ impl<'a> MarkdownArgumentVisitor<'a> {
     pub fn build(mut self) -> String {
         self.buffer.build()
     }
+
+    /// Writes the text, linked to the page of `target` if there is a linkifier
+    fn link_or_text(&mut self, text: String, target: String) {
+        if let Some(linkifier) = &self.linkifier {
+            let link_value = (linkifier)(target);
+            let link_value = link_value.to_string_lossy().to_string().replace("\\", "/");
+            self.buffer.link(text, link_value);
+        } else {
+            self.buffer.text(text);
+        }
+    }
 }
 
 impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
@@ -67,6 +78,13 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     }
 
     fn visit_lad_type_id(&mut self, type_id: &ladfile::LadTypeId) {
+        // the generic type itself, i.e. Handle<A>
+        if let Some(generic_type) = self.ladfile.generic_types.get(type_id) {
+            let name = generic_type.name_with_params();
+            self.link_or_text(name.clone(), name);
+            return;
+        }
+
         // Write identifier<Generic1TypeIdentifier, Generic2TypeIdentifier>
         let generics = self.ladfile.get_type_generics(type_id);
 
@@ -74,7 +92,12 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
             .ladfile
             .get_type_identifier(type_id, self.raw_type_id_replacement);
         if let Some(generics) = generics {
-            self.buffer.text(type_identifier);
+            // instantiations of generic types link to the page of the generic type
+            if let Some((generic_type, _)) = self.ladfile.get_generic_instance(type_id) {
+                self.link_or_text(type_identifier.to_string(), generic_type.name_with_params());
+            } else {
+                self.buffer.text(type_identifier);
+            }
             self.buffer.text('<');
             for (i, generic) in generics.iter().enumerate() {
                 if i > 0 {
@@ -179,6 +202,14 @@ mod test {
         ladfile::parse_lad_file(ladfile).unwrap()
     }
 
+    fn plain_struct_id() -> LadTypeId {
+        LadTypeId::new_string_id("ladfile_builder::test::PlainStructType".into())
+    }
+
+    fn generic_struct_id() -> LadTypeId {
+        LadTypeId::new_string_id("ladfile_builder::test::GenericStructType<usize>".into())
+    }
+
     #[test]
     fn test_linkifier_visitor_creates_links() {
         let ladfile = setup_ladfile();
@@ -187,7 +218,7 @@ mod test {
             PathBuf::from("root\\asd").join(str)
         });
 
-        let second_type_id = ladfile.types.iter().nth(1).unwrap().0;
+        let second_type_id = &generic_struct_id();
         visitor.visit_lad_type_id(second_type_id);
         assert_eq!(
             visitor.buffer.build(),
@@ -199,7 +230,7 @@ mod test {
     fn test_visit_type_id() {
         let ladfile = setup_ladfile();
 
-        let first_type_id = ladfile.types.first().unwrap().0;
+        let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit_lad_type_id(first_type_id);
@@ -207,16 +238,50 @@ mod test {
 
         visitor.buffer.clear();
 
-        let second_type_id = ladfile.types.iter().nth(1).unwrap().0;
+        let second_type_id = &generic_struct_id();
         visitor.visit_lad_type_id(second_type_id);
         assert_eq!(visitor.buffer.build(), "GenericStructType<Usize>");
+    }
+
+    #[test]
+    fn test_visit_generic_instantiation_links_the_generic_type() {
+        let ladfile = setup_ladfile();
+        let instantiation =
+            LadTypeId::new_string_id("ladfile_builder::test::OpaqueGenericType<usize>".into());
+        let generic_type =
+            LadTypeId::new_string_id("ladfile_builder::test::OpaqueGenericType".into());
+
+        // the instantiation links to the generic type, and its arguments to their own pages
+        let mut visitor = MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |str| {
+            PathBuf::from("root\\asd").join(str)
+        });
+        visitor.visit_lad_type_id(&instantiation);
+        assert_eq!(
+            visitor.buffer.build(),
+            "[OpaqueGenericType](root/asd/OpaqueGenericType<T>)<[Usize](root/asd/Usize)>"
+        );
+
+        // and the generic type is printed with its parameters
+        let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
+        visitor.visit_lad_type_id(&generic_type);
+        assert_eq!(visitor.buffer.build(), "OpaqueGenericType<T>");
+
+        // types which were not declared as generic types are not linked
+        let mut visitor = MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |str| {
+            PathBuf::from("root\\asd").join(str)
+        });
+        visitor.visit_lad_type_id(&generic_struct_id());
+        assert_eq!(
+            visitor.buffer.build(),
+            "GenericStructType<[Usize](root/asd/Usize)>"
+        );
     }
 
     #[test]
     fn test_visit_ref() {
         let ladfile = setup_ladfile();
 
-        let first_type_id = ladfile.types.first().unwrap().0;
+        let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadFieldOrVariableKind::Ref(first_type_id.clone()));
@@ -227,7 +292,7 @@ mod test {
     fn test_visit_mut() {
         let ladfile = setup_ladfile();
 
-        let first_type_id = ladfile.types.first().unwrap().0;
+        let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadFieldOrVariableKind::Mut(first_type_id.clone()));
@@ -238,7 +303,7 @@ mod test {
     fn test_visit_val() {
         let ladfile = setup_ladfile();
 
-        let first_type_id = ladfile.types.first().unwrap().0;
+        let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadFieldOrVariableKind::Val(first_type_id.clone()));
@@ -292,7 +357,7 @@ mod test {
         let ladfile = setup_ladfile();
 
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
-        let first_type_id = ladfile.types.first().unwrap().0;
+        let first_type_id = &plain_struct_id();
 
         visitor.visit(&LadFieldOrVariableKind::HashMap(
             Box::new(LadFieldOrVariableKind::Primitive(
@@ -346,7 +411,7 @@ mod test {
 
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        let first_type_id = ladfile.types.first().unwrap().0;
+        let first_type_id = &plain_struct_id();
 
         visitor.visit(&LadFieldOrVariableKind::Unknown(first_type_id.clone()));
         assert_eq!(visitor.buffer.build(), "PlainStructType");
