@@ -39,8 +39,6 @@ use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 
 #[allow(unused_variables, reason = "feature flags")]
 pub fn register_bevy_bindings(app: &mut App) {
-    #[cfg(feature = "bevy_a11y")]
-    app.add_plugins(bevy_a11y_bms_bindings::BevyA11YScriptingPlugin);
     #[cfg(feature = "bevy_animation")]
     app.add_plugins(bevy_animation_bms_bindings::BevyAnimationScriptingPlugin);
     #[cfg(feature = "bevy_asset")]
@@ -66,21 +64,15 @@ pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_scene")]
     app.add_plugins(bevy_scene_bms_bindings::BevySceneScriptingPlugin);
     #[cfg(feature = "bevy_sprite")]
-    app.add_plugins(bevy_sprite_bms_bindings::BevySpriteScriptingPlugin);
-    #[cfg(feature = "bevy_sprite_render")]
-    app.add_plugins(bevy_sprite_renderer_bms_bindings::BevySpriteRendererScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_sprite_bindings::BevySpriteBindingsPlugin);
     #[cfg(feature = "bevy_text")]
-    app.add_plugins(bevy_text_bms_bindings::BevyTextScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_text_bindings::BevyTextBindingsPlugin);
     #[cfg(feature = "bevy_time")]
     app.add_plugins(bevy_mod_scripting_bevy_time_bindings::BevyTimeBindingsPlugin);
     #[cfg(feature = "bevy_transform")]
     app.add_plugins(bevy_mod_scripting_bevy_transform_bindings::BevyTransformBindingsPlugin);
     #[cfg(feature = "bevy_ui")]
-    app.add_plugins(bevy_ui_bms_bindings::BevyUiScriptingPlugin);
-    #[cfg(feature = "bevy_ui_render")]
-    app.add_plugins(bevy_ui_renderer_bms_bindings::BevyUiRendererScriptingPlugin);
-    #[cfg(feature = "bevy_ui_widgets")]
-    app.add_plugins(bevy_ui_widgets_bms_bindings::BevyUiWidgetsScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_ui_bindings::BevyUiBindingsPlugin);
 }
 
 #[script_bindings(

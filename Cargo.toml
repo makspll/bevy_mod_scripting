@@ -62,7 +62,6 @@ lua_language_server_files = [
 # bindings 
 core_functions = ["bevy_mod_scripting_functions/core_functions"]
 
-bevy_a11y_bindings = ["bevy_mod_scripting_functions/bevy_a11y"]
 bevy_animation_bindings = ["bevy_mod_scripting_functions/bevy_animation"]
 bevy_asset_bindings = ["bevy_mod_scripting_functions/bevy_asset"]
 bevy_camera_bindings = ["bevy_mod_scripting_functions/bevy_camera"]
@@ -75,15 +74,10 @@ bevy_picking_bindings = ["bevy_mod_scripting_functions/bevy_picking"]
 bevy_render_bindings = ["bevy_mod_scripting_functions/bevy_render"]
 bevy_scene_bindings = ["bevy_mod_scripting_functions/bevy_scene"]
 bevy_sprite_bindings = ["bevy_mod_scripting_functions/bevy_sprite"]
-bevy_sprite_render_bindings = [
-    "bevy_mod_scripting_functions/bevy_sprite_render",
-]
 bevy_text_bindings = ["bevy_mod_scripting_functions/bevy_text"]
 bevy_time_bindings = ["bevy_mod_scripting_functions/bevy_time"]
 bevy_transform_bindings = ["bevy_mod_scripting_functions/bevy_transform"]
 bevy_ui_bindings = ["bevy_mod_scripting_functions/bevy_ui"]
-bevy_ui_render_bindings = ["bevy_mod_scripting_functions/bevy_ui_render"]
-bevy_ui_widgets_bindings = ["bevy_mod_scripting_functions/bevy_ui_widgets"]
 bevy_window_bindings = ["bevy_mod_scripting_functions/bevy_window"]
 
 # optional

@@ -31,7 +31,7 @@ pub enum Feature {
     BevyTimeBindings,
     BevyTransformBindings,
     BevyColorBindings,
-    BevyA11yBindings,
+    BevyUiBindings,
     BevyAnimationBindings,
     BevyAssetBindings,
     BevyCameraBindings,
@@ -121,7 +121,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevyTimeBindings
             | Feature::BevyTransformBindings
             | Feature::BevyColorBindings
-            | Feature::BevyA11yBindings
+            | Feature::BevyUiBindings
             | Feature::BevyAnimationBindings
             | Feature::BevyAssetBindings
             | Feature::BevyCameraBindings
