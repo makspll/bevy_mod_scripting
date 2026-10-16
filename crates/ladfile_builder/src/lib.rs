@@ -184,7 +184,7 @@ impl<'t> LadFileBuilder<'t> {
     ) -> &mut Self {
         let type_info = T::through_type_info();
         let type_kind = self.lad_type_kind_from_through_type(&type_info);
-        self.file.globals.insert(
+        self.file.builtins.insert(
             key.into(),
             LadInstance {
                 type_kind,
@@ -204,7 +204,7 @@ impl<'t> LadFileBuilder<'t> {
         through_type: ThroughTypeInfo,
     ) -> &mut Self {
         let type_kind = self.lad_type_kind_from_through_type(&through_type);
-        self.file.globals.insert(
+        self.file.builtins.insert(
             key.into(),
             LadInstance {
                 type_kind,
@@ -221,7 +221,7 @@ impl<'t> LadFileBuilder<'t> {
         is_static: bool,
         type_kind: LadTypeKind,
     ) -> &mut Self {
-        self.file.globals.insert(
+        self.file.builtins.insert(
             key.into(),
             LadInstance {
                 type_kind,

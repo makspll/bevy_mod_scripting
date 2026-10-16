@@ -160,7 +160,7 @@ fn globals_module(ladfile: &ladfile::LadFile) -> LuaModule {
         name: "globals".to_string(),
         ..Default::default()
     };
-    for (name, instance) in ladfile.globals.iter() {
+    for (name, instance) in ladfile.builtins.iter() {
         // primitives are plain values, which need no declaration
         if matches!(instance.type_kind, LadTypeKind::Primitive(..)) {
             continue;
