@@ -19,7 +19,13 @@ impl WindowResolution {
     /// ```multi-lang-example,lua
     /// local WindowResolution = import_namespace("window").WindowResolution
     /// local resolution = WindowResolution.new(800, 600)
-    /// assert(resolution:physical_width() == 800)
+    /// assert(resolution:width() == 800)
+    /// ```
+    ///
+    /// ```multi-lang-example,rhai
+    /// let WindowResolution = import_namespace.call("window").WindowResolution;
+    /// let resolution = WindowResolution.new_.call(800, 600);
+    /// assert(resolution.width.call() == 800.0);
     /// ```
     fn new(physical_width: u32, physical_height: u32) -> V<WindowResolution> {
         V(WindowResolution::new(physical_width, physical_height))

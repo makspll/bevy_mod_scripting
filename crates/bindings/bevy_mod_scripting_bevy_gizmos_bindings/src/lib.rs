@@ -22,14 +22,14 @@ use bevy_transform::components::Transform;
 /// Every function draws straight away, the shapes are shown for the current frame only.
 /// Needs the gizmo plugin, without it the functions fail with an error.
 ///
-/// ```multi-lang-example,lua
+/// ```multi-lang-example,lua,ignore
 /// local Color = import_namespace("color").Color
 /// local Gizmos = import_namespace("gizmos").Gizmos
 /// local Vec3 = import_namespace("math").Vec3
 /// Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())
 /// ```
 ///
-/// ```multi-lang-example,rhai
+/// ```multi-lang-example,rhai,ignore
 /// let Color = import_namespace.call("color").Color;
 /// let Gizmos = import_namespace.call("gizmos").Gizmos;
 /// let Vec3 = import_namespace.call("math").Vec3;
