@@ -6,7 +6,7 @@ use bevy_mod_scripting_display::{DisplayWithTypeInfo, ReflectDisplayWithTypeInfo
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
-use std::{borrow::Cow, collections::VecDeque};
+use std::{any::TypeId, borrow::Cow, collections::VecDeque};
 
 use super::{
     ReflectReference,
@@ -39,6 +39,10 @@ pub enum ScriptValue {
     Map(HashMap<String, ScriptValue>),
     /// Represents a reference to a value.
     Reference(ReflectReference),
+    /// Represents a type itself, i.e. the [`crate::StaticTypeRef`] scripts use to reach a type's static members.
+    ///
+    /// Unlike a reference, a type carries no data, so it never touches the allocator.
+    Type(TypeId),
     /// A dynamic script function possibly storing state. Preffer using the [`ScriptValue::Function`] variant instead if possible.
     FunctionMut(DynamicScriptFunctionMut),
     /// A stateless dynamic script function
@@ -106,6 +110,7 @@ impl DisplayWithTypeInfo for ScriptValue {
                 f.write_str("}")
             }
             ScriptValue::Reference(v) => v.display_with_type_info(f, type_info_provider),
+            ScriptValue::Type(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::FunctionMut(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Function(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Error(e) => e.display_with_type_info(f, type_info_provider),
@@ -124,6 +129,7 @@ impl PartialEq for ScriptValue {
             (Self::List(l0), Self::List(r0)) => l0 == r0,
             (Self::Map(l0), Self::Map(r0)) => l0 == r0,
             (Self::Reference(l0), Self::Reference(r0)) => l0 == r0,
+            (Self::Type(l0), Self::Type(r0)) => l0 == r0,
             // explicitly don't compare functions and errors
             _ => false,
         }
@@ -151,6 +157,7 @@ impl ScriptValue {
             ScriptValue::List(_) => "List".to_owned(),
             ScriptValue::Tuple(_) => "Tuple".to_owned(),
             ScriptValue::Reference(_) => "Reference".to_owned(),
+            ScriptValue::Type(_) => "Type".to_owned(),
             ScriptValue::FunctionMut(_) => "FunctionMut".to_owned(),
             ScriptValue::Function(_) => "Function".to_owned(),
             ScriptValue::Error(_) => "Error".to_owned(),

@@ -5,7 +5,7 @@ use super::{
     from::{M, R, Union, V},
     script_function::FunctionCallContext,
 };
-use crate::{ReflectReference, ScriptValue, VariadicTuple, error::InteropError};
+use crate::{ReflectReference, ScriptValue, StaticTypeRef, VariadicTuple, error::InteropError};
 use bevy_mod_scripting_derive::impl_get_type_dependencies;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{FromReflect, GetTypeRegistration, TypeRegistry, Typed};
@@ -47,7 +47,8 @@ impl_get_type_dependencies_primitives!(
     String,
     PathBuf,
     OsString,
-    char
+    char,
+    StaticTypeRef
 );
 
 impl GetTypeDependencies for () {

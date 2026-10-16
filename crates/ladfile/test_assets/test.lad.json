@@ -380,6 +380,20 @@
         "mapped_to_primitive_kind": "scriptValue"
       }
     },
+    "StaticTypeRef": {
+      "identifier": "StaticTypeRef",
+      "path": "StaticTypeRef",
+      "documentation": "A type itself, used to reach its static members, i.e. `Vec3` in `Vec3.new{}`. Functions on it are shared by all types",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": "staticTypeRef"
+      }
+    },
     "Str": {
       "identifier": "Str",
       "path": "Str",

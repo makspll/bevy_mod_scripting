@@ -4,6 +4,7 @@ pub mod allocator;
 pub mod callback_runners;
 pub mod construct;
 pub mod conversions;
+pub mod dispatch;
 pub mod docgen;
 pub mod enum_variant;
 pub mod error;

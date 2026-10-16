@@ -128,6 +128,12 @@ local ScriptValue = {}
 
 
 
+---@class StaticTypeRef
+--- A type itself, used to reach its static members, i.e. `Vec3` in `Vec3.new{}`. Functions on it are shared by all types
+local StaticTypeRef = {}
+
+
+
 ---@class Str
 --- A string slice
 local Str = {}

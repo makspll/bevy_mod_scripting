@@ -1,7 +1,7 @@
 //! Information about functions and their arguments.
 
 use crate::function::arg_meta::ArgMeta;
-use crate::function::namespace::Namespace;
+use crate::function::namespace::FunctionScope;
 use crate::function::script_function::FunctionCallContext;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{DisplayWithTypeInfo, WithTypeInfo};
@@ -18,7 +18,7 @@ use super::typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedThrough};
 )]
 pub trait GetFunctionInfo<Marker> {
     /// Get the function info for the function.
-    fn get_function_info(&self, name: Cow<'static, str>, namespace: Namespace) -> FunctionInfo;
+    fn get_function_info(&self, name: Cow<'static, str>, namespace: FunctionScope) -> FunctionInfo;
 }
 
 #[derive(Clone, Reflect, DebugWithTypeInfo)]
@@ -28,7 +28,7 @@ pub struct FunctionInfo {
     /// The name of the function.
     pub name: Cow<'static, str>,
     /// The namespace of the function.
-    pub namespace: Namespace,
+    pub namespace: FunctionScope,
     /// Information about the arguments of the function.
     pub arg_info: Vec<FunctionArgInfo>,
     /// Information about the return value of the function.
@@ -49,7 +49,7 @@ impl FunctionInfo {
     pub fn new() -> Self {
         Self {
             name: Cow::Borrowed(""),
-            namespace: Namespace::Global,
+            namespace: FunctionScope::Global,
             arg_info: Vec::new(),
             return_info: FunctionReturnInfo::default(),
             docs: None,
@@ -57,7 +57,7 @@ impl FunctionInfo {
     }
 
     /// Create a new function info with a name and namespace.
-    pub fn new_for(name: Cow<'static, str>, namespace: Namespace) -> Self {
+    pub fn new_for(name: Cow<'static, str>, namespace: FunctionScope) -> Self {
         Self {
             name,
             namespace,
@@ -74,7 +74,7 @@ impl FunctionInfo {
     }
 
     /// Set the namespace of the function info.
-    pub fn with_namespace(mut self, namespace: Namespace) -> Self {
+    pub fn with_namespace(mut self, namespace: FunctionScope) -> Self {
         self.namespace = namespace;
         self
     }
@@ -155,7 +155,7 @@ impl FunctionInfo {
         for (idx, arg) in info.arg_info.iter_mut().enumerate() {
             arg.arg_index = idx;
         }
-        info.namespace = Namespace::OnType(type_info.type_id());
+        info.namespace = FunctionScope::OnType(type_info.type_id());
         info.bind_placeholders(type_info, None)
     }
 
@@ -277,7 +277,7 @@ macro_rules! impl_documentable {
             $($param: ArgMeta + TypedThrough + 'static,)*
             O: TypedThrough + 'static
         {
-            fn get_function_info(&self, name: Cow<'static, str>, namespace: Namespace) -> FunctionInfo {
+            fn get_function_info(&self, name: Cow<'static, str>, namespace: FunctionScope) -> FunctionInfo {
                 #[allow(unused_mut)]
                 let mut info = FunctionInfo::new_for(name, namespace);
                 $(
@@ -308,9 +308,9 @@ mod test {
             (a as f64) + (b as f64)
         }
 
-        let info = test_fn.get_function_info(Cow::Borrowed("test_fn"), Namespace::Global);
+        let info = test_fn.get_function_info(Cow::Borrowed("test_fn"), FunctionScope::Global);
         assert_eq!(info.name, "test_fn");
-        assert_eq!(info.namespace, Namespace::Global);
+        assert_eq!(info.namespace, FunctionScope::Global);
         assert_eq!(info.arg_info.len(), 2);
         assert_eq!(info.return_info.type_id, TypeId::of::<f64>());
 
@@ -336,9 +336,9 @@ mod test {
     fn test_get_function_info_references() {
         let fn_ = |_: R<i32>, _: M<f32>| -> V<f64> { V::new(0.0) };
 
-        let info = fn_.get_function_info(Cow::Borrowed("test_fn"), Namespace::Global);
+        let info = fn_.get_function_info(Cow::Borrowed("test_fn"), FunctionScope::Global);
         assert_eq!(info.name, "test_fn");
-        assert_eq!(info.namespace, Namespace::Global);
+        assert_eq!(info.namespace, FunctionScope::Global);
         assert_eq!(info.arg_info.len(), 2);
         assert_eq!(info.return_info.type_id, TypeId::of::<V<f64>>());
 

@@ -33,7 +33,7 @@ mod test {
     use crate::{
         function::{
             from::{R, Union, V},
-            namespace::IntoNamespace,
+            namespace::IntoFunctionScope,
             script_function::AppScriptFunctionRegistry,
         },
         script_value::ScriptValue,
@@ -62,7 +62,7 @@ mod test {
         let app_registry = app_registry.read();
 
         let test_fn = app_registry
-            .get_function(TestStruct::into_namespace(), "test_fn")
+            .get_function(TestStruct::into_function_scope(), "test_fn")
             .unwrap();
 
         assert_eq!(test_fn.info.docs, Some("My docs !!".into()));

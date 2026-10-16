@@ -1016,8 +1016,9 @@ pub fn lad_primitive_to_lua_type(lad_primitive: &ReflectionPrimitiveKind) -> Lua
         ReflectionPrimitiveKind::ReflectReference => {
             return LuaType::Alias("ReflectReference".to_string());
         }
-        ReflectionPrimitiveKind::ScriptValue => return LuaType::Any,
-        ReflectionPrimitiveKind::External(_) => return LuaType::Any,
+        ReflectionPrimitiveKind::ScriptValue
+        | ReflectionPrimitiveKind::StaticTypeRef
+        | ReflectionPrimitiveKind::External(_) => return LuaType::Any,
     })
 }
 

@@ -14,7 +14,7 @@ use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
-    AppScriptGlobalsRegistry, InteropError, Namespace, PartialReflectExt, ScriptValue,
+    AppScriptGlobalsRegistry, FunctionScope, InteropError, PartialReflectExt, ScriptValue,
     WorldExtensions,
 };
 use bevy_mod_scripting_core::{
@@ -247,7 +247,7 @@ impl Default for RhaiScriptingPlugin {
 
                         for (key, function) in script_function_registry
                             .iter_all()
-                            .filter(|(k, _)| k.namespace == Namespace::Global)
+                            .filter(|(k, _)| k.namespace == FunctionScope::Global)
                         {
                             context.scope.set_or_push(
                                 key.name.clone(),

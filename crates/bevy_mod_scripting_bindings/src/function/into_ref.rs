@@ -1,4 +1,4 @@
-//! Contains the [`IntoScriptRef`] trait and its implementations.
+//! Contains the [`IntoScriptErased`] trait and its implementations.
 
 use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
@@ -18,9 +18,9 @@ use crate::{
 ///
 /// - Primitives are converted to simple values
 /// - Container types are converted to references (so the references persist after accesses inside them)
-pub trait IntoScriptRef {
+pub trait IntoScriptErased {
     /// Converts a value represented by a reference into a [`crate::ScriptValue`].
-    fn into_script_ref(
+    fn into_script_erased(
         self_: ReflectReference,
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError>;
@@ -55,18 +55,20 @@ macro_rules! downcast_into_value {
 }
 
 #[profiling::all_functions]
-impl IntoScriptRef for ReflectReference {
+impl IntoScriptErased for ReflectReference {
     #[profiling::function]
-    fn into_script_ref(
+    fn into_script_erased(
         self_: ReflectReference,
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError> {
-        self_.with_reflect(world.clone(), |r| into_script_ref(self_.clone(), r, world))?
+        self_.with_reflect(world.clone(), |r| {
+            into_script_erased(self_.clone(), r, world)
+        })?
     }
 }
 
 #[profiling::function]
-fn into_script_ref(
+fn into_script_erased(
     mut self_: ReflectReference,
     r: &dyn PartialReflect,
     world: WorldGuard,
@@ -114,7 +116,7 @@ fn into_script_ref(
         return if let Some(s) = as_option {
             // don't want correction to mess with this
             self_.push_path(ReferencePart::IntegerAccess(0, false));
-            into_script_ref(self_, s, world)
+            into_script_erased(self_, s, world)
         } else {
             Ok(ScriptValue::Unit)
         };

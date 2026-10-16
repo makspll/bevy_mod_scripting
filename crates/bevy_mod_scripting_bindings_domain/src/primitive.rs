@@ -33,6 +33,8 @@ pub enum ReflectionPrimitiveKind {
     ScriptValue,
     DynamicFunctionMut,
     ReflectReference,
+    /// A type itself, i.e. what scripts use to reach a type's static members
+    StaticTypeRef,
     /// A primitive defined outside of BMS, useful for custom implementations of FromScript and IntoScript.
     /// Downstream processors like mdbook plugins won't know how to treat these.
     External(String),
@@ -66,6 +68,7 @@ impl std::fmt::Display for ReflectionPrimitiveKind {
             ReflectionPrimitiveKind::ScriptValue => f.write_str("ScriptValue"),
             ReflectionPrimitiveKind::DynamicFunctionMut => f.write_str("DynamicFunctionMut"),
             ReflectionPrimitiveKind::ReflectReference => f.write_str("ReflectReference"),
+            ReflectionPrimitiveKind::StaticTypeRef => f.write_str("StaticTypeRef"),
             ReflectionPrimitiveKind::External(e) => f.write_str(e.as_str()),
         }
     }

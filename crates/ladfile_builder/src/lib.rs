@@ -8,6 +8,7 @@ use bevy_ecs::{
 use bevy_log::warn;
 use bevy_mod_scripting_bindings::{
     MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference, ScriptNamespace, ScriptValue,
+    StaticTypeRef,
     docgen::{
         TypedThrough,
         info::FunctionInfo,
@@ -15,7 +16,7 @@ use bevy_mod_scripting_bindings::{
     },
     function::{
         bound::asset_handle_type_info,
-        namespace::Namespace,
+        namespace::FunctionScope,
         script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     },
     into_through_type_info_with_registry,
@@ -87,6 +88,8 @@ fn primitive_from_type_id(type_id: TypeId) -> Option<ReflectionPrimitiveKind> {
         ReflectionPrimitiveKind::DynamicFunctionMut
     } else if type_id == TypeId::of::<ReflectReference>() {
         ReflectionPrimitiveKind::ReflectReference
+    } else if type_id == TypeId::of::<StaticTypeRef>() {
+        ReflectionPrimitiveKind::StaticTypeRef
     } else {
         return None;
     })
@@ -119,6 +122,7 @@ fn type_id_from_primitive(kind: &ReflectionPrimitiveKind) -> Option<TypeId> {
         ReflectionPrimitiveKind::DynamicFunctionMut => TypeId::of::<DynamicScriptFunctionMut>(),
         ReflectionPrimitiveKind::ReflectReference => TypeId::of::<ReflectReference>(),
         ReflectionPrimitiveKind::ScriptValue => TypeId::of::<ScriptValue>(),
+        ReflectionPrimitiveKind::StaticTypeRef => TypeId::of::<StaticTypeRef>(),
         ReflectionPrimitiveKind::External(_) => return None,
     })
 }
@@ -186,7 +190,8 @@ impl<'t> LadFileBuilder<'t> {
             .add_bms_primitive(DynamicFunction, "A callable dynamic function")
             .add_bms_primitive(DynamicFunctionMut, "A stateful and callable dynamic function")
             .add_bms_primitive(ScriptValue, "A value representing the union of all representable values")
-            .add_bms_primitive(ReflectReference, "A reference to a reflectable type");
+            .add_bms_primitive(ReflectReference, "A reference to a reflectable type")
+            .add_bms_primitive(StaticTypeRef, "A type itself, used to reach its static members, i.e. `Vec3` in `Vec3.new{}`. Functions on it are shared by all types");
 
         builder
     }
@@ -590,8 +595,8 @@ impl<'t> LadFileBuilder<'t> {
     pub fn add_function_info(&mut self, function_info: &FunctionInfo) -> &mut Self {
         let function_id = self.lad_function_id_from_info(function_info);
         let namespace = match function_info.namespace {
-            Namespace::Global => LadFunctionNamespace::Global,
-            Namespace::OnType(type_id) => {
+            FunctionScope::Global => LadFunctionNamespace::Global,
+            FunctionScope::OnType(type_id) => {
                 LadFunctionNamespace::Type(self.lad_id_from_type_id(type_id))
             }
         };
@@ -1071,8 +1076,10 @@ impl<'t> LadFileBuilder<'t> {
 
     fn lad_function_id_from_info(&mut self, function_info: &FunctionInfo) -> LadFunctionId {
         let namespace_string = match function_info.namespace {
-            bevy_mod_scripting_bindings::function::namespace::Namespace::Global => "".to_string(),
-            bevy_mod_scripting_bindings::function::namespace::Namespace::OnType(type_id) => {
+            bevy_mod_scripting_bindings::function::namespace::FunctionScope::Global => {
+                "".to_string()
+            }
+            bevy_mod_scripting_bindings::function::namespace::FunctionScope::OnType(type_id) => {
                 self.lad_id_from_type_id(type_id).to_string()
             }
         };
@@ -1192,7 +1199,7 @@ mod test {
         docgen::info::GetFunctionInfo,
         function::{
             from::R,
-            namespace::{GlobalNamespace, IntoNamespace},
+            namespace::{GlobalNamespace, IntoFunctionScope},
         },
     };
     use bevy_reflect::Reflect;
@@ -1479,21 +1486,21 @@ mod test {
             |_: R<PlainStructType>, _: usize| PlainStructType { int_field: 2 };
         let plain_struct_function_info = plain_struct_function.get_function_info(
             "plain_struct_function".into(),
-            PlainStructType::into_namespace(),
+            PlainStructType::into_function_scope(),
         );
 
         let function = |_: ReflectReference, _: usize| 2usize;
         let function_info = function
             .get_function_info(
                 "hello_world".into(),
-                GenericStructType::<usize>::into_namespace(),
+                GenericStructType::<usize>::into_function_scope(),
             )
             .with_docs("hello docs");
 
         let function_with_complex_args =
             |_: ReflectReference, _: (usize, String), _: Option<Vec<R<EnumType>>>| 2usize;
         let function_with_complex_args_info = function_with_complex_args
-            .get_function_info("hello_world".into(), GenericStructType::<usize>::into_namespace())
+            .get_function_info("hello_world".into(), GenericStructType::<usize>::into_function_scope())
             .with_arg_names(&["ref_", "tuple", "option_vec_ref_wrapper"])
             .with_docs(
                 "Arguments: ".to_owned()
@@ -1511,7 +1518,7 @@ mod test {
 
         let global_function = |_: usize| 2usize;
         let global_function_info = global_function
-            .get_function_info("hello_world".into(), GlobalNamespace::into_namespace())
+            .get_function_info("hello_world".into(), GlobalNamespace::into_function_scope())
             .with_arg_names(&["arg1"]);
 
         impl TypedThrough for OpaqueGenericType<usize> {
@@ -1524,8 +1531,10 @@ mod test {
                 phantom: std::marker::PhantomData,
             })
         };
-        let generic_function_info = generic_function
-            .get_function_info("swap_generic".into(), HoldsOpaqueType::into_namespace());
+        let generic_function_info = generic_function.get_function_info(
+            "swap_generic".into(),
+            HoldsOpaqueType::into_function_scope(),
+        );
 
         let mut lad_file = LadFileBuilder::new(&type_registry)
             .set_description("## Hello gentlemen\n I am  markdown file.\n - hello\n - world")
@@ -1623,7 +1632,7 @@ mod test {
 
         let load = |_path: String| -> BoundHandle { unreachable!() };
         let info = load
-            .get_function_info(Cow::Borrowed("load"), Namespace::Global)
+            .get_function_info(Cow::Borrowed("load"), FunctionScope::Global)
             .bind_placeholders(TestAsset::type_info(), None);
 
         let lad_file = LadFileBuilder::new_empty(&type_registry)

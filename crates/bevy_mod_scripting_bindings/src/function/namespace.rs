@@ -17,7 +17,7 @@ use super::type_dependencies::GetFunctionTypeDependencies;
 /// A namespace for functions
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Default, Reflect, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-pub enum Namespace {
+pub enum FunctionScope {
     /// The function is registered in the global namespace, i.e. with no namespace.
     /// In practice functions in this namespace should be callable directly by their name, i.e. `my_function()`
     #[default]
@@ -27,41 +27,59 @@ pub enum Namespace {
     OnType(TypeId),
 }
 
-/// A type which implements [`IntoNamespace`] by always converting to the global namespace
+/// A type which implements [`IntoFunctionScope`] by always converting to the global namespace
 pub struct GlobalNamespace;
 
-/// A type convertible to a [`Namespace`]
-pub trait IntoNamespace {
-    /// Converts this type into a [`Namespace`]
-    fn into_namespace() -> Namespace;
+/// A type convertible to a [`FunctionScope`]
+pub trait IntoFunctionScope {
+    /// Converts this type into a [`FunctionScope`]
+    fn into_function_scope() -> FunctionScope;
 }
 
-impl<T: ?Sized + 'static> IntoNamespace for T {
-    fn into_namespace() -> Namespace {
+impl<T: ?Sized + 'static> IntoFunctionScope for T {
+    fn into_function_scope() -> FunctionScope {
         if TypeId::of::<T>() == TypeId::of::<GlobalNamespace>() {
-            Namespace::Global
+            FunctionScope::Global
         } else {
-            Namespace::OnType(TypeId::of::<T>())
+            FunctionScope::OnType(TypeId::of::<T>())
         }
     }
 }
 
-/// A type which implements [`IntoNamespace`] by always converting to the global namespace
 #[profiling::all_functions]
-impl Namespace {
+impl FunctionScope {
+    /// The scope of functions shared by all references, i.e. `eq` or `display`, registered on [`crate::ReflectReference`].
+    ///
+    /// Functions on a reference's own type take priority over these.
+    pub fn all_references() -> Self {
+        FunctionScope::OnType(TypeId::of::<crate::ReflectReference>())
+    }
+
+    /// The scope of functions shared by all types, i.e. the `new` constructor, registered on [`crate::StaticTypeRef`].
+    ///
+    /// They are bound to the type they are called on, see [`crate::DynamicScriptFunction::bind_to_type`].
+    pub fn all_types() -> Self {
+        FunctionScope::OnType(TypeId::of::<crate::StaticTypeRef>())
+    }
+
+    /// The scope of functions shared by all enum variants, registered on [`crate::EnumVariantRef`].
+    pub fn all_variants() -> Self {
+        FunctionScope::OnType(TypeId::of::<crate::EnumVariantRef>())
+    }
+
     /// Returns the prefix for this namespace
     pub fn prefix(self) -> Cow<'static, str> {
         match self {
-            Namespace::Global => Cow::Borrowed(""),
-            Namespace::OnType(type_id) => Cow::Owned(format!("{type_id:?}::")),
+            FunctionScope::Global => Cow::Borrowed(""),
+            FunctionScope::OnType(type_id) => Cow::Owned(format!("{type_id:?}::")),
         }
     }
 
     /// Returns the fully qualified name of a function in this namespace
     pub fn function_name<I: Into<Cow<'static, str>>>(self, name: I) -> Cow<'static, str> {
         match self {
-            Namespace::Global => name.into(),
-            Namespace::OnType(type_id) => Cow::Owned(format!("{:?}::{}", type_id, name.into())),
+            FunctionScope::Global => name.into(),
+            FunctionScope::OnType(type_id) => Cow::Owned(format!("{:?}::{}", type_id, name.into())),
         }
     }
 }
@@ -77,7 +95,7 @@ pub struct NamespaceBuilder<'a, N> {
 }
 
 #[profiling::all_functions]
-impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
+impl<'a, S: IntoFunctionScope> NamespaceBuilder<'a, S> {
     /// Creates a new `NamespaceBuilder` that will register functions in the namespace corresponding to the given type
     /// It will also register the type itself in the type registry.
     pub fn new(world: &'a mut World) -> Self
@@ -162,7 +180,7 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
             {
                 let mut registry = self.registry.write();
                 registry.register_with_arg_names(
-                    S::into_namespace(),
+                    S::into_function_scope(),
                     name,
                     function,
                     docstring.unwrap_or_default(),
@@ -179,21 +197,21 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
     }
 }
 
-impl From<TypeId> for Namespace {
+impl From<TypeId> for FunctionScope {
     fn from(value: TypeId) -> Self {
-        Namespace::OnType(value)
+        FunctionScope::OnType(value)
     }
 }
 
-impl DisplayWithTypeInfo for Namespace {
+impl DisplayWithTypeInfo for FunctionScope {
     fn display_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
         type_info_provider: Option<&WorldGuard>,
     ) -> std::fmt::Result {
         match self {
-            Namespace::Global => f.write_str("Global Namespace"),
-            Namespace::OnType(type_id) => {
+            FunctionScope::Global => f.write_str("Global Namespace"),
+            FunctionScope::OnType(type_id) => {
                 write!(
                     f,
                     "Namespace for type {}",

@@ -15,7 +15,7 @@ use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
 use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_bindings::{
-    InteropError, PartialReflectExt, WorldExtensions, function::namespace::Namespace,
+    InteropError, PartialReflectExt, WorldExtensions, function::namespace::FunctionScope,
     globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
@@ -196,7 +196,7 @@ impl Default for LuaScriptingPlugin {
 
                         for (key, function) in script_function_registry
                             .iter_all()
-                            .filter(|(k, _)| k.namespace == Namespace::Global)
+                            .filter(|(k, _)| k.namespace == FunctionScope::Global)
                         {
                             context
                                 .globals()

@@ -9,7 +9,7 @@ use crate::{
     error::InteropError,
     function::{
         from::{Union, V},
-        from_ref::FromScriptRef,
+        from_ref::FromScriptErased,
     },
 };
 use ::{
@@ -341,7 +341,8 @@ impl ScriptBundleRegistration {
         value: ScriptValue,
     ) -> Result<Box<dyn Reflect>, InteropError> {
         let type_id = self.registration.type_id();
-        let instance = <Box<dyn PartialReflect>>::from_script_ref(type_id, value, world.clone())?;
+        let instance =
+            <Box<dyn PartialReflect>>::from_script_erased(type_id, value, world.clone())?;
         let instance = match instance.try_into_reflect() {
             Ok(instance) if instance.as_any().type_id() == type_id => instance,
             Ok(instance) => {
