@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -185,12 +185,16 @@
 <p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
 <p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
 <h2 id="globals"><a class="header" href="#globals">Globals</a></h2>
-<p>Scripts will have access to a few global variables in most callbacks:</p>
+<p>Scripts have only a few builtin globals:</p>
 <ul>
-<li><code>world</code>: a static reference to the world, with all sorts of functions available</li>
-<li><code>entity</code>: the entity the script is attached to, not available on load/unload callbacks, and in dynamic system callbacks.</li>
-<li><code>script_id</code>: the ID of the current script</li>
+<li><code>import_namespace(namespace)</code>: returns the types and functions of a <a href="./namespaces.html">namespace</a></li>
+<li><code>export_namespace(namespace, name, callback)</code>: see <a href="./namespaces.html#exporting-functions">Exporting functions</a></li>
+<li><code>register_callback(label, function)</code>: registers a function as a callback handler</li>
 </ul>
+<p>Everything else is imported. <code>world</code> is a static reference to the world, with all sorts of functions available: <code>import_namespace("bms").world</code>. BMS’ own functions are in <code>bms</code>, i.e. <code>bms.current_entity()</code> (the entity the script is attached to, or <code>nil</code>) and <code>bms.current_script()</code> (the script’s handle):</p>
+<pre><code class="language-lua">local bms = import_namespace("bms")
+print(bms.current_entity())
+</code></pre>
 
                     </main>
 

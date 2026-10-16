@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -192,19 +192,23 @@ Script systems are an experimental feature
 <h2 id="schedules"><a class="header" href="#schedules">Schedules</a></h2>
 <p>Bevy doesn’t support reflecting schedules, so BMS rolls it’s own schedule registry resource: <code>AppScheduleRegistry</code>, which can be used to add any custom schedules you want to interact with. The default Bevy schedules will be pre-populated for you.</p>
 <p>Once you’ve registered your schedule you will be able to interact with it in scripts like below:</p>
-<pre><code class="language-lua">local update_schedule = world.get_schedule_by_name("Update")
+<pre><code class="language-lua">local world = import_namespace("bms").world
+local update_schedule = world.get_schedule_by_name("Update")
 local systems = update:systems()
 local system_with_name = update:get_system_by_name("my_system")
 </code></pre>
 <h2 id="inserting-systems"><a class="header" href="#inserting-systems">Inserting Systems</a></h2>
-<p>To insert a system you will need to use the <code>system_builder</code> global function like below:</p>
-<pre><code class="language-lua">local system = system_builder("my_system", script_id)
+<p>To insert a system you will need to use <code>bms.system_builder</code> like below:</p>
+<pre><code class="language-lua">local bms = import_namespace("bms")
+local attachment = bms.ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+local system = bms.system_builder("my_system", attachment)
     :exclusive()
     :after(some_other_system)
     :before(another_system)
 </code></pre>
 <p>This will let you call <code>world.add_system</code> like so:</p>
-<pre><code class="language-lua">world.add_system(update_schedule,system)
+<pre><code class="language-lua">local world = import_namespace("bms").world
+world.add_system(update_schedule,system)
 </code></pre>
 <div class="warning">
 <p>If your event handler running the script is running in a certain schedule, that schedule will be temporarilly removed by Bevy. Meaning you won’t be able to modify it from within the script in-flight.</p>
@@ -214,7 +218,9 @@ local system_with_name = update:get_system_by_name("my_system")
 <p>The system builder allows script authors to parameterise systems, using <code>resource</code> and <code>query</code> functions.
 The order in which those functions are called, will define the order in which arguments will be provided to the specified script callback.</p>
 <p>For example:</p>
-<pre><code class="language-lua">system_builder("my_system")
+<pre><code class="language-lua">local bms = import_namespace("bms")
+local world = bms.world
+bms.system_builder("my_system")
     :query(
         world.query()
             :component(ComponentA)

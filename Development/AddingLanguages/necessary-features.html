@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-0987a965.js"></script>
+        <script src="../../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -181,56 +181,58 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <div class="warning">
-    This section needs work and is not fully accurate as is.
+                        <h1 id="necessary-features"><a class="header" href="#necessary-features">Necessary Features</a></h1>
+<p>In order for a language to be called “implemented” in BMS, it needs to support the following features.</p>
+<h2 id="values"><a class="header" href="#values">Values</a></h2>
+<p>Every <code>ScriptValue</code> variant needs a counterpart in the language, in both directions. Two of them are handles rather than data:</p>
+<ul>
+<li><code>ScriptValue::Reference</code>: a reference to a reflected value, usually a userdata/custom type wrapping <code>ReflectReference</code>.</li>
+<li><code>ScriptValue::Type</code>: a type itself, i.e. what scripts use to reach a type’s static members. It carries only a <code>TypeId</code> and never allocates.</li>
+</ul>
+<p>Every context gets the builtins as globals, nothing else: <code>bevy_mod_scripting_bindings::builtins::builtins()</code> (<code>import_namespace</code>, <code>export_namespace</code>) plus the language’s own <code>register_callback</code>:</p>
+<pre><code class="language-rust ignore">for (name, function) in builtins() {
+    context.globals().set(name, LuaScriptValue::from(ScriptValue::Function(function)))?;
+}</code></pre>
+<p>Script handlers, loaders etc. must be implemented such that the <code>ThreadWorldContainer</code> is set for every interaction with script contexts, or anywhere else it might be needed.</p>
+<h2 id="dispatching-to-rust"><a class="header" href="#dispatching-to-rust">Dispatching to Rust</a></h2>
+<p>All lookup rules live in <code>bevy_mod_scripting_bindings::dispatch</code>; a language maps its operators and metamethods onto it, and converts the values:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Script operation</th><th><code>dispatch</code> function</th></tr>
+</thead>
+<tbody>
+<tr><td><code>v.name</code>, <code>v[key]</code></td><td><code>index</code>, returns <code>Member::Method</code> or <code>Member::Static</code></td></tr>
+<tr><td><code>v.name = x</code></td><td><code>set_index</code></td></tr>
+<tr><td><code>Type.name</code> on a <code>ScriptValue::Type</code></td><td><code>static_index</code></td></tr>
+<tr><td><code>v + x</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>, <code>^</code>, <code>==</code>, <code>&lt;</code></td><td><code>binary</code> with the matching <code>ScriptOperatorNames</code> (dispatches to <code>add</code>, <code>sub</code>, <code>mul</code>, <code>div</code>, <code>rem</code>, <code>pow</code>, <code>eq</code>, <code>lt</code>)</td></tr>
+<tr><td><code>2 * v</code> (value on the right)</td><td><code>binary</code> too, which calls the operator’s reflected function (<code>mul</code>, <code>rsub</code>, …)</td></tr>
+<tr><td><code>-v</code></td><td><code>unary</code> with <code>Negation</code> (<code>neg</code>)</td></tr>
+<tr><td><code>#v</code></td><td><code>len</code> (lists directly, references through <code>len</code>)</td></tr>
+<tr><td>iteration</td><td><code>iter</code>, returns a function to call until it returns <code>ScriptValue::Unit</code></td></tr>
+<tr><td>printing</td><td><code>display</code> / <code>debug</code></td></tr>
+</tbody>
+</table>
 </div>
-
-<h1 id="necessary-features"><a class="header" href="#necessary-features">Necessary Features</a></h1>
-<p>In order for a language to be called “implemented” in BMS, it needs to support the following features:</p>
+<h3 id="receivers"><a class="header" href="#receivers">Receivers</a></h3>
+<p><code>index</code> returns functions which are called on the indexed value as <code>Member::Method</code>, without the value bound to them. Delivering the receiver is the language’s job:</p>
 <ul>
-<li>Every script function which is registered on a type’s namespace must:
+<li>Lua passes it with its colon syntax, <code>v:length()</code>, so the function is returned as is.</li>
+<li>Rhai has no method call syntax for function values, so it binds the receiver with <code>DynamicScriptFunction::curry</code>, <code>v.length.call()</code>.</li>
+</ul>
+<h3 id="static-members"><a class="header" href="#static-members">Static members</a></h3>
+<p><code>Type.name</code> resolves, in order, to:</p>
+<ol>
+<li>functions registered on the type itself</li>
+<li>functions shared by all types (registered on <code>StaticTypeRef</code>, i.e. the <code>new</code> constructor), with the type bound as their first argument by <code>DynamicScriptFunction::bind_to_type</code></li>
+<li>the type’s enum variants</li>
+</ol>
+<p>Types reach scripts in two forms, which resolve static members the same way:</p>
 <ul>
-<li>Be callable on a <code>ReflectReference</code> representing object of that type in the script</li>
+<li><code>ScriptValue::Type</code>, i.e. <code>world</code> (<code>import_namespace("bms").world</code>), indexed with <code>dispatch::static_index</code></li>
+<li>type registrations, i.e. the entries of <code>import_namespace</code>, which are references and are indexed with <code>dispatch::index</code> like any other value</li>
 </ul>
-<pre><code class="language-lua">local my_reference = ...
-my_reference:my_Registered_function()
-</code></pre>
-<ul>
-<li>If it’s static it must be callable from a global proxy object for that type, i.e.</li>
-</ul>
-<pre><code class="language-lua">MyType.my_static_function()
-</code></pre>
-</li>
-<li><code>ReflectReferences</code> must support a set of basic features:
-<ul>
-<li>Access to fields via reflection i.e.:</li>
-</ul>
-<pre><code class="language-lua">local my_reference = ...
-my_reference.my_field = 5
-print(my_reference.my_field)
-</code></pre>
-<ul>
-<li>Basic operators and standard operations are overloaded with the appropriate standard dynamic function registered:
-<ul>
-<li>Addition: dispatches to the <code>add</code> binary function on the type</li>
-<li>Multiplication: dispatches to the <code>mul</code> binary function on the type</li>
-<li>Division: dispatches to the <code>div</code> binary function on the type</li>
-<li>Subtraction: dispatches to the <code>sub</code> binary function on the type</li>
-<li>Modulo: dispatches to the <code>rem</code> binary function on the type</li>
-<li>Negation: dispatches to the <code>neg</code> unary function on the type</li>
-<li>Exponentiation: dispatches to the <code>pow</code> binary function on the type</li>
-<li>Equality: dispatches to the <code>eq</code> binary function on the type</li>
-<li>Less than: dispatches to the <code>lt</code> binary function on the type</li>
-<li>Length: calls the <code>len</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
-<li>Iteration: dispatches to the <code>iter</code> method on <code>ReflectReference</code> which returns an iterator function, this can be repeatedly called until it returns <code>ScriptValue::Unit</code> to signal the end of the iteration.</li>
-<li>Print: calls the <code>display</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
-<li>Debug print: calls the <code>debug</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>Script handlers, loaders etc. must be implemented such that the <code>ThreadWorldContainer</code> is set for every interaction with script contexts, or anywhere else it might be needed.</li>
-</ul>
+<p>Binding the type is done by BMS, so languages never handle <code>StaticTypeRef</code> arguments themselves.</p>
 
                     </main>
 

@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -248,7 +248,7 @@ pub fn main() {
 <p>The most trivial way to allow your type to be used directly in bindings is to apply derive macros like so:</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>#[derive(Clone, TypedThrough, GetTypeDependencies, ArgMeta, IntoScript, FromScript, Reflect)]
+</span>#[derive(Reflect, ScriptType)]
 pub struct MyThing(usize);
 
 
@@ -260,7 +260,8 @@ impl MyThing {
     }
 }
 <span class="boring">}</span></code></pre>
-<p>If you wish to customize the <code>FromScript</code> implementation, simply remove that macro and implement it yourself. See <a href="https://github.com/makspll/bevy_mod_scripting/blob/main/examples/docgen.rs">the custom conversions example</a> for more information.</p>
+<p><code>ScriptType</code> implements <code>FromScript</code>, <code>IntoScript</code>, <code>ArgMeta</code>, <code>GetTypeDependencies</code> and <code>TypedThrough</code> at once, converting through <code>V&lt;Self&gt;</code>.</p>
+<p>If you wish to customize one of the conversions, write that impl by hand and use <code>#[script_type(from = custom)]</code> or <code>#[script_type(into = custom)]</code>. This skips the generated impl and documents the type as opaque in generated docs. See <a href="https://github.com/makspll/bevy_mod_scripting/blob/main/examples/custom_conversions.rs">the custom conversions example</a> for more information.</p>
 <h2 id="context-arguments"><a class="header" href="#context-arguments">Context Arguments</a></h2>
 <p>Each script function call always receives an additional context argument: <code>FunctionCallContext</code>.
 You can opt-in to receive this argument in your own function definitions by adding it as the first argument.</p>
@@ -337,7 +338,8 @@ You can opt-in to receive this argument in your own function definitions by addi
 <tr><td><code>MyType</code></td><td><code>MyType</code> values and the <code>MyType</code> type, as imported from its namespace</td><td>whatever you declare</td></tr>
 <tr><td><code>ReflectReference</code></td><td>every value, after <code>MyType</code>’s own functions</td><td>the value</td></tr>
 <tr><td><code>StaticTypeRef</code></td><td>every type, after <code>MyType</code>’s own functions</td><td>the type, filled in automatically</td></tr>
-<tr><td><code>GlobalNamespace</code></td><td>the global scope, i.e. no prefix</td><td>whatever you declare</td></tr>
+<tr><td><code>NamespaceMembers</code></td><td>the namespace given by <code>namespace = "..."</code>, i.e. <code>import_namespace("my_game")</code></td><td>whatever you declare</td></tr>
+<tr><td><code>GlobalNamespace</code></td><td>the builtin globals, i.e. no prefix</td><td>whatever you declare</td></tr>
 </tbody>
 </table>
 </div>
@@ -363,8 +365,18 @@ Wherever the function is bound to a type, these are replaced with the type, so t
 Functions using <code>BoundHandle</code> are only documented on asset types, i.e. types registered with <code>register_asset_reflect</code>.
 The same placeholders work for functions on <code>EnumVariantRef</code>, which are bound to each variant of each enum when the LAD file is built (as functions in the <code>Variant</code> namespace). Placeholders left unbound are documented as what they are at runtime, a <code>ReflectReference</code> and a table.</p>
 <p>The enum variants of a type are also available on the type, i.e. <code>MyEnum.Variant</code>, after the functions.</p>
-<h2 id="globals"><a class="header" href="#globals">Globals</a></h2>
+<h2 id="namespace-members"><a class="header" href="#namespace-members">Namespace members</a></h2>
 <p>Each type registered with the type registry is an entry in the table <code>import_namespace</code> returns for its <a href="../ScriptingReference/namespaces.html">namespace</a>, i.e. <code>import_namespace("math").Vec3</code>.</p>
+<p>Functions which don’t belong to a type are members of a namespace, declared on <code>impl NamespaceMembers</code>:</p>
+<pre><code class="language-rust ignore">#[script_bindings(namespace = "my_game")]
+impl NamespaceMembers {
+    fn spawn_enemy(health: f32) { /* ... */ }
+}</code></pre>
+<pre><code class="language-lua">local my_game = import_namespace("my_game")
+my_game.spawn_enemy(5.0)
+</code></pre>
+<p>Values are registered per namespace with <code>AppScriptNamespaceMembers::register_value</code>, and are made each time the namespace is imported.</p>
+<p>The only globals are the builtins: <code>import_namespace</code>, <code>export_namespace</code> and <code>register_callback</code>. <code>world</code> is in the <code>bms</code> namespace: <code>import_namespace("bms").world</code>.</p>
 <p>Types are not globals, which keeps types with the same name from shadowing each other. Use the <code>filter</code> of <code>CoreScriptGlobalsPlugin</code> to choose which types scripts can look up by name.</p>
 
                     </main>

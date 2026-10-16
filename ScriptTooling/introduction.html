@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -185,7 +185,7 @@
 <p>BMS provides a custom Language Agnostic Declaration format (LAD), which can be used to integrate with other tooling.</p>
 <p>If you use <code>#[script_bindings]</code> macros, these files will magically contain your code comments, bindings as well as everything else required to drive other powerful integrations.</p>
 <p>The declaration file is generated from the type registry and serves as a light abstraction layer simplifying the traversal of all
-available types and globals as well as functions.</p>
+available types, namespaces and functions.</p>
 <p>You can customize how / where and if these files are stored using the main BMS plugin group:</p>
 <pre><code class="language-rust ignore">    app.add_plugins(BMSPlugin.set::&lt;ScriptingFilesGenerationPlugin&gt;(
         ScriptingFilesGenerationPlugin::new(
@@ -206,7 +206,7 @@ available types and globals as well as functions.</p>
 
 <p><a href="https://github.com/LuaLS/lua-language-server">Luals</a> or LLS, is an open source language server which integrates with many IDE’s.</p>
 <p>It is powered by lua specific annotation or definition files which BMS can generate directly from its own LADfiles.</p>
-<p>To enable this simply enable the <code>lua_language_server_files</code> feature, and a <code>bindings.lua</code> definition file will be generated in the LADfile output directory in the <code>Startup</code> schedule.</p>
+<p>To enable this simply enable the <code>lua_language_server_files</code> feature, and a <code>bindings.d.lua</code> definition file, plus a <code>bindings.&lt;namespace&gt;.d.lua</code> file per namespace, will be generated in the LADfile output directory in the <code>Startup</code> schedule.</p>
 <p>Script writers can then use this generated file by pointing their <code>.luarc.json</code> file to these definitions:</p>
 <pre><code class="language-json">{
     "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",

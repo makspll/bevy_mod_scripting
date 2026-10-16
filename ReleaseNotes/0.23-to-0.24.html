@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,50 +183,59 @@
                     <main>
                         <h1 id="migrating-from-023-to-024"><a class="header" href="#migrating-from-023-to-024">Migrating from 0.23 to 0.24</a></h1>
 <h2 id="scripts"><a class="header" href="#scripts">Scripts</a></h2>
-<h3 id="the-types-global-is-removed"><a class="header" href="#the-types-global-is-removed">The <code>types</code> global is removed</a></h3>
-<p>It was deprecated in 0.23. Use <code>import_namespace</code>, or <code>world.get_type_by_name</code>:</p>
-<pre><code class="language-diff">- local Transform = types.Transform
-+ local Transform = import_namespace("transform").Transform
-+ -- or
-+ local Transform = world.get_type_by_name("bevy_transform::components::transform::Transform")
+<p>The only globals left are <code>import_namespace</code>, <code>export_namespace</code> and <code>register_callback</code>. Everything else, <code>world</code> included, is imported from a namespace, see <a href="../ScriptingReference/namespaces.html">Namespaces</a>:</p>
+<pre><code class="language-diff">+ local world = import_namespace("bms").world
+  world.spawn()
 </code></pre>
-<h3 id="types-are-no-longer-globals"><a class="header" href="#types-are-no-longer-globals">Types are no longer globals</a></h3>
-<p>Globals named after types, like <code>Vec3</code> or <code>Transform</code>, are gone: types sharing a short name used to shadow each other unpredictably. Import types from their namespace instead. Bevy types with bindings are grouped in namespaces by category (<code>math</code>, <code>ecs</code>, <code>time</code>, <code>transform</code>, <code>ui</code>, …), BMS’ types live in <code>bms</code>, see <a href="../ScriptingReference/namespaces.html">Namespaces</a>:</p>
-<pre><code class="language-diff">+ local Vec3 = import_namespace("math").Vec3
+<p>Types (<code>Vec3</code>, <code>Transform</code>, and the deprecated <code>types</code> table) are imported from their namespace. Bevy types are grouped by category (<code>math</code>, <code>ecs</code>, <code>transform</code>, <code>ui</code>, …), BMS’ types live in <code>bms</code>:</p>
+<pre><code class="language-diff">- local t = Transform.from_translation(Vec3.new(1, 2, 3))
++ local Vec3 = import_namespace("math").Vec3
 + local Transform = import_namespace("transform").Transform
-  local t = Transform.from_translation(Vec3.new(1, 2, 3))
++ local t = Transform.from_translation(Vec3.new(1, 2, 3))
 </code></pre>
-<p>There is no option to keep them.</p>
-<h3 id="worldget_type_by_name-takes-a-full-path"><a class="header" href="#worldget_type_by_name-takes-a-full-path"><code>world.get_type_by_name</code> takes a full path</a></h3>
-<p>Short names no longer resolve, neither for Rust types nor for script components. Pass the full type path, i.e. <code>world.get_type_by_name("bevy_transform::components::transform::Transform")</code> or <code>world.get_type_by_name("script.my_game.Enemy")</code>, or use <code>import_namespace</code>, which looks types up by short name within one namespace.</p>
-<h3 id="numbers-can-be-on-the-left-of-operators"><a class="header" href="#numbers-can-be-on-the-left-of-operators">Numbers can be on the left of operators</a></h3>
-<p><code>2 * v</code> and <code>1 + v</code> now work like <code>v * 2</code> and <code>v + 1</code>. For the other arithmetic operators the value’s type provides a reflected function, i.e. <code>1 - v</code> calls <code>rsub(v, 1)</code> and <code>1 / v</code> calls <code>rdiv(v, 1)</code>; vectors have both.</p>
-<h2 id="tooling"><a class="header" href="#tooling">Tooling</a></h2>
-<h3 id="lua-language-server-files"><a class="header" href="#lua-language-server-files">Lua language server files</a></h3>
+<p>BMS’ functions moved to <code>bms</code>: <code>construct</code>, <code>system_builder</code>, <code>run_script_callback</code>, <code>queue_script_callback</code>, <code>pack_args</code>, <code>unpack_args</code> and <code>log_*</code>. <code>entity</code> and <code>script_asset</code> are now functions:</p>
+<pre><code class="language-diff">+ local bms = import_namespace("bms")
+- log_info("hi")
++ bms.log_info("hi")
+- world.despawn(entity)
++ world.despawn(bms.current_entity())
+- script_asset
++ bms.current_script()
+</code></pre>
+<p>Other changes:</p>
 <ul>
-<li>Types are no longer declared as globals, they are fields of the tables <code>import_namespace</code> returns, so the language server now flags <code>Vec3</code> as an undefined global instead of accepting it.</li>
-<li>Generic types are declared once with their parameters, and used with their arguments, i.e. <code>Handle&lt;Image&gt;</code> for the handle <code>Image.load</code> returns. This needs version 3.17.0 or later of the language server. The functions and fields using handles used to be left out or typed as <code>any</code>.</li>
-<li>Generic types which the LAD file builder was not told about are still typed as <code>any</code>.</li>
-<li>The book lists types by namespace: the types page links to a page per namespace (what <code>import_namespace</code> takes, with <code>root</code> for types without a crate, such as primitives), which lists its types. The pages of the types themselves did not move. Functions on the variants of an enum are documented on the page of the enum as <code>Variant.function</code>, they used to be listed as global functions.</li>
-<li><code>cargo xtask docgen</code> is removed, <code>cargo xtask docs</code> generates the same files in <code>assets/definitions</code>. It runs the docgen example with all the binding features, previously only the default ones were used, so the generated files left out the bindings which are not on by default, such as the asset functions. Pass <code>--test-bindings</code> to also document the functions available to the script tests, which <code>docgen</code> used to do.</li>
+<li><code>world.get_type_by_name</code> only takes full paths, i.e. <code>"bevy_transform::components::transform::Transform"</code> or <code>"script.my_game.Enemy"</code>.</li>
+<li>Numbers work on the left of operators: <code>2 * v</code>, <code>1 - v</code> (dispatched to <code>mul</code>, <code>rsub</code>, …), in Rhai too.</li>
 </ul>
 <h2 id="rust"><a class="header" href="#rust">Rust</a></h2>
 <ul>
-<li>Functions are no longer overloaded: registering a name which already exists on a namespace replaces the function, rather than adding an overload tried after it. Overloads were tried one by one, cloning the arguments and building an error for every miss, which made operators slower the more overloads a type had. Accept a <code>Union</code> or a <code>ScriptValue</code> for arguments of different types instead.
-<ul>
-<li><code>ScriptFunctionRegistry::overwrite</code>, <code>overwrite_documented</code>, <code>iter_overloads</code> and <code>remove_all_overloads</code> are removed, use <code>register</code> and <code>remove</code>.</li>
-<li><code>WorldExtensions::try_call_overloads</code> is renamed to <code>call_operator</code>.</li>
-<li>Language implementations should call the operator’s <code>ScriptOperatorNames::reflected_script_function_name</code> on the right operand when only it is a value.</li>
+<li>Script globals are removed (<code>AppScriptGlobalsRegistry</code>, <code>#[script_globals]</code>, <code>register_static*</code>, <code>GlobalNamespace</code>, <code>FunctionScope::Global</code>, <code>DummyScriptFunctionRegistry</code>, <code>use_dummy_registry</code>, …). Put functions in a namespace instead:
+<pre><code class="language-rust ignore">#[script_bindings(namespace = "my_game")]
+impl NamespaceMembers {
+    /// `import_namespace("my_game").spawn_enemy(5)` in scripts
+    fn spawn_enemy(ctxt: FunctionCallContext, hp: usize) -&gt; Result&lt;(), InteropError&gt; { .. }
+}</code></pre>
+Values go in <code>AppScriptNamespaceMembers::register_value</code>, made each time the namespace is imported.</li>
+<li>Types with bindings from the bevy crates are in category namespaces. Move a type with <code>app.override_script_namespace</code>.</li>
+<li>Registering a function name twice replaces it, there are no overloads (<code>overwrite*</code>, <code>iter_overloads</code>, <code>remove_all_overloads</code> are removed). Take a <code>Union</code> or <code>ScriptValue</code> for arguments of different types.</li>
+<li><code>#[derive(ScriptType)]</code> implements everything a type needs to be used directly in function signatures (<code>FromScript</code>, <code>IntoScript</code>, <code>ArgMeta</code>, <code>GetTypeDependencies</code>, <code>TypedThrough</code>). Use <code>#[script_type(from = custom)]</code> / <code>(into = custom)</code> for a hand written conversion.</li>
+<li>Renames: <code>Namespace</code> → <code>FunctionScope</code>, <code>IntoNamespace</code> → <code>IntoFunctionScope</code>, <code>FromScriptRef</code>/<code>IntoScriptRef</code> → <code>FromScriptErased</code>/<code>IntoScriptErased</code>, <code>try_call_overloads</code> → <code>call_operator</code>.</li>
+<li>Functions on <code>StaticTypeRef</code> take <code>StaticTypeRef</code> instead of <code>V&lt;StaticTypeRef&gt;</code>.</li>
+<li><code>ScriptFunctionRegistry</code> is keyed by <code>TypeId</code> instead of <code>FunctionScope</code>: <code>register(type_id, ..)</code>, <code>get_function(type_id, name)</code>, <code>iter_namespace</code> → <code>iter_type</code>.</li>
 </ul>
-</li>
-<li><code>CoreGlobals::types</code>, <code>ScriptTypeCatalogue::flat_view</code> and <code>ScriptTypeCatalogue::duplicate_short_names</code> are removed.</li>
-<li><code>ScriptComponentRegistry::find</code> and <code>WorldExtensions::get_type_by_name</code> only take a full path.</li>
-<li>The Lua language server backend no longer marks globals as deprecated: <code>TypeInstance</code> lost its <code>deprecated</code> field.</li>
-<li>LAD files describe generic types: <code>LadFile::generic_types</code> and <code>LadTypeDefinition::generic_type</code> are added (set the latter to <code>None</code> when building types by hand), and <code>LadFileBuilder::add_generic_type</code> declares a generic type by a pattern like <code>bevy_asset::handle::Handle&lt;$A&gt;</code>. Reflection only exposes the arguments of a generic type, so these are documented as opaque.</li>
-<li><code>LuaType::Generic</code> holds the <code>args</code> of the instantiation instead of a <code>parent</code>, and the classes of the Lua declaration files are <code>local</code> tables instead of globals.</li>
-<li>mdbook documents a generic type on a page of its own rather than a page per instantiation.</li>
-<li><code>CoreScriptGlobalsPlugin::register_static_references</code> is removed, types are no longer registered as globals. <code>CoreScriptGlobalsPlugin::filter</code> now only decides which types scripts can look up by name.</li>
-<li>Types with <code>script_bindings</code> from the bevy bindings crates, and all types of the bevy crates they cover, are put in category namespaces (see <code>set_crate_script_namespaces</code>). Use <code>app.override_script_namespace</code> to move a type elsewhere.</li>
+<h3 id="language-implementations"><a class="header" href="#language-implementations">Language implementations</a></h3>
+<ul>
+<li>Dispatch every script operation through <code>bevy_mod_scripting_bindings::dispatch</code> (<code>index</code>, <code>set_index</code>, <code>static_index</code>, <code>binary</code>, <code>unary</code>, <code>len</code>, <code>iter</code>, <code>display</code>, <code>debug</code>), see <a href="../Development/AddingLanguages/necessary-features.html">Necessary Features</a>. <code>WorldExtensions::lookup_function</code>, <code>lookup_instance_function</code>, <code>lookup_type_function</code> and <code>lookup_reserved_function</code> are private.</li>
+<li>Convert the new <code>ScriptValue::Type(TypeId)</code>, a type itself (what <code>world</code> and <code>StaticTypeRef</code> are).</li>
+<li>Set <code>bindings::builtins::builtins()</code> (<code>import_namespace</code>, <code>export_namespace</code>) and your <code>register_callback</code> as globals, nothing else. Don’t set <code>world</code>, <code>entity</code> or <code>script_asset</code> anymore.</li>
+<li><code>LuaStaticReflectReference</code> / <code>RhaiStaticReflectReference</code> are <code>LuaTypeRef</code> / <code>RhaiTypeRef</code>.</li>
+</ul>
+<h3 id="documentation-tooling"><a class="header" href="#documentation-tooling">Documentation tooling</a></h3>
+<ul>
+<li>The Lua language server files are split per namespace (<code>bindings.d.lua</code>, <code>bindings.&lt;namespace&gt;.d.lua</code>, point <code>workspace.library</code> at the directory), classes are named after their namespace (<code>math.Vec3</code>), and generic types are declared once (<code>Handle&lt;Image&gt;</code>, needs LuaLS 3.17+).</li>
+<li><code>cargo xtask docgen</code> is replaced by <code>cargo xtask docs</code> (all binding features, <code>--test-bindings</code> for the script test functions). <code>cargo xtask bless-lad</code> updates the LAD test fixtures.</li>
+<li><code>ThroughTypeInfo</code> is flat (<code>ThroughTypeInfo::Vec(..)</code>, <code>ThroughTypeInfo::Ref(type_info)</code>), <code>ThroughTypeInfo::TypeInfo</code> is <code>Opaque</code>. <code>#[derive(TypedThrough)]</code> documents a type as opaque, <code>#[typed_through(value)]</code> as a value.</li>
+<li>LAD: <code>LadFieldOrVariableKind</code> → <code>LadTypeKind</code>; <code>globals</code> is removed, builtin functions are <code>LadFunctionNamespace::Global</code> (the mdbook “Globals” and “Functions” pages are one “Builtins” page), namespaces have <code>values</code> (<code>add_instance*</code> → <code>add_namespace_value_of</code> / <code>add_namespace_instance</code>); new <code>namespaces</code>, <code>generic_types</code>, <code>LadTypeDefinition::generic_type</code>, <code>LadFunction::receiver</code>, <code>LadFunctionMetadata::operator</code> (replaces <code>is_operator</code>); arguments are always named and never include the call context; <code>polymorphizied_types</code> is removed. <code>ArgumentVisitor</code> has an <code>Output</code> type and <code>visit_*</code> methods.</li>
 </ul>
 
                     </main>

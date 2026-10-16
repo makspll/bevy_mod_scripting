@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-0987a965.js"></script>
+        <script src="../../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -195,21 +195,21 @@
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./duration/as_secs.html">as_secs</a></td><td>The duration in seconds.</td></tr>
-<tr><td><a href="./duration/zero.html">zero</a></td><td>A duration of no time.</td></tr>
+<tr><td><a href="./duration/as_secs_f64.html">as_secs_f64</a></td><td>The duration in seconds, as a double precision number.</td></tr>
 <tr><td><a href="./duration/add.html">add</a></td><td>The sum of two durations, capped at the largest representable duration.</td></tr>
+<tr><td><a href="./duration/mul.html">mul</a></td><td>The duration scaled by `factor`. Errors if `factor` is negative or not finite.</td></tr>
 <tr><td><a href="./duration/sub.html">sub</a></td><td>The difference of two durations, or zero if `rhs` is the longer one.</td></tr>
 <tr><td><a href="./duration/lt.html">lt</a></td><td>Whether this duration is shorter than `other`.</td></tr>
-<tr><td><a href="./duration/eq.html">eq</a></td><td>Whether two durations are equal.</td></tr>
-<tr><td><a href="./duration/div.html">div</a></td><td>The duration divided by `divisor`. Errors if `divisor` is not positive.</td></tr>
-<tr><td><a href="./duration/from_secs.html">from_secs</a></td><td>A duration of `secs` seconds. Errors if `secs` is negative or not finite.</td></tr>
-<tr><td><a href="./duration/is_zero.html">is_zero</a></td><td>Whether the duration is zero.</td></tr>
-<tr><td><a href="./duration/mul.html">mul</a></td><td>The duration scaled by `factor`. Errors if `factor` is negative or not finite.</td></tr>
-<tr><td><a href="./duration/from_micros.html">from_micros</a></td><td>A duration of `micros` microseconds.</td></tr>
-<tr><td><a href="./duration/from_millis.html">from_millis</a></td><td>A duration of `millis` milliseconds.</td></tr>
+<tr><td><a href="./duration/as_secs.html">as_secs</a></td><td>The duration in seconds.</td></tr>
 <tr><td><a href="./duration/from_nanos.html">from_nanos</a></td><td>A duration of `nanos` nanoseconds.</td></tr>
+<tr><td><a href="./duration/zero.html">zero</a></td><td>A duration of no time.</td></tr>
+<tr><td><a href="./duration/from_millis.html">from_millis</a></td><td>A duration of `millis` milliseconds.</td></tr>
+<tr><td><a href="./duration/is_zero.html">is_zero</a></td><td>Whether the duration is zero.</td></tr>
 <tr><td><a href="./duration/as_millis.html">as_millis</a></td><td>The duration in whole milliseconds, rounded down.</td></tr>
-<tr><td><a href="./duration/as_secs_f64.html">as_secs_f64</a></td><td>The duration in seconds, as a double precision number.</td></tr>
+<tr><td><a href="./duration/div.html">div</a></td><td>The duration divided by `divisor`. Errors if `divisor` is not positive.</td></tr>
+<tr><td><a href="./duration/from_micros.html">from_micros</a></td><td>A duration of `micros` microseconds.</td></tr>
+<tr><td><a href="./duration/eq.html">eq</a></td><td>Whether two durations are equal.</td></tr>
+<tr><td><a href="./duration/from_secs.html">from_secs</a></td><td>A duration of `secs` seconds. Errors if `secs` is negative or not finite.</td></tr>
 <tr><td><a href="./duration/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -219,11 +219,11 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/timer/mode.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/timer/pause.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/duration/as_secs.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/duration/as_secs_f64.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -233,11 +233,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/timer/mode.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/timer/pause.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/duration/as_secs.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/duration/as_secs_f64.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -189,28 +189,29 @@
 <tr><th>Function</th><th>When the callback runs</th><th>Returns</th></tr>
 </thead>
 <tbody>
-<tr><td><code>run_script_callback(label, target, ...args)</code></td><td>Immediately, before the call returns</td><td>What the callback returned</td></tr>
-<tr><td><code>queue_script_callback(label, target, ...args)</code></td><td>As soon as the current callback finishes, in the same frame</td><td>Nothing</td></tr>
+<tr><td><code>bms.run_script_callback(label, target, ...args)</code></td><td>Immediately, before the call returns</td><td>What the callback returned</td></tr>
+<tr><td><code>bms.queue_script_callback(label, target, ...args)</code></td><td>As soon as the current callback finishes, in the same frame</td><td>Nothing</td></tr>
 </tbody>
 </table>
 </div>
 <pre><code class="language-lua">local bms = import_namespace("bms")
 local ScriptAttachment, Recipients = bms.ScriptAttachment, bms.Recipients
-local enemy_script = ScriptAttachment.new_entity_script(enemy, script_asset)
+local enemy_script = ScriptAttachment.new_entity_script(enemy, bms.current_script())
 
 -- runs `take_damage(10, "fire")` in the enemy's script right away
-local remaining_health = run_script_callback("take_damage", enemy_script, 10, "fire")
+local remaining_health = bms.run_script_callback("take_damage", enemy_script, 10, "fire")
 
 -- runs `on_hit()` in every script once this callback is done
-queue_script_callback("on_hit", Recipients.all_scripts())
+bms.queue_script_callback("on_hit", Recipients.all_scripts())
 </code></pre>
-<pre><code class="language-rhai">let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
+<pre><code class="language-rhai">let bms = import_namespace.call("bms");
+let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
 let Recipients = import_namespace.call("bms").Recipients;
-let enemy_script = ScriptAttachment.new_entity_script.call(enemy, script_asset);
+let enemy_script = ScriptAttachment.new_entity_script.call(enemy, bms.current_script.call());
 
-let remaining_health = run_script_callback.call("take_damage", enemy_script, 10, "fire");
+let remaining_health = bms.run_script_callback.call("take_damage", enemy_script, 10, "fire");
 
-queue_script_callback.call("on_hit", Recipients.all_scripts.call());
+bms.queue_script_callback.call("on_hit", Recipients.all_scripts.call());
 </code></pre>
 <h2 id="targets"><a class="header" href="#targets">Targets</a></h2>
 <p>The target is either a single script:</p>
@@ -225,21 +226,21 @@ queue_script_callback.call("on_hit", Recipients.all_scripts.call());
 <li><code>Recipients.static_script(script)</code></li>
 <li><code>Recipients.entity_script(entity, script)</code></li>
 </ul>
-<p>For a single script, <code>run_script_callback</code> returns the callback’s value. For recipients it returns a list with the value of each script which ran the callback.
+<p>For a single script, <code>bms.run_script_callback</code> returns the callback’s value. For recipients it returns a list with the value of each script which ran the callback.
 Scripts which are still loading or unloading are skipped when targeting many scripts, while targeting a specific script which is not loaded is an error.</p>
 <h2 id="errors"><a class="header" href="#errors">Errors</a></h2>
 <ul>
-<li><code>run_script_callback</code> raises the callback’s error in the calling script, so it can be handled like any other error. For recipients, the first error is raised after all scripts ran the callback.</li>
+<li><code>bms.run_script_callback</code> raises the callback’s error in the calling script, so it can be handled like any other error. For recipients, the first error is raised after all scripts ran the callback.</li>
 <li>Errors of queued callbacks cannot reach the script which queued them, they are reported like other script errors (logged by default).</li>
 </ul>
 <h2 id="which-scripts-can-be-called-immediately"><a class="header" href="#which-scripts-can-be-called-immediately">Which scripts can be called immediately</a></h2>
-<p>While a callback runs, its script context is busy, so <code>run_script_callback</code> cannot run a callback in a busy context. This includes:</p>
+<p>While a callback runs, its script context is busy, so <code>bms.run_script_callback</code> cannot run a callback in a busy context. This includes:</p>
 <ul>
 <li>the calling script itself (call the function directly instead),</li>
 <li>scripts sharing a context with the calling script,</li>
 <li>scripts further up the current chain of callbacks, e.g. A calls B, which calls A again.</li>
 </ul>
-<p>These calls return an error instead. <code>queue_script_callback</code> works for all of them, since queued callbacks only run once the current callback has finished.</p>
+<p>These calls return an error instead. <code>bms.queue_script_callback</code> works for all of them, since queued callbacks only run once the current callback has finished.</p>
 <p>Whether scripts share a context depends on the context policy of the scripting plugin:</p>
 <div class="table-wrapper">
 <table>
@@ -261,7 +262,7 @@ Scripts which are still loading or unloading are skipped when targeting many scr
 <li>To stop callbacks from queueing each other endlessly, at most 1024 queued callbacks run in one go. Any beyond that run later, and an error is reported.</li>
 </ul>
 <h2 id="script-systems"><a class="header" href="#script-systems">Script systems</a></h2>
-<p>Script systems running in parallel with other systems (i.e. not marked <code>exclusive</code>) cannot use <code>run_script_callback</code>, as another system might be running the target script at the same time.
+<p>Script systems running in parallel with other systems (i.e. not marked <code>exclusive</code>) cannot use <code>bms.run_script_callback</code>, as another system might be running the target script at the same time.
 Callbacks they queue run at the end of the frame instead, in the <code>ScriptingSystemSet::RunQueuedCallbacks</code> system set in the <code>Last</code> schedule.</p>
 <h2 id="limits"><a class="header" href="#limits">Limits</a></h2>
 <ul>

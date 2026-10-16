@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -193,7 +193,7 @@
 <h2 id="attaching-scripts-to-entities"><a class="header" href="#attaching-scripts-to-entities">Attaching scripts to entities</a></h2>
 <p>In order to attach a script and make it runnable simply add a <code>ScriptComponent</code> to an entity</p>
 <pre><code class="language-rust ignore">    commands.entity(my_entity).insert(ScriptComponent::new(vec![my_script_handle, another_script_handle]));</code></pre>
-<p>When this script is run the <code>entity</code> global will represent the entity the script is attached to. This allows you to interact with the entity in your script easilly.</p>
+<p>In the script, <code>import_namespace("bms").current_entity()</code> returns the entity the script is attached to.</p>
 <div class="warning">
 Be wary of path separators, by default script ID's are derived from asset paths, which are platform dependent. Make sure to use `std::path::PathBuf` if you are targetting multiple platforms.
 </div>

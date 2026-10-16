@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -194,7 +194,8 @@
 </tbody>
 </table>
 </div>
-<pre><code class="language-lua">local my_game = import_namespace("my_game") -- the crate defining the types
+<pre><code class="language-lua">local world = import_namespace("bms").world
+local my_game = import_namespace("my_game") -- the crate defining the types
 world.trigger_event(my_game.MyEvent, my_game.MyEvent.new({ amount = 3 }))
 world.write_message(my_game.MyMessage, my_game.MyMessage.new({ amount = 3 }))
 </code></pre>
@@ -222,11 +223,12 @@ app.register_type::&lt;MyEvent&gt;()
 <h2 id="things-to-be-aware-of"><a class="header" href="#things-to-be-aware-of">Things to be aware of</a></h2>
 <ul>
 <li><code>trigger_event</code> needs exclusive access to the world, so it fails with an access error if the script is currently holding a borrowed reference elsewhere in the same call (e.g. inside a query iteration or <code>with_*</code> access). Trigger events from regular callbacks.</li>
-<li>Observers run before <code>trigger_event</code> returns, and so do the commands they queue (as for other operations such as spawning). A Rust observer or command which runs a callback in the currently executing script context fails with an error. Use <code>run_script_callback</code> or <code>queue_script_callback</code> instead (see <a href="./calling-other-scripts.html">Calling Other Scripts</a>).</li>
+<li>Observers run before <code>trigger_event</code> returns, and so do the commands they queue (as for other operations such as spawning). A Rust observer or command which runs a callback in the currently executing script context fails with an error. Use <code>bms.run_script_callback</code> or <code>bms.queue_script_callback</code> instead (see <a href="./calling-other-scripts.html">Calling Other Scripts</a>).</li>
 </ul>
 <h2 id="observing-events-from-scripts"><a class="header" href="#observing-events-from-scripts">Observing events from scripts</a></h2>
 <p><code>world.add_observer(event, callback, components?, entities?)</code> runs the calling script’s callback <code>callback</code> (registered with <code>register_callback</code>, or a top level function of that name) with a copy of the event, whenever the event is triggered. It returns the observer entity: despawn it to remove the observer.</p>
-<pre><code class="language-lua">local ecs = import_namespace("ecs")
+<pre><code class="language-lua">local world = import_namespace("bms").world
+local ecs = import_namespace("ecs")
 local Mana = world.register_new_component("script.my_game", "Mana")
 
 register_callback("on_mana_added", function(event)
@@ -246,7 +248,8 @@ world.despawn(observer) -- later
 </ul>
 <h2 id="script-defined-events"><a class="header" href="#script-defined-events">Script defined events</a></h2>
 <p>Scripts can define events carrying any value:</p>
-<pre><code class="language-lua">local Damaged = world.register_new_event("script.my_game", "Damaged")
+<pre><code class="language-lua">local world = import_namespace("bms").world
+local Damaged = world.register_new_event("script.my_game", "Damaged")
 
 register_callback("on_damaged", function(payload)
     print("took damage:", payload.amount)
@@ -263,7 +266,7 @@ world.trigger_event(Damaged, { amount = 5 })
 <h2 id="built-in-messages"><a class="header" href="#built-in-messages">Built-in messages</a></h2>
 <p>The following BMS messages are reflected and can be written from scripts:</p>
 <ul>
-<li><code>ScriptCallbackMessage</code>: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer <code>queue_script_callback</code> to run callbacks from scripts.</li>
+<li><code>ScriptCallbackMessage</code>: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer <code>bms.queue_script_callback</code> to run callbacks from scripts.</li>
 <li><code>ScriptAttachedMessage</code>, <code>ScriptDetachedMessage</code>, <code>ScriptAssetModifiedMessage</code>: drive the script loading pipeline</li>
 </ul>
 <p>The internal loading pipeline state events (<code>LoadingCompleted</code>, <code>ContextAssigned</code>, …) are intentionally not reflected.</p>

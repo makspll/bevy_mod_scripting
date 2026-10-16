@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bfd9e1a4.js";
+            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0987a965.js"></script>
+        <script src="../toc-19ba8b69.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -200,11 +200,13 @@
 <p><code>Type:namespace()</code> returns a type’s namespace. Script registered components and events live in <code>script.*</code> namespaces, see below.</p>
 <h2 id="importing-a-namespace"><a class="header" href="#importing-a-namespace">Importing a namespace</a></h2>
 <p><code>import_namespace(namespace)</code> returns a table of the namespace’s types (and, for script namespaces, events and exported functions) by short name. Each type can be used to call its static functions, to access its enum variants, and wherever a type is expected:</p>
-<pre><code class="language-lua">local Vec3 = import_namespace("math").Vec3
+<pre><code class="language-lua">local bms = import_namespace("bms")
+local world = bms.world
+local Vec3 = import_namespace("math").Vec3
 local transform = import_namespace("transform")
 
 local t = transform.Transform.from_translation(Vec3.new(0, 1, 0))
-world.add_default_component(entity, transform.Transform)
+world.add_default_component(bms.current_entity(), transform.Transform)
 </code></pre>
 <p>Import once at the top of a script, and keep the types you use in locals. In Lua, don’t name the table of the <code>math</code> namespace <code>math</code>: that would hide Lua’s own <code>math</code> library.</p>
 <ul>
@@ -224,12 +226,14 @@ app.override_script_namespace::&lt;MyType&gt;("my_namespace"); // bevy_mod_scrip
 registry.register_type_data_with::&lt;MyType, ScriptNamespace, _&gt;("my_namespace");</code></pre>
 <h2 id="namespaces-defined-by-scripts"><a class="header" href="#namespaces-defined-by-scripts">Namespaces defined by scripts</a></h2>
 <p>Scripts register components and events into namespaces they pass explicitly. These start with <code>script.</code>, followed by dot-separated segments of letters, digits and underscores:</p>
-<pre><code class="language-lua">local Enemy = world.register_new_component("script.game.ai", "Enemy")
+<pre><code class="language-lua">local bms = import_namespace("bms")
+local world = bms.world
+local Enemy = world.register_new_component("script.game.ai", "Enemy")
 local Hit = world.register_new_event("script.game.ai", "Hit")
 
 -- anywhere, including other scripts
 local ai = import_namespace("script.game.ai")
-world.add_default_component(entity, ai.Enemy)
+world.add_default_component(bms.current_entity(), ai.Enemy)
 world.trigger_event(ai.Hit, { damage = 3 })
 </code></pre>
 <ul>
@@ -239,14 +243,17 @@ world.trigger_event(ai.Hit, { damage = 3 })
 <li>Components and events stay registered when their script unloads, as Bevy cannot unregister components.</li>
 </ul>
 <p>Values of script components are <code>DynamicComponent</code>s, holding any value in <code>data</code>. Tables read from <code>data</code> are copies: assign a new table to change them.</p>
-<pre><code class="language-lua">local DynamicComponent = import_namespace("bms").DynamicComponent
-world.insert_component(entity, Enemy, DynamicComponent.new({ data = { hp = 5 } }))
-local enemy = world.get_component(entity, Enemy)
+<pre><code class="language-lua">local bms = import_namespace("bms")
+local world = bms.world
+local DynamicComponent = bms.DynamicComponent
+world.insert_component(bms.current_entity(), Enemy, DynamicComponent.new({ data = { hp = 5 } }))
+local enemy = world.get_component(bms.current_entity(), Enemy)
 enemy.data = { hp = enemy.data.hp - 1 } -- `enemy.data.hp = 4` would not write through
 </code></pre>
 <h2 id="exporting-functions"><a class="header" href="#exporting-functions">Exporting functions</a></h2>
 <p><code>export_namespace(namespace, name, callback)</code> makes a callback of the calling script callable by other scripts, in any language:</p>
 <pre><code class="language-lua">-- script A
+local world = import_namespace("bms").world
 register_callback("spawn_enemy_impl", function(health)
     return world.spawn()
 end)
@@ -257,7 +264,7 @@ local enemy = import_namespace("script.game").spawn_enemy(5)
 </code></pre>
 <ul>
 <li><code>callback</code> is a function registered with <code>register_callback</code>, or a top level function of that name. Only functions can be exported.</li>
-<li>Calls run in the exporting script’s context, like <code>run_script_callback</code> (see <a href="./calling-other-scripts.html">Calling Other Scripts</a>), and return the callback’s result.</li>
+<li>Calls run in the exporting script’s context, like <code>bms.run_script_callback</code> (see <a href="./calling-other-scripts.html">Calling Other Scripts</a>), and return the callback’s result.</li>
 <li>A script cannot call its own exports, or those of scripts sharing its context, from one of its callbacks: its context is busy. Call the function directly instead.</li>
 <li>Exports are looked up on every call, so replaced exports are picked up and removed ones fail with an error.</li>
 <li>A path can only be exported by one script. Exporting it again from the same script replaces it. Exports can’t share a path with a component.</li>
