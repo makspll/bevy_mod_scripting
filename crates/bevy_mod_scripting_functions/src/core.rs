@@ -9,11 +9,12 @@ use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_bindings::{
-    AnyTypeRegistrationV, DynamicScriptFunction, DynamicScriptFunctionMut, EnumVariantRef,
-    FunctionInfo, GlobalNamespace, InteropError, PartialReflectExt, QueuedScriptCallback,
-    ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration,
-    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
-    ScriptTypeCatalogue, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
+    AnyTypeRegistrationV, AppScriptNamespaceMembers, DynamicScriptFunction,
+    DynamicScriptFunctionMut, EnumVariantRef, FunctionInfo, GlobalNamespace, InteropError,
+    NamespaceMembers, PartialReflectExt, QueuedScriptCallback, ReflectReference,
+    ScriptBundleRegistration, ScriptComponentRegistration, ScriptEventRegistration,
+    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, ScriptTypeCatalogue,
+    ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
     function::into::IntoScript,
     function::{
@@ -1905,11 +1906,21 @@ impl GlobalNamespace {
                 .collect::<Vec<_>>();
             (exports, events)
         };
-        if types.is_none() && exports.is_empty() && events.is_empty() {
+        let members = world
+            .with_resource(|members: &AppScriptNamespaceMembers| members.read().get(&path).cloned())
+            .ok()
+            .flatten();
+        if types.is_none() && exports.is_empty() && events.is_empty() && members.is_none() {
             return Err(namespace_not_found(&catalogue, &world, &path));
         }
 
         let mut table = HashMap::default();
+        for (name, function) in members.iter().flat_map(|m| &m.functions) {
+            table.insert(name.to_string(), ScriptValue::Function(function.clone()));
+        }
+        for (name, value) in members.iter().flat_map(|m| &m.values) {
+            table.insert(name.to_string(), (value.maker)(world.clone())?);
+        }
         for (name, registration) in types.into_iter().flatten() {
             table.insert(name, registration.into_script(world.clone())?);
         }
@@ -1963,6 +1974,48 @@ impl GlobalNamespace {
             )
         })?;
         world.register_script_export(&namespace, &name, callback, owner)
+    }
+}
+
+/// The functions of BMS which don't belong to a type, i.e. `import_namespace("bms").log_info("hi")`
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "bms_namespace_functions",
+    namespace = "bms"
+)]
+impl NamespaceMembers {
+    /// The entity the running script is attached to, or nil if it isn't attached to one.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// Returns:
+    /// * `entity`: The entity, or nil.
+    fn current_entity(ctxt: FunctionCallContext) -> Result<Option<V<Entity>>, InteropError> {
+        Ok(ctxt
+            .world()?
+            .current_attachment()
+            .0
+            .and_then(|attachment| attachment.entity())
+            .map(V))
+    }
+
+    /// The asset handle of the running script, or nil outside of a script callback.
+    ///
+    /// If the asset is ever unloaded, the handle will be less useful.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// Returns:
+    /// * `script`: The handle, or nil.
+    fn current_script(
+        ctxt: FunctionCallContext,
+    ) -> Result<Option<V<Handle<ScriptAsset>>>, InteropError> {
+        Ok(ctxt
+            .world()?
+            .current_attachment()
+            .0
+            .map(|attachment| V(attachment.script())))
     }
 
     /// Attempts to construct the given type, given an arbitrary map of values.
@@ -2200,6 +2253,7 @@ pub fn register_core_functions(app: &mut App) {
 
         register_global_namespace_functions(world);
         register_global_namespace_dummy_functions(world);
+        register_bms_namespace_functions(world);
     }
 }
 
@@ -2235,12 +2289,21 @@ fn namespace_not_found(
             Namespaces only contain types registered in the type registry: check that the bindings plugin of the category is added and the type is registered.",
         );
     }
-    let export_namespaces = world
+    let mut export_namespaces = world
         .component_registry()
         .read()
         .export_and_event_namespaces()
         .map(str::to_owned)
         .collect::<Vec<_>>();
+    if let Ok(members) = world.with_resource(|members: &AppScriptNamespaceMembers| {
+        members
+            .read()
+            .iter()
+            .map(|(namespace, _)| namespace.to_string())
+            .collect::<Vec<_>>()
+    }) {
+        export_namespaces.extend(members);
+    }
     let similar = catalogue.similar_namespaces_with(path, &export_namespaces);
     if !similar.is_empty() {
         message.push_str(&format!(" Did you mean: {}?", similar.join(", ")));

@@ -8,16 +8,16 @@ use ::{
 };
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
-    DummyScriptFunctionRegistry, EnumVariantRef, FunctionInfo, IntoFunctionScope, StaticTypeRef,
+    AppScriptNamespaceMembers, DummyScriptFunctionRegistry, DynamicScriptFunction, FunctionInfo,
+    IntoFunctionScope, ScriptFunctionRegistry, ScriptNamespaceMembers, StaticTypeRef,
     docgen::typed_through::BoundPlaceholder,
     function::{
         bound::is_asset_type, namespace::FunctionScope, script_function::AppScriptFunctionRegistry,
     },
-    globals::AppScriptGlobalsRegistry,
     into_through_type_info_with_registry,
 };
-use bevy_reflect::TypeInfo;
-use ladfile::{LadFilePlugin, LadTypeKind, default_importance};
+use bevy_reflect::{TypeInfo, TypeRegistry};
+use ladfile::{LadFile, LadFilePlugin, LadTypeKind, default_importance};
 
 use crate::LadFileBuilder;
 
@@ -116,18 +116,19 @@ impl ScriptingFilesGenerationPlugin {
     }
 }
 
-/// The function used to generate a ladfile from pre-populated type, function and global registries
+/// The function used to generate a ladfile from pre-populated type, function and namespace registries
 pub fn generate_lad_file(
     type_registry: &AppTypeRegistry,
     function_registry: &AppScriptFunctionRegistry,
     dummy_function_registry: &DummyScriptFunctionRegistry,
-    global_registry: &AppScriptGlobalsRegistry,
+    namespace_members: &AppScriptNamespaceMembers,
     settings: &LadFileSettings,
 ) {
     let type_registry = type_registry.read();
-    let function_registry = function_registry.read();
-    let dummy_function_registry = dummy_function_registry.0.read();
-    let global_registry = global_registry.read();
+    let functions = Functions {
+        registry: &function_registry.read(),
+        dummy: &dummy_function_registry.0.read(),
+    };
     let mut builder = LadFileBuilder::new(&type_registry);
     builder
         .set_description(settings.description)
@@ -143,132 +144,154 @@ pub fn generate_lad_file(
         error!("Could not declare `Handle` as a generic type: {error}");
     }
 
-    // process world as a special value
+    add_world(&mut builder, &functions);
+    for registration in type_registry.iter() {
+        add_registered_type(
+            &mut builder,
+            &functions,
+            &type_registry,
+            registration.type_info(),
+        );
+    }
+    add_builtins(&mut builder, &functions);
+    add_namespace_members(&mut builder, &namespace_members.read());
+
+    write_lad_file(&builder.build(), settings);
+}
+
+/// The functions to document, the ones scripts can call and the ones documented on their own (see [`DummyScriptFunctionRegistry`])
+struct Functions<'a> {
+    registry: &'a ScriptFunctionRegistry,
+    dummy: &'a ScriptFunctionRegistry,
+}
+
+impl Functions<'_> {
+    /// The functions in the given scope
+    fn in_scope(&self, scope: FunctionScope) -> impl Iterator<Item = &DynamicScriptFunction> {
+        self.registry
+            .iter_namespace(scope)
+            .chain(self.dummy.iter_namespace(scope))
+            .map(|(_, function)| function)
+    }
+}
+
+/// The world, which is not a reflected type, and the `world` builtin
+fn add_world(builder: &mut LadFileBuilder, functions: &Functions) {
     builder.add_nonreflect_type::<World>(
         Some("bevy_ecs"),
         r#"The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bevy App."#.trim(),
     );
-
-    for (_, function) in function_registry
-        .iter_namespace(World::into_function_scope())
-        .chain(dummy_function_registry.iter_namespace(World::into_function_scope()))
-    {
+    for function in functions.in_scope(World::into_function_scope()) {
         builder.add_function_info(&function.info);
     }
-
     builder.set_insignificance(
         std::any::TypeId::of::<World>(),
         (default_importance() / 2) - 1,
     );
+    let world = LadTypeKind::Val(builder.lad_id_from_type_id(TypeId::of::<World>()));
+    builder.add_instance_manually("world", true, world);
+}
 
-    // first of all, iterate over all the types and register them
-    for registration in type_registry.iter() {
-        let type_info = registration.type_info();
-
-        // ignore things without an identifier
-        if type_info.type_path_table().ident().is_none() {
-            continue;
-        }
-
-        // we don't really care about the Option in Option<T> as that is magically worked around in the entire API
-        // get the "pure" types, sets only tell us the type id of the types they hold so need the registry
-        let through_type_info = into_through_type_info_with_registry(type_info, &type_registry);
-        builder.add_through_type_info(&through_type_info);
-
-        // find functions on the namespace
-        for (_, function) in function_registry
-            .iter_namespace(FunctionScope::OnType(type_info.type_id()))
-            .chain(
-                dummy_function_registry.iter_namespace(FunctionScope::OnType(type_info.type_id())),
-            )
-        {
-            builder.add_function_info(&function.info);
-        }
-
-        // functions on the static type reference are available on every type's own static reference,
-        // bound to the type, unless the type has a function of its own with the same name.
-        // This is the same signature scripts see at runtime, see `WorldExtensions::lookup_static_member`
-        // Functions on asset handles are only documented on asset types.
-        if type_info.type_id() != TypeId::of::<StaticTypeRef>() {
-            let namespace = FunctionScope::OnType(type_info.type_id());
-            let is_asset = is_asset_type(&type_registry, type_info.type_id());
-            for (key, function) in function_registry
-                .iter_namespace(FunctionScope::OnType(TypeId::of::<StaticTypeRef>()))
-            {
-                if function_registry.contains(namespace, key.name.clone()) {
-                    continue;
-                }
-                if !is_asset && function.info.has_placeholder(BoundPlaceholder::Handle) {
-                    continue;
-                }
-                builder.add_function_info(&function.info.bind_to_type(type_info));
-            }
-        }
-
-        // functions on enum variants whose signatures depend on the variant, i.e. its constructor, are bound to each variant
-        if let TypeInfo::Enum(enum_info) = type_info {
-            for (_, function) in function_registry
-                .iter_namespace(FunctionScope::OnType(TypeId::of::<EnumVariantRef>()))
-            {
-                if !function.info.has_placeholders() {
-                    continue;
-                }
-                // the documentation is the same for every variant, and stays on the function on `EnumVariantRef`.
-                // Copying it would multiply it by the number of variants of all enums, a large part of the file
-                let undocumented = FunctionInfo {
-                    docs: None,
-                    ..(*function.info).clone()
-                };
-                for variant in enum_info.iter() {
-                    let bound = undocumented
-                        .clone()
-                        .bind_placeholders(type_info, Some(variant.name()));
-                    builder.add_variant_function_info(&bound, type_info.type_id(), variant.name());
-                }
-            }
-        }
+/// A reflected type, with its functions, the functions shared by all types bound to it, and the functions of its variants
+fn add_registered_type(
+    builder: &mut LadFileBuilder,
+    functions: &Functions,
+    type_registry: &TypeRegistry,
+    type_info: &'static TypeInfo,
+) {
+    // ignore things without an identifier
+    if type_info.type_path_table().ident().is_none() {
+        return;
     }
 
-    // find functions on the global namespace
-    for (_, function) in function_registry
-        .iter_namespace(FunctionScope::Global)
-        .chain(dummy_function_registry.iter_namespace(FunctionScope::Global))
-    {
+    // sets only tell us the type id of the types they hold so need the registry
+    let through_type_info = into_through_type_info_with_registry(type_info, type_registry);
+    builder.add_through_type_info(&through_type_info);
+
+    let scope = FunctionScope::OnType(type_info.type_id());
+    for function in functions.in_scope(scope) {
         builder.add_function_info(&function.info);
     }
 
-    // find global instances
-    for (key, global) in global_registry.iter() {
-        let type_info = global.type_information.clone();
-        builder.add_instance_dynamic(key.to_string(), global.maker.is_none(), type_info);
+    // functions on the static type reference are available on every type's own static reference,
+    // bound to the type, unless the type has a function of its own with the same name.
+    // This is the same signature scripts see at runtime, see `WorldExtensions::lookup_static_member`
+    // Functions on asset handles are only documented on asset types.
+    if type_info.type_id() != TypeId::of::<StaticTypeRef>() {
+        let is_asset = is_asset_type(type_registry, type_info.type_id());
+        for function in functions
+            .registry
+            .iter_namespace(FunctionScope::all_types())
+            .map(|(_, f)| f)
+        {
+            if functions.registry.contains(scope, function.name().clone()) {
+                continue;
+            }
+            if !is_asset && function.info.has_placeholder(BoundPlaceholder::Handle) {
+                continue;
+            }
+            builder.add_function_info(&function.info.bind_to_type(type_info));
+        }
     }
 
-    // find global dummies
-    for (key, global) in global_registry.iter_dummies() {
-        let kind = if let Some(type_info) = &global.type_information {
-            builder.add_through_type_info(type_info);
-            builder.lad_type_kind_from_through_type(type_info)
-        } else {
-            LadTypeKind::Val(builder.lad_id_from_type_id(global.type_id))
-        };
-
-        builder.add_instance_manually(key.to_string(), false, kind);
+    // functions on enum variants whose signatures depend on the variant, i.e. its constructor, are bound to each variant
+    if let TypeInfo::Enum(enum_info) = type_info {
+        for (_, function) in functions
+            .registry
+            .iter_namespace(FunctionScope::all_variants())
+        {
+            if !function.info.has_placeholders() {
+                continue;
+            }
+            // the documentation is the same for every variant, and stays on the function on `EnumVariantRef`.
+            // Copying it would multiply it by the number of variants of all enums, a large part of the file
+            let undocumented = FunctionInfo {
+                docs: None,
+                ..(*function.info).clone()
+            };
+            for variant in enum_info.iter() {
+                let bound = undocumented
+                    .clone()
+                    .bind_placeholders(type_info, Some(variant.name()));
+                builder.add_variant_function_info(&bound, type_info.type_id(), variant.name());
+            }
+        }
     }
+}
 
-    let file = builder.build();
+/// The builtin functions, the ones in the global scope
+fn add_builtins(builder: &mut LadFileBuilder, functions: &Functions) {
+    for function in functions.in_scope(FunctionScope::Global) {
+        builder.add_function_info(&function.info);
+    }
+}
+
+/// The functions and values registered into namespaces
+fn add_namespace_members(builder: &mut LadFileBuilder, members: &ScriptNamespaceMembers) {
+    for (namespace, contents) in members.iter() {
+        for function in contents.functions.values() {
+            builder.add_namespace_function(namespace.clone(), &function.info);
+        }
+        for (name, value) in &contents.values {
+            builder.add_namespace_value(namespace.clone(), name.clone(), &value.type_information);
+        }
+    }
+}
+
+/// Runs the processors on the file, and writes it if the settings say so
+fn write_lad_file(file: &LadFile, settings: &LadFileSettings) {
     let directory = &settings.output_directory;
 
     for processor in settings.processors.iter() {
         bevy_log::info!("Running ladfile processor: '{}'", processor.name());
-        if let Err(e) = processor.run(&file, directory) {
+        if let Err(e) = processor.run(file, directory) {
             bevy_log::error!("Error in running ladfile processor: {e:#}")
         }
     }
 
     if let Some(filename) = &settings.ladfile_filename {
         let path = directory.join(filename);
-        // generate
-        let file = match ladfile::serialize_lad_file(&file, settings.pretty) {
+        let file = match ladfile::serialize_lad_file(file, settings.pretty) {
             Ok(file) => file,
             Err(e) => {
                 error!("Error serializing LAD file: {}", e);
@@ -276,7 +299,6 @@ pub fn generate_lad_file(
             }
         };
 
-        // save
         match std::fs::write(&path, file) {
             Ok(_) => {
                 info!("Successfully generated LAD file at {:?}", path);
@@ -292,14 +314,14 @@ fn generate_lad_file_system(
     type_registry: Res<AppTypeRegistry>,
     function_registry: Res<AppScriptFunctionRegistry>,
     dummy_function_registry: Res<DummyScriptFunctionRegistry>,
-    global_registry: Res<AppScriptGlobalsRegistry>,
+    namespace_members: Option<Res<AppScriptNamespaceMembers>>,
     settings: Res<LadFileSettingsArc>,
 ) {
     generate_lad_file(
         &type_registry,
         &function_registry,
         &dummy_function_registry,
-        &global_registry,
+        &namespace_members.map(|m| m.clone()).unwrap_or_default(),
         &settings.0,
     );
 }
@@ -410,7 +432,7 @@ mod test {
                 .get_resource_or_init::<DummyScriptFunctionRegistry>()
                 .clone(),
             &world
-                .get_resource_or_init::<AppScriptGlobalsRegistry>()
+                .get_resource_or_init::<AppScriptNamespaceMembers>()
                 .clone(),
             &settings,
         );

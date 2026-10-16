@@ -70,25 +70,40 @@ fn main() {
                 .assert()
                 .success();
 
-            // then compare the output with the expected.lua file
+            // then compare each generated file, `bindings.lua` and one per namespace (`bindings.<namespace>.lua`),
+            // with the expected one, `expected.lua` or `expected.<namespace>.lua`
+            let mut generated_files = std::fs::read_dir(&folder_path)
+                .expect("failed to read test folder")
+                .map(|entry| entry.expect("failed to read entry").file_name())
+                .map(|name| name.to_string_lossy().to_string())
+                .filter(|name| name.starts_with("bindings") && name.ends_with(".lua"))
+                .collect::<Vec<_>>();
+            generated_files.sort();
 
-            let expected_path = folder_path.join("expected.lua");
-            let expected_str =
-                std::fs::read_to_string(&expected_path).expect("failed to read expected.lua file");
-            let generated_str = std::fs::read_to_string(folder_path.join("bindings.lua"))
-                .expect("failed to read bindings.lua file");
+            for generated_file in generated_files {
+                let expected_path =
+                    folder_path.join(generated_file.replacen("bindings", "expected", 1));
+                let generated_str = std::fs::read_to_string(folder_path.join(&generated_file))
+                    .expect("failed to read generated file");
 
+                if std::env::var("BLESS_MODE").is_ok() {
+                    std::fs::write(&expected_path, &generated_str)
+                        .expect("failed to write expected file");
+                } else {
+                    let expected_str =
+                        std::fs::read_to_string(&expected_path).unwrap_or_else(|_| {
+                            panic!("missing {}, bless the test", expected_path.display())
+                        });
+                    pretty_assertions::assert_eq!(
+                        expected_str,
+                        generated_str,
+                        "Generated Lua file {generated_file} does not match expected output for {}",
+                        folder_path.display()
+                    );
+                }
+            }
             if std::env::var("BLESS_MODE").is_ok() {
-                std::fs::write(&expected_path, &generated_str)
-                    .expect("failed to write expected.lua file");
                 panic!("BLESS_MODE is enabled, please disable it to run the tests");
-            } else {
-                pretty_assertions::assert_eq!(
-                    expected_str,
-                    generated_str,
-                    "Generated Lua file does not match expected output for {}",
-                    folder_path.display()
-                );
             }
         }
     }

@@ -68,29 +68,25 @@ pub fn from_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// - `use_dummy_registry`: If true will register into the [`bevy_mod_scripting_bindings::function::DummyScriptFunctionRegistry`] instead of the full one. This is useful for documenting functions without actually making them available, if you're exposing them another way.
 ///
 /// It is encouraged to place `significant` markers on your own types, for the purposes of documentation generation.
+///
+/// # Functions in a namespace
+///
+/// Functions which don't belong to a type go into a script namespace: on `impl NamespaceMembers`, `namespace` is required and names
+/// the namespace the functions are members of, which scripts reach with `import_namespace`:
+///
+/// ```rust,ignore
+/// #[script_bindings(namespace = "my_game")]
+/// impl NamespaceMembers {
+///     /// `import_namespace("my_game").spawn_enemy(5)` in scripts
+///     fn spawn_enemy(ctxt: FunctionCallContext, hp: usize) -> Result<(), InteropError> { .. }
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn script_bindings(
     args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
     derive::script_bindings(args, input)
-}
-
-/// Derive macro for generating script globals from an impl block.
-///
-/// Generates a registration function with visibility determined by the highest visibility in the impl block.
-///
-/// Does not support generics.
-///
-/// Arguments:
-/// - `name`: the name to use to suffix the generated function, i.e. `test_fn` will generate `register_test_fn. Defaults to `globals`
-/// - `bms_core_path`: If set the path to override bms imports, normally only used internally
-#[proc_macro_attribute]
-pub fn script_globals(
-    args: proc_macro::TokenStream,
-    input: proc_macro::TokenStream,
-) -> proc_macro::TokenStream {
-    derive::script_globals(args, input)
 }
 
 /// Derive macro for generating `GetTypeDependencies` implementations.

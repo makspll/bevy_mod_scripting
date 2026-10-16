@@ -4,19 +4,14 @@ use std::{
     sync::Arc,
 };
 
-use ::{
-    bevy_app::Plugin,
-    bevy_asset::Handle,
-    bevy_ecs::{entity::Entity, world::World},
-};
+use ::{bevy_app::Plugin, bevy_ecs::world::World};
 use bevy_app::App;
 use bevy_asset::AssetPath;
 use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
-use bevy_mod_scripting_asset::{Language, ScriptAsset};
+use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
-    InteropError, PartialReflectExt, WorldExtensions, function::namespace::FunctionScope,
-    globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
+    InteropError, WorldExtensions, function::namespace::FunctionScope, script_value::ScriptValue,
 };
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
@@ -28,10 +23,7 @@ use bevy_mod_scripting_core::{
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::ThreadWorldContainer;
-use bindings::{
-    reference::{LuaReflectReference, LuaStaticReflectReference},
-    script_value::LuaScriptValue,
-};
+use bindings::{reference::LuaStaticReflectReference, script_value::LuaScriptValue};
 pub use mlua;
 use mlua::{Function, IntoLua, Lua, MultiValue, Variadic};
 
@@ -164,33 +156,8 @@ impl Default for LuaScriptingPlugin {
                         Ok(())
                     },
                     |_script_id, context| {
-                        // set static globals
+                        // the builtins are the functions in the global scope, everything else is imported from namespaces
                         let world = ThreadWorldContainer.try_get_context()?.world;
-                        let globals_registry =
-                            world.with_resource(|r: &AppScriptGlobalsRegistry| r.clone())?;
-                        let globals_registry = globals_registry.read();
-
-                        for (key, global) in globals_registry.iter() {
-                            match &global.maker {
-                                Some(maker) => {
-                                    // non-static global
-                                    let global = (maker)(world.clone())?;
-                                    context
-                                        .globals()
-                                        .set(key.to_string(), LuaScriptValue::from(global))
-                                        .map_err(IntoInteropError::to_bms_error)?
-                                }
-                                None => {
-                                    let ref_ = LuaStaticReflectReference(global.type_id);
-                                    context
-                                        .globals()
-                                        .set(key.to_string(), ref_)
-                                        .map_err(IntoInteropError::to_bms_error)?
-                                }
-                            }
-                        }
-
-                        // go through functions in the global namespace and add them to the lua context
                         let script_function_registry = world.script_function_registry();
                         let script_function_registry = script_function_registry.read();
 
@@ -210,34 +177,8 @@ impl Default for LuaScriptingPlugin {
                         Ok(())
                     },
                 ],
-                context_pre_handling_initializers: vec![|context_key, context| {
-                    // TODO: convert these to functions
-                    let world = ThreadWorldContainer.try_get_context()?.world;
-                    if let Some(entity) = context_key.entity() {
-                        context
-                            .globals()
-                            .set(
-                                "entity",
-                                LuaReflectReference(<Entity>::allocate(
-                                    Box::new(entity),
-                                    world.clone(),
-                                )),
-                            )
-                            .map_err(IntoInteropError::to_bms_error)?;
-                    }
-                    context
-                        .globals()
-                        .set(
-                            "script_asset",
-                            LuaReflectReference(<Handle<ScriptAsset>>::allocate(
-                                Box::new(context_key.script()),
-                                world,
-                            )),
-                        )
-                        .map_err(IntoInteropError::to_bms_error)?;
-
-                    Ok(())
-                }],
+                // the running script's entity and handle are looked up when needed, see `bms.current_entity()`
+                context_pre_handling_initializers: vec![],
                 language: Language::Lua,
                 context_policy: ContextPolicy::default(),
                 emit_responses: false,
@@ -407,6 +348,7 @@ impl<T: Into<InteropError>> IntoMluaError for T {
 #[cfg(test)]
 mod test {
     use ::bevy_asset::Handle;
+    use bevy_ecs::entity::Entity;
     use bevy_mod_scripting_asset::LanguageExtensions;
     use mlua::Value;
 

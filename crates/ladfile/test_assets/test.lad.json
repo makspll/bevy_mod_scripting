@@ -36,6 +36,18 @@
       "is_static": false
     }
   },
+  "namespaces": {
+    "ladfile_builder": {
+      "types": {
+        "EnumType": "ladfile_builder::test::EnumType",
+        "GenericStructType": "ladfile_builder::test::GenericStructType<usize>",
+        "HoldsOpaqueType": "ladfile_builder::test::HoldsOpaqueType",
+        "PlainStructType": "ladfile_builder::test::PlainStructType",
+        "TupleStructType": "ladfile_builder::test::TupleStructType",
+        "UnitType": "ladfile_builder::test::UnitType"
+      }
+    }
+  },
   "types": {
     "ladfile_builder::test::HoldsOpaqueType": {
       "identifier": "HoldsOpaqueType",

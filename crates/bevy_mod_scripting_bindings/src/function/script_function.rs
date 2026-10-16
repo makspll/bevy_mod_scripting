@@ -407,6 +407,29 @@ pub struct ScriptFunctionRegistry {
     pub magic_functions: MagicFunctions,
 }
 
+/// Turns a function into a [`DynamicScriptFunction`] with its signature, docs and argument names.
+pub(crate) fn documented_function<'env, F, M>(
+    scope: FunctionScope,
+    name: Cow<'static, str>,
+    func: F,
+    docs: Option<impl Into<Cow<'static, str>>>,
+    arg_names: Option<&'static [&'static str]>,
+) -> DynamicScriptFunction
+where
+    F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
+{
+    let info = func.get_function_info(name, scope);
+    let info = match docs {
+        Some(docs) => info.with_docs(docs.into()),
+        None => info,
+    };
+    let info = match arg_names {
+        Some(arg_names) => info.with_arg_names(arg_names),
+        None => info,
+    };
+    func.into_dynamic_script_function().with_info(info)
+}
+
 #[profiling::all_functions]
 impl ScriptFunctionRegistry {
     /// Register a script function with the given name, replacing any function already registered with that name.
@@ -477,16 +500,7 @@ impl ScriptFunctionRegistry {
         F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
         let name: Cow<'static, str> = name.into();
-        let info = func.get_function_info(name.clone(), namespace);
-        let info = match docs {
-            Some(docs) => info.with_docs(docs.into()),
-            None => info,
-        };
-        let info = match arg_names {
-            Some(arg_names) => info.with_arg_names(arg_names),
-            None => info,
-        };
-        let func = func.into_dynamic_script_function().with_info(info);
+        let func = documented_function(namespace, name.clone(), func, docs, arg_names);
         self.functions_mut()
             .insert(FunctionKey { name, namespace }, func);
     }

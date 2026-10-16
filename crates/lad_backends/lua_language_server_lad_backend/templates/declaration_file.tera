@@ -14,7 +14,7 @@
 {% endfor -%}
 {% if not module.type_only -%}
 {# the table is not a global: types are reached through their namespace, only nested names like `Enum.Variant` are fields of another table -#}
-{% if "." in module.class.name %}{{ module.class.name }} = {}{% else %}local {{ module.class.name }} = {}{% endif %}
+{% if "." in module.table %}{{ module.table }} = {}{% else %}local {{ module.table }} = {}{% endif %}
 {%- endif -%}
 {%- endif -%} {# class #}
 {# newline #}
@@ -49,7 +49,7 @@
 {% endfor -%}
 {%- for return in function.returns -%}
 ---@return {{ self::lua_type(ty=return, return_position=true) }}
-function {% if module.class -%}{{module.class.name}}.{%- endif -%} {{ function.name }}(
+function {% if module.class -%}{{module.table}}.{%- endif -%} {{ function.name }}(
     {%- for param in function.params -%}
         {% if param.variadic -%}... {% endif-%}{{ param.name }} {%- if not loop.last -%},{%- endif -%}
     {%- endfor -%}

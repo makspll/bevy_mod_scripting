@@ -1,29 +1,5 @@
 ---@meta
----@module "HoldsOpaqueType"
-
-
----@class HoldsOpaqueType : ReflectReference
----  I hold an instantiation of a generic type
----@field  generic? OpaqueGenericType<integer>
-local HoldsOpaqueType = {}
-
----@param arg1 HoldsOpaqueType
----@param arg2 OpaqueGenericType<integer>
----@return OpaqueGenericType<integer>
-function HoldsOpaqueType.swap_generic(arg1,arg2) end
-
-
-
----@class PlainStructType : ReflectReference
----  I am a simple plain struct type
----@field  int_field? integer
-local PlainStructType = {}
-
----@param arg1 PlainStructType
----@param arg2 integer
----@return any
-function PlainStructType.plain_struct_function(arg1,arg2) end
-
+---@module "Bool"
 
 
 ---@class Bool
@@ -182,63 +158,6 @@ local Usize = {}
 
 
 
----@class EnumType : ReflectReference
----@field  Unit EnumType.Unit
----@field  Struct EnumType.Struct
----@field  TupleStruct EnumType.TupleStruct
-local EnumType = {}
-
-
-
----@class EnumType.Unit : EnumVariantRef
---- The `Unit` variant of `EnumType`.
-EnumType.Unit = {}
-
-
-
----@class EnumType.Struct : EnumVariantRef
---- The `Struct` variant of `EnumType`.
-EnumType.Struct = {}
-
-
-
----@class EnumType.TupleStruct : EnumVariantRef
---- The `TupleStruct` variant of `EnumType`.
-EnumType.TupleStruct = {}
-
-
-
----@class TupleStructType : ReflectReference
----  I am a tuple test type
----@field  [1] integer
----@field  [2] string
-local TupleStructType = {}
-
-
-
----@class UnitType : ReflectReference
----  I am a unit test type
-local UnitType = {}
-
-
-
----@class OpaqueGenericType<T> : ReflectReference
---- I am the documentation of a generic type.
-
-
-
-
----@class (exact) namespace.ladfile_builder
---- The types in the `ladfile_builder` namespace, as returned by `import_namespace("ladfile_builder")`.
----@field  HoldsOpaqueType HoldsOpaqueType
----@field  PlainStructType PlainStructType
----@field  EnumType EnumType
----@field  TupleStructType TupleStructType
----@field  UnitType UnitType
-
-
-
-
 
 ---@param arg1 integer
 ---@return integer
@@ -249,7 +168,7 @@ function hello_world(arg1) end
 --- A static class allowing calls through the "." operator only. 
 my_static_instance = {}
 
----@type UnitType[]
+---@type ladfile_builder.UnitType[]
 --- An global instance of this type
 my_non_static_instance = {}
 

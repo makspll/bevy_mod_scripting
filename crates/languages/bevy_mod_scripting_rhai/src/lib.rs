@@ -4,19 +4,12 @@ use std::{ops::Deref, str::Utf8Error, sync::Arc};
 
 use crate::bindings::script_value::{FromDynamic, IntoDynamic};
 
-use ::{
-    bevy_app::Plugin,
-    bevy_asset::Handle,
-    bevy_ecs::{entity::Entity, world::World},
-};
+use ::{bevy_app::Plugin, bevy_ecs::world::World};
 use bevy_app::App;
 use bevy_ecs::world::{Mut, WorldId};
 use bevy_log::trace;
-use bevy_mod_scripting_asset::{Language, ScriptAsset};
-use bevy_mod_scripting_bindings::{
-    AppScriptGlobalsRegistry, FunctionScope, InteropError, PartialReflectExt, ScriptValue,
-    WorldExtensions,
-};
+use bevy_mod_scripting_asset::Language;
+use bevy_mod_scripting_bindings::{FunctionScope, InteropError, ScriptValue, WorldExtensions};
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
     callbacks::ScriptCallbacks,
@@ -199,30 +192,8 @@ impl Default for RhaiScriptingPlugin {
                         Ok(())
                     },
                     |_, context| {
-                        // initialize global functions
+                        // the builtins are the functions in the global scope, everything else is imported from namespaces
                         let world = ThreadWorldContainer.try_get_context()?.world;
-                        let globals_registry =
-                            world.with_resource(|r: &AppScriptGlobalsRegistry| r.clone())?;
-                        let globals_registry = globals_registry.read();
-
-                        for (key, global) in globals_registry.iter() {
-                            match &global.maker {
-                                Some(maker) => {
-                                    let global = (maker)(world.clone())?;
-                                    context.scope.set_or_push(
-                                        key.to_string(),
-                                        global
-                                            .into_dynamic()
-                                            .map_err(IntoInteropError::into_bms_error)?,
-                                    );
-                                }
-                                None => {
-                                    let ref_ = RhaiStaticReflectReference(global.type_id);
-                                    context.scope.set_or_push(key.to_string(), ref_);
-                                }
-                            }
-                        }
-
                         let mut script_function_registry = world.script_function_registry().clone();
                         let mut script_function_registry = script_function_registry.write();
 
@@ -260,28 +231,8 @@ impl Default for RhaiScriptingPlugin {
                         Ok(())
                     },
                 ],
-                context_pre_handling_initializers: vec![|context_key, context| {
-                    let world = ThreadWorldContainer.try_get_context()?.world;
-
-                    if let Some(entity) = context_key.entity() {
-                        context.scope.set_or_push(
-                            "entity",
-                            RhaiReflectReference(<Entity>::allocate(
-                                Box::new(entity),
-                                world.clone(),
-                            )),
-                        );
-                    }
-                    context.scope.set_or_push(
-                        "script_asset",
-                        RhaiReflectReference(<Handle<ScriptAsset>>::allocate(
-                            Box::new(context_key.script().clone()),
-                            world,
-                        )),
-                    );
-
-                    Ok(())
-                }],
+                // the running script's entity and handle are looked up when needed, see `bms.current_entity()`
+                context_pre_handling_initializers: vec![],
                 // already supported by BMS core
                 language: Language::Rhai,
                 context_policy: ContextPolicy::default(),

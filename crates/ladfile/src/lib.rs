@@ -21,10 +21,7 @@
 //!
 //! The expected outputs of the backends' tests are generated from `test_assets/test.lad.json`, run `cargo xtask bless-lad` to update all of them.
 
-use std::{
-    borrow::Cow,
-    collections::{HashMap, HashSet},
-};
+use std::{borrow::Cow, collections::HashMap};
 
 pub use bevy_mod_scripting_bindings_domain::{ReflectionPrimitiveKind, ScriptOperatorNames}; // re-export the things we use
 use indexmap::IndexMap;
@@ -45,8 +42,12 @@ pub struct LadFile {
     /// The version of the LAD file format used.
     pub version: Cow<'static, str>,
 
-    /// The global instances defined in the LAD file.
+    /// The builtin values every script sees as globals, i.e. `world`. The builtin functions are the [`LadFunctionNamespace::Global`] functions.
     pub globals: IndexMap<Cow<'static, str>, LadInstance>,
+
+    /// The script namespaces, i.e. what `import_namespace("math")` returns.
+    #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
+    pub namespaces: IndexMap<Cow<'static, str>, LadNamespace>,
 
     /// The types defined in the LAD file.
     pub types: IndexMap<LadTypeId, LadTypeDefinition>,
@@ -72,6 +73,7 @@ impl LadFile {
         Self {
             version: LAD_VERSION.into(),
             globals: IndexMap::new(),
+            namespaces: IndexMap::new(),
             types: IndexMap::new(),
             generic_types: IndexMap::new(),
             functions: IndexMap::new(),
@@ -139,50 +141,48 @@ impl LadFile {
         self.types.get(type_id).map(|t| &t.metadata)
     }
 
-    /// Retrieves all unique types, then groups them by their generics arity,
-    /// this grouping represents types as expected to be seen in rust source code.
-    ///
-    /// For example `Vec<T>` and `Vec<i32>` will be grouped together as `Vec` with arity 1.
-    pub fn polymorphizied_types(
-        &self,
-        exclude_primitives: bool,
-    ) -> IndexMap<PolymorphicTypeKey, HashSet<&LadTypeId>> {
-        let mut types_by_identifier_and_arity: IndexMap<PolymorphicTypeKey, HashSet<&LadTypeId>> =
-            IndexMap::<PolymorphicTypeKey, HashSet<&LadTypeId>>::new();
-        for type_id in self.types.keys() {
-            let arity = self.get_type_arity(type_id);
-            let identifier = self.get_type_identifier(type_id, None);
-            if exclude_primitives && self.primitive_kind(type_id).is_some() {
-                continue;
-            }
-            types_by_identifier_and_arity
-                .entry(PolymorphicTypeKey { identifier, arity })
-                .or_default()
-                .insert(type_id);
-        }
-
-        types_by_identifier_and_arity
+    /// The types documented on their own, i.e. without the instantiations of generic types, which are documented by the generic type.
+    pub fn documented_types(&self) -> impl Iterator<Item = (&LadTypeId, &LadTypeDefinition)> {
+        self.types
+            .iter()
+            .filter(|(_, lad_type)| lad_type.generic_type.is_none())
     }
 
-    /// Returns the arity of a type, which is the number of generic parameters it has.
-    /// Types without generics will return 0, meaning they can be identified uniquely by their identifier.
-    pub fn get_type_arity(&self, type_id: &LadTypeId) -> usize {
-        self.types
-            .get(type_id)
-            .map(|t| t.generics.len())
-            .unwrap_or(0) // primitives have no generics currently
+    /// The builtins, the functions every script sees as globals, i.e. `import_namespace`.
+    pub fn builtin_functions(&self) -> impl Iterator<Item = (&LadFunctionId, &LadFunction)> {
+        self.functions
+            .iter()
+            .filter(|(_, function)| function.namespace.is_global())
+    }
+
+    /// The functions on the variants of the given enum
+    pub fn variant_functions<'a>(
+        &'a self,
+        enum_id: &'a LadTypeId,
+    ) -> impl Iterator<Item = (&'a str, &'a LadFunction)> {
+        self.functions
+            .values()
+            .filter_map(move |function| match &function.namespace {
+                LadFunctionNamespace::Variant { type_id, variant } if type_id == enum_id => {
+                    Some((variant.as_ref(), function))
+                }
+                _ => None,
+            })
     }
 }
 
-/// A key for polymorphic types, used to group types by their identifier and arity.
-///
-/// Each key would correspond to a unique rust type, such as `Vec<T>` or `HashMap<K,V>`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct PolymorphicTypeKey {
-    /// The type identifier
-    pub identifier: Cow<'static, str>,
-    /// The arity of the type
-    pub arity: usize,
+/// A script namespace, what `import_namespace` returns for it.
+#[derive(Debug, Clone, PartialEq, Default, serde::Serialize, serde::Deserialize)]
+pub struct LadNamespace {
+    /// The types in the namespace by the name scripts use for them, i.e. `Vec3` in `import_namespace("math").Vec3`
+    #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
+    pub types: IndexMap<Cow<'static, str>, LadTypeId>,
+    /// The functions in the namespace by name
+    #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
+    pub functions: IndexMap<Cow<'static, str>, LadFunctionId>,
+    /// The values in the namespace by name
+    #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
+    pub values: IndexMap<Cow<'static, str>, LadInstance>,
 }
 
 impl Default for LadFile {
@@ -282,8 +282,13 @@ impl LadFunction {
 pub enum LadFunctionNamespace {
     /// A function in a type's namespace
     Type(LadTypeId),
-    /// A global function
+    /// A builtin, a function every script sees as a global
     Global,
+    /// A function in a script namespace, i.e. `import_namespace("bms").log_info`
+    Namespace {
+        /// The namespace
+        namespace: Cow<'static, str>,
+    },
     /// A function on a variant of an enum, i.e. `MyEnum.Variant:new{...}`.
     ///
     /// These are the functions on `EnumVariantRef` whose signatures depend on the variant, bound to it.

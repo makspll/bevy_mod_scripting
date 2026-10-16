@@ -18,6 +18,7 @@ pub fn script_bindings(
     // let (impl_generics, ty_generics, where_clause) = impl_block.generics.split_for_impl();
 
     let type_ident_with_generics = &impl_block.self_ty;
+    let impl_block_self_ty = impl_block.self_ty.clone();
     let mut function_registrations = Vec::with_capacity(impl_block.items.len());
     for i in &impl_block.items {
         match i {
@@ -110,19 +111,44 @@ pub fn script_bindings(
         Default::default()
     };
 
-    let out = quote_spanned! {impl_span=>
-        #visibility fn #function_name(world: &mut World) {
-            #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
-                #use_dummy
-                #(#function_registrations)*;
+    // functions of `impl NamespaceMembers` are members of the namespace given, not functions on a type
+    let is_namespace_members = matches!(
+        &*impl_block_self_ty,
+        syn::Type::Path(path) if path.path.segments.last().is_some_and(|s| s.ident == "NamespaceMembers")
+    );
 
-            #mark_as_generated
-            #mark_as_core
-            #mark_as_significant
-            #set_namespace
+    let out = if is_namespace_members {
+        let Some(namespace) = &args.namespace else {
+            return syn::Error::new(
+                impl_span,
+                "`impl NamespaceMembers` registers functions into a script namespace, which needs `namespace = \"...\"`",
+            )
+            .to_compile_error()
+            .into();
+        };
+        quote_spanned! {impl_span=>
+            #visibility fn #function_name(world: &mut World) {
+                #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::in_namespace(world, #namespace)
+                    #(#function_registrations)*;
+            }
+
+            #impl_block
         }
+    } else {
+        quote_spanned! {impl_span=>
+            #visibility fn #function_name(world: &mut World) {
+                #bms_bindings_path::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
+                    #use_dummy
+                    #(#function_registrations)*;
 
-        #impl_block
+                #mark_as_generated
+                #mark_as_core
+                #mark_as_significant
+                #set_namespace
+            }
+
+            #impl_block
+        }
     };
 
     out.into()

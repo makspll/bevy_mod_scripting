@@ -1,9 +1,10 @@
 //! A module for managing namespaces for functions
 
 use crate::{
-    DummyScriptFunctionRegistry, ScriptFunctionRegistryArc,
+    AppScriptNamespaceMembers, DummyScriptFunctionRegistry, NamespaceMembers,
+    ScriptFunctionRegistryArc,
     docgen::info::GetFunctionInfo,
-    function::script_function::{AppScriptFunctionRegistry, ScriptFunction},
+    function::script_function::{AppScriptFunctionRegistry, ScriptFunction, documented_function},
 };
 use ::bevy_reflect::{GetTypeRegistration, Reflect};
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
@@ -14,12 +15,13 @@ use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 
 use super::type_dependencies::GetFunctionTypeDependencies;
 
-/// A namespace for functions
+/// What a function is registered on
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Default, Reflect, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub enum FunctionScope {
-    /// The function is registered in the global namespace, i.e. with no namespace.
-    /// In practice functions in this namespace should be callable directly by their name, i.e. `my_function()`
+    /// Not on a type. Functions registered here are the builtins every script sees as globals, i.e. `import_namespace()`.
+    ///
+    /// Functions for scripts to import belong in a namespace instead, see [`crate::NamespaceMembers`].
     #[default]
     Global,
     /// The function is registered in the namespace corresponding to the given type.
@@ -27,7 +29,7 @@ pub enum FunctionScope {
     OnType(TypeId),
 }
 
-/// A type which implements [`IntoFunctionScope`] by always converting to the global namespace
+/// A type which implements [`IntoFunctionScope`] by always converting to the global scope, i.e. registers builtins
 pub struct GlobalNamespace;
 
 /// A type convertible to a [`FunctionScope`]
@@ -90,8 +92,19 @@ pub struct NamespaceBuilder<'a, N> {
     registry: ScriptFunctionRegistryArc,
     /// phantom data to reference the namespace type
     namespace: PhantomData<N>,
+    /// The script namespace functions are registered into as members, instead of on the type, see [`NamespaceMembers`]
+    members_of: Option<Cow<'static, str>>,
     /// a cached reference to the world
     pub world: &'a mut World,
+}
+
+impl<'a> NamespaceBuilder<'a, NamespaceMembers> {
+    /// Creates a builder registering functions as members of the given script namespace, i.e. `import_namespace("bms").log_info`.
+    pub fn in_namespace(world: &'a mut World, namespace: impl Into<Cow<'static, str>>) -> Self {
+        let mut builder = Self::new_unregistered(world);
+        builder.members_of = Some(namespace.into());
+        builder
+    }
 }
 
 #[profiling::all_functions]
@@ -113,6 +126,7 @@ impl<'a, S: IntoFunctionScope> NamespaceBuilder<'a, S> {
                 .0
                 .clone(),
             namespace: Default::default(),
+            members_of: None,
             world,
         }
     }
@@ -125,6 +139,7 @@ impl<'a, S: IntoFunctionScope> NamespaceBuilder<'a, S> {
                 .0
                 .clone(),
             namespace: Default::default(),
+            members_of: None,
             world,
         }
     }
@@ -177,7 +192,22 @@ impl<'a, S: IntoFunctionScope> NamespaceBuilder<'a, S> {
         F: ScriptFunction<'env, M> + GetFunctionTypeDependencies<M> + GetFunctionInfo<M>,
     {
         {
-            {
+            if let Some(namespace) = &self.members_of {
+                let name = name.into();
+                let function = documented_function(
+                    FunctionScope::Global,
+                    name.clone(),
+                    function,
+                    docstring,
+                    arg_names,
+                );
+                let members = self
+                    .world
+                    .get_resource_or_init::<AppScriptNamespaceMembers>();
+                members
+                    .write()
+                    .register_function(namespace.clone(), name, function);
+            } else {
                 let mut registry = self.registry.write();
                 registry.register_with_arg_names(
                     S::into_function_scope(),

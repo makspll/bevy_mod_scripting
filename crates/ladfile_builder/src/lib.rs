@@ -459,6 +459,52 @@ impl<'t> LadFileBuilder<'t> {
         self.insert_function(function_id, namespace, function_info)
     }
 
+    /// Adds a function which is a member of a script namespace, i.e. `import_namespace("bms").log_info`.
+    pub fn add_namespace_function(
+        &mut self,
+        namespace: impl Into<Cow<'static, str>>,
+        function_info: &FunctionInfo,
+    ) -> &mut Self {
+        let namespace = namespace.into();
+        let function_id =
+            LadFunctionId::new_string_id(format!("{namespace}::{}", function_info.name));
+        self.file
+            .namespaces
+            .entry(namespace.clone())
+            .or_default()
+            .functions
+            .insert(function_info.name.clone(), function_id.clone());
+        self.insert_function(
+            function_id,
+            LadFunctionNamespace::Namespace { namespace },
+            function_info,
+        )
+    }
+
+    /// Adds a value which is a member of a script namespace.
+    pub fn add_namespace_value(
+        &mut self,
+        namespace: impl Into<Cow<'static, str>>,
+        name: impl Into<Cow<'static, str>>,
+        type_info: &ThroughTypeInfo,
+    ) -> &mut Self {
+        self.add_through_type_info(type_info);
+        let type_kind = self.lad_type_kind_from_through_type(type_info);
+        self.file
+            .namespaces
+            .entry(namespace.into())
+            .or_default()
+            .values
+            .insert(
+                name.into(),
+                LadInstance {
+                    type_kind,
+                    is_static: false,
+                },
+            );
+        self
+    }
+
     /// Adds a function on a variant of an enum, i.e. a function on `EnumVariantRef` whose placeholders
     /// were bound to the variant with [`FunctionInfo::bind_placeholders`].
     pub fn add_variant_function_info(
@@ -530,7 +576,7 @@ impl<'t> LadFileBuilder<'t> {
             }),
             // functions on variants are called on the variant, i.e. `MyEnum.Variant:new{}`
             LadFunctionNamespace::Variant { .. } => !arguments.is_empty(),
-            LadFunctionNamespace::Global => false,
+            LadFunctionNamespace::Global | LadFunctionNamespace::Namespace { .. } => false,
         };
 
         let lad_function = LadFunction {
@@ -638,7 +684,38 @@ impl<'t> LadFileBuilder<'t> {
                     }
                 }
                 // variants are not types, backends find their functions by namespace
-                LadFunctionNamespace::Global | LadFunctionNamespace::Variant { .. } => {}
+                LadFunctionNamespace::Global
+                | LadFunctionNamespace::Variant { .. }
+                | LadFunctionNamespace::Namespace { .. } => {}
+            }
+        }
+
+        // the types scripts import from each namespace, by the name `import_namespace` gives them
+        let mut types_by_id: Vec<_> = file.documented_types().collect();
+        types_by_id.sort_by(|(a, _), (b, _)| a.cmp(b));
+        let mut namespace_types = Vec::new();
+        for (type_id, lad_type) in types_by_id {
+            // primitives are values, and types which aren't reflected aren't in the type registry, so neither can be imported
+            if lad_type.metadata.mapped_to_primitive_kind.is_some() || !lad_type.metadata.is_reflect
+            {
+                continue;
+            }
+            namespace_types.push((
+                Cow::<'static, str>::Owned(lad_type.namespace.clone()),
+                Cow::<'static, str>::Owned(lad_type.identifier.clone()),
+                type_id.clone(),
+            ));
+        }
+        for (namespace, name, type_id) in namespace_types {
+            let types = &mut file.namespaces.entry(namespace).or_default().types;
+            match types.get(&name) {
+                // as at runtime, the first type with a name wins
+                Some(existing) => warn!(
+                    "{type_id} is not reachable from its namespace, {existing} has the same name"
+                ),
+                None => {
+                    types.insert(name, type_id);
+                }
             }
         }
 
@@ -673,6 +750,12 @@ impl<'t> LadFileBuilder<'t> {
 
             file.functions.sort_keys();
             file.generic_types.sort_keys();
+            file.namespaces.sort_keys();
+            for namespace in file.namespaces.values_mut() {
+                namespace.types.sort_keys();
+                namespace.functions.sort_keys();
+                namespace.values.sort_keys();
+            }
         }
 
         file
