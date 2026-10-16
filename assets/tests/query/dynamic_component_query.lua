@@ -15,6 +15,6 @@ expected_entities = {
 }
 
 for i, entity in ipairs(found_entities) do
-    assert(entity:index():index() == expected_entities[i]:index():index(),
-        "Expected entity " .. expected_entities[i]:index():index() .. " but got " .. entity:index():index())
+    assert(entity:index() == expected_entities[i]:index(),
+        "Expected entity " .. expected_entities[i]:index() .. " but got " .. entity:index())
 end

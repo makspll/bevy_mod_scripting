@@ -1177,7 +1177,13 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let registry = self.script_function_registry();
         let registry = registry.read();
 
-        match registry.get_function(Namespace::OnType(type_id), name) {
+        // operators not defined on the type itself fall back to the generic ones on `ReflectReference`, i.e. `eq`
+        let func = registry
+            .get_function(Namespace::OnType(type_id), name)
+            .or_else(|name| {
+                registry.get_function(Namespace::OnType(TypeId::of::<ReflectReference>()), name)
+            });
+        match func {
             Ok(func) => func.call(args, context),
             Err(name) => Err(InteropError::missing_function(
                 name.to_string(),

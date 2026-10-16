@@ -22,7 +22,7 @@ fn on_test() {
     let found = false;
     for (result, i) in world.query.call().component.call(world.get_type_by_name.call("bevy_mod_scripting_core::script::ScriptComponent")).build.call() {
         let e = result.entity.call();
-        if e.index.call().index.call() != entity.index.call().index.call() {
+        if e.index.call() != entity.index.call() {
             other = e;
             found = true;
         }
