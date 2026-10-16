@@ -1,0 +1,26 @@
+-- constructors
+local d = Duration.from_secs(1.5)
+assert(d:as_secs() == 1.5, "from_secs")
+assert(Duration.from_millis(1500) == d, "from_millis")
+assert(Duration.from_micros(1500000) == d, "from_micros")
+assert(Duration.from_nanos(1500000000) == d, "from_nanos")
+assert(Duration.zero():is_zero(), "zero")
+assert(not pcall(Duration.from_secs, -1.0), "from_secs rejects negative seconds")
+
+-- conversions
+assert(d:as_secs_f64() == 1.5, "as_secs_f64")
+assert(d:as_millis() == 1500, "as_millis")
+assert(not d:is_zero(), "is_zero is false for a positive duration")
+
+-- arithmetic
+assert(d + Duration.from_millis(500) == Duration.from_secs(2.0), "add")
+assert(d - Duration.from_secs(2.0) == Duration.zero(), "sub saturates at zero")
+assert(d * 2.0 == Duration.from_secs(3.0), "mul")
+assert(d / 3.0 == Duration.from_millis(500), "div")
+assert(not pcall(function() return d / 0.0 end), "div rejects a zero divisor")
+assert(not pcall(function() return d * -1.0 end), "mul rejects a negative factor")
+
+-- comparison
+assert(d:eq(Duration.from_millis(1500)), "eq")
+assert(d:lt(Duration.from_secs(2.0)), "lt")
+assert(not d:lt(Duration.zero()), "lt is false for the longer duration")
