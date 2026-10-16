@@ -21,6 +21,7 @@
 {%- for function in module.functions -%}
 {# newline #}
 {# newline #}
+{{- self::multiline_description(description=function.documentation) -}}
 {%- if function.async_fn -%}
 ---@async
 {# newline #}

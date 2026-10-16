@@ -1454,6 +1454,15 @@ mod test {
     }
 
     #[test]
+    fn functions_keep_their_documentation() {
+        let rendered = render(&file_with_constructors());
+        assert!(
+            rendered.contains("--- Constructs a value.\n---@param payload"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
     fn generic_types_are_declared_once_with_their_parameters() {
         let file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
         let rendered = render(&file);
