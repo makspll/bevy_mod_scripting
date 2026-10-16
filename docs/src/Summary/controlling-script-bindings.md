@@ -93,7 +93,7 @@ Doing this requires implementing a set of other traits which tell the runtime ho
 The most trivial way to allow your type to be used directly in bindings is to apply derive macros like so:
 
 ```rust
-#[derive(Clone, TypedThrough, GetTypeDependencies, ArgMeta, IntoScript, FromScript, Reflect)]
+#[derive(Reflect, ScriptType)]
 pub struct MyThing(usize);
 
 
@@ -106,7 +106,9 @@ impl MyThing {
 }
 ```
 
-If you wish to customize the `FromScript` implementation, simply remove that macro and implement it yourself. See [the custom conversions example](https://github.com/makspll/bevy_mod_scripting/blob/main/examples/docgen.rs) for more information.
+`ScriptType` implements `FromScript`, `IntoScript`, `ArgMeta`, `GetTypeDependencies` and `TypedThrough` at once, converting through `V<Self>`.
+
+If you wish to customize one of the conversions, write that impl by hand and use `#[script_type(from = custom)]` or `#[script_type(into = custom)]`. This skips the generated impl and documents the type as opaque in generated docs. See [the custom conversions example](https://github.com/makspll/bevy_mod_scripting/blob/main/examples/custom_conversions.rs) for more information.
 
 ## Context Arguments
 

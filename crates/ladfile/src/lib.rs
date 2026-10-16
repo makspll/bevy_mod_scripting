@@ -1,8 +1,25 @@
-//! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
+//! Parsing definitions for the LAD (Language Agnostic Declaration) file format.
 //!
 //! The main ideals behind the format are:
 //! - Centralization, we want to centralize as much of the "documentation" logic in the building of this format. For example, instead of letting each backend parse argument docstrings from the function docstring, we can do this here, and let the backends concentrate on pure generation.
 //! - Rust centric, the format describes bindings from the Rust side, so we generate rust centric declarations. These can then freely be converted into whatever representaion necessary.
+//!
+//! # Writing a backend
+//!
+//! A backend turns a [`LadFile`] into something else, i.e. Lua language server declarations or mdbook pages.
+//! - [`LadFile::types`] are the types scripts see, keyed by [`LadTypeId`]; [`LadTypeDefinition::layout`] describes their fields and variants.
+//! - [`LadFile::functions`] are keyed by [`LadFunctionId`], [`LadFunction::namespace`] says whether they are global, on a type or on an enum variant.
+//! - Every argument, field and return value has a [`LadTypeKind`]. Render it with an [`ArgumentVisitor`]:
+//!   pick an `Output` (i.e. a type in your language, or `()` when writing into a buffer) and handle each container kind.
+//!   To only find what a kind contains, use [`LadTypeKind::for_each`].
+//!
+//! The builder (`ladfile_builder`) does the work which would otherwise be repeated by each backend:
+//! - arguments are always named, unnamed ones are `arg1`, `arg2`...
+//! - arguments scripts never pass, like the function call context, are left out
+//! - [`LadFunction::receiver`] says if the first argument is the value the function is called on (`v:length()` in Lua)
+//! - [`LadFunctionMetadata::operator`] says which operator a function implements
+//!
+//! The expected outputs of the backends' tests are generated from `test_assets/test.lad.json`, run `cargo xtask bless-lad` to update all of them.
 
 use std::{
     borrow::Cow,

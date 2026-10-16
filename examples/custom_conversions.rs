@@ -15,7 +15,9 @@ use bevy_mod_scripting_bindings::{
     AppReflectAllocator, FromScript, InteropError, ReflectReference, WorldExtensions,
 };
 
-#[derive(Clone, TypedThrough, GetTypeDependencies, ArgMeta, IntoScript, Reflect)]
+// `ScriptType` implements everything else a type needs to be used in function signatures, `from = custom` leaves `FromScript` to us
+#[derive(Clone, ScriptType, Reflect)]
+#[script_type(from = custom)]
 pub enum MyFunkyArgumentType {
     Nil,
     Number(usize),
@@ -59,7 +61,9 @@ impl FromScript for MyFunkyArgumentType {
 
 // you can do the same thing for IntoScript
 
-#[derive(Clone, TypedThrough, GetTypeDependencies, ArgMeta, FromScript, Reflect)]
+// `ScriptType` implements everything else a type needs to be used in function signatures, `into = custom` leaves `IntoScript` to us
+#[derive(Clone, ScriptType, Reflect)]
+#[script_type(into = custom)]
 pub enum MyFunkyReturnType {
     Nil,
     Number(usize),
