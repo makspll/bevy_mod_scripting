@@ -408,16 +408,16 @@ impl<T: FromReflect> FromScript for M<'_, T> {
 }
 
 #[profiling::all_functions]
-impl<T: FromScript> FromScript for Option<T>
-where
-    for<'w> T::This<'w>: Into<T>,
-{
-    type This<'w> = Self;
+impl<T: FromScript> FromScript for Option<T> {
+    type This<'w> = Option<T::This<'w>>;
     #[profiling::function]
-    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(
+        value: ScriptValue,
+        world: WorldGuard<'_>,
+    ) -> Result<Self::This<'_>, InteropError> {
         match value {
             ScriptValue::Unit => Ok(None),
-            _ => Ok(Some(T::from_script(value, world)?.into())),
+            _ => Ok(Some(T::from_script(value, world)?)),
         }
     }
 }

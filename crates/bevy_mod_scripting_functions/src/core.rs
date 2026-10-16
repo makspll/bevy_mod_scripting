@@ -48,7 +48,7 @@ pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_camera")]
     app.add_plugins(bevy_camera_bms_bindings::BevyCameraScriptingPlugin);
     #[cfg(feature = "bevy_color")]
-    app.add_plugins(bevy_color_bms_bindings::BevyColorScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_color_bindings::BevyColorBindingsPlugin);
     #[cfg(feature = "bevy_core_pipeline")]
     app.add_plugins(bevy_core_pipeline_bms_bindings::BevyCorePipelineScriptingPlugin);
     #[cfg(feature = "bevy_ecs")]
@@ -60,9 +60,9 @@ pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_image")]
     app.add_plugins(bevy_image_bms_bindings::BevyImageScriptingPlugin);
     #[cfg(feature = "bevy_input")]
-    app.add_plugins(bevy_input_bms_bindings::BevyInputScriptingPlugin);
-    #[cfg(feature = "bevy_input_focus")]
-    app.add_plugins(bevy_input_focus_bms_bindings::BevyInputFocusScriptingPlugin);
+    app.add_plugins(bevy_mod_scripting_bevy_input_bindings::BevyInputBindingsPlugin);
+    #[cfg(feature = "bevy_window")]
+    app.add_plugins(bevy_mod_scripting_bevy_window_bindings::BevyWindowBindingsPlugin);
     #[cfg(feature = "bevy_light")]
     app.add_plugins(bevy_light_bms_bindings::BevyLightScriptingPlugin);
     #[cfg(feature = "bevy_math")]

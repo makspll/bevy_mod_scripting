@@ -40,6 +40,7 @@ default = [
     "bevy_time_bindings",
     "bevy_transform_bindings",
     "bevy_color_bindings",
+    "bevy_window_bindings",
     "bevy_core_pipeline_bindings",
 ]
 
@@ -75,7 +76,6 @@ bevy_gizmos_bindings = ["bevy_mod_scripting_functions/bevy_gizmos"]
 bevy_gltf_bindings = ["bevy_mod_scripting_functions/bevy_gltf"]
 bevy_image_bindings = ["bevy_mod_scripting_functions/bevy_image"]
 bevy_input_bindings = ["bevy_mod_scripting_functions/bevy_input"]
-bevy_input_focus_bindings = ["bevy_mod_scripting_functions/bevy_input_focus"]
 bevy_light_bindings = ["bevy_mod_scripting_functions/bevy_light"]
 bevy_math_bindings = ["bevy_mod_scripting_functions/bevy_math"]
 bevy_mesh_bindings = ["bevy_mod_scripting_functions/bevy_mesh"]
@@ -94,6 +94,7 @@ bevy_transform_bindings = ["bevy_mod_scripting_functions/bevy_transform"]
 bevy_ui_bindings = ["bevy_mod_scripting_functions/bevy_ui"]
 bevy_ui_render_bindings = ["bevy_mod_scripting_functions/bevy_ui_render"]
 bevy_ui_widgets_bindings = ["bevy_mod_scripting_functions/bevy_ui_widgets"]
+bevy_window_bindings = ["bevy_mod_scripting_functions/bevy_window"]
 
 # optional
 unsafe_lua_modules = ["bevy_mod_scripting_lua?/unsafe_lua_modules"]
