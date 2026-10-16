@@ -1,14 +1,15 @@
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
+local bms = import_namespace("bms")
 function on_test()
   local post_update_schedule = world.get_schedule_by_name("PostUpdate")
 
   local test_system = post_update_schedule:get_system_by_name("on_test_post_update")
 
-  local script_attachment = ScriptAttachment.new_entity_script(entity, script_asset)
+  local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
 
   local system_a = world.add_system(
     post_update_schedule,
-    system_builder("custom_system_a", script_attachment)
+    bms.system_builder("custom_system_a", script_attachment)
     :after(test_system)
   )
 
@@ -16,7 +17,7 @@ function on_test()
 
   local system_b = world.add_system(
     post_update_schedule,
-    system_builder("custom_system_b", script_attachment)
+    bms.system_builder("custom_system_b", script_attachment)
     :after(test_system)
   )
 

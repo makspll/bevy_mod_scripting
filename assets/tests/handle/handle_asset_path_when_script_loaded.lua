@@ -1,3 +1,4 @@
+local bms = import_namespace("bms")
 local expected_asset_path = "tests/handle/handle_asset_path_when_script_loaded.lua"
 function normalize_path(path)
     if path then
@@ -7,12 +8,12 @@ function normalize_path(path)
     end
 end
 
-local normalized_gotten_asset_path = normalize_path(script_asset:asset_path())
+local normalized_gotten_asset_path = normalize_path(bms.current_script():asset_path())
 assert(normalized_gotten_asset_path == expected_asset_path,
     "Expected script asset path to match, got :" .. normalized_gotten_asset_path)
 
 function on_test()
-    local normalized_gotten_asset_path = normalize_path(script_asset:asset_path())
+    local normalized_gotten_asset_path = normalize_path(bms.current_script():asset_path())
     assert(normalized_gotten_asset_path == expected_asset_path,
         "Expected script asset path to match, got: " .. normalized_gotten_asset_path)
 end

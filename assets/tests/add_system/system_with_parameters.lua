@@ -1,4 +1,5 @@
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
+local bms = import_namespace("bms")
 runs = {}
 local ResourceTypeA = world.get_type_by_name("test_utils::test_data::TestResource")
 local ResourceTypeB = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields")
@@ -9,7 +10,7 @@ function on_test()
     local post_update_schedule = world.get_schedule_by_name("PostUpdate")
 
 
-    local script_attachment = ScriptAttachment.new_entity_script(entity, script_asset)
+    local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
     local entity = world.spawn()
     local entity2 = world.spawn()
 
@@ -22,7 +23,7 @@ function on_test()
 
     world.add_system(
         post_update_schedule,
-        system_builder("my_parameterised_system", script_attachment)
+        bms.system_builder("my_parameterised_system", script_attachment)
         :resource(ResourceTypeA)
         :query(world.query():component(ComponentA):component(ComponentB))
         :resource(ResourceTypeB)

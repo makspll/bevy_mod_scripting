@@ -197,7 +197,8 @@ The type in the `impl` block you apply `script_bindings` to (or the one passed t
 | `MyType` | `MyType` values and the `MyType` type, as imported from its namespace | whatever you declare |
 | `ReflectReference` | every value, after `MyType`'s own functions | the value |
 | `StaticTypeRef` | every type, after `MyType`'s own functions | the type, filled in automatically |
-| `GlobalNamespace` | the global scope, i.e. no prefix | whatever you declare |
+| `NamespaceMembers` | the namespace given by `namespace = "..."`, i.e. `import_namespace("my_game")` | whatever you declare |
+| `GlobalNamespace` | the builtin globals, i.e. no prefix | whatever you declare |
 
 When the same name exists in more than one place, the most specific one wins.
 For `ReflectReference` and `StaticTypeRef` in a `script_bindings` block outside of the crate defining them, use the `remote` attribute.
@@ -234,8 +235,26 @@ The same placeholders work for functions on `EnumVariantRef`, which are bound to
 The enum variants of a type are also available on the type, i.e. `MyEnum.Variant`, after the functions.
 
 
-## Globals
+## Namespace members
 
 Each type registered with the type registry is an entry in the table `import_namespace` returns for its [namespace](../ScriptingReference/namespaces.md), i.e. `import_namespace("math").Vec3`.
+
+Functions which don't belong to a type are members of a namespace, declared on a struct with `NamespaceMembers`:
+
+```rust,ignore
+#[script_bindings(namespace = "my_game")]
+impl NamespaceMembers {
+    fn spawn_enemy(health: f32) { /* ... */ }
+}
+```
+
+```lua
+local my_game = import_namespace("my_game")
+my_game.spawn_enemy(5.0)
+```
+
+Values are registered per namespace with `AppScriptNamespaceMembers::register_value`, and are made each time the namespace is imported.
+
+The only globals are the builtins: `world`, `import_namespace`, `export_namespace` and `register_callback`.
 
 Types are not globals, which keeps types with the same name from shadowing each other. Use the `filter` of `CoreScriptGlobalsPlugin` to choose which types scripts can look up by name.

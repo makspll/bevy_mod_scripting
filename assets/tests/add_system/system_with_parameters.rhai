@@ -1,3 +1,4 @@
+let bms = import_namespace.call("bms");
 let runs = [];
 
 let ResourceTypeA = world.get_type_by_name.call("test_utils::test_data::TestResource");
@@ -9,7 +10,7 @@ fn on_test() {
     let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");
     
-    let script_attachment = ScriptAttachment.new_entity_script.call(entity, script_asset);
+    let script_attachment = ScriptAttachment.new_entity_script.call(bms.current_entity.call(), bms.current_script.call());
     let entity  = world.spawn_.call();
     let entity2 = world.spawn_.call();
     
@@ -19,7 +20,7 @@ fn on_test() {
     world.add_default_component.call(entity2, ComponentB);
 
 
-    let built_system = system_builder.call("my_parameterised_system", script_attachment)
+    let built_system = bms.system_builder.call("my_parameterised_system", script_attachment)
                             .resource.call(ResourceTypeA)
                             .query.call(world.query.call().component.call(ComponentA).with_.call(ComponentB))
                             .resource.call(ResourceTypeB);

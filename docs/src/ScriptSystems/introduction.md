@@ -25,10 +25,12 @@ local system_with_name = update:get_system_by_name("my_system")
 
 ## Inserting Systems
 
-To insert a system you will need to use the `system_builder` global function like below:
+To insert a system you will need to use the `bms.system_builder` function (`import_namespace("bms").system_builder`) like below:
 
 ```lua
-local system = system_builder("my_system", script_id)
+local bms = import_namespace("bms")
+local attachment = bms.ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+local system = bms.system_builder("my_system", attachment)
     :exclusive()
     :after(some_other_system)
     :before(another_system)
@@ -53,7 +55,8 @@ The order in which those functions are called, will define the order in which ar
 
 For example:
 ```lua
-system_builder("my_system")
+local bms = import_namespace("bms")
+bms.system_builder("my_system")
     :query(
         world.query()
             :component(ComponentA)

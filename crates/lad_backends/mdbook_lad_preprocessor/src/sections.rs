@@ -199,12 +199,23 @@ impl<'a> Section<'a> {
         }
     }
 
-    /// The functions which are global, as opposed to the ones on types and on variants of enums
+    /// The builtin functions, as opposed to the ones on types, variants of enums and in namespaces
     fn global_functions(&self) -> Vec<&'a LadFunction> {
         self.ladfile
-            .functions
-            .values()
-            .filter(|function| matches!(function.namespace, LadFunctionNamespace::Global))
+            .builtin_functions()
+            .map(|(_, function)| function)
+            .collect()
+    }
+
+    /// The functions which are members of the namespace, i.e. `import_namespace("bms").log_info`
+    fn namespace_functions(&self, namespace: &str) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+        self.ladfile
+            .namespaces
+            .get(namespace)
+            .into_iter()
+            .flat_map(|lad_namespace| lad_namespace.functions.values())
+            .filter_map(|id| self.ladfile.functions.get(id))
+            .map(|function| (None, function))
             .collect()
     }
 
@@ -245,7 +256,7 @@ impl<'a> Section<'a> {
         )
     }
 
-    /// The namespaces types are in, sorted, with the root namespace last
+    /// The namespaces types or namespace members are in, sorted, with the root namespace last
     fn namespaces(&self) -> Vec<&'a str> {
         let mut namespaces = self
             .documented_types()
@@ -255,6 +266,12 @@ impl<'a> Section<'a> {
                     .generic_types
                     .values()
                     .map(|generic_type| generic_type.namespace.as_str()),
+            )
+            .chain(
+                self.ladfile
+                    .namespaces
+                    .keys()
+                    .map(|namespace| namespace.as_ref()),
             )
             .collect::<Vec<_>>();
         namespaces.sort_by_key(|namespace| (namespace.is_empty(), *namespace));
@@ -363,6 +380,19 @@ impl<'a> Section<'a> {
                             )
                         }),
                 )
+                .chain(self.namespace_functions(namespace).into_iter().map(
+                    |(variant, function)| {
+                        Section::new(
+                            child_parent_path.clone(),
+                            self.ladfile,
+                            SectionData::FunctionDetail {
+                                function,
+                                types_directory: PathBuf::from("../../types"),
+                                variant,
+                            },
+                        )
+                    },
+                ))
                 .collect(),
 
             SectionData::FunctionSummary => self
@@ -526,16 +556,16 @@ impl<'a> Section<'a> {
         }]
     }
 
-    /// The page of a namespace, listing its types
+    /// The page of a namespace, listing its types and functions
     fn namespace_items(&self, namespace: &str) -> Vec<SectionItem<'a>> {
         let intro = if namespace.is_empty() {
             "The types without a crate, such as primitives.".to_owned()
         } else {
             format!(
-                "The types in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
+                "The types and functions in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
             )
         };
-        vec![
+        let mut items = vec![
             SectionItem::Markdown {
                 markdown: Box::new(move |builder| {
                     builder.raw(intro.clone());
@@ -548,7 +578,20 @@ impl<'a> Section<'a> {
                 types_directory: ".".to_owned(),
                 ladfile: self.ladfile,
             },
-        ]
+        ];
+        let functions = self.namespace_functions(namespace);
+        if !functions.is_empty() {
+            items.push(SectionItem::Markdown {
+                markdown: Box::new(|builder| {
+                    builder.heading(2, "Functions");
+                }),
+            });
+            items.push(SectionItem::FunctionsSummary {
+                functions,
+                functions_directory: linkify_filename(self.title()),
+            });
+        }
+        items
     }
 
     /// The page of the global functions

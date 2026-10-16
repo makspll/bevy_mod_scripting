@@ -89,7 +89,7 @@ local UnitType = {}
 
 
 
----@class (exact) namespace.ladfile_builder
+---@class namespace.ladfile_builder
 --- The `ladfile_builder` namespace, as returned by `import_namespace("ladfile_builder")`.
 ---@field  EnumType ladfile_builder.EnumType
 ---@field  GenericStructType ladfile_builder.GenericStructType

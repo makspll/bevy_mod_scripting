@@ -340,7 +340,7 @@ mod test {
     use super::*;
     use bevy_app::App;
     use bevy_mod_scripting_bindings::{
-        EnumVariantRef,
+        EnumVariantRef, NamespaceMembers,
         function::{
             bound::{BoundFields, BoundValue},
             from::V,
@@ -462,6 +462,39 @@ mod test {
             .find(|(_, t)| t.identifier == type_name)
             .map(|(id, _)| id.clone())
             .unwrap()
+    }
+
+    #[test]
+    fn namespace_members_are_documented_in_their_namespace() {
+        let mut app = App::new();
+        app.register_type::<TestStruct>();
+        NamespaceBuilder::<NamespaceMembers>::in_namespace(app.world_mut(), "game")
+            .register_documented("spawn_enemy", |hp: usize| hp, "Spawns an enemy", &["hp"]);
+        let file = generate_from(app);
+
+        let namespace = &file.namespaces["game"];
+        let id = &namespace.functions["spawn_enemy"];
+        let function = &file.functions[id];
+        assert_eq!(
+            function.namespace,
+            LadFunctionNamespace::Namespace {
+                namespace: "game".into()
+            }
+        );
+        assert_eq!(function.arguments[0].name.as_deref(), Some("hp"));
+        // members are not builtins
+        assert!(
+            file.builtin_functions()
+                .all(|(_, f)| f.identifier != "spawn_enemy")
+        );
+
+        // and types are listed in their namespace, by the name scripts import them with
+        let test_struct = type_id(&file, "TestStruct");
+        let type_namespace = &file.types[&test_struct].namespace;
+        assert_eq!(
+            file.namespaces[type_namespace.as_str()].types["TestStruct"],
+            test_struct
+        );
     }
 
     #[test]

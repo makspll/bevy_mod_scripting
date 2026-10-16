@@ -986,7 +986,8 @@ fn namespace_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
                     documentation: Some(format!(
                         "The `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
                     )),
-                    exact: true,
+                    // LuaLS doesn't attach the functions declared on the table to an `(exact)` class
+                    exact: false,
                     operators: vec![],
                 }),
                 functions,
@@ -1327,10 +1328,10 @@ mod test {
         );
         let rendered = render(&file);
 
-        let namespace = block(&rendered, "---@class (exact) namespace.ladfile_builder");
+        let namespace = block(&rendered, "---@class namespace.ladfile_builder");
         assert!(namespace.contains("---@field  PlainStructType ladfile_builder.PlainStructType"));
         assert!(!namespace.contains("UnitType"), "{namespace}");
-        let other = block(&rendered, "---@class (exact) namespace.other_crate");
+        let other = block(&rendered, "---@class namespace.other_crate");
         assert!(
             other.contains("---@field  UnitType other_crate.UnitType"),
             "{other}"
@@ -1470,7 +1471,7 @@ mod test {
         assert!(!rendered.contains("OpaqueGenericType = {}"), "{rendered}");
 
         // and as there is nothing to construct, it is not in the namespace either
-        let namespace = block(&rendered, "---@class (exact) namespace.ladfile_builder");
+        let namespace = block(&rendered, "---@class namespace.ladfile_builder");
         assert!(!namespace.contains("OpaqueGenericType"), "{namespace}");
     }
 

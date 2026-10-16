@@ -6,7 +6,16 @@ If you are a modder, welcome! 👋, apologies for the rust-centricity of this gu
 
 ## Globals
 
-Scripts will have access to a few global variables in most callbacks:
+Scripts have only a few builtin globals:
 - `world`: a static reference to the world, with all sorts of functions available
-- `entity`: the entity the script is attached to, not available on load/unload callbacks, and in dynamic system callbacks.
-- `script_id`: the ID of the current script 
+- `import_namespace(namespace)`: returns the types and functions of a [namespace](./namespaces.md)
+- `export_namespace` and `register_callback`: see [Exporting functions](./namespaces.md#exporting-functions)
+
+Everything else is reached through `import_namespace`, i.e. the `bms` namespace holds BMS' own functions:
+- `bms.current_entity()`: the entity the script is attached to, or `nil` if none, not available on load/unload callbacks, and in dynamic system callbacks.
+- `bms.current_script()`: the handle of the current script
+
+```lua
+local bms = import_namespace("bms")
+print(bms.current_entity())
+```

@@ -1,7 +1,8 @@
+local bms = import_namespace("bms")
 LifeState = world.get_type_by_name("game_of_life::LifeState")
 Settings = world.get_type_by_name("game_of_life::Settings")
 
-log_warn("Lua: The game_of_life.lua script just got loaded")
+bms.log_warn("Lua: The game_of_life.lua script just got loaded")
 math.randomseed(os.time())
 
 function fetch_life_state()
@@ -11,8 +12,8 @@ function fetch_life_state()
 end
 
 function on_script_loaded()
-    log_warn("Lua: Hello! I am initiating the game of life simulation state with randomness!")
-    log_warn("Lua: Click on the screen to set cells alive after running the `gol start` command")
+    bms.log_warn("Lua: Hello! I am initiating the game of life simulation state with randomness!")
+    bms.log_warn("Lua: Click on the screen to set cells alive after running the `gol start` command")
 
     local life_state = fetch_life_state()
 
@@ -27,7 +28,7 @@ end
 
 function on_click(x, y)
     -- get the settings
-    log_warn("Lua: Clicked at x: " .. x .. " y: " .. y)
+    bms.log_warn("Lua: Clicked at x: " .. x .. " y: " .. y)
     local life_state = fetch_life_state()
     local cells = life_state.cells
     local settings = world.get_resource(Settings)
@@ -111,7 +112,7 @@ function on_update()
 end
 
 function on_script_unloaded()
-    log_warn("Lua: I am being unloaded, goodbye!")
+    bms.log_warn("Lua: I am being unloaded, goodbye!")
 
     -- set state to 0's
     local life_state = fetch_life_state()

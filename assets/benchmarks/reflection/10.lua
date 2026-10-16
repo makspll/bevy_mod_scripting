@@ -1,4 +1,5 @@
 -- create a dynamic component with n depth of fields
+local bms = import_namespace("bms")
 local Component = world.register_new_component("script.test", "DeepComponent");
 local new_entity = world.spawn();
 
@@ -35,7 +36,7 @@ function pre_bench()
     -- Build the nested table.
     local instance = make_path(step_keys, 1)
     world.remove_component(new_entity, Component)
-    world.insert_component(new_entity, Component, construct(world.get_type_by_name("bevy_mod_scripting_bindings::script_component::DynamicComponent"), {
+    world.insert_component(new_entity, Component, bms.construct(world.get_type_by_name("bevy_mod_scripting_bindings::script_component::DynamicComponent"), {
         data = instance
     }))
     current_reference = world.get_component(new_entity, Component)

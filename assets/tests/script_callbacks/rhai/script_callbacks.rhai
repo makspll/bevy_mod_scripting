@@ -1,3 +1,4 @@
+let bms = import_namespace.call("bms");
 // note: `world`, `entity`, and `script_asset` are only visible inside callbacks, not in helper functions
 
 fn double(x) {
@@ -10,12 +11,12 @@ fn add(a, b) {
 
 fn bounce(back_to) {
     let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
-    return run_script_callback.call("double", ScriptAttachment.new_entity_script.call(back_to, script_asset), 1);
+    return bms.run_script_callback.call("double", ScriptAttachment.new_entity_script.call(back_to, bms.current_script.call()), 1);
 }
 
 fn record(value) {
     let TestComponent = import_namespace.call("test_utils").TestComponent;
-    world.insert_component.call(entity, world.get_type_by_name.call("test_utils::test_data::TestComponent"), TestComponent.new_.call(#{ strings: [value] }));
+    world.insert_component.call(bms.current_entity.call(), world.get_type_by_name.call("test_utils::test_data::TestComponent"), TestComponent.new_.call(#{ strings: [value] }));
 }
 
 fn on_test() {
@@ -25,43 +26,43 @@ fn on_test() {
     let found = false;
     for (result, i) in world.query.call().component.call(world.get_type_by_name.call("bevy_mod_scripting_core::script::ScriptComponent")).build.call() {
         let e = result.entity.call();
-        if e.index.call() != entity.index.call() {
+        if e.index.call() != bms.current_entity.call().index.call() {
             other = e;
             found = true;
         }
     }
     assert(found, "could not find the other entity");
-    let other_attachment = ScriptAttachment.new_entity_script.call(other, script_asset);
-    let own_attachment = ScriptAttachment.new_entity_script.call(entity, script_asset);
+    let other_attachment = ScriptAttachment.new_entity_script.call(other, bms.current_script.call());
+    let own_attachment = ScriptAttachment.new_entity_script.call(bms.current_entity.call(), bms.current_script.call());
 
     // immediate callbacks return what the callback returned
-    let doubled = run_script_callback.call("double", other_attachment, 21);
+    let doubled = bms.run_script_callback.call("double", other_attachment, 21);
     assert(doubled == 42, "Expected 42, got: " + doubled);
-    let sum = run_script_callback.call("add", other_attachment, 1, 2);
+    let sum = bms.run_script_callback.call("add", other_attachment, 1, 2);
     assert(sum == 3, "Expected 3, got: " + sum);
 
     // recipients return a list with one value per script
     let Recipients = import_namespace.call("bms").Recipients;
-    let results = run_script_callback.call("double", Recipients.entity_script.call(other, script_asset), 5);
+    let results = bms.run_script_callback.call("double", Recipients.entity_script.call(other, bms.current_script.call()), 5);
     assert(results.len == 1, "Expected 1 result, got: " + results.len);
     assert(results[0] == 10, "Expected 10, got: " + results[0]);
 
     // busy contexts error instead of deadlocking
     assert_throws(|| {
-        run_script_callback.call("double", own_attachment, 1);
+        bms.run_script_callback.call("double", own_attachment, 1);
     }, "it is the script currently running");
     assert_throws(|| {
-        run_script_callback.call("bounce", other_attachment, entity);
+        bms.run_script_callback.call("bounce", other_attachment, bms.current_entity.call());
     }, "further up the current chain");
 
     // queued callbacks can target this script, and only run once this callback finishes
-    queue_script_callback.call("record", own_attachment, "queued!");
+    bms.queue_script_callback.call("record", own_attachment, "queued!");
     // flushing the world must not run them early
     world.spawn_.call();
-    assert(!world.has_component.call(entity, world.get_type_by_name.call("test_utils::test_data::TestComponent")), "Queued callback ran before the callback queueing it finished");
+    assert(!world.has_component.call(bms.current_entity.call(), world.get_type_by_name.call("test_utils::test_data::TestComponent")), "Queued callback ran before the callback queueing it finished");
     return "ok";
 }
 
 fn on_test_post_update() {
-    return world.get_component.call(entity, world.get_type_by_name.call("test_utils::test_data::TestComponent")).strings[0];
+    return world.get_component.call(bms.current_entity.call(), world.get_type_by_name.call("test_utils::test_data::TestComponent")).strings[0];
 }

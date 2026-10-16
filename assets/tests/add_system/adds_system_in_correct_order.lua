@@ -1,6 +1,7 @@
 -- add two systems, one before and one after the existing `on_test_post_update` callback, then assert all systems have run
 -- in the `on_test_last` callback
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
+local bms = import_namespace("bms")
 
 local runs = {}
 
@@ -9,23 +10,23 @@ function on_test()
     local post_update_schedule = world.get_schedule_by_name("PostUpdate")
 
     local test_system = post_update_schedule:get_system_by_name("on_test_post_update")
-    local script_attachment = ScriptAttachment.new_entity_script(entity, script_asset)
+    local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
 
     local system_after = world.add_system(
         post_update_schedule,
-        system_builder("custom_system_after", script_attachment)
+        bms.system_builder("custom_system_after", script_attachment)
         :after(test_system)
     )
 
     local system_before = world.add_system(
         post_update_schedule,
-        system_builder("custom_system_before", script_attachment)
+        bms.system_builder("custom_system_before", script_attachment)
         :before(test_system)
     )
 
     local script_system_between = world.add_system(
         post_update_schedule,
-        system_builder("custom_system_between", script_attachment)
+        bms.system_builder("custom_system_between", script_attachment)
         :after(test_system)
         :before(system_after)
     )

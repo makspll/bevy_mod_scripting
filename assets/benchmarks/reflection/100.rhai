@@ -1,3 +1,4 @@
+let bms = import_namespace.call("bms");
 let Component = world.register_new_component.call("script.test", "DeepComponent");
 let new_entity = world.spawn_.call();
 
@@ -37,7 +38,7 @@ fn pre_bench() {
     // Build the nested table.
     let instance = make_path(step_keys, 0);
     world.remove_component.call(new_entity, Component);
-    world.insert_component.call(new_entity, Component, construct.call(world.get_type_by_name.call("bevy_mod_scripting_bindings::script_component::DynamicComponent"), #{ "data": instance }));
+    world.insert_component.call(new_entity, Component, bms.construct.call(world.get_type_by_name.call("bevy_mod_scripting_bindings::script_component::DynamicComponent"), #{ "data": instance }));
     current_reference = world.get_component.call(new_entity, Component);
 };
 

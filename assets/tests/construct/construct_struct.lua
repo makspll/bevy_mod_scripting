@@ -1,5 +1,6 @@
+local bms = import_namespace("bms")
 local type = world.get_type_by_name("test_utils::test_data::SimpleStruct")
-local constructed = construct(type, {
+local constructed = bms.construct(type, {
     foo = 123
 })
 

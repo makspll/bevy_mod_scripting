@@ -692,7 +692,7 @@ impl<'t> LadFileBuilder<'t> {
 
         // the types scripts import from each namespace, by the name `import_namespace` gives them
         let mut types_by_id: Vec<_> = file.documented_types().collect();
-        types_by_id.sort_by(|(a, _), (b, _)| a.cmp(b));
+        types_by_id.sort_by_key(|(id, _)| *id);
         let mut namespace_types = Vec::new();
         for (type_id, lad_type) in types_by_id {
             // primitives are values, and types which aren't reflected aren't in the type registry, so neither can be imported
