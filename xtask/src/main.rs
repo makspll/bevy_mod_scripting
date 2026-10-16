@@ -163,6 +163,9 @@ impl App {
                     cmd.arg("--package").arg(package);
                 }
             }
+            Xtasks::BlessLad => {
+                cmd.arg("bless-lad");
+            }
             Xtasks::CiCheck => {
                 cmd.arg("ci-check");
             }
@@ -422,6 +425,9 @@ enum Xtasks {
         #[clap(long)]
         package: Option<String>,
     },
+    /// Rewrites the expected outputs of the LAD tests: the LAD file, then the Lua declarations and mdbook pages generated from it,
+    /// and checks them. Needs `mdbook` on the PATH (`cargo xtask init`).
+    BlessLad,
     /// Perform a full check as it would be done in CI, except not parallelised
     CiCheck,
     /// Generate a json job matrix, containing, describing maximally parallelised jobs for running in CI/CD.
@@ -515,6 +521,7 @@ impl Xtasks {
                 test_bindings,
             ),
             Xtasks::Test { name, package } => Self::test(app_settings, package, name),
+            Xtasks::BlessLad => Self::bless_lad(app_settings),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init {
                 dont_update_ide,
@@ -1106,6 +1113,28 @@ impl Xtasks {
             false,
         )?;
 
+        Ok(())
+    }
+
+    /// The crates whose tests compare against blessed LAD outputs, in the order the outputs feed each other
+    const LAD_PACKAGES: [&str; 3] = [
+        "ladfile_builder",
+        "lua_language_server_lad_backend",
+        "mdbook_lad_preprocessor",
+    ];
+
+    fn bless_lad(app_settings: GlobalArgs) -> Result<()> {
+        // SAFETY: xtask runs no other threads which could read the environment at this point
+        unsafe { std::env::set_var("BLESS_MODE", "1") };
+        for package in Self::LAD_PACKAGES {
+            // tests which bless their expected output fail on purpose, the check below reruns them
+            let _ = Self::test(app_settings.clone(), Some(package.to_owned()), None);
+        }
+        // SAFETY: as above
+        unsafe { std::env::remove_var("BLESS_MODE") };
+        for package in Self::LAD_PACKAGES {
+            Self::test(app_settings.clone(), Some(package.to_owned()), None)?;
+        }
         Ok(())
     }
 

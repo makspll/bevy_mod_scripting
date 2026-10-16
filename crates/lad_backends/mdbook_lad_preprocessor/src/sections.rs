@@ -1,8 +1,11 @@
-use std::{borrow::Cow, path::PathBuf};
+use std::{
+    borrow::Cow,
+    path::{Path, PathBuf},
+};
 
 use ladfile::{
-    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadFunctionNamespace,
-    LadGenericType, LadInstance, LadTypeDefinition, LadTypeId, LadTypeLayout, LadVisitable,
+    LadArgument, LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstance,
+    LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout, LadVisitable,
     ReflectionPrimitiveKind,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
@@ -15,7 +18,7 @@ use crate::{
 
 fn print_type(
     ladfile: &LadFile,
-    type_: &dyn LadVisitable,
+    type_: &impl LadVisitable,
     raw_type_id_replacement: Option<&'static str>,
     linkifier_base_path_and_escape_opt: Option<(PathBuf, bool)>,
 ) -> String {
@@ -37,12 +40,12 @@ fn print_type(
     if let Some((_, escape_opt)) = linkifier_base_path_and_escape_opt
         && escape_opt
     {
-        printed = escape_markdown(printed)
+        printed = escape_table_cell(printed)
     }
     printed
 }
 
-fn escape_markdown(markdown: String) -> String {
+fn escape_table_cell(markdown: String) -> String {
     markdown
         .replace("<", "\\<")
         .replace(">", "\\>")
@@ -404,53 +407,7 @@ impl<'a> Section<'a> {
 
     pub(crate) fn section_items(&self) -> Vec<SectionItem<'_>> {
         match self.data {
-            SectionData::Summary { .. } => {
-                let title = self.title().clone();
-
-                vec![SectionItem::Markdown {
-                    markdown: Box::new(move |builder| {
-                        builder.heading(2, "Contents");
-                        builder.text("This is an automatically generated file, you'll find links to the contents below");
-                        builder.table(|builder| {
-                            builder.headers(vec!["Section", "Contents"]);
-                            builder.row(markdown_vec![
-                                Markdown::new_paragraph("Types").code(),
-                                Markdown::Link {
-                                    text: Box::new("Describes all available binding types"),
-                                    url: format!("./{}/types.md", linkify_filename(title.clone())),
-                                    anchor: false
-                                }
-                            ]);
-                            builder.row(markdown_vec![
-                                Markdown::new_paragraph("Global Functions").code(),
-                                Markdown::Link {
-                                    text: Box::new(
-                                        "Documents all the global functions present in the bindings"
-                                    ),
-                                    url: format!(
-                                        "./{}/functions.md",
-                                        linkify_filename(title.clone())
-                                    ),
-                                    anchor: false
-                                }
-                            ]);
-                            builder.row(markdown_vec![
-                                Markdown::new_paragraph("Globals").code(),
-                                Markdown::Link {
-                                    text: Box::new(
-                                        "Documents all global variables present in the bindings"
-                                    ),
-                                    url: format!(
-                                        "./{}/globals.md",
-                                        linkify_filename(title.clone())
-                                    ),
-                                    anchor: false
-                                }
-                            ]);
-                        });
-                    }),
-                }]
-            }
+            SectionData::Summary { .. } => self.summary_items(),
             SectionData::InstancesSummary => {
                 let instances = self.ladfile.globals.iter().collect::<Vec<_>>();
                 let types_directory = PathBuf::from("./types");
@@ -460,140 +417,17 @@ impl<'a> Section<'a> {
                     types_directory,
                 }]
             }
-            SectionData::TypeSummary => {
-                // the namespace pages are in the directory of the type pages, which is next to this page
-                let namespaces = self
-                    .namespaces()
-                    .into_iter()
-                    .map(|namespace| {
-                        let page = Section::new(
-                            PathBuf::new(),
-                            self.ladfile,
-                            SectionData::Namespace { namespace },
-                        );
-                        (
-                            page.title(),
-                            page.file_name(),
-                            self.types_in_namespace(namespace).len(),
-                        )
-                    })
-                    .collect::<Vec<_>>();
-                vec![SectionItem::Markdown {
-                    markdown: Box::new(move |builder| {
-                        builder.heading(2, "Namespaces");
-                        builder.raw("Types are grouped by the namespace scripts import them from, i.e. `import_namespace(\"math\")`.");
-                        builder.append("\n\n");
-                        builder.table(|builder| {
-                            builder.headers(vec!["Namespace", "Types"]);
-                            for (title, file_name, count) in namespaces.iter() {
-                                builder.row(markdown_vec![
-                                    Markdown::Link {
-                                        text: Box::new(
-                                            Markdown::new_paragraph(title.clone()).code()
-                                        ),
-                                        url: format!("./types/{file_name}"),
-                                        anchor: false
-                                    },
-                                    Markdown::new_paragraph(count.to_string()),
-                                ]);
-                            }
-                        });
-                    }),
-                }]
-            }
-            SectionData::Namespace { namespace } => {
-                let intro = if namespace.is_empty() {
-                    "The types without a crate, such as primitives.".to_owned()
-                } else {
-                    format!(
-                        "The types in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
-                    )
-                };
-                vec![
-                    SectionItem::Markdown {
-                        markdown: Box::new(move |builder| {
-                            builder.raw(intro.clone());
-                            builder.append("\n\n");
-                        }),
-                    },
-                    SectionItem::TypesSummary {
-                        types: self.types_in_namespace(namespace),
-                        // the pages of the types are next to this one
-                        types_directory: ".".to_owned(),
-                        ladfile: self.ladfile,
-                    },
-                ]
-            }
-            SectionData::FunctionSummary => {
-                vec![
-                    SectionItem::Markdown {
-                        markdown: Box::new(|builder| {
-                            builder.heading(2, "Non-Associated Functions");
-                            builder.text("Global functions that are not associated with any type and callable from anywhere in the script.");
-                        }),
-                    },
-                    SectionItem::FunctionsSummary {
-                        functions: self
-                            .global_functions()
-                            .into_iter()
-                            .map(|function| (None, function))
-                            .collect(),
-                        functions_directory: "functions".to_owned(),
-                    },
-                ]
-            }
+            SectionData::TypeSummary => self.type_summary_items(),
+            SectionData::Namespace { namespace } => self.namespace_items(namespace),
+            SectionData::FunctionSummary => self.function_summary_items(),
             SectionData::TypeDetail {
                 lad_type_id,
                 lad_type,
-            } => {
-                let functions = self.type_functions(lad_type_id, lad_type);
-                vec![
-                    SectionItem::Layout {
-                        layout: &lad_type.layout,
-                        ladfile: self.ladfile,
-                        types_directory: PathBuf::from("./"),
-                    },
-                    SectionItem::Description {
-                        documentation: lad_type.documentation.as_deref(),
-                    },
-                    SectionItem::Markdown {
-                        markdown: Box::new(|builder| {
-                            builder.heading(2, "Associated Functions");
-                        }),
-                    },
-                    SectionItem::FunctionsSummary {
-                        functions,
-                        functions_directory: linkify_filename(self.title()),
-                    },
-                ]
-            }
+            } => self.type_detail_items(lad_type_id, lad_type),
             SectionData::GenericTypeDetail {
                 generic_type_id,
                 generic_type,
-            } => {
-                let instantiations = self
-                    .ladfile
-                    .types
-                    .iter()
-                    .filter(|(_, lad_type)| lad_type.generic_type.as_ref() == Some(generic_type_id))
-                    .map(|(id, _)| id)
-                    .collect();
-                vec![
-                    SectionItem::Markdown {
-                        markdown: Box::new(|builder| {
-                            builder.text("Opaque Type. 🔒");
-                        }),
-                    },
-                    SectionItem::Description {
-                        documentation: generic_type.documentation.as_deref(),
-                    },
-                    SectionItem::Instantiations {
-                        instantiations,
-                        ladfile: self.ladfile,
-                        types_directory: PathBuf::from("./"),
-                    },
-                ]
-            }
+            } => self.generic_type_detail_items(generic_type_id, generic_type),
             SectionData::FunctionDetail {
                 function,
                 ref types_directory,
@@ -606,6 +440,193 @@ impl<'a> Section<'a> {
                 }]
             }
         }
+    }
+
+    /// The summary page, linking to the types, functions and globals pages
+    fn summary_items(&self) -> Vec<SectionItem<'a>> {
+        let title = self.title().clone();
+
+        vec![SectionItem::Markdown {
+            markdown: Box::new(move |builder| {
+                builder.heading(2, "Contents");
+                builder.text("This is an automatically generated file, you'll find links to the contents below");
+                builder.table(|builder| {
+                    builder.headers(vec!["Section", "Contents"]);
+                    builder.row(markdown_vec![
+                        Markdown::new_paragraph("Types").code(),
+                        Markdown::Link {
+                            text: Box::new("Describes all available binding types"),
+                            url: format!("./{}/types.md", linkify_filename(title.clone())),
+                            anchor: false
+                        }
+                    ]);
+                    builder.row(markdown_vec![
+                        Markdown::new_paragraph("Global Functions").code(),
+                        Markdown::Link {
+                            text: Box::new(
+                                "Documents all the global functions present in the bindings"
+                            ),
+                            url: format!("./{}/functions.md", linkify_filename(title.clone())),
+                            anchor: false
+                        }
+                    ]);
+                    builder.row(markdown_vec![
+                        Markdown::new_paragraph("Globals").code(),
+                        Markdown::Link {
+                            text: Box::new(
+                                "Documents all global variables present in the bindings"
+                            ),
+                            url: format!("./{}/globals.md", linkify_filename(title.clone())),
+                            anchor: false
+                        }
+                    ]);
+                });
+            }),
+        }]
+    }
+
+    /// The page listing the namespaces, with the number of types in each
+    fn type_summary_items(&self) -> Vec<SectionItem<'a>> {
+        // the namespace pages are in the directory of the type pages, which is next to this page
+        let namespaces = self
+            .namespaces()
+            .into_iter()
+            .map(|namespace| {
+                let page = Section::new(
+                    PathBuf::new(),
+                    self.ladfile,
+                    SectionData::Namespace { namespace },
+                );
+                (
+                    page.title(),
+                    page.file_name(),
+                    self.types_in_namespace(namespace).len(),
+                )
+            })
+            .collect::<Vec<_>>();
+        vec![SectionItem::Markdown {
+            markdown: Box::new(move |builder| {
+                builder.heading(2, "Namespaces");
+                builder.raw("Types are grouped by the namespace scripts import them from, i.e. `import_namespace(\"math\")`.");
+                builder.append("\n\n");
+                builder.table(|builder| {
+                    builder.headers(vec!["Namespace", "Types"]);
+                    for (title, file_name, count) in namespaces.iter() {
+                        builder.row(markdown_vec![
+                            Markdown::Link {
+                                text: Box::new(Markdown::new_paragraph(title.clone()).code()),
+                                url: format!("./types/{file_name}"),
+                                anchor: false
+                            },
+                            Markdown::new_paragraph(count.to_string()),
+                        ]);
+                    }
+                });
+            }),
+        }]
+    }
+
+    /// The page of a namespace, listing its types
+    fn namespace_items(&self, namespace: &str) -> Vec<SectionItem<'a>> {
+        let intro = if namespace.is_empty() {
+            "The types without a crate, such as primitives.".to_owned()
+        } else {
+            format!(
+                "The types in the `{namespace}` namespace, as returned by `import_namespace(\"{namespace}\")`."
+            )
+        };
+        vec![
+            SectionItem::Markdown {
+                markdown: Box::new(move |builder| {
+                    builder.raw(intro.clone());
+                    builder.append("\n\n");
+                }),
+            },
+            SectionItem::TypesSummary {
+                types: self.types_in_namespace(namespace),
+                // the pages of the types are next to this one
+                types_directory: ".".to_owned(),
+                ladfile: self.ladfile,
+            },
+        ]
+    }
+
+    /// The page of the global functions
+    fn function_summary_items(&self) -> Vec<SectionItem<'a>> {
+        vec![
+            SectionItem::Markdown {
+                markdown: Box::new(|builder| {
+                    builder.heading(2, "Non-Associated Functions");
+                    builder.text("Global functions that are not associated with any type and callable from anywhere in the script.");
+                }),
+            },
+            SectionItem::FunctionsSummary {
+                functions: self
+                    .global_functions()
+                    .into_iter()
+                    .map(|function| (None, function))
+                    .collect(),
+                functions_directory: "functions".to_owned(),
+            },
+        ]
+    }
+
+    /// The page of a type, with its layout, description and associated functions
+    fn type_detail_items(
+        &self,
+        lad_type_id: &LadTypeId,
+        lad_type: &'a LadTypeDefinition,
+    ) -> Vec<SectionItem<'a>> {
+        let functions = self.type_functions(lad_type_id, lad_type);
+        vec![
+            SectionItem::Layout {
+                layout: &lad_type.layout,
+                ladfile: self.ladfile,
+                types_directory: PathBuf::from("./"),
+            },
+            SectionItem::Description {
+                documentation: lad_type.documentation.as_deref(),
+            },
+            SectionItem::Markdown {
+                markdown: Box::new(|builder| {
+                    builder.heading(2, "Associated Functions");
+                }),
+            },
+            SectionItem::FunctionsSummary {
+                functions,
+                functions_directory: linkify_filename(self.title()),
+            },
+        ]
+    }
+
+    /// The page of a generic type, with the arguments it is instantiated with
+    fn generic_type_detail_items(
+        &self,
+        generic_type_id: &LadTypeId,
+        generic_type: &'a LadGenericType,
+    ) -> Vec<SectionItem<'a>> {
+        let instantiations = self
+            .ladfile
+            .types
+            .iter()
+            .filter(|(_, lad_type)| lad_type.generic_type.as_ref() == Some(generic_type_id))
+            .map(|(id, _)| id)
+            .collect();
+        vec![
+            SectionItem::Markdown {
+                markdown: Box::new(|builder| {
+                    builder.text("Opaque Type. 🔒");
+                }),
+            },
+            SectionItem::Description {
+                documentation: generic_type.documentation.as_deref(),
+            },
+            SectionItem::Instantiations {
+                instantiations,
+                ladfile: self.ladfile,
+                types_directory: PathBuf::from("./"),
+            },
+        ]
     }
 }
 
@@ -689,57 +710,7 @@ impl IntoMarkdown for SectionItem<'_> {
                 layout,
                 ladfile,
                 types_directory,
-            } => {
-                // process the variants here
-                let opaque = layout.for_each_variant(
-                    |v, _i| match v {
-                        ladfile::LadVariant::TupleStruct { name, fields } => {
-                            builder.heading(3, name.to_string()).list(
-                                true,
-                                fields
-                                    .iter()
-                                    .map(|f| {
-                                        Markdown::Raw(print_type(
-                                            ladfile,
-                                            &f.type_,
-                                            None,
-                                            Some((types_directory.clone(), true)),
-                                        ))
-                                    })
-                                    .collect(),
-                            );
-                        }
-                        ladfile::LadVariant::Struct { name, fields } => {
-                            builder.heading(3, name.to_string()).list(
-                                false,
-                                fields
-                                    .iter()
-                                    .map(|f| {
-                                        markdown_vec![
-                                            Markdown::new_paragraph(f.name.clone()).bold(),
-                                            Markdown::new_paragraph(":"),
-                                            Markdown::Raw(print_type(
-                                                ladfile,
-                                                &f.type_,
-                                                None,
-                                                Some((types_directory.clone(), true))
-                                            ))
-                                        ]
-                                    })
-                                    .collect(),
-                            );
-                        }
-                        ladfile::LadVariant::Unit { name } => {
-                            builder.heading(3, name.to_string());
-                        }
-                    },
-                    "Opaque Type. 🔒",
-                );
-
-                if let Some(opaque) = opaque {
-                    builder.text(opaque);
-                }
-            }
+            } => layout_markdown(layout, ladfile, types_directory, builder),
             SectionItem::Description { documentation } => {
                 builder.heading(2, "Description").quote(Markdown::Raw(
                     documentation.unwrap_or(NO_DOCS_STRING).to_owned(),
@@ -749,240 +720,41 @@ impl IntoMarkdown for SectionItem<'_> {
                 instantiations,
                 ladfile,
                 types_directory,
-            } => {
-                builder.heading(2, "Instantiations");
-                builder.text("The arguments this generic type is used with.");
-                builder.list(
-                    false,
-                    instantiations
-                        .iter()
-                        .filter_map(|id| ladfile.types.get(*id))
-                        .map(|instantiation| {
-                            let arguments = instantiation
-                                .generics
-                                .iter()
-                                .map(|argument| {
-                                    print_type(
-                                        ladfile,
-                                        &argument.type_id,
-                                        None,
-                                        Some((types_directory.clone(), true)),
-                                    )
-                                })
-                                .collect::<Vec<_>>();
-                            Markdown::Raw(arguments.join(", "))
-                        })
-                        .collect(),
-                );
-            }
+            } => instantiations_markdown(instantiations, ladfile, types_directory, builder),
             SectionItem::FunctionsSummary {
                 functions,
-                functions_directory: functions_path,
-            } => {
-                builder.text("For function details and documentation, click on the function link.");
-
-                // make a table of functions as a quick reference, make them link to function details sub-sections
-                builder.table(|builder| {
-                    builder.headers(vec!["Function", "Summary"]);
-                    for (variant, function) in functions.iter() {
-                        let first_col = function_title(*variant, function);
-
-                        // first line with content from documentation trimmed to 100 chars
-                        let second_col = function
-                            .documentation
-                            .as_deref()
-                            .map(|doc| markdown_substring(doc, 100))
-                            .unwrap_or_else(|| NO_DOCS_STRING.to_string());
-
-                        builder.row(markdown_vec![
-                            Markdown::Link {
-                                text: Box::new(first_col),
-                                url: format!(
-                                    "./{}/{}.md",
-                                    functions_path,
-                                    linkify_filename(function_title(*variant, function))
-                                ),
-                                anchor: false
-                            },
-                            Markdown::new_paragraph(second_col.to_string().replace("\n", " ")),
-                        ]);
-                    }
-                });
-            }
+                functions_directory,
+            } => functions_summary_markdown(functions, functions_directory, builder),
             SectionItem::TypesSummary {
                 types,
                 types_directory,
                 ladfile,
-            } => {
-                builder.heading(2, "Available Types");
-                builder.text("All registered reflect-able types which can be constructed and directly manipulated by scripts.");
-
-                // make a table of types as a quick reference, make them link to type details sub-sections
-                builder.table(|builder| {
-                    builder.headers(vec!["Type", "Summary"]);
-                    for type_ in types.iter() {
-                        let printed_type_for_url = print_type(ladfile, *type_, None, None);
-                        let printed_type_pretty =
-                            print_type(ladfile, *type_, Some("Unknown"), None);
-
-                        let documentation = ladfile.get_type_documentation(type_);
-
-                        // first line with content from documentation trimmed to 100 chars
-                        let second_col = documentation
-                            .map(|doc| markdown_substring(doc, 100))
-                            .unwrap_or_else(|| NO_DOCS_STRING.to_string());
-
-                        let mut link_builder = MarkdownBuilder::new();
-                        link_builder.tight_inline();
-                        link_builder.link(
-                            Markdown::new_paragraph(printed_type_pretty).code(),
-                            format!(
-                                "./{types_directory}/{}.md",
-                                linkify_filename(printed_type_for_url)
-                            ),
-                        );
-
-                        builder.row(markdown_vec![
-                            link_builder,
-                            Markdown::new_paragraph(second_col.replace("\n", " ")),
-                        ]);
-                    }
-                });
-            }
+            } => types_summary_markdown(types, types_directory, ladfile, builder),
             SectionItem::InstancesSummary {
                 instances,
                 ladfile,
                 types_directory,
-            } => {
-                builder.heading(2, "Global Values");
-                builder.text("Global values that are accessible anywhere inside scripts. You should avoid naming conflicts with these and trying to overwrite or edit them.");
-                // make a table of instances as a quick reference, make them link to instance details sub-sections
-
-                // first build a non-static instance table
-                let instances = instances
-                    .iter()
-                    .map(|(k, v)| {
-                        let name = k.to_string();
-                        let types_directory = types_directory.clone();
-                        let escaped =
-                            print_type(ladfile, &v.type_kind, None, Some((types_directory, true)));
-                        (v.is_static, name, escaped)
-                    })
-                    .collect::<Vec<_>>();
-
-                builder.heading(3, "Instances");
-                builder.text("Instances containing actual accessible values.");
-                builder.table(|builder| {
-                    builder.headers(vec!["Instance", "Type"]);
-                    for (_, name, instance) in instances.iter().filter(|(a, _, _)| !*a) {
-                        builder.row(markdown_vec![
-                            Markdown::new_paragraph(name).code(),
-                            Markdown::Raw(instance.clone())
-                        ]);
-                    }
-                });
-
-                builder.heading(3, "Static Instances");
-                builder.text("Static type references, existing for the purpose of typed static function calls.");
-                builder.table(|builder| {
-                    builder.headers(vec!["Instance", "Type"]);
-                    for (_, name, instance) in instances.iter().filter(|(a, _, _)| *a) {
-                        builder.row(markdown_vec![
-                            Markdown::new_paragraph(name).code(),
-                            Markdown::Raw(instance.clone())
-                        ]);
-                    }
-                });
-            }
+            } => instances_summary_markdown(instances, ladfile, types_directory, builder),
             SectionItem::FunctionDetails {
                 function,
                 ladfile,
                 types_directory,
-            } => {
-                // if the function takes in a FunctionCallContext argument, we notify that it's an impure function
-                // which potentially tries to access anything in the world
-                if function.arguments.iter().any(|a| {
-                    matches!(
-                        a.kind,
-                        LadFieldOrVariableKind::Primitive(
-                            ReflectionPrimitiveKind::FunctionCallContext
-                        )
-                    )
-                }) {
-                    builder.raw(
-                    r#"
-                        <div class="warning">
-                            This function is impure, it might potentially try to access anything in the world.
-                            If you are using it in the context of a script system, it might cause access errors.
-                        </div>
-                    "#.trim(),
-                    );
-                    builder.append("\n\n");
-                }
-
-                // we don't escape this, this is already markdown
-                builder.quote(Markdown::Raw(
-                    function
-                        .documentation
-                        .as_deref()
-                        .unwrap_or(NO_DOCS_STRING)
-                        .to_owned(),
-                ));
-
-                builder.heading(4, "Arguments");
-                let headers = vec!["Name", "Type", "Documentation"];
-                builder.table(|builder| {
-                    builder.headers(headers.clone());
-                    for (idx, arg) in function.arguments.iter().enumerate() {
-                        build_lad_function_argument_row(
-                            idx,
-                            arg,
-                            ladfile,
-                            types_directory.clone(),
-                            builder,
-                        );
-                    }
-                });
-
-                builder.heading(4, "Returns");
-                builder.table(|builder| {
-                    builder.headers(headers.clone());
-                    build_lad_function_argument_row(
-                        0,
-                        &function.return_type,
-                        ladfile,
-                        types_directory.clone(),
-                        builder,
-                    )
-                });
-            }
+            } => function_details_markdown(function, ladfile, types_directory, builder),
         }
     }
 }
 
 fn build_lad_function_argument_row(
-    idx: usize,
     arg: &LadArgument,
     ladfile: &LadFile,
     types_directory: PathBuf,
     builder: &mut TableBuilder,
 ) {
-    // we exclude function call context as it's not something scripts pass down
-    if matches!(
-        arg.kind,
-        LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
-    ) {
-        return;
-    }
-
     let types_directory = types_directory.to_owned();
     let escaped = print_type(ladfile, &arg.kind, None, Some((types_directory, false)));
 
-    let arg_name = arg
-        .name
-        .as_ref()
-        .cloned()
-        .unwrap_or_else(|| Cow::Owned(format!("arg{idx}")));
+    // arguments are always named, returns only if their docs name them
+    let arg_name = arg.name.as_deref().unwrap_or("return").to_owned();
 
     builder.row(markdown_vec![
         Markdown::new_paragraph(arg_name).bold(),
@@ -994,6 +766,280 @@ fn build_lad_function_argument_row(
                 .to_owned()
         )
     ]);
+}
+
+/// Lists the fields of each variant of a type, or marks the type as opaque if it has none
+fn layout_markdown(
+    layout: &LadTypeLayout,
+    ladfile: &LadFile,
+    types_directory: &Path,
+    builder: &mut MarkdownBuilder,
+) {
+    // process the variants here
+    let opaque = layout.for_each_variant(
+        |v, _i| match v {
+            ladfile::LadVariant::TupleStruct { name, fields } => {
+                builder.heading(3, name.to_string()).list(
+                    true,
+                    fields
+                        .iter()
+                        .map(|f| {
+                            Markdown::Raw(print_type(
+                                ladfile,
+                                &f.type_,
+                                None,
+                                Some((types_directory.to_path_buf(), true)),
+                            ))
+                        })
+                        .collect(),
+                );
+            }
+            ladfile::LadVariant::Struct { name, fields } => {
+                builder.heading(3, name.to_string()).list(
+                    false,
+                    fields
+                        .iter()
+                        .map(|f| {
+                            markdown_vec![
+                                Markdown::new_paragraph(f.name.clone()).bold(),
+                                Markdown::new_paragraph(":"),
+                                Markdown::Raw(print_type(
+                                    ladfile,
+                                    &f.type_,
+                                    None,
+                                    Some((types_directory.to_path_buf(), true))
+                                ))
+                            ]
+                        })
+                        .collect(),
+                );
+            }
+            ladfile::LadVariant::Unit { name } => {
+                builder.heading(3, name.to_string());
+            }
+        },
+        "Opaque Type. 🔒",
+    );
+
+    if let Some(opaque) = opaque {
+        builder.text(opaque);
+    }
+}
+
+/// Lists the arguments each instantiation of a generic type is used with
+fn instantiations_markdown(
+    instantiations: &[&LadTypeId],
+    ladfile: &LadFile,
+    types_directory: &Path,
+    builder: &mut MarkdownBuilder,
+) {
+    builder.heading(2, "Instantiations");
+    builder.text("The arguments this generic type is used with.");
+    builder.list(
+        false,
+        instantiations
+            .iter()
+            .filter_map(|id| ladfile.types.get(*id))
+            .map(|instantiation| {
+                let arguments = instantiation
+                    .generics
+                    .iter()
+                    .map(|argument| {
+                        print_type(
+                            ladfile,
+                            &argument.type_id,
+                            None,
+                            Some((types_directory.to_path_buf(), true)),
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                Markdown::Raw(arguments.join(", "))
+            })
+            .collect(),
+    );
+}
+
+/// A table of functions as a quick reference, linking to the function details sub-pages
+fn functions_summary_markdown(
+    functions: &[(Option<&str>, &LadFunction)],
+    functions_path: &str,
+    builder: &mut MarkdownBuilder,
+) {
+    builder.text("For function details and documentation, click on the function link.");
+
+    // make a table of functions as a quick reference, make them link to function details sub-sections
+    builder.table(|builder| {
+        builder.headers(vec!["Function", "Summary"]);
+        for (variant, function) in functions.iter() {
+            let first_col = function_title(*variant, function);
+
+            // first line with content from documentation trimmed to 100 chars
+            let second_col = function
+                .documentation
+                .as_deref()
+                .map(|doc| markdown_substring(doc, 100))
+                .unwrap_or_else(|| NO_DOCS_STRING.to_string());
+
+            builder.row(markdown_vec![
+                Markdown::Link {
+                    text: Box::new(first_col),
+                    url: format!(
+                        "./{}/{}.md",
+                        functions_path,
+                        linkify_filename(function_title(*variant, function))
+                    ),
+                    anchor: false
+                },
+                Markdown::new_paragraph(second_col.to_string().replace("\n", " ")),
+            ]);
+        }
+    });
+}
+
+/// A table of types as a quick reference, linking to the type details sub-pages
+fn types_summary_markdown(
+    types: &[&LadTypeId],
+    types_directory: &str,
+    ladfile: &LadFile,
+    builder: &mut MarkdownBuilder,
+) {
+    builder.heading(2, "Available Types");
+    builder.text("All registered reflect-able types which can be constructed and directly manipulated by scripts.");
+
+    // make a table of types as a quick reference, make them link to type details sub-sections
+    builder.table(|builder| {
+        builder.headers(vec!["Type", "Summary"]);
+        for type_ in types.iter() {
+            let printed_type_for_url = print_type(ladfile, *type_, None, None);
+            let printed_type_pretty = print_type(ladfile, *type_, Some("Unknown"), None);
+
+            let documentation = ladfile.get_type_documentation(type_);
+
+            // first line with content from documentation trimmed to 100 chars
+            let second_col = documentation
+                .map(|doc| markdown_substring(doc, 100))
+                .unwrap_or_else(|| NO_DOCS_STRING.to_string());
+
+            let mut link_builder = MarkdownBuilder::new();
+            link_builder.tight_inline();
+            link_builder.link(
+                Markdown::new_paragraph(printed_type_pretty).code(),
+                format!(
+                    "./{types_directory}/{}.md",
+                    linkify_filename(printed_type_for_url)
+                ),
+            );
+
+            builder.row(markdown_vec![
+                link_builder,
+                Markdown::new_paragraph(second_col.replace("\n", " ")),
+            ]);
+        }
+    });
+}
+
+/// Tables of the global values, the non-static instances and the static type references
+fn instances_summary_markdown(
+    instances: &[(&Cow<'static, str>, &LadInstance)],
+    ladfile: &LadFile,
+    types_directory: &Path,
+    builder: &mut MarkdownBuilder,
+) {
+    builder.heading(2, "Global Values");
+    builder.text("Global values that are accessible anywhere inside scripts. You should avoid naming conflicts with these and trying to overwrite or edit them.");
+    // make a table of instances as a quick reference, make them link to instance details sub-sections
+
+    // first build a non-static instance table
+    let instances = instances
+        .iter()
+        .map(|(k, v)| {
+            let name = k.to_string();
+            let types_directory = types_directory.to_path_buf();
+            let escaped = print_type(ladfile, &v.type_kind, None, Some((types_directory, true)));
+            (v.is_static, name, escaped)
+        })
+        .collect::<Vec<_>>();
+
+    builder.heading(3, "Instances");
+    builder.text("Instances containing actual accessible values.");
+    builder.table(|builder| {
+        builder.headers(vec!["Instance", "Type"]);
+        for (_, name, instance) in instances.iter().filter(|(a, _, _)| !*a) {
+            builder.row(markdown_vec![
+                Markdown::new_paragraph(name).code(),
+                Markdown::Raw(instance.clone())
+            ]);
+        }
+    });
+
+    builder.heading(3, "Static Instances");
+    builder
+        .text("Static type references, existing for the purpose of typed static function calls.");
+    builder.table(|builder| {
+        builder.headers(vec!["Instance", "Type"]);
+        for (_, name, instance) in instances.iter().filter(|(a, _, _)| *a) {
+            builder.row(markdown_vec![
+                Markdown::new_paragraph(name).code(),
+                Markdown::Raw(instance.clone())
+            ]);
+        }
+    });
+}
+
+/// The details of a function: its impurity, documentation, arguments and return type
+fn function_details_markdown(
+    function: &LadFunction,
+    ladfile: &LadFile,
+    types_directory: &Path,
+    builder: &mut MarkdownBuilder,
+) {
+    // if the function takes in a FunctionCallContext argument, we notify that it's an impure function
+    // which potentially tries to access anything in the world
+    if function.arguments.iter().any(|a| {
+        matches!(
+            a.kind,
+            LadTypeKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
+        )
+    }) {
+        builder.raw(
+                    r#"
+                        <div class="warning">
+                            This function is impure, it might potentially try to access anything in the world.
+                            If you are using it in the context of a script system, it might cause access errors.
+                        </div>
+                    "#.trim(),
+        );
+        builder.append("\n\n");
+    }
+
+    // we don't escape this, this is already markdown
+    builder.quote(Markdown::Raw(
+        function
+            .documentation
+            .as_deref()
+            .unwrap_or(NO_DOCS_STRING)
+            .to_owned(),
+    ));
+
+    builder.heading(4, "Arguments");
+    let headers = vec!["Name", "Type", "Documentation"];
+    builder.table(|builder| {
+        builder.headers(headers.clone());
+        for arg in &function.arguments {
+            build_lad_function_argument_row(arg, ladfile, types_directory.to_path_buf(), builder);
+        }
+    });
+
+    builder.heading(4, "Returns");
+    builder.table(|builder| {
+        builder.headers(headers.clone());
+        build_lad_function_argument_row(
+            &function.return_type,
+            ladfile,
+            types_directory.to_path_buf(),
+            builder,
+        )
+    });
 }
 
 #[cfg(test)]

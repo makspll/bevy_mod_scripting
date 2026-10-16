@@ -1,5 +1,7 @@
-//! Defines a set of traits which destruture [`bevy_reflect::TypeInfo`] and implement a light weight wrapper around it, to allow types
-//! which normally can't implement [`bevy_reflect::Typed`] to be used in a reflection context.
+//! Describes the types of script function arguments and returns for documentation, see [`TypedThrough`].
+//!
+//! Wrappers like [`V`], [`R`] and [`M`] are not [`Typed`] themselves, so the description is built from the [`TypeInfo`] of the types they wrap.
+//! [`ThroughTypeInfo`] mirrors the LAD file's type kinds, with the type information of the leaf types in place of their ids.
 
 use std::{any::TypeId, collections::VecDeque, ffi::OsString, path::PathBuf};
 
@@ -17,31 +19,42 @@ use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{TypeInfo, TypeRegistry, Typed};
 
-/// All Through types follow one rule:
-/// - A through type can not contain a nested through type. It must always contain a fully typed inner type.
+/// How a type is passed to or from a script function, for documentation.
 ///
-/// This means that:
-/// - `R<R<T>>` is not allowed, but `R<T>` is.
-///
-/// i.e. `R`, `M` and `V` wrappers are `leaf` types, and can not contain other `leaf` types.
-///
-/// This is to keep the implementations of this trait simple, and to ultimately depend on the `TypeInfo` trait for the actual type information.
+/// Leaves carry the [`TypeInfo`] of the type, containers the description of what they contain.
 #[derive(Clone, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub enum ThroughTypeInfo {
-    /// A wrapper around a typed type, which itself is not a `Typed` type.
-    UntypedWrapper {
-        /// The type information of the inner type.
-        through_type: &'static TypeInfo,
-        /// The name of the wrapper type.
-        wrapper_kind: UntypedWrapperKind,
-    },
-    /// A wrapper around a through typed type, which itself is also a `Typed` type.
-    TypedWrapper(TypedWrapperKind),
-    /// an actual type info
-    TypeInfo(&'static TypeInfo),
+    /// A reference to a value, i.e. [`R`]
+    Ref(&'static TypeInfo),
+    /// A mutable reference to a value, i.e. [`M`]
+    Mut(&'static TypeInfo),
+    /// A value, i.e. [`V`], or a type whose conversions are derived and so behave like one
+    Val(&'static TypeInfo),
+    /// A type used directly in a signature, converted by its own `FromScript`/`IntoScript`, so its representation in scripts is unknown.
+    ///
+    /// Produced by `#[derive(TypedThrough)]`, see its `value` attribute for types with derived conversions.
+    Opaque(&'static TypeInfo),
     /// A primitive type, which mostly speaks for itself
     Primitive(ReflectionPrimitiveKind),
+    /// An optional value
+    Option(Box<ThroughTypeInfo>),
+    /// A list, i.e. a `Vec` or `VecDeque`
+    Vec(Box<ThroughTypeInfo>),
+    /// A map
+    HashMap(Box<ThroughTypeInfo>, Box<ThroughTypeInfo>),
+    /// A set
+    HashSet(Box<ThroughTypeInfo>),
+    /// A fixed size array
+    Array(Box<ThroughTypeInfo>, usize),
+    /// A value which might also be an error, i.e. `Result<T, InteropError>`
+    InteropResult(Box<ThroughTypeInfo>),
+    /// A tuple
+    Tuple(Vec<ThroughTypeInfo>),
+    /// Any number of script values, i.e. [`VariadicTuple`]
+    UntypedTuple,
+    /// One of many possible types
+    Union(Vec<ThroughTypeInfo>),
     /// A table of the fields of a type, i.e. the payload of a constructor.
     Fields {
         /// The type the fields belong to
@@ -72,6 +85,28 @@ pub enum BoundPlaceholder {
 }
 
 impl ThroughTypeInfo {
+    /// The descriptions this one contains, i.e. `T` in `Vec<T>`.
+    pub fn children(&self) -> Vec<&ThroughTypeInfo> {
+        match self {
+            ThroughTypeInfo::Option(inner)
+            | ThroughTypeInfo::Vec(inner)
+            | ThroughTypeInfo::HashSet(inner)
+            | ThroughTypeInfo::Array(inner, _)
+            | ThroughTypeInfo::InteropResult(inner) => vec![&**inner],
+            ThroughTypeInfo::HashMap(key, value) => vec![&**key, &**value],
+            ThroughTypeInfo::Tuple(inner) | ThroughTypeInfo::Union(inner) => inner.iter().collect(),
+            ThroughTypeInfo::Ref(_)
+            | ThroughTypeInfo::Mut(_)
+            | ThroughTypeInfo::Val(_)
+            | ThroughTypeInfo::Opaque(_)
+            | ThroughTypeInfo::Primitive(_)
+            | ThroughTypeInfo::UntypedTuple
+            | ThroughTypeInfo::Fields { .. }
+            | ThroughTypeInfo::Bound(_)
+            | ThroughTypeInfo::AssetHandle(_) => vec![],
+        }
+    }
+
     /// Replaces any [`ThroughTypeInfo::Bound`] placeholders with the given type, and for fields, the variant.
     pub fn bind_placeholders(
         &self,
@@ -86,29 +121,21 @@ impl ThroughTypeInfo {
                 .collect()
         };
         match self {
-            ThroughTypeInfo::Bound(BoundPlaceholder::Value) => ThroughTypeInfo::UntypedWrapper {
-                through_type: type_info,
-                wrapper_kind: UntypedWrapperKind::Val,
-            },
+            ThroughTypeInfo::Bound(BoundPlaceholder::Value) => ThroughTypeInfo::Val(type_info),
             ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => {
                 ThroughTypeInfo::Fields { type_info, variant }
             }
             ThroughTypeInfo::Bound(BoundPlaceholder::Handle) => {
                 ThroughTypeInfo::AssetHandle(type_info)
             }
-            ThroughTypeInfo::TypedWrapper(kind) => ThroughTypeInfo::TypedWrapper(match kind {
-                TypedWrapperKind::Union(inner) => TypedWrapperKind::Union(bind_all(inner)),
-                TypedWrapperKind::Vec(inner) => TypedWrapperKind::Vec(bind(inner)),
-                TypedWrapperKind::HashMap(k, v) => TypedWrapperKind::HashMap(bind(k), bind(v)),
-                TypedWrapperKind::HashSet(inner) => TypedWrapperKind::HashSet(bind(inner)),
-                TypedWrapperKind::Array(inner, len) => TypedWrapperKind::Array(bind(inner), *len),
-                TypedWrapperKind::Option(inner) => TypedWrapperKind::Option(bind(inner)),
-                TypedWrapperKind::InteropResult(inner) => {
-                    TypedWrapperKind::InteropResult(bind(inner))
-                }
-                TypedWrapperKind::Tuple(inner) => TypedWrapperKind::Tuple(bind_all(inner)),
-                TypedWrapperKind::UntypedTuple => TypedWrapperKind::UntypedTuple,
-            }),
+            ThroughTypeInfo::Option(inner) => ThroughTypeInfo::Option(bind(inner)),
+            ThroughTypeInfo::Vec(inner) => ThroughTypeInfo::Vec(bind(inner)),
+            ThroughTypeInfo::HashMap(k, v) => ThroughTypeInfo::HashMap(bind(k), bind(v)),
+            ThroughTypeInfo::HashSet(inner) => ThroughTypeInfo::HashSet(bind(inner)),
+            ThroughTypeInfo::Array(inner, len) => ThroughTypeInfo::Array(bind(inner), *len),
+            ThroughTypeInfo::InteropResult(inner) => ThroughTypeInfo::InteropResult(bind(inner)),
+            ThroughTypeInfo::Tuple(inner) => ThroughTypeInfo::Tuple(bind_all(inner)),
+            ThroughTypeInfo::Union(inner) => ThroughTypeInfo::Union(bind_all(inner)),
             other => other.clone(),
         }
     }
@@ -126,65 +153,10 @@ impl ThroughTypeInfo {
     fn has_placeholder_where(&self, matches: impl Fn(BoundPlaceholder) -> bool + Copy) -> bool {
         match self {
             ThroughTypeInfo::Bound(placeholder) => matches(*placeholder),
-            ThroughTypeInfo::TypedWrapper(kind) => kind
-                .inner()
+            other => other
+                .children()
                 .into_iter()
                 .any(|inner| inner.has_placeholder_where(matches)),
-            _ => false,
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Eq, DebugWithTypeInfo)]
-#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-/// The kind of untyped wrapper.
-pub enum UntypedWrapperKind {
-    /// A reference wrapper.
-    Ref,
-    /// A mutable reference wrapper.
-    Mut,
-    /// A value wrapper.
-    Val,
-}
-
-/// The kind of typed wrapper.
-#[derive(Clone, DebugWithTypeInfo)]
-#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-pub enum TypedWrapperKind {
-    /// A union of many possible types
-    Union(Vec<ThroughTypeInfo>),
-    /// Wraps a `Vec` of a through typed type.
-    Vec(Box<ThroughTypeInfo>),
-    /// Wraps a `HashMap` of a through typed type.
-    HashMap(Box<ThroughTypeInfo>, Box<ThroughTypeInfo>),
-    /// Wraps a `HashSet` of a through typed type.
-    HashSet(Box<ThroughTypeInfo>),
-    /// Wraps a `Result` of a through typed type.
-    Array(Box<ThroughTypeInfo>, usize),
-    /// Wraps an `Option` of a through typed type.
-    Option(Box<ThroughTypeInfo>),
-    /// Wraps a `Result` of a through typed type.
-    InteropResult(Box<ThroughTypeInfo>),
-    /// Wraps a tuple of through typed types.
-    Tuple(Vec<ThroughTypeInfo>),
-    /// Wraps a tuple of script values
-    UntypedTuple,
-}
-
-impl TypedWrapperKind {
-    /// The types this wraps, i.e. `T` in `Vec<T>`.
-    pub fn inner(&self) -> Vec<&ThroughTypeInfo> {
-        match self {
-            TypedWrapperKind::Union(inner) | TypedWrapperKind::Tuple(inner) => {
-                inner.iter().collect()
-            }
-            TypedWrapperKind::Vec(inner)
-            | TypedWrapperKind::HashSet(inner)
-            | TypedWrapperKind::Array(inner, _)
-            | TypedWrapperKind::Option(inner)
-            | TypedWrapperKind::InteropResult(inner) => vec![&**inner],
-            TypedWrapperKind::HashMap(key, value) => vec![&**key, &**value],
-            TypedWrapperKind::UntypedTuple => vec![],
         }
     }
 }
@@ -212,130 +184,114 @@ fn convert_type_info(
     let nested = |inner: &'static TypeInfo| Box::new(convert_type_info(inner, registry));
     let option = (|| {
         if let Ok(array) = type_info.as_array() {
-            let len = array.capacity();
-            let inner = array.item_info()?;
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Array(
-                nested(inner),
-                len,
-            )));
+            return Some(ThroughTypeInfo::Array(
+                nested(array.item_info()?),
+                array.capacity(),
+            ));
         } else if let Ok(hash_map) = type_info.as_map() {
-            let key_type = hash_map.key_info()?;
-            let value_type = hash_map.value_info()?;
-
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(
-                nested(key_type),
-                nested(value_type),
-            )));
+            return Some(ThroughTypeInfo::HashMap(
+                nested(hash_map.key_info()?),
+                nested(hash_map.value_info()?),
+            ));
         } else if let Ok(set) = type_info.as_set() {
             // sets only expose the type id of their values
             let inner = registry?.get_type_info(set.value_ty().id())?;
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashSet(
-                nested(inner),
-            )));
+            return Some(ThroughTypeInfo::HashSet(nested(inner)));
         } else if let Ok(list) = type_info.as_list() {
-            let inner = list.item_info()?;
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(
-                nested(inner),
-            )));
+            return Some(ThroughTypeInfo::Vec(nested(list.item_info()?)));
         } else if type_info.is_option() {
-            let enum_ = type_info.as_enum().ok()?;
-            let inner = enum_.variant("Some")?;
-            let inner = inner.as_tuple_variant().ok()?;
-            let inner = inner.field_at(0)?;
-            let inner = inner.type_info()?;
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Option(
-                nested(inner),
-            )));
+            let inner = type_info
+                .as_enum()
+                .ok()?
+                .variant("Some")?
+                .as_tuple_variant()
+                .ok()?
+                .field_at(0)?
+                .type_info()?;
+            return Some(ThroughTypeInfo::Option(nested(inner)));
         } else if type_info.is_result() {
-            let enum_ = type_info.as_enum().ok()?;
-            // let error_variant = enum_.variant("Err")?;
-            // TODO verify error variant is InteropError
-
-            let inner = enum_.variant("Ok")?;
-            let inner = inner.as_tuple_variant().ok()?;
-            let inner = inner.field_at(0)?;
-            let inner = inner.type_info()?;
-            return Some(ThroughTypeInfo::TypedWrapper(
-                TypedWrapperKind::InteropResult(nested(inner)),
-            ));
+            // TODO verify the error variant is InteropError
+            let inner = type_info
+                .as_enum()
+                .ok()?
+                .variant("Ok")?
+                .as_tuple_variant()
+                .ok()?
+                .field_at(0)?
+                .type_info()?;
+            return Some(ThroughTypeInfo::InteropResult(nested(inner)));
         } else if let Ok(tuple) = type_info.as_tuple() {
             let mut tuple_types = Vec::new();
             for i in 0..tuple.field_len() {
-                let field = tuple.field_at(i)?;
-                let field_type = field.type_info()?;
-                tuple_types.push(*nested(field_type));
+                tuple_types.push(*nested(tuple.field_at(i)?.type_info()?));
             }
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(
-                tuple_types,
-            )));
+            return Some(ThroughTypeInfo::Tuple(tuple_types));
         } else if let Some(primitive) = as_reflect_primitive(type_info) {
             return Some(ThroughTypeInfo::Primitive(primitive));
         }
         None
     })();
 
-    option.unwrap_or(ThroughTypeInfo::UntypedWrapper {
-        through_type: type_info,
-        wrapper_kind: UntypedWrapperKind::Val,
-    })
+    option.unwrap_or(ThroughTypeInfo::Val(type_info))
+}
+
+/// The types BMS converts natively, and the primitive kinds they are documented as.
+///
+/// This is the one list of primitives, the LAD file builder maps between type ids and primitive kinds with it too.
+pub fn primitive_type_ids() -> [(TypeId, ReflectionPrimitiveKind); 27] {
+    use ReflectionPrimitiveKind as P;
+    [
+        (TypeId::of::<bool>(), P::Bool),
+        (TypeId::of::<isize>(), P::Isize),
+        (TypeId::of::<i8>(), P::I8),
+        (TypeId::of::<i16>(), P::I16),
+        (TypeId::of::<i32>(), P::I32),
+        (TypeId::of::<i64>(), P::I64),
+        (TypeId::of::<i128>(), P::I128),
+        (TypeId::of::<usize>(), P::Usize),
+        (TypeId::of::<u8>(), P::U8),
+        (TypeId::of::<u16>(), P::U16),
+        (TypeId::of::<u32>(), P::U32),
+        (TypeId::of::<u64>(), P::U64),
+        (TypeId::of::<u128>(), P::U128),
+        (TypeId::of::<f32>(), P::F32),
+        (TypeId::of::<f64>(), P::F64),
+        (TypeId::of::<char>(), P::Char),
+        // `&'static str` first, so it is the type of `Str`
+        (TypeId::of::<&'static str>(), P::Str),
+        (TypeId::of::<str>(), P::Str),
+        (TypeId::of::<String>(), P::String),
+        (TypeId::of::<OsString>(), P::OsString),
+        (TypeId::of::<PathBuf>(), P::PathBuf),
+        (TypeId::of::<FunctionCallContext>(), P::FunctionCallContext),
+        (TypeId::of::<DynamicScriptFunction>(), P::DynamicFunction),
+        (
+            TypeId::of::<DynamicScriptFunctionMut>(),
+            P::DynamicFunctionMut,
+        ),
+        (TypeId::of::<ScriptValue>(), P::ScriptValue),
+        (TypeId::of::<ReflectReference>(), P::ReflectReference),
+        (TypeId::of::<StaticTypeRef>(), P::StaticTypeRef),
+    ]
+}
+
+/// Returns the primitive kind if the given type corresponds to one, see [`primitive_type_ids`]
+pub fn primitive_kind_of(type_id: TypeId) -> Option<ReflectionPrimitiveKind> {
+    primitive_type_ids()
+        .into_iter()
+        .find_map(|(id, kind)| (id == type_id).then_some(kind))
+}
+
+/// The type a primitive kind is the documentation of, see [`primitive_type_ids`]
+pub fn primitive_type_id(kind: &ReflectionPrimitiveKind) -> Option<TypeId> {
+    primitive_type_ids()
+        .into_iter()
+        .find_map(|(id, k)| (&k == kind).then_some(id))
 }
 
 /// Returns the primitive kind if the given type info corresponds to one
 pub fn as_reflect_primitive(type_info: &'static TypeInfo) -> Option<ReflectionPrimitiveKind> {
-    let type_id = type_info.type_id();
-    Some(if type_id == TypeId::of::<bool>() {
-        ReflectionPrimitiveKind::Bool
-    } else if type_id == TypeId::of::<isize>() {
-        ReflectionPrimitiveKind::Isize
-    } else if type_id == TypeId::of::<i8>() {
-        ReflectionPrimitiveKind::I8
-    } else if type_id == TypeId::of::<i16>() {
-        ReflectionPrimitiveKind::I16
-    } else if type_id == TypeId::of::<i32>() {
-        ReflectionPrimitiveKind::I32
-    } else if type_id == TypeId::of::<i64>() {
-        ReflectionPrimitiveKind::I64
-    } else if type_id == TypeId::of::<i128>() {
-        ReflectionPrimitiveKind::I128
-    } else if type_id == TypeId::of::<usize>() {
-        ReflectionPrimitiveKind::Usize
-    } else if type_id == TypeId::of::<u8>() {
-        ReflectionPrimitiveKind::U8
-    } else if type_id == TypeId::of::<u16>() {
-        ReflectionPrimitiveKind::U16
-    } else if type_id == TypeId::of::<u32>() {
-        ReflectionPrimitiveKind::U32
-    } else if type_id == TypeId::of::<u64>() {
-        ReflectionPrimitiveKind::U64
-    } else if type_id == TypeId::of::<u128>() {
-        ReflectionPrimitiveKind::U128
-    } else if type_id == TypeId::of::<f32>() {
-        ReflectionPrimitiveKind::F32
-    } else if type_id == TypeId::of::<f64>() {
-        ReflectionPrimitiveKind::F64
-    } else if type_id == TypeId::of::<char>() {
-        ReflectionPrimitiveKind::Char
-    } else if type_id == TypeId::of::<&'static str>() || type_id == TypeId::of::<str>() {
-        ReflectionPrimitiveKind::Str
-    } else if type_id == TypeId::of::<String>() {
-        ReflectionPrimitiveKind::String
-    } else if type_id == TypeId::of::<OsString>() {
-        ReflectionPrimitiveKind::OsString
-    } else if type_id == TypeId::of::<PathBuf>() {
-        ReflectionPrimitiveKind::PathBuf
-    } else if type_id == TypeId::of::<FunctionCallContext>() {
-        ReflectionPrimitiveKind::FunctionCallContext
-    } else if type_id == TypeId::of::<DynamicScriptFunction>() {
-        ReflectionPrimitiveKind::DynamicFunction
-    } else if type_id == TypeId::of::<DynamicScriptFunctionMut>() {
-        ReflectionPrimitiveKind::DynamicFunctionMut
-    } else if type_id == TypeId::of::<ReflectReference>() {
-        ReflectionPrimitiveKind::ReflectReference
-    } else if type_id == TypeId::of::<StaticTypeRef>() {
-        ReflectionPrimitiveKind::StaticTypeRef
-    } else {
-        return None;
-    })
+    primitive_kind_of(type_info.type_id())
 }
 
 /// A trait for types that can be converted to a [`ThroughTypeInfo`].
@@ -346,105 +302,91 @@ pub trait TypedThrough {
 
 impl<T1: TypedThrough, T2: TypedThrough> TypedThrough for Union<T1, T2> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Union(vec![
-            T1::through_type_info(),
-            T2::through_type_info(),
-        ]))
+        ThroughTypeInfo::Union(vec![T1::through_type_info(), T2::through_type_info()])
     }
 }
 
 impl<T: Typed> TypedThrough for R<'_, T> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::UntypedWrapper {
-            through_type: T::type_info(),
-            wrapper_kind: UntypedWrapperKind::Ref,
-        }
+        ThroughTypeInfo::Ref(T::type_info())
     }
 }
 
 impl<T: Typed> TypedThrough for M<'_, T> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::UntypedWrapper {
-            through_type: T::type_info(),
-            wrapper_kind: UntypedWrapperKind::Mut,
-        }
+        ThroughTypeInfo::Mut(T::type_info())
     }
 }
 
 impl<T: Typed> TypedThrough for V<T> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::UntypedWrapper {
-            through_type: T::type_info(),
-            wrapper_kind: UntypedWrapperKind::Val,
-        }
+        ThroughTypeInfo::Val(T::type_info())
     }
 }
 
 impl<T: TypedThrough> TypedThrough for Vec<T> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(Box::new(T::through_type_info())))
+        ThroughTypeInfo::Vec(Box::new(T::through_type_info()))
     }
 }
 
 impl<T: TypedThrough> TypedThrough for VecDeque<T> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(Box::new(T::through_type_info())))
+        ThroughTypeInfo::Vec(Box::new(T::through_type_info()))
     }
 }
 
 impl<K: TypedThrough, V: TypedThrough> TypedThrough for HashMap<K, V> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(
+        ThroughTypeInfo::HashMap(
             Box::new(K::through_type_info()),
             Box::new(V::through_type_info()),
-        ))
+        )
     }
 }
 
 impl<K: TypedThrough, V: TypedThrough> TypedThrough for std::collections::HashMap<K, V> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(
+        ThroughTypeInfo::HashMap(
             Box::new(K::through_type_info()),
             Box::new(V::through_type_info()),
-        ))
+        )
     }
 }
 
 impl<T: TypedThrough> TypedThrough for HashSet<T> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashSet(Box::new(T::through_type_info())))
+        ThroughTypeInfo::HashSet(Box::new(T::through_type_info()))
     }
 }
 
 impl<T: TypedThrough> TypedThrough for std::collections::HashSet<T> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashSet(Box::new(T::through_type_info())))
+        ThroughTypeInfo::HashSet(Box::new(T::through_type_info()))
     }
 }
 
 impl<T: TypedThrough> TypedThrough for Result<T, InteropError> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::InteropResult(Box::new(
-            T::through_type_info(),
-        )))
+        ThroughTypeInfo::InteropResult(Box::new(T::through_type_info()))
     }
 }
 
 impl<T: TypedThrough, const N: usize> TypedThrough for [T; N] {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Array(Box::new(T::through_type_info()), N))
+        ThroughTypeInfo::Array(Box::new(T::through_type_info()), N)
     }
 }
 
 impl<T: TypedThrough> TypedThrough for Option<T> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Option(Box::new(T::through_type_info())))
+        ThroughTypeInfo::Option(Box::new(T::through_type_info()))
     }
 }
 
 impl TypedThrough for VariadicTuple {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::UntypedTuple)
+        ThroughTypeInfo::UntypedTuple
     }
 }
 
@@ -493,7 +435,7 @@ macro_rules! impl_through_typed_tuple {
     ($($ty:ident),*) => {
         impl<$($ty: TypedThrough),*> TypedThrough for ($($ty,)*) {
             fn through_type_info() -> ThroughTypeInfo {
-                ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(vec![$($ty::through_type_info()),*]))
+                ThroughTypeInfo::Tuple(vec![$($ty::through_type_info()),*])
             }
         }
     };
@@ -525,7 +467,7 @@ mod test {
                         std::any::type_name::<T>()
                     )
                 }
-                _ => panic!("Expected ThroughTypeInfo::TypeInfo"),
+                _ => panic!("Expected ThroughTypeInfo::Primitive"),
             }
         }
     }
@@ -554,76 +496,22 @@ mod test {
         assert_type_info_is_primitive::<ReflectReference>(
             ReflectionPrimitiveKind::ReflectReference,
         );
+        assert_type_info_is_primitive::<StaticTypeRef>(ReflectionPrimitiveKind::StaticTypeRef);
+        assert_type_info_is_primitive::<ScriptValue>(ReflectionPrimitiveKind::ScriptValue);
         assert_type_info_is_primitive::<&'static str>(ReflectionPrimitiveKind::Str);
     }
 
     #[test]
-    fn test_typed_wrapper_outer_variant_matches() {
-        assert!(matches!(
-            Vec::<i32>::through_type_info(),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(..))
-        ));
-
-        assert!(matches!(
-            HashMap::<i32, f32>::through_type_info(),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(..))
-        ));
-
-        assert!(matches!(
-            Result::<i32, InteropError>::through_type_info(),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::InteropResult(..))
-        ));
-
-        assert!(matches!(
-            <[i32; 3]>::through_type_info(),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Array(..))
-        ));
-
-        assert!(matches!(
-            Option::<i32>::through_type_info(),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Option(..))
-        ));
-
-        assert!(matches!(
-            <(i32, f32)>::through_type_info(),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(..))
-        ));
+    fn primitive_kinds_map_back_to_their_types() {
+        for (type_id, kind) in primitive_type_ids() {
+            if kind == ReflectionPrimitiveKind::Str && type_id == TypeId::of::<str>() {
+                continue;
+            }
+            assert_eq!(primitive_type_id(&kind), Some(type_id), "{kind}");
+        }
     }
 
-    #[test]
-    fn test_dynamic_typed_wrapper_outer_variant_matches() {
-        assert!(matches!(
-            into_through_type_info(Vec::<i32>::type_info()),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(..))
-        ));
-
-        assert!(matches!(
-            into_through_type_info(HashMap::<i32, f32>::type_info()),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(..))
-        ));
-
-        assert!(matches!(
-            into_through_type_info(Result::<i32, InteropError>::type_info()),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::InteropResult(..))
-        ));
-
-        assert!(matches!(
-            into_through_type_info(<[i32; 3]>::type_info()),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Array(..))
-        ));
-
-        assert!(matches!(
-            into_through_type_info(Option::<i32>::type_info()),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Option(..))
-        ));
-
-        assert!(matches!(
-            into_through_type_info(<(i32, f32)>::type_info()),
-            ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(..))
-        ));
-    }
-
-    // Every variant of the through type enums is listed exactly once here. The generated name lookups are exhaustive matches,
+    // Every variant is listed exactly once here. The generated name lookup is an exhaustive match,
     // so adding a variant does not compile until it is listed, and the coverage tests below fail until it is exercised.
     macro_rules! variant_names {
         ($ty:ident, $all:ident, $name:ident: $($variant:ident),+) => {
@@ -639,16 +527,12 @@ mod test {
 
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
-        UntypedWrapper, TypedWrapper, TypeInfo, Primitive, Fields, Bound, AssetHandle
+        Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
+        UntypedTuple, Union, Fields, Bound, AssetHandle
     );
-    variant_names!(
-        TypedWrapperKind, ALL_TYPED_WRAPPERS, typed_wrapper_name:
-        Union, Vec, HashMap, HashSet, Array, Option, InteropResult, Tuple, UntypedTuple
-    );
-    variant_names!(UntypedWrapperKind, ALL_UNTYPED_WRAPPERS, untyped_wrapper_name: Ref, Mut, Val);
     variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields, Handle);
 
-    /// Every variant of every through type enum, i.e. `TypedWrapperKind::Vec`
+    /// Every variant, i.e. `ThroughTypeInfo::Vec`
     fn all_variants() -> BTreeSet<String> {
         let prefixed = |prefix: &str, names: &[&str]| {
             names
@@ -658,8 +542,6 @@ mod test {
         };
         [
             prefixed("ThroughTypeInfo", ALL_THROUGH_TYPES),
-            prefixed("TypedWrapperKind", ALL_TYPED_WRAPPERS),
-            prefixed("UntypedWrapperKind", ALL_UNTYPED_WRAPPERS),
             prefixed("BoundPlaceholder", ALL_BOUND_PLACEHOLDERS),
         ]
         .into_iter()
@@ -670,49 +552,32 @@ mod test {
     /// Records every variant found anywhere in the given type info
     fn collect_variants(info: &ThroughTypeInfo, seen: &mut BTreeSet<String>) {
         seen.insert(format!("ThroughTypeInfo::{}", through_name(info)));
-        match info {
-            ThroughTypeInfo::UntypedWrapper { wrapper_kind, .. } => {
-                seen.insert(format!(
-                    "UntypedWrapperKind::{}",
-                    untyped_wrapper_name(wrapper_kind)
-                ));
-            }
-            ThroughTypeInfo::TypedWrapper(kind) => {
-                seen.insert(format!("TypedWrapperKind::{}", typed_wrapper_name(kind)));
-                for inner in kind.inner() {
-                    collect_variants(inner, seen);
-                }
-            }
-            ThroughTypeInfo::Bound(placeholder) => {
-                seen.insert(format!(
-                    "BoundPlaceholder::{}",
-                    bound_placeholder_name(placeholder)
-                ));
-            }
-            ThroughTypeInfo::TypeInfo(_)
-            | ThroughTypeInfo::Primitive(_)
-            | ThroughTypeInfo::Fields { .. }
-            | ThroughTypeInfo::AssetHandle(_) => {}
+        if let ThroughTypeInfo::Bound(placeholder) = info {
+            seen.insert(format!(
+                "BoundPlaceholder::{}",
+                bound_placeholder_name(placeholder)
+            ));
+        }
+        for inner in info.children() {
+            collect_variants(inner, seen);
         }
     }
 
     /// The structure of the type info, i.e. `Vec<Val>`, ignoring which types are involved
     fn shape(info: &ThroughTypeInfo) -> String {
         match info {
-            ThroughTypeInfo::UntypedWrapper { wrapper_kind, .. } => {
-                untyped_wrapper_name(wrapper_kind).to_owned()
-            }
-            ThroughTypeInfo::TypedWrapper(kind) => format!(
+            ThroughTypeInfo::Primitive(primitive) => format!("{primitive}"),
+            other if other.children().is_empty() => through_name(other).to_owned(),
+            other => format!(
                 "{}<{}>",
-                typed_wrapper_name(kind),
-                kind.inner()
+                through_name(other),
+                other
+                    .children()
                     .into_iter()
                     .map(shape)
                     .collect::<Vec<_>>()
                     .join(", ")
             ),
-            ThroughTypeInfo::Primitive(primitive) => format!("{primitive}"),
-            other => through_name(other).to_owned(),
         }
     }
 
@@ -801,19 +666,19 @@ mod test {
     /// The variants which are only produced by [`TypedThrough`], as reflection can not express them.
     const STATIC_ONLY_VARIANTS: &[&str] = &[
         // how an argument is passed is a property of the function, not of the type
-        "UntypedWrapperKind::Ref",
-        "UntypedWrapperKind::Mut",
+        "ThroughTypeInfo::Ref",
+        "ThroughTypeInfo::Mut",
         // reflection has no notion of unions, variadics, or the placeholders of shared functions
-        "TypedWrapperKind::Union",
-        "TypedWrapperKind::UntypedTuple",
+        "ThroughTypeInfo::Union",
+        "ThroughTypeInfo::UntypedTuple",
         "ThroughTypeInfo::Fields",
         "ThroughTypeInfo::Bound",
         "ThroughTypeInfo::AssetHandle",
         "BoundPlaceholder::Value",
         "BoundPlaceholder::Fields",
         "BoundPlaceholder::Handle",
-        // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses the wrapper instead
-        "ThroughTypeInfo::TypeInfo",
+        // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses a value instead
+        "ThroughTypeInfo::Opaque",
     ];
 
     #[test]
@@ -837,7 +702,7 @@ mod test {
         collect(Result::<i32, InteropError>::through_type_info());
         collect(<(i32, i32)>::through_type_info());
         collect(VariadicTuple::through_type_info());
-        collect(ThroughTypeInfo::TypeInfo(Value::type_info()));
+        collect(ThroughTypeInfo::Opaque(Value::type_info()));
         // placeholders, and what they turn into when bound
         for placeholder in [
             BoundValue::through_type_info(),

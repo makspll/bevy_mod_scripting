@@ -7,17 +7,15 @@ use bevy_ecs::{
 };
 use bevy_log::warn;
 use bevy_mod_scripting_bindings::{
-    MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference, ScriptNamespace, ScriptValue,
-    StaticTypeRef,
+    MarkAsCore, MarkAsGenerated, MarkAsSignificant, ScriptNamespace, ScriptValue,
     docgen::{
         TypedThrough,
         info::FunctionInfo,
-        typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
+        typed_through::{BoundPlaceholder, ThroughTypeInfo, primitive_kind_of, primitive_type_id},
     },
     function::{
-        bound::asset_handle_type_info,
-        namespace::FunctionScope,
-        script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
+        bound::asset_handle_type_info, namespace::FunctionScope,
+        script_function::FunctionCallContext,
     },
     into_through_type_info_with_registry,
 };
@@ -32,100 +30,7 @@ use std::{
     any::TypeId,
     borrow::Cow,
     cmp::{max, min},
-    ffi::OsString,
-    path::PathBuf,
 };
-
-/// We can assume that the types here will be either primitives
-/// or reflect types, as the rest will be covered by typed wrappers
-/// so just check
-fn primitive_from_type_id(type_id: TypeId) -> Option<ReflectionPrimitiveKind> {
-    Some(if type_id == TypeId::of::<bool>() {
-        ReflectionPrimitiveKind::Bool
-    } else if type_id == TypeId::of::<isize>() {
-        ReflectionPrimitiveKind::Isize
-    } else if type_id == TypeId::of::<i8>() {
-        ReflectionPrimitiveKind::I8
-    } else if type_id == TypeId::of::<i16>() {
-        ReflectionPrimitiveKind::I16
-    } else if type_id == TypeId::of::<i32>() {
-        ReflectionPrimitiveKind::I32
-    } else if type_id == TypeId::of::<i64>() {
-        ReflectionPrimitiveKind::I64
-    } else if type_id == TypeId::of::<i128>() {
-        ReflectionPrimitiveKind::I128
-    } else if type_id == TypeId::of::<usize>() {
-        ReflectionPrimitiveKind::Usize
-    } else if type_id == TypeId::of::<u8>() {
-        ReflectionPrimitiveKind::U8
-    } else if type_id == TypeId::of::<u16>() {
-        ReflectionPrimitiveKind::U16
-    } else if type_id == TypeId::of::<u32>() {
-        ReflectionPrimitiveKind::U32
-    } else if type_id == TypeId::of::<u64>() {
-        ReflectionPrimitiveKind::U64
-    } else if type_id == TypeId::of::<u128>() {
-        ReflectionPrimitiveKind::U128
-    } else if type_id == TypeId::of::<f32>() {
-        ReflectionPrimitiveKind::F32
-    } else if type_id == TypeId::of::<f64>() {
-        ReflectionPrimitiveKind::F64
-    } else if type_id == TypeId::of::<char>() {
-        ReflectionPrimitiveKind::Char
-    } else if type_id == TypeId::of::<&'static str>() {
-        ReflectionPrimitiveKind::Str
-    } else if type_id == TypeId::of::<String>() {
-        ReflectionPrimitiveKind::String
-    } else if type_id == TypeId::of::<OsString>() {
-        ReflectionPrimitiveKind::OsString
-    } else if type_id == TypeId::of::<PathBuf>() {
-        ReflectionPrimitiveKind::PathBuf
-    } else if type_id == TypeId::of::<FunctionCallContext>() {
-        ReflectionPrimitiveKind::FunctionCallContext
-    } else if type_id == TypeId::of::<DynamicScriptFunction>() {
-        ReflectionPrimitiveKind::DynamicFunction
-    } else if type_id == TypeId::of::<DynamicScriptFunctionMut>() {
-        ReflectionPrimitiveKind::DynamicFunctionMut
-    } else if type_id == TypeId::of::<ReflectReference>() {
-        ReflectionPrimitiveKind::ReflectReference
-    } else if type_id == TypeId::of::<StaticTypeRef>() {
-        ReflectionPrimitiveKind::StaticTypeRef
-    } else {
-        return None;
-    })
-}
-
-fn type_id_from_primitive(kind: &ReflectionPrimitiveKind) -> Option<TypeId> {
-    Some(match kind {
-        ReflectionPrimitiveKind::Bool => TypeId::of::<bool>(),
-        ReflectionPrimitiveKind::Isize => TypeId::of::<isize>(),
-        ReflectionPrimitiveKind::I8 => TypeId::of::<i8>(),
-        ReflectionPrimitiveKind::I16 => TypeId::of::<i16>(),
-        ReflectionPrimitiveKind::I32 => TypeId::of::<i32>(),
-        ReflectionPrimitiveKind::I64 => TypeId::of::<i64>(),
-        ReflectionPrimitiveKind::I128 => TypeId::of::<i128>(),
-        ReflectionPrimitiveKind::Usize => TypeId::of::<usize>(),
-        ReflectionPrimitiveKind::U8 => TypeId::of::<u8>(),
-        ReflectionPrimitiveKind::U16 => TypeId::of::<u16>(),
-        ReflectionPrimitiveKind::U32 => TypeId::of::<u32>(),
-        ReflectionPrimitiveKind::U64 => TypeId::of::<u64>(),
-        ReflectionPrimitiveKind::U128 => TypeId::of::<u128>(),
-        ReflectionPrimitiveKind::F32 => TypeId::of::<f32>(),
-        ReflectionPrimitiveKind::F64 => TypeId::of::<f64>(),
-        ReflectionPrimitiveKind::Char => TypeId::of::<char>(),
-        ReflectionPrimitiveKind::Str => TypeId::of::<&'static str>(),
-        ReflectionPrimitiveKind::String => TypeId::of::<String>(),
-        ReflectionPrimitiveKind::OsString => TypeId::of::<OsString>(),
-        ReflectionPrimitiveKind::PathBuf => TypeId::of::<PathBuf>(),
-        ReflectionPrimitiveKind::FunctionCallContext => TypeId::of::<FunctionCallContext>(),
-        ReflectionPrimitiveKind::DynamicFunction => TypeId::of::<DynamicScriptFunction>(),
-        ReflectionPrimitiveKind::DynamicFunctionMut => TypeId::of::<DynamicScriptFunctionMut>(),
-        ReflectionPrimitiveKind::ReflectReference => TypeId::of::<ReflectReference>(),
-        ReflectionPrimitiveKind::ScriptValue => TypeId::of::<ScriptValue>(),
-        ReflectionPrimitiveKind::StaticTypeRef => TypeId::of::<StaticTypeRef>(),
-        ReflectionPrimitiveKind::External(_) => return None,
-    })
-}
 
 /// A builder for constructing LAD files.
 /// This should be your preferred way of constructing LAD files.
@@ -218,7 +123,7 @@ impl<'t> LadFileBuilder<'t> {
     ) -> &mut Self {
         let type_ident = primitive.to_string();
         let lad_type_id = LadTypeId::new_string_id(type_ident.clone().into());
-        if let Some(type_id) = type_id_from_primitive(&primitive) {
+        if let Some(type_id) = primitive_type_id(&primitive) {
             self.type_id_mapping.insert(type_id, lad_type_id.clone());
         }
         self.file.types.insert(
@@ -314,7 +219,7 @@ impl<'t> LadFileBuilder<'t> {
         &mut self,
         key: impl Into<Cow<'static, str>>,
         is_static: bool,
-        type_kind: LadFieldOrVariableKind,
+        type_kind: LadTypeKind,
     ) -> &mut Self {
         self.file.globals.insert(
             key.into(),
@@ -359,7 +264,7 @@ impl<'t> LadFileBuilder<'t> {
                     is_component: false,
                     is_resource: false,
                     is_reflect: false,
-                    mapped_to_primitive_kind: primitive_from_type_id(std::any::TypeId::of::<T>()),
+                    mapped_to_primitive_kind: primitive_kind_of(std::any::TypeId::of::<T>()),
                     default: None,
                     misc: Default::default(),
                 },
@@ -443,7 +348,7 @@ impl<'t> LadFileBuilder<'t> {
                 is_component,
                 is_resource,
                 is_reflect,
-                mapped_to_primitive_kind: primitive_from_type_id(type_info.type_id()),
+                mapped_to_primitive_kind: primitive_kind_of(type_info.type_id()),
                 default: self.lad_default(type_info.type_id()),
                 misc: Default::default(),
             },
@@ -523,56 +428,7 @@ impl<'t> LadFileBuilder<'t> {
 
     /// Adds all nested types within the given `ThroughTypeInfo`.
     pub fn add_through_type_info(&mut self, type_info: &ThroughTypeInfo) -> &mut Self {
-        match type_info {
-            ThroughTypeInfo::UntypedWrapper { through_type, .. } => {
-                self.add_type_info(through_type);
-            }
-            ThroughTypeInfo::TypedWrapper(typed_wrapper_kind) => match typed_wrapper_kind {
-                TypedWrapperKind::Union(ti) => {
-                    for ti in ti {
-                        self.add_through_type_info(ti);
-                    }
-                }
-                TypedWrapperKind::Vec(ti) => {
-                    self.add_through_type_info(ti);
-                }
-                TypedWrapperKind::HashMap(til, tir) => {
-                    self.add_through_type_info(til);
-                    self.add_through_type_info(tir);
-                }
-                TypedWrapperKind::HashSet(t) => {
-                    self.add_through_type_info(t);
-                }
-                TypedWrapperKind::Array(ti, _) => {
-                    self.add_through_type_info(ti);
-                }
-                TypedWrapperKind::Option(ti) => {
-                    self.add_through_type_info(ti);
-                }
-                TypedWrapperKind::InteropResult(ti) => {
-                    self.add_through_type_info(ti);
-                }
-                TypedWrapperKind::Tuple(ti) => {
-                    for ti in ti {
-                        self.add_through_type_info(ti);
-                    }
-                }
-                TypedWrapperKind::UntypedTuple => {}
-            },
-            ThroughTypeInfo::TypeInfo(type_info) | ThroughTypeInfo::Fields { type_info, .. } => {
-                self.add_type_info(type_info);
-            }
-            ThroughTypeInfo::AssetHandle(asset_type_info) => {
-                self.add_type_info(asset_type_info);
-                if let Some(handle_type_info) =
-                    asset_handle_type_info(self.type_registry, asset_type_info.type_id())
-                {
-                    self.add_type_info(handle_type_info);
-                }
-            }
-            ThroughTypeInfo::Primitive(_) | ThroughTypeInfo::Bound(_) => {}
-        }
-
+        self.lad_kind(type_info, true);
         self
     }
 
@@ -643,30 +499,45 @@ impl<'t> LadFileBuilder<'t> {
             }
         }
 
+        // the call context is filled in by BMS, scripts never pass it
+        let arguments: Vec<_> = function_info
+            .arg_info
+            .iter()
+            .filter(|arg| arg.type_id != TypeId::of::<FunctionCallContext>())
+            .enumerate()
+            .map(|(idx, arg)| {
+                let kind = match &arg.type_info {
+                    Some(through_type) => self.lad_type_kind_from_through_type(through_type),
+                    None => LadTypeKind::Unknown(self.lad_id_from_type_id(arg.type_id)),
+                };
+                LadArgument {
+                    kind,
+                    documentation: arg_docstrings.iter().find_map(|(name, doc)| {
+                        (Some(name.as_str()) == arg.name.as_deref())
+                            .then_some(Cow::Owned(doc.clone()))
+                    }),
+                    name: Some(
+                        arg.name
+                            .clone()
+                            .unwrap_or_else(|| Cow::Owned(format!("arg{}", idx + 1))),
+                    ),
+                }
+            })
+            .collect();
+        let receiver = match &namespace {
+            LadFunctionNamespace::Type(type_id) => arguments.first().is_some_and(|arg| {
+                matches!(&arg.kind, LadTypeKind::Ref(id) | LadTypeKind::Mut(id) | LadTypeKind::Val(id) if id == type_id)
+            }),
+            // functions on variants are called on the variant, i.e. `MyEnum.Variant:new{}`
+            LadFunctionNamespace::Variant { .. } => !arguments.is_empty(),
+            LadFunctionNamespace::Global => false,
+        };
+
         let lad_function = LadFunction {
             identifier: identifier.to_owned().into(),
             overload_index,
-            arguments: function_info
-                .arg_info
-                .clone()
-                .into_iter()
-                .map(|arg| {
-                    let kind = match &arg.type_info {
-                        Some(through_type) => self.lad_type_kind_from_through_type(through_type),
-                        None => {
-                            LadFieldOrVariableKind::Unknown(self.lad_id_from_type_id(arg.type_id))
-                        }
-                    };
-                    LadArgument {
-                        kind,
-                        documentation: arg_docstrings.iter().find_map(|(name, doc)| {
-                            (Some(name.as_str()) == arg.name.as_deref())
-                                .then_some(Cow::Owned(doc.clone()))
-                        }),
-                        name: arg.name,
-                    }
-                })
-                .collect(),
+            arguments,
+            receiver,
             return_type: LadArgument {
                 name: return_docstring.as_ref().cloned().map(|(n, _)| n.into()),
                 documentation: return_docstring.map(|(_, v)| v.into()),
@@ -676,7 +547,7 @@ impl<'t> LadFileBuilder<'t> {
                     .clone()
                     .map(|info| self.lad_type_kind_from_through_type(&info))
                     .unwrap_or_else(|| {
-                        LadFieldOrVariableKind::Unknown(
+                        LadTypeKind::Unknown(
                             self.lad_id_from_type_id(function_info.return_info.type_id),
                         )
                     }),
@@ -684,7 +555,7 @@ impl<'t> LadFileBuilder<'t> {
             documentation: (!main_docstring.is_empty()).then_some(main_docstring.into()),
             namespace,
             metadata: LadFunctionMetadata {
-                is_operator: ScriptOperatorNames::parse(identifier).is_some(),
+                operator: ScriptOperatorNames::parse(identifier),
                 misc: Default::default(),
             },
         };
@@ -699,7 +570,7 @@ impl<'t> LadFileBuilder<'t> {
     }
 
     fn has_unknowns(&self, type_id: TypeId) -> bool {
-        if primitive_from_type_id(type_id).is_some() {
+        if primitive_kind_of(type_id).is_some() {
             return false;
         }
 
@@ -827,9 +698,11 @@ impl<'t> LadFileBuilder<'t> {
     ///
     /// returning (arg,val) without markup
     fn parse_arg_docstring(line: &str) -> Option<(&str, &str)> {
-        let regex =
-            regex::Regex::new(r#"\s*\*\s*`(?<arg>[^`]+)`\s*[:-]\s*(?<val>.+[^\s]).*$"#).ok()?;
-        let captures = regex.captures(line)?;
+        static ARG_DOCSTRING: std::sync::LazyLock<Option<regex::Regex>> =
+            std::sync::LazyLock::new(|| {
+                regex::Regex::new(r#"\s*\*\s*`(?<arg>[^`]+)`\s*[:-]\s*(?<val>.+[^\s]).*$"#).ok()
+            });
+        let captures = ARG_DOCSTRING.as_ref()?.captures(line)?;
         let arg = captures.name("arg")?;
         let val = captures.name("val")?;
 
@@ -1038,13 +911,13 @@ impl<'t> LadFileBuilder<'t> {
 
     /// Should only be used on fields, as those are never going to contain
     /// untyped structures, i.e. are going to be fully reflectable
-    fn lad_type_kind_from_type_id(&mut self, type_id: TypeId) -> LadFieldOrVariableKind {
+    fn lad_type_kind_from_type_id(&mut self, type_id: TypeId) -> LadTypeKind {
         if let Some(type_info) = self.type_registry.get_type_info(type_id) {
             let through_type_info =
                 into_through_type_info_with_registry(type_info, self.type_registry);
             self.lad_type_kind_from_through_type(&through_type_info)
         } else {
-            LadFieldOrVariableKind::Unknown(self.lad_id_from_type_id(type_id))
+            LadTypeKind::Unknown(self.lad_id_from_type_id(type_id))
         }
     }
 
@@ -1059,7 +932,7 @@ impl<'t> LadFileBuilder<'t> {
             return lad_id.clone();
         }
 
-        let new_id = match primitive_from_type_id(type_id) {
+        let new_id = match primitive_kind_of(type_id) {
             Some(primitive) => LadTypeId::new_string_id(primitive.to_string().into()),
             None => {
                 if let Some(info) = self.type_registry.get_type_info(type_id) {
@@ -1087,103 +960,67 @@ impl<'t> LadFileBuilder<'t> {
         LadFunctionId::new_string_id(format!("{}::{}", namespace_string, function_info.name))
     }
 
-    fn lad_type_kind_from_through_type(
-        &mut self,
-        through_type: &ThroughTypeInfo,
-    ) -> LadFieldOrVariableKind {
+    fn lad_type_kind_from_through_type(&mut self, through_type: &ThroughTypeInfo) -> LadTypeKind {
+        self.lad_kind(through_type, false)
+    }
+
+    /// Converts a description of a type to its LAD kind, also adding the types it involves to the file if `register` is set.
+    fn lad_kind(&mut self, through_type: &ThroughTypeInfo, register: bool) -> LadTypeKind {
+        let leaf = |builder: &mut Self, type_info: &'static TypeInfo| {
+            if register {
+                builder.add_type_info(type_info);
+            }
+            builder.lad_id_from_type_id(type_info.type_id())
+        };
+        let nested = |builder: &mut Self, inner: &ThroughTypeInfo| {
+            Box::new(builder.lad_kind(inner, register))
+        };
         match through_type {
-            ThroughTypeInfo::UntypedWrapper {
-                through_type,
-                wrapper_kind,
-                ..
-            } => match wrapper_kind {
-                UntypedWrapperKind::Ref => {
-                    LadFieldOrVariableKind::Ref(self.lad_id_from_type_id(through_type.type_id()))
-                }
-                UntypedWrapperKind::Mut => {
-                    LadFieldOrVariableKind::Mut(self.lad_id_from_type_id(through_type.type_id()))
-                }
-                UntypedWrapperKind::Val => {
-                    LadFieldOrVariableKind::Val(self.lad_id_from_type_id(through_type.type_id()))
-                }
+            ThroughTypeInfo::Ref(type_info) => LadTypeKind::Ref(leaf(self, type_info)),
+            ThroughTypeInfo::Mut(type_info) => LadTypeKind::Mut(leaf(self, type_info)),
+            ThroughTypeInfo::Val(type_info) => LadTypeKind::Val(leaf(self, type_info)),
+            // the type's own conversions decide how scripts see it
+            ThroughTypeInfo::Opaque(type_info) => match primitive_kind_of(type_info.type_id()) {
+                Some(primitive) => LadTypeKind::Primitive(primitive),
+                None => LadTypeKind::Unknown(leaf(self, type_info)),
             },
-            ThroughTypeInfo::TypedWrapper(typed_wrapper_kind) => match typed_wrapper_kind {
-                TypedWrapperKind::Vec(through_type_info) => LadFieldOrVariableKind::Vec(Box::new(
-                    self.lad_type_kind_from_through_type(through_type_info),
-                )),
-                TypedWrapperKind::HashMap(through_type_info, through_type_info1) => {
-                    LadFieldOrVariableKind::HashMap(
-                        Box::new(self.lad_type_kind_from_through_type(through_type_info)),
-                        Box::new(self.lad_type_kind_from_through_type(through_type_info1)),
-                    )
-                }
-                TypedWrapperKind::HashSet(through_type_info) => LadFieldOrVariableKind::HashSet(
-                    Box::new(self.lad_type_kind_from_through_type(through_type_info)),
-                ),
-                TypedWrapperKind::Array(through_type_info, size) => LadFieldOrVariableKind::Array(
-                    Box::new(self.lad_type_kind_from_through_type(through_type_info)),
-                    *size,
-                ),
-                TypedWrapperKind::Option(through_type_info) => LadFieldOrVariableKind::Option(
-                    Box::new(self.lad_type_kind_from_through_type(through_type_info)),
-                ),
-                TypedWrapperKind::InteropResult(through_type_info) => {
-                    LadFieldOrVariableKind::InteropResult(Box::new(
-                        self.lad_type_kind_from_through_type(through_type_info),
-                    ))
-                }
-                TypedWrapperKind::Tuple(through_type_infos) => LadFieldOrVariableKind::Tuple(
-                    through_type_infos
-                        .iter()
-                        .map(|through_type_info| {
-                            self.lad_type_kind_from_through_type(through_type_info)
-                        })
-                        .collect(),
-                ),
-                TypedWrapperKind::Union(through_type_infos) => LadFieldOrVariableKind::Union(
-                    through_type_infos
-                        .iter()
-                        .map(|through_type_info| {
-                            self.lad_type_kind_from_through_type(through_type_info)
-                        })
-                        .collect(),
-                ),
-                TypedWrapperKind::UntypedTuple => LadFieldOrVariableKind::UntypedTuple,
-            },
-            ThroughTypeInfo::TypeInfo(type_info) => {
-                match primitive_from_type_id(type_info.type_id()) {
-                    Some(primitive) => LadFieldOrVariableKind::Primitive(primitive),
-                    None => LadFieldOrVariableKind::Unknown(
-                        self.lad_id_from_type_id(type_info.type_id()),
-                    ),
-                }
+            ThroughTypeInfo::Primitive(primitive) => LadTypeKind::Primitive(primitive.clone()),
+            ThroughTypeInfo::Option(inner) => LadTypeKind::Option(nested(self, inner)),
+            ThroughTypeInfo::Vec(inner) => LadTypeKind::Vec(nested(self, inner)),
+            ThroughTypeInfo::HashMap(key, value) => {
+                LadTypeKind::HashMap(nested(self, key), nested(self, value))
             }
-            ThroughTypeInfo::Primitive(reflection_primitive_kind) => {
-                LadFieldOrVariableKind::Primitive(reflection_primitive_kind.clone())
+            ThroughTypeInfo::HashSet(inner) => LadTypeKind::HashSet(nested(self, inner)),
+            ThroughTypeInfo::Array(inner, size) => LadTypeKind::Array(nested(self, inner), *size),
+            ThroughTypeInfo::InteropResult(inner) => {
+                LadTypeKind::InteropResult(nested(self, inner))
             }
-            ThroughTypeInfo::Fields { type_info, variant } => LadFieldOrVariableKind::Fields {
-                type_id: self.lad_id_from_type_id(type_info.type_id()),
+            ThroughTypeInfo::Tuple(inner) => {
+                LadTypeKind::Tuple(inner.iter().map(|i| *nested(self, i)).collect())
+            }
+            ThroughTypeInfo::Union(inner) => {
+                LadTypeKind::Union(inner.iter().map(|i| *nested(self, i)).collect())
+            }
+            ThroughTypeInfo::UntypedTuple => LadTypeKind::UntypedTuple,
+            ThroughTypeInfo::Fields { type_info, variant } => LadTypeKind::Fields {
+                type_id: leaf(self, type_info),
                 variant: variant.map(Cow::Borrowed),
             },
             // functions are bound before they are added, any placeholders left are documented as what they are at runtime
-            ThroughTypeInfo::Bound(BoundPlaceholder::Value) => {
-                self.lad_type_kind_from_through_type(&ReflectReference::through_type_info())
+            ThroughTypeInfo::Bound(BoundPlaceholder::Value | BoundPlaceholder::Handle) => {
+                LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference)
             }
-            ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => self
-                .lad_type_kind_from_through_type(
-                    &HashMap::<String, ScriptValue>::through_type_info(),
-                ),
-            ThroughTypeInfo::Bound(BoundPlaceholder::Handle) => {
-                self.lad_type_kind_from_through_type(&ReflectReference::through_type_info())
-            }
+            ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => self.lad_kind(
+                &HashMap::<String, ScriptValue>::through_type_info(),
+                register,
+            ),
             ThroughTypeInfo::AssetHandle(asset_type_info) => {
+                if register {
+                    self.add_type_info(asset_type_info);
+                }
                 match asset_handle_type_info(self.type_registry, asset_type_info.type_id()) {
-                    Some(handle_type_info) => LadFieldOrVariableKind::Val(
-                        self.lad_id_from_type_id(handle_type_info.type_id()),
-                    ),
-                    None => {
-                        self.lad_type_kind_from_through_type(&ReflectReference::through_type_info())
-                    }
+                    Some(handle_type_info) => LadTypeKind::Val(leaf(self, handle_type_info)),
+                    None => LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference),
                 }
             }
         }
@@ -1192,6 +1029,7 @@ impl<'t> LadFileBuilder<'t> {
 
 #[cfg(test)]
 mod test {
+    use bevy_mod_scripting_bindings::ReflectReference;
     use std::collections::HashMap;
 
     use bevy_mod_scripting_bindings::{
@@ -1416,7 +1254,7 @@ mod test {
 
         impl TypedThrough for GenericStructType<usize> {
             fn through_type_info() -> ThroughTypeInfo {
-                ThroughTypeInfo::TypeInfo(Self::type_info())
+                ThroughTypeInfo::Opaque(Self::type_info())
             }
         }
 
@@ -1428,7 +1266,7 @@ mod test {
 
         impl TypedThrough for PlainStructType {
             fn through_type_info() -> ThroughTypeInfo {
-                ThroughTypeInfo::TypeInfo(Self::type_info())
+                ThroughTypeInfo::Opaque(Self::type_info())
             }
         }
 
@@ -1438,7 +1276,7 @@ mod test {
 
         impl TypedThrough for UnitType {
             fn through_type_info() -> ThroughTypeInfo {
-                ThroughTypeInfo::TypeInfo(Self::type_info())
+                ThroughTypeInfo::Opaque(Self::type_info())
             }
         }
 
@@ -1523,7 +1361,7 @@ mod test {
 
         impl TypedThrough for OpaqueGenericType<usize> {
             fn through_type_info() -> ThroughTypeInfo {
-                ThroughTypeInfo::TypeInfo(Self::type_info())
+                ThroughTypeInfo::Opaque(Self::type_info())
             }
         }
         let generic_function = |_: R<HoldsOpaqueType>, _: V<OpaqueGenericType<usize>>| {
@@ -1644,7 +1482,7 @@ mod test {
             .values()
             .next()
             .expect("the function is added");
-        let LadFieldOrVariableKind::Val(handle) = &function.return_type.kind else {
+        let LadTypeKind::Val(handle) = &function.return_type.kind else {
             panic!("expected a value, got {:?}", function.return_type.kind);
         };
         assert!(
@@ -1668,37 +1506,34 @@ mod test {
     }
 
     variant_names!(
-        LadFieldOrVariableKind, ALL_LAD_KINDS, lad_kind_name:
+        LadTypeKind, ALL_LAD_KINDS, lad_kind_name:
         Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple, Array,
         Primitive, Union, Unknown, Fields
     );
 
     /// Records every kind found anywhere in the given kind
-    fn collect_kinds(
-        kind: &LadFieldOrVariableKind,
-        seen: &mut std::collections::BTreeSet<&'static str>,
-    ) {
+    fn collect_kinds(kind: &LadTypeKind, seen: &mut std::collections::BTreeSet<&'static str>) {
         seen.insert(lad_kind_name(kind));
         match kind {
-            LadFieldOrVariableKind::Option(inner)
-            | LadFieldOrVariableKind::Vec(inner)
-            | LadFieldOrVariableKind::HashSet(inner)
-            | LadFieldOrVariableKind::InteropResult(inner)
-            | LadFieldOrVariableKind::Array(inner, _) => collect_kinds(inner, seen),
-            LadFieldOrVariableKind::HashMap(key, value) => {
+            LadTypeKind::Option(inner)
+            | LadTypeKind::Vec(inner)
+            | LadTypeKind::HashSet(inner)
+            | LadTypeKind::InteropResult(inner)
+            | LadTypeKind::Array(inner, _) => collect_kinds(inner, seen),
+            LadTypeKind::HashMap(key, value) => {
                 collect_kinds(key, seen);
                 collect_kinds(value, seen);
             }
-            LadFieldOrVariableKind::Tuple(inner) | LadFieldOrVariableKind::Union(inner) => {
+            LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => {
                 inner.iter().for_each(|kind| collect_kinds(kind, seen))
             }
-            LadFieldOrVariableKind::Ref(_)
-            | LadFieldOrVariableKind::Mut(_)
-            | LadFieldOrVariableKind::Val(_)
-            | LadFieldOrVariableKind::UntypedTuple
-            | LadFieldOrVariableKind::Primitive(_)
-            | LadFieldOrVariableKind::Unknown(_)
-            | LadFieldOrVariableKind::Fields { .. } => {}
+            LadTypeKind::Ref(_)
+            | LadTypeKind::Mut(_)
+            | LadTypeKind::Val(_)
+            | LadTypeKind::UntypedTuple
+            | LadTypeKind::Primitive(_)
+            | LadTypeKind::Unknown(_)
+            | LadTypeKind::Fields { .. } => {}
         }
     }
 
@@ -1751,7 +1586,7 @@ mod test {
     fn documented_field_kinds(
         registry: &TypeRegistry,
     ) -> (
-        HashMap<String, LadFieldOrVariableKind>,
+        HashMap<String, LadTypeKind>,
         impl FnMut(TypeId) -> LadTypeId + use<'_>,
     ) {
         let mut builder = LadFileBuilder::new_empty(registry);
@@ -1779,7 +1614,7 @@ mod test {
 
     #[test]
     fn fields_are_documented_with_the_kind_of_their_reflected_type() {
-        use LadFieldOrVariableKind as Kind;
+        use LadTypeKind as Kind;
         use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
 
         let registry = field_test_registry();
@@ -1854,8 +1689,8 @@ mod test {
     /// The kinds which can only come from the signature of a function, as fields are always plain values
     fn documented_argument_kinds(
         registry: &TypeRegistry,
-    ) -> Vec<(&'static str, LadFieldOrVariableKind, LadFieldOrVariableKind)> {
-        use LadFieldOrVariableKind as Kind;
+    ) -> Vec<(&'static str, LadTypeKind, LadTypeKind)> {
+        use LadTypeKind as Kind;
         use bevy_mod_scripting_bindings::{
             VariadicTuple,
             docgen::TypedThrough,
@@ -1923,7 +1758,7 @@ mod test {
             ),
             (
                 "type info",
-                ThroughTypeInfo::TypeInfo(FieldValue::type_info()),
+                ThroughTypeInfo::Opaque(FieldValue::type_info()),
                 Kind::Unknown(value),
             ),
         ];

@@ -666,9 +666,7 @@
           "primitive": "usize"
         }
       },
-      "metadata": {
-        "is_operator": false
-      }
+      "metadata": {}
     },
     "ladfile_builder::test::GenericStructType<usize>::hello_world": {
       "namespace": "ladfile_builder::test::GenericStructType<usize>",
@@ -715,9 +713,7 @@
         "documentation": "I am some docs for the return type, I provide a name for the return value too",
         "name": "return"
       },
-      "metadata": {
-        "is_operator": false
-      }
+      "metadata": {}
     },
     "ladfile_builder::test::HoldsOpaqueType::swap_generic": {
       "namespace": "ladfile_builder::test::HoldsOpaqueType",
@@ -727,12 +723,14 @@
         {
           "kind": {
             "ref": "ladfile_builder::test::HoldsOpaqueType"
-          }
+          },
+          "name": "arg1"
         },
         {
           "kind": {
             "val": "ladfile_builder::test::OpaqueGenericType<usize>"
-          }
+          },
+          "name": "arg2"
         }
       ],
       "return_type": {
@@ -740,9 +738,8 @@
           "val": "ladfile_builder::test::OpaqueGenericType<usize>"
         }
       },
-      "metadata": {
-        "is_operator": false
-      }
+      "metadata": {},
+      "receiver": true
     },
     "ladfile_builder::test::PlainStructType::plain_struct_function": {
       "namespace": "ladfile_builder::test::PlainStructType",
@@ -752,12 +749,14 @@
         {
           "kind": {
             "ref": "ladfile_builder::test::PlainStructType"
-          }
+          },
+          "name": "arg1"
         },
         {
           "kind": {
             "primitive": "usize"
-          }
+          },
+          "name": "arg2"
         }
       ],
       "return_type": {
@@ -765,9 +764,8 @@
           "unknown": "ladfile_builder::test::PlainStructType"
         }
       },
-      "metadata": {
-        "is_operator": false
-      }
+      "metadata": {},
+      "receiver": true
     }
   },
   "description": "## Hello gentlemen\n I am  markdown file.\n - hello\n - world"

@@ -1,15 +1,32 @@
-//! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
+//! Parsing definitions for the LAD (Language Agnostic Declaration) file format.
 //!
 //! The main ideals behind the format are:
 //! - Centralization, we want to centralize as much of the "documentation" logic in the building of this format. For example, instead of letting each backend parse argument docstrings from the function docstring, we can do this here, and let the backends concentrate on pure generation.
 //! - Rust centric, the format describes bindings from the Rust side, so we generate rust centric declarations. These can then freely be converted into whatever representaion necessary.
+//!
+//! # Writing a backend
+//!
+//! A backend turns a [`LadFile`] into something else, i.e. Lua language server declarations or mdbook pages.
+//! - [`LadFile::types`] are the types scripts see, keyed by [`LadTypeId`]; [`LadTypeDefinition::layout`] describes their fields and variants.
+//! - [`LadFile::functions`] are keyed by [`LadFunctionId`], [`LadFunction::namespace`] says whether they are global, on a type or on an enum variant.
+//! - Every argument, field and return value has a [`LadTypeKind`]. Render it with an [`ArgumentVisitor`]:
+//!   pick an `Output` (i.e. a type in your language, or `()` when writing into a buffer) and handle each container kind.
+//!   To only find what a kind contains, use [`LadTypeKind::for_each`].
+//!
+//! The builder (`ladfile_builder`) does the work which would otherwise be repeated by each backend:
+//! - arguments are always named, unnamed ones are `arg1`, `arg2`...
+//! - arguments scripts never pass, like the function call context, are left out
+//! - [`LadFunction::receiver`] says if the first argument is the value the function is called on (`v:length()` in Lua)
+//! - [`LadFunctionMetadata::operator`] says which operator a function implements
+//!
+//! The expected outputs of the backends' tests are generated from `test_assets/test.lad.json`, run `cargo xtask bless-lad` to update all of them.
 
 use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
 };
 
-pub use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind; // re-export the thing we use
+pub use bevy_mod_scripting_bindings_domain::{ReflectionPrimitiveKind, ScriptOperatorNames}; // re-export the things we use
 use indexmap::IndexMap;
 mod plugin;
 pub use plugin::*;
@@ -178,7 +195,7 @@ impl Default for LadFile {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LadInstance {
     /// The kind of the instance
-    pub type_kind: LadFieldOrVariableKind,
+    pub type_kind: LadTypeKind,
 
     /// whether the instance is static or not
     ///
@@ -226,12 +243,16 @@ pub struct LadFunction {
     pub documentation: Option<Cow<'static, str>>,
     /// Function metadata
     pub metadata: LadFunctionMetadata,
+    /// Whether the function is called on a value, which is its first argument, i.e. `v:length()` in Lua.
+    #[serde(skip_serializing_if = "is_false", default)]
+    pub receiver: bool,
 }
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// Additional data relevant to functions
 pub struct LadFunctionMetadata {
-    /// True if the function represents a supported binary or unary operation
-    pub is_operator: bool,
+    /// The operator the function implements, if any, i.e. `add` for `+`
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub operator: Option<ScriptOperatorNames>,
     /// Extra metadata to be populated by external plugins
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
     pub misc: HashMap<String, String>,
@@ -286,13 +307,13 @@ impl LadFunctionNamespace {
 /// An argument definition used in a LAD file.
 pub struct LadArgument {
     /// The kind and type of argument
-    pub kind: LadFieldOrVariableKind,
+    pub kind: LadTypeKind,
 
     /// The provided documentation for this argument. Normally derived from the function docstring.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub documentation: Option<Cow<'static, str>>,
 
-    /// The name of the argument
+    /// The name of the argument, always set for function arguments (`arg1`, `arg2`... if the function doesn't name them)
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub name: Option<Cow<'static, str>>,
 }
@@ -308,7 +329,7 @@ pub struct LadArgument {
 ///
 /// In generating documents, it's convenient to distinguish a few core "containers" to provide useful information.
 #[serde(rename_all = "camelCase")]
-pub enum LadFieldOrVariableKind {
+pub enum LadTypeKind {
     /// a `Ref` wrapped argument
     Ref(LadTypeId),
     /// a `Mut` wrapped argument
@@ -316,25 +337,25 @@ pub enum LadFieldOrVariableKind {
     /// a `Val` wrapped argument
     Val(LadTypeId),
     /// an `Option` wrapped argument
-    Option(Box<LadFieldOrVariableKind>),
+    Option(Box<LadTypeKind>),
     /// a `Vec`
-    Vec(Box<LadFieldOrVariableKind>),
+    Vec(Box<LadTypeKind>),
     /// a `HashMap`
-    HashMap(Box<LadFieldOrVariableKind>, Box<LadFieldOrVariableKind>),
+    HashMap(Box<LadTypeKind>, Box<LadTypeKind>),
     /// a `HashSet`
-    HashSet(Box<LadFieldOrVariableKind>),
+    HashSet(Box<LadTypeKind>),
     /// A `InteropResult`
-    InteropResult(Box<LadFieldOrVariableKind>),
+    InteropResult(Box<LadTypeKind>),
     /// A tuple of arguments
-    Tuple(Vec<LadFieldOrVariableKind>),
+    Tuple(Vec<LadTypeKind>),
     /// A variadic tuple
     UntypedTuple,
     /// An array
-    Array(Box<LadFieldOrVariableKind>, usize),
+    Array(Box<LadTypeKind>, usize),
     /// A primitive type, implementing `IntoScript` and `FromScript` natively in BMS.
     Primitive(ReflectionPrimitiveKind),
     /// A union of two or more types
-    Union(Vec<LadFieldOrVariableKind>),
+    Union(Vec<LadTypeKind>),
     /// An arbitrary type which is either unsupported, doesn't contain type information, or is generally unknown.
     ///
     /// This will be the variant used for external primitives as well.
@@ -352,149 +373,146 @@ pub enum LadFieldOrVariableKind {
     },
 }
 
-/// Utility for dispatching visitors on dyn traits
+impl LadTypeKind {
+    /// The kinds this one contains, i.e. `T` in `Vec<T>`.
+    pub fn children(&self) -> Vec<&LadTypeKind> {
+        match self {
+            LadTypeKind::Option(inner)
+            | LadTypeKind::Vec(inner)
+            | LadTypeKind::HashSet(inner)
+            | LadTypeKind::InteropResult(inner)
+            | LadTypeKind::Array(inner, _) => vec![&**inner],
+            LadTypeKind::HashMap(key, value) => vec![&**key, &**value],
+            LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => inner.iter().collect(),
+            LadTypeKind::Ref(_)
+            | LadTypeKind::Mut(_)
+            | LadTypeKind::Val(_)
+            | LadTypeKind::Unknown(_)
+            | LadTypeKind::Primitive(_)
+            | LadTypeKind::UntypedTuple
+            | LadTypeKind::Fields { .. } => vec![],
+        }
+    }
+
+    /// Calls `f` on this kind and every kind nested in it, outermost first.
+    pub fn for_each(&self, f: &mut impl FnMut(&LadTypeKind)) {
+        f(self);
+        for child in self.children() {
+            child.for_each(f);
+        }
+    }
+}
+
+/// Something an [`ArgumentVisitor`] can visit, i.e. a type kind, or a type id on its own
+#[cfg(feature = "visitor")]
 pub trait LadVisitable {
-    /// Runs the visitor on the given node
-    fn accept(&self, visitor: &mut dyn ArgumentVisitor);
+    /// Runs the visitor on this
+    fn accept<V: ArgumentVisitor>(&self, visitor: &mut V) -> V::Output;
 }
 
+#[cfg(feature = "visitor")]
 impl LadVisitable for LadTypeId {
-    fn accept(&self, visitor: &mut dyn ArgumentVisitor) {
-        visitor.visit_lad_type_id(self);
+    fn accept<V: ArgumentVisitor>(&self, visitor: &mut V) -> V::Output {
+        visitor.visit_type_id(self)
     }
 }
 
-impl LadVisitable for LadFieldOrVariableKind {
-    fn accept(&self, visitor: &mut dyn ArgumentVisitor) {
-        visitor.visit(self);
+#[cfg(feature = "visitor")]
+impl LadVisitable for LadTypeKind {
+    fn accept<V: ArgumentVisitor>(&self, visitor: &mut V) -> V::Output {
+        visitor.visit(self)
     }
 }
-/// A visitor pattern for running arbitrary logic on the hierarchy of arguments.
+
+/// A visitor over the type of an argument, field or return value, i.e. to print it in the syntax of a language.
 ///
-/// Use cases are mostly to do with printing the arguments in a human readable format.
-#[allow(unused_variables)]
+/// [`Self::visit`] dispatches on the [`LadTypeKind`], containers are handed their inner kinds to [`Self::visit`] in turn,
+/// so a visitor can build its output bottom up (i.e. `Output = LuaType`), or write into a buffer (`Output = ()`).
+/// Every container must be handled, so a new kind is a compile error in each visitor rather than a silent default.
+///
+/// To only find the type ids or kinds contained in a type, use [`LadTypeKind::for_each`] instead.
 #[cfg(feature = "visitor")]
 pub trait ArgumentVisitor {
-    /// perform an action on a `LadTypeId`, by default noop
-    fn visit_lad_type_id(&mut self, type_id: &LadTypeId);
+    /// What visiting a type produces
+    type Output;
 
-    /// perform an action on a `LadBMSPrimitiveKind`, by default visits the type id of the primitive kind
-    fn visit_lad_bms_primitive_kind(&mut self, primitive_kind: &ReflectionPrimitiveKind);
+    /// A type by its id. Ids of primitives are visited here too, check [`LadFile::primitive_kind`] to tell them apart.
+    fn visit_type_id(&mut self, type_id: &LadTypeId) -> Self::Output;
 
-    /// perform an action on a `Unknown`, by default visits the type id of the unknown type
-    fn visit_unknown(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A primitive type
+    fn visit_primitive(&mut self, primitive_kind: &ReflectionPrimitiveKind) -> Self::Output;
+
+    /// A reference to a value of the type, by default [`Self::visit_type_id`]
+    fn visit_ref(&mut self, type_id: &LadTypeId) -> Self::Output {
+        self.visit_type_id(type_id)
     }
 
-    /// Visits an untyped tuple
-    fn visit_untyped_tuple(&mut self) {}
-
-    /// walks the lad type_id structure, by default simply visits type_id's
-    /// Can be used to dispatch to primitives instead of the type maps to these
-    fn walk_lad_type_id(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A mutable reference to a value of the type, by default [`Self::visit_type_id`]
+    fn visit_mut(&mut self, type_id: &LadTypeId) -> Self::Output {
+        self.visit_type_id(type_id)
     }
 
-    /// traverse a `Ref` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_ref(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A value of the type, by default [`Self::visit_type_id`]
+    fn visit_val(&mut self, type_id: &LadTypeId) -> Self::Output {
+        self.visit_type_id(type_id)
     }
 
-    /// traverse a `Mut` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_mut(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A type converted in a way the LAD file can't describe, by default [`Self::visit_type_id`]
+    fn visit_unknown(&mut self, type_id: &LadTypeId) -> Self::Output {
+        self.visit_type_id(type_id)
     }
 
-    /// traverse a `Val` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_val(&mut self, type_id: &LadTypeId) {
-        self.visit_lad_type_id(type_id);
+    /// A value which might also be an error, by default the value itself
+    fn visit_interop_result(&mut self, inner: &LadTypeKind) -> Self::Output {
+        self.visit(inner)
     }
 
-    /// traverse an `Option` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_option(&mut self, inner: &LadFieldOrVariableKind) {
-        self.visit(inner);
-    }
+    /// An optional value
+    fn visit_option(&mut self, inner: &LadTypeKind) -> Self::Output;
 
-    /// traverse a `Vec` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_vec(&mut self, inner: &LadFieldOrVariableKind) {
-        self.visit(inner);
-    }
+    /// A list
+    fn visit_vec(&mut self, inner: &LadTypeKind) -> Self::Output;
 
-    /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
-    fn walk_hash_map(&mut self, key: &LadFieldOrVariableKind, value: &LadFieldOrVariableKind) {
-        self.visit(key);
-        self.visit(value);
-    }
+    /// A fixed size array
+    fn visit_array(&mut self, inner: &LadTypeKind, size: usize) -> Self::Output;
 
-    /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
-    fn walk_hash_set(&mut self, key: &LadFieldOrVariableKind) {
-        self.visit(key);
-    }
+    /// A map
+    fn visit_hash_map(&mut self, key: &LadTypeKind, value: &LadTypeKind) -> Self::Output;
 
-    /// traverse an `InteropResult` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_interop_result(&mut self, inner: &LadFieldOrVariableKind) {
-        self.visit(inner);
-    }
+    /// A set
+    fn visit_hash_set(&mut self, inner: &LadTypeKind) -> Self::Output;
 
-    /// traverse a tuple of arguments, by default calls `visit` on each argument
-    fn walk_tuple(&mut self, inner: &[LadFieldOrVariableKind]) {
-        for arg in inner {
-            self.visit(arg);
-        }
-    }
+    /// A tuple
+    fn visit_tuple(&mut self, inner: &[LadTypeKind]) -> Self::Output;
 
-    /// traverse an array of arguments, by default calls `visit` on the inner argument
-    fn walk_array(&mut self, inner: &LadFieldOrVariableKind, size: usize) {
-        self.visit(inner);
-    }
+    /// Any number of values of any type
+    fn visit_untyped_tuple(&mut self) -> Self::Output;
 
-    /// traverse a primitive argument, by default calls `visit` on the primitive kind
-    fn walk_primitive(&mut self, primitive_kind: &ReflectionPrimitiveKind) {
-        self.visit_lad_bms_primitive_kind(primitive_kind);
-    }
+    /// One of many types
+    fn visit_union(&mut self, inner: &[LadTypeKind]) -> Self::Output;
 
-    /// traverse a union of arguments, by default calls `visit` on each argument
-    fn walk_union(&mut self, inner: &[LadFieldOrVariableKind]) {
-        for arg in inner {
-            self.visit(arg);
-        }
-    }
+    /// A table of the fields of a type, or of a variant of an enum
+    fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) -> Self::Output;
 
-    /// traverse an unknown argument, by default calls `visit` on the type id
-    fn walk_unknown(&mut self, type_id: &LadTypeId) {
-        self.visit_unknown(type_id);
-    }
-
-    /// traverse a table of fields of a type, by default visits the type id
-    fn walk_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
-        self.visit_lad_type_id(type_id);
-    }
-
-    /// Visit an argument kind, by default calls the appropriate walk method on each enum variant.
-    ///
-    /// Each walk variant will walk over nested kinds, and visit the leaf types.
-    ///
-    /// If you want to do something with the parent types, you WILL have to override each individual walk method.
-    fn visit(&mut self, kind: &LadFieldOrVariableKind) {
+    /// Visits a type, dispatching to the method for its kind.
+    fn visit(&mut self, kind: &LadTypeKind) -> Self::Output {
         match kind {
-            LadFieldOrVariableKind::Ref(type_id) => self.walk_ref(type_id),
-            LadFieldOrVariableKind::Mut(type_id) => self.walk_mut(type_id),
-            LadFieldOrVariableKind::Val(type_id) => self.walk_val(type_id),
-            LadFieldOrVariableKind::Option(inner) => self.walk_option(inner),
-            LadFieldOrVariableKind::Vec(inner) => self.walk_vec(inner),
-            LadFieldOrVariableKind::HashMap(key, value) => self.walk_hash_map(key, value),
-            LadFieldOrVariableKind::HashSet(key) => self.walk_hash_set(key),
-            LadFieldOrVariableKind::InteropResult(inner) => self.walk_interop_result(inner),
-            LadFieldOrVariableKind::Tuple(inner) => self.walk_tuple(inner),
-            LadFieldOrVariableKind::Array(inner, size) => self.walk_array(inner, *size),
-            LadFieldOrVariableKind::Primitive(primitive_kind) => {
-                self.walk_primitive(primitive_kind)
-            }
-            LadFieldOrVariableKind::Union(inner) => self.walk_union(inner),
-            LadFieldOrVariableKind::Unknown(type_id) => self.walk_unknown(type_id),
-            LadFieldOrVariableKind::UntypedTuple => self.visit_untyped_tuple(),
-            LadFieldOrVariableKind::Fields { type_id, variant } => {
-                self.walk_fields(type_id, variant.as_deref())
+            LadTypeKind::Ref(type_id) => self.visit_ref(type_id),
+            LadTypeKind::Mut(type_id) => self.visit_mut(type_id),
+            LadTypeKind::Val(type_id) => self.visit_val(type_id),
+            LadTypeKind::Unknown(type_id) => self.visit_unknown(type_id),
+            LadTypeKind::Primitive(primitive_kind) => self.visit_primitive(primitive_kind),
+            LadTypeKind::Option(inner) => self.visit_option(inner),
+            LadTypeKind::Vec(inner) => self.visit_vec(inner),
+            LadTypeKind::Array(inner, size) => self.visit_array(inner, *size),
+            LadTypeKind::HashMap(key, value) => self.visit_hash_map(key, value),
+            LadTypeKind::HashSet(inner) => self.visit_hash_set(inner),
+            LadTypeKind::InteropResult(inner) => self.visit_interop_result(inner),
+            LadTypeKind::Tuple(inner) => self.visit_tuple(inner),
+            LadTypeKind::UntypedTuple => self.visit_untyped_tuple(),
+            LadTypeKind::Union(inner) => self.visit_union(inner),
+            LadTypeKind::Fields { type_id, variant } => {
+                self.visit_fields(type_id, variant.as_deref())
             }
         }
     }
@@ -759,7 +777,7 @@ pub enum LadVariant {
 pub struct LadField {
     /// The type of the field.
     #[serde(rename = "type")]
-    pub type_: LadFieldOrVariableKind,
+    pub type_: LadTypeKind,
     /// True if the type of the field has a registered `Default` implementation.
     #[serde(skip_serializing_if = "is_false", default)]
     pub has_default: bool,
@@ -772,7 +790,7 @@ pub struct LadNamedField {
     pub name: String,
     #[serde(rename = "type")]
     /// The type of the field.
-    pub type_: LadFieldOrVariableKind,
+    pub type_: LadTypeKind,
     /// True if the type of the field has a registered `Default` implementation.
     #[serde(skip_serializing_if = "is_false", default)]
     pub has_default: bool,

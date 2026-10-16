@@ -18,65 +18,45 @@ use crate::{
     error::InteropError,
 };
 
+/// Implements the script argument and return traits for a reference standing in for the bound type, documented as the given placeholder.
+macro_rules! impl_bound_reference {
+    ($ty:ident, $placeholder:ident) => {
+        impl IntoScript for $ty {
+            fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+                self.0.into_script(world)
+            }
+        }
+
+        impl FromScript for $ty {
+            type This<'w> = Self;
+
+            fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+                ReflectReference::from_script(value, world).map($ty)
+            }
+        }
+
+        impl TypedThrough for $ty {
+            fn through_type_info() -> ThroughTypeInfo {
+                ThroughTypeInfo::Bound(BoundPlaceholder::$placeholder)
+            }
+        }
+
+        impl ArgMeta for $ty {}
+
+        impl GetTypeDependencies for $ty {
+            type Underlying = ReflectReference;
+            fn register_type_dependencies(_registry: &mut TypeRegistry) {}
+        }
+    };
+}
+
 /// A value of the type a shared function is bound to.
 pub struct BoundValue(pub ReflectReference);
-
-impl IntoScript for BoundValue {
-    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        self.0.into_script(world)
-    }
-}
-
-impl TypedThrough for BoundValue {
-    fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::Bound(BoundPlaceholder::Value)
-    }
-}
-
-impl FromScript for BoundValue {
-    type This<'w> = Self;
-
-    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
-        ReflectReference::from_script(value, world).map(BoundValue)
-    }
-}
-
-impl ArgMeta for BoundValue {}
-
-impl GetTypeDependencies for BoundValue {
-    type Underlying = ReflectReference;
-    fn register_type_dependencies(_registry: &mut TypeRegistry) {}
-}
+impl_bound_reference!(BoundValue, Value);
 
 /// A handle to an asset of the type a shared function is bound to, i.e. `Handle<Image>` for `Image`.
 pub struct BoundHandle(pub ReflectReference);
-
-impl IntoScript for BoundHandle {
-    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        self.0.into_script(world)
-    }
-}
-
-impl FromScript for BoundHandle {
-    type This<'w> = Self;
-
-    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
-        ReflectReference::from_script(value, world).map(BoundHandle)
-    }
-}
-
-impl ArgMeta for BoundHandle {}
-
-impl TypedThrough for BoundHandle {
-    fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::Bound(BoundPlaceholder::Handle)
-    }
-}
-
-impl GetTypeDependencies for BoundHandle {
-    type Underlying = ReflectReference;
-    fn register_type_dependencies(_registry: &mut TypeRegistry) {}
-}
+impl_bound_reference!(BoundHandle, Handle);
 
 /// Whether the type is registered as an asset, i.e. with `App::register_asset_reflect`.
 pub fn is_asset_type(registry: &TypeRegistry, type_id: TypeId) -> bool {

@@ -7,10 +7,10 @@
 ---@field  generic? OpaqueGenericType<integer>
 local HoldsOpaqueType = {}
 
----@param p1 HoldsOpaqueType
----@param p2 OpaqueGenericType<integer>
+---@param arg1 HoldsOpaqueType
+---@param arg2 OpaqueGenericType<integer>
 ---@return OpaqueGenericType<integer>
-function HoldsOpaqueType.swap_generic(p1,p2) end
+function HoldsOpaqueType.swap_generic(arg1,arg2) end
 
 
 
@@ -19,10 +19,10 @@ function HoldsOpaqueType.swap_generic(p1,p2) end
 ---@field  int_field? integer
 local PlainStructType = {}
 
----@param p1 PlainStructType
----@param p2 integer
+---@param arg1 PlainStructType
+---@param arg2 integer
 ---@return any
-function PlainStructType.plain_struct_function(p1,p2) end
+function PlainStructType.plain_struct_function(arg1,arg2) end
 
 
 

@@ -12,5 +12,5 @@
 
 | Name | Type | Documentation |
 | --- | --- | --- |
-| **arg0** | [Usize](../types/usize.md) | No Documentation 🚧 |
+| **return** | [Usize](../types/usize.md) | No Documentation 🚧 |
 
