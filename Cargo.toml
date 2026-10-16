@@ -42,8 +42,6 @@ default = [
     "bevy_transform_bindings",
     "bevy_color_bindings",
     "bevy_core_pipeline_bindings",
-    "bevy_curve_bindings",
-    "bevy_shape_bindings",
 ]
 
 
@@ -73,7 +71,6 @@ bevy_color_bindings = ["bevy_mod_scripting_functions/bevy_color"]
 bevy_core_pipeline_bindings = [
     "bevy_mod_scripting_functions/bevy_core_pipeline",
 ]
-bevy_curve_bindings = ["bevy_mod_scripting_functions/bevy_curve"]
 bevy_ecs_bindings = ["bevy_mod_scripting_functions/bevy_ecs"]
 bevy_gizmos_bindings = ["bevy_mod_scripting_functions/bevy_gizmos"]
 bevy_gltf_bindings = ["bevy_mod_scripting_functions/bevy_gltf"]
@@ -89,7 +86,6 @@ bevy_post_process_bindings = ["bevy_mod_scripting_functions/bevy_post_process"]
 bevy_reflect_bindings = ["bevy_mod_scripting_functions/bevy_reflect"]
 bevy_render_bindings = ["bevy_mod_scripting_functions/bevy_render"]
 bevy_scene_bindings = ["bevy_mod_scripting_functions/bevy_scene"]
-bevy_shape_bindings = ["bevy_mod_scripting_functions/bevy_shape"]
 bevy_sprite_bindings = ["bevy_mod_scripting_functions/bevy_sprite"]
 bevy_sprite_render_bindings = [
     "bevy_mod_scripting_functions/bevy_sprite_render",
@@ -158,6 +154,8 @@ bevy_mod_scripting_world = { path = "crates/bevy_mod_scripting_world", version =
 
 bevy = { version = "0.20", default-features = false }
 bevy_math = { version = "0.20", default-features = false, features = ["std"] }
+bevy_shape = { version = "0.20", default-features = false, features = ["std"] }
+bevy_curve = { version = "0.20", default-features = false, features = ["std"] }
 bevy_transform = { version = "0.20", default-features = false }
 bevy_reflect = { version = "0.20", default-features = false }
 bevy_ecs = { version = "0.20", default-features = false }

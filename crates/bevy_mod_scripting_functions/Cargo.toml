@@ -18,7 +18,6 @@ bevy_asset = ["bevy_asset_bms_bindings"]
 bevy_camera = ["bevy_camera_bms_bindings"]
 bevy_color = ["bevy_color_bms_bindings"]
 bevy_core_pipeline = ["bevy_core_pipeline_bms_bindings"]
-bevy_curve = ["bevy_curve_bms_bindings"]
 bevy_ecs = ["bevy_ecs_bms_bindings"]
 bevy_gizmos = ["bevy_gizmos_bms_bindings"]
 bevy_gltf = ["bevy_gltf_bms_bindings"]
@@ -26,7 +25,7 @@ bevy_image = ["bevy_image_bms_bindings"]
 bevy_input = ["bevy_input_bms_bindings"]
 bevy_input_focus = ["bevy_input_focus_bms_bindings"]
 bevy_light = ["bevy_light_bms_bindings"]
-bevy_math = ["bevy_math_bms_bindings"]
+bevy_math = ["bevy_mod_scripting_bevy_math_bindings"]
 bevy_mesh = ["bevy_mesh_bms_bindings"]
 bevy_pbr = ["bevy_pbr_bms_bindings"]
 bevy_picking = ["bevy_picking_bms_bindings"]
@@ -34,7 +33,6 @@ bevy_post_process = ["bevy_post_process_bms_bindings"]
 bevy_reflect = ["bevy_reflect_bms_bindings"]
 bevy_render = ["bevy_render_bms_bindings"]
 bevy_scene = ["bevy_scene_bms_bindings"]
-bevy_shape = ["bevy_shape_bms_bindings"]
 bevy_sprite = ["bevy_sprite_bms_bindings"]
 bevy_sprite_render = ["bevy_sprite_render_bms_bindings"]
 bevy_text = ["bevy_text_bms_bindings"]
@@ -75,7 +73,6 @@ bevy_asset_bms_bindings = { path = "../bindings/bevy_asset_bms_bindings", versio
 bevy_camera_bms_bindings = { path = "../bindings/bevy_camera_bms_bindings", version = "0.23.0", optional = true }
 bevy_color_bms_bindings = { path = "../bindings/bevy_color_bms_bindings", version = "0.23.0", optional = true }
 bevy_core_pipeline_bms_bindings = { path = "../bindings/bevy_core_pipeline_bms_bindings", version = "0.23.0", optional = true }
-bevy_curve_bms_bindings = { path = "../bindings/bevy_curve_bms_bindings", version = "0.23.0", optional = true }
 bevy_ecs_bms_bindings = { path = "../bindings/bevy_ecs_bms_bindings", version = "0.23.0", optional = true }
 bevy_gizmos_bms_bindings = { path = "../bindings/bevy_gizmos_bms_bindings", version = "0.23.0", optional = true }
 bevy_gltf_bms_bindings = { path = "../bindings/bevy_gltf_bms_bindings", version = "0.23.0", optional = true }
@@ -83,7 +80,7 @@ bevy_image_bms_bindings = { path = "../bindings/bevy_image_bms_bindings", versio
 bevy_input_bms_bindings = { path = "../bindings/bevy_input_bms_bindings", version = "0.23.0", optional = true }
 bevy_input_focus_bms_bindings = { path = "../bindings/bevy_input_focus_bms_bindings", version = "0.23.0", optional = true }
 bevy_light_bms_bindings = { path = "../bindings/bevy_light_bms_bindings", version = "0.23.0", optional = true }
-bevy_math_bms_bindings = { path = "../bindings/bevy_math_bms_bindings", version = "0.23.0", optional = true }
+bevy_mod_scripting_bevy_math_bindings = { path = "../bindings/bevy_mod_scripting_bevy_math_bindings", version = "0.23.0", optional = true }
 bevy_mesh_bms_bindings = { path = "../bindings/bevy_mesh_bms_bindings", version = "0.23.0", optional = true }
 bevy_pbr_bms_bindings = { path = "../bindings/bevy_pbr_bms_bindings", version = "0.23.0", optional = true }
 bevy_picking_bms_bindings = { path = "../bindings/bevy_picking_bms_bindings", version = "0.23.0", optional = true }
@@ -91,7 +88,6 @@ bevy_post_process_bms_bindings = { path = "../bindings/bevy_post_process_bms_bin
 bevy_reflect_bms_bindings = { path = "../bindings/bevy_reflect_bms_bindings", version = "0.23.0", optional = true }
 bevy_render_bms_bindings = { path = "../bindings/bevy_render_bms_bindings", version = "0.23.0", optional = true }
 bevy_scene_bms_bindings = { path = "../bindings/bevy_scene_bms_bindings", version = "0.23.0", optional = true }
-bevy_shape_bms_bindings = { path = "../bindings/bevy_shape_bms_bindings", version = "0.23.0", optional = true }
 bevy_sprite_bms_bindings = { path = "../bindings/bevy_sprite_bms_bindings", version = "0.23.0", optional = true }
 bevy_sprite_render_bms_bindings = { path = "../bindings/bevy_sprite_render_bms_bindings", version = "0.23.0", optional = true }
 bevy_text_bms_bindings = { path = "../bindings/bevy_text_bms_bindings", version = "0.23.0", optional = true }
