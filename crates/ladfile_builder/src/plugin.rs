@@ -17,7 +17,7 @@ use bevy_mod_scripting_bindings::{
     into_through_type_info_with_registry,
 };
 use bevy_reflect::TypeInfo;
-use ladfile::{LadFieldOrVariableKind, LadFilePlugin, default_importance};
+use ladfile::{LadFilePlugin, LadTypeKind, default_importance};
 
 use crate::LadFileBuilder;
 
@@ -249,7 +249,7 @@ pub fn generate_lad_file(
             builder.add_through_type_info(type_info);
             builder.lad_type_kind_from_through_type(type_info)
         } else {
-            LadFieldOrVariableKind::Val(builder.lad_id_from_type_id(global.type_id))
+            LadTypeKind::Val(builder.lad_id_from_type_id(global.type_id))
         };
 
         builder.add_instance_manually(key.to_string(), false, kind);
@@ -456,25 +456,20 @@ mod test {
             assert_eq!(new.arguments[0].name.as_deref(), Some("payload"));
             assert_eq!(
                 new.arguments[0].kind,
-                LadFieldOrVariableKind::Fields {
+                LadTypeKind::Fields {
                     type_id: type_id.clone(),
                     variant: None
                 }
             );
-            assert_eq!(new.return_type.kind, LadFieldOrVariableKind::Val(type_id));
+            assert_eq!(new.return_type.kind, LadTypeKind::Val(type_id));
         }
 
         // the original keeps its receiver, and is documented as it is at runtime
-        let generic_fields = LadFieldOrVariableKind::HashMap(
-            Box::new(LadFieldOrVariableKind::Primitive(
-                ReflectionPrimitiveKind::String,
-            )),
-            Box::new(LadFieldOrVariableKind::Primitive(
-                ReflectionPrimitiveKind::ScriptValue,
-            )),
+        let generic_fields = LadTypeKind::HashMap(
+            Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::String)),
+            Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::ScriptValue)),
         );
-        let generic_value =
-            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::ReflectReference);
+        let generic_value = LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference);
         let new = function(&file, "StaticTypeRef", "new").expect("`new` missing on StaticTypeRef");
         assert_eq!(new.arguments[0].name.as_deref(), Some("type"));
         assert_eq!(new.arguments[1].kind, generic_fields);
@@ -507,15 +502,12 @@ mod test {
             assert_eq!(new.arguments[0].name.as_deref(), Some("variant"));
             assert_eq!(
                 new.arguments[1].kind,
-                LadFieldOrVariableKind::Fields {
+                LadTypeKind::Fields {
                     type_id: enum_id.clone(),
                     variant: Some(variant.into())
                 }
             );
-            assert_eq!(
-                new.return_type.kind,
-                LadFieldOrVariableKind::Val(enum_id.clone())
-            );
+            assert_eq!(new.return_type.kind, LadTypeKind::Val(enum_id.clone()));
         }
 
         // variants are not types, so their functions are not associated with the enum
@@ -535,12 +527,12 @@ mod test {
         let own = function(&file, "TestStruct", "describe").unwrap();
         assert_eq!(
             own.return_type.kind,
-            LadFieldOrVariableKind::Primitive(ladfile::ReflectionPrimitiveKind::Usize)
+            LadTypeKind::Primitive(ladfile::ReflectionPrimitiveKind::Usize)
         );
         let shared = function(&file, "TestEnum", "describe").unwrap();
         assert_eq!(
             shared.return_type.kind,
-            LadFieldOrVariableKind::Val(type_id(&file, "TestEnum"))
+            LadTypeKind::Val(type_id(&file, "TestEnum"))
         );
     }
 

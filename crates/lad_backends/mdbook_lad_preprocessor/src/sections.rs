@@ -1,8 +1,8 @@
 use std::{borrow::Cow, path::PathBuf};
 
 use ladfile::{
-    LadArgument, LadFieldOrVariableKind, LadFile, LadFunction, LadFunctionNamespace,
-    LadGenericType, LadInstance, LadTypeDefinition, LadTypeId, LadTypeLayout, LadVisitable,
+    LadArgument, LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstance,
+    LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout, LadVisitable,
     ReflectionPrimitiveKind,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
@@ -904,9 +904,7 @@ impl IntoMarkdown for SectionItem<'_> {
                 if function.arguments.iter().any(|a| {
                     matches!(
                         a.kind,
-                        LadFieldOrVariableKind::Primitive(
-                            ReflectionPrimitiveKind::FunctionCallContext
-                        )
+                        LadTypeKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
                     )
                 }) {
                     builder.raw(
@@ -970,7 +968,7 @@ fn build_lad_function_argument_row(
     // we exclude function call context as it's not something scripts pass down
     if matches!(
         arg.kind,
-        LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
+        LadTypeKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
     ) {
         return;
     }

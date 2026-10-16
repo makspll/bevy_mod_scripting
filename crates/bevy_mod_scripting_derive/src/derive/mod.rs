@@ -5,6 +5,7 @@ mod get_type_dependencies;
 mod into_script;
 mod script_bindings;
 mod script_globals;
+mod script_type;
 mod typed_through;
 
 use proc_macro2::{Span, TokenStream};
@@ -14,7 +15,8 @@ use syn::{Ident, ImplItemFn, ItemImpl};
 pub use self::{
     arg_meta::arg_meta, debug_with_type_info::debug_with_type_info, from_script::from_script,
     get_type_dependencies::get_type_dependencies, into_script::into_script,
-    script_bindings::script_bindings, script_globals::script_globals, typed_through::typed_through,
+    script_bindings::script_bindings, script_globals::script_globals, script_type::script_type,
+    typed_through::typed_through,
 };
 
 #[allow(dead_code)]

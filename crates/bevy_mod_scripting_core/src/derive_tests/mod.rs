@@ -1,6 +1,6 @@
 use bevy_ecs::world::World;
 use bevy_mod_scripting_derive::{
-    ArgMeta, FromScript, GetTypeDependencies, IntoScript, TypedThrough, script_bindings,
+    ArgMeta, FromScript, GetTypeDependencies, IntoScript, ScriptType, TypedThrough, script_bindings,
 };
 use bevy_reflect::{Reflect, TypeRegistry, Typed};
 
@@ -12,6 +12,14 @@ use bevy_reflect::{Reflect, TypeRegistry, Typed};
 #[from_script(bms_bindings_path = "bevy_mod_scripting_bindings")]
 #[arg_meta(bms_bindings_path = "bevy_mod_scripting_bindings")]
 pub struct MyThing(usize);
+
+#[derive(Clone, ScriptType, Reflect)]
+#[typed_through(bms_bindings_path = "bevy_mod_scripting_bindings")]
+#[get_type_dependencies(bms_bindings_path = "bevy_mod_scripting_bindings")]
+#[into_script(bms_bindings_path = "bevy_mod_scripting_bindings")]
+#[from_script(bms_bindings_path = "bevy_mod_scripting_bindings")]
+#[arg_meta(bms_bindings_path = "bevy_mod_scripting_bindings")]
+pub struct MyValue(usize);
 
 #[script_bindings(remote, bms_bindings_path = "bevy_mod_scripting_bindings")]
 impl MyThing {
@@ -30,13 +38,21 @@ mod tests {
     use bevy_mod_scripting_world::WorldAccessGuard;
     use bevy_reflect::TypeRegistry;
 
-    use crate::derive_tests::{MyThing, register_functions};
+    use crate::derive_tests::{MyThing, MyValue, register_functions};
 
     #[test]
     pub fn typed_through_represents_self() {
         let info = MyThing::through_type_info();
         assert!(
-            matches!(info, ThroughTypeInfo::TypeInfo(info) if info.type_id() == TypeId::of::<MyThing>())
+            matches!(info, ThroughTypeInfo::Opaque(info) if info.type_id() == TypeId::of::<MyThing>())
+        );
+    }
+
+    #[test]
+    pub fn script_type_with_derived_conversions_is_a_value() {
+        let info = MyValue::through_type_info();
+        assert!(
+            matches!(info, ThroughTypeInfo::Val(info) if info.type_id() == TypeId::of::<MyValue>())
         );
     }
 

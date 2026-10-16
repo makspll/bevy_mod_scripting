@@ -3,9 +3,34 @@
 mod derive;
 
 #[proc_macro_derive(TypedThrough, attributes(typed_through))]
-/// Default implementation for the `TypedThrough` trait
+/// Documents a type used directly in script function signatures by its own type information.
+///
+/// The type is documented as opaque, as its `FromScript`/`IntoScript` implementations decide how scripts see it.
+/// If those are derived (so they behave like `V<Self>`), use `#[typed_through(value)]` to document it as a value, or derive `ScriptType` instead.
 pub fn typed_through(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     derive::typed_through(input.into()).into()
+}
+
+#[proc_macro_derive(
+    ScriptType,
+    attributes(
+        script_type,
+        typed_through,
+        arg_meta,
+        from_script,
+        into_script,
+        get_type_dependencies
+    )
+)]
+/// Implements everything a reflected type needs to be used directly in script function signatures, i.e. `fn f(v: MyType)` instead of `fn f(v: V<MyType>)`:
+/// `FromScript`, `IntoScript`, `ArgMeta`, `GetTypeDependencies` and `TypedThrough`.
+///
+/// The conversions go through `V<Self>`, so the type is documented as a value. For a conversion written by hand,
+/// use `#[script_type(from = custom)]` and/or `#[script_type(into = custom)]`: that implementation is skipped, and the type is documented as opaque.
+///
+/// The other attributes of the individual derives, i.e. `#[get_type_dependencies(bms_bindings_path = "..")]`, still apply.
+pub fn script_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::script_type(input.into()).into()
 }
 
 #[proc_macro_derive(ArgMeta, attributes(arg_meta))]

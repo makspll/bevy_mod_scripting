@@ -120,25 +120,21 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
     }
 
-    fn walk_option(&mut self, inner: &ladfile::LadFieldOrVariableKind) {
+    fn walk_option(&mut self, inner: &ladfile::LadTypeKind) {
         // Write Optional<inner>
         self.buffer.text("Optional<");
         self.visit(inner);
         self.buffer.text(">");
     }
 
-    fn walk_vec(&mut self, inner: &ladfile::LadFieldOrVariableKind) {
+    fn walk_vec(&mut self, inner: &ladfile::LadTypeKind) {
         // Write Vec<inner>
         self.buffer.text("Vec<");
         self.visit(inner);
         self.buffer.text(">");
     }
 
-    fn walk_hash_map(
-        &mut self,
-        key: &ladfile::LadFieldOrVariableKind,
-        value: &ladfile::LadFieldOrVariableKind,
-    ) {
+    fn walk_hash_map(&mut self, key: &ladfile::LadTypeKind, value: &ladfile::LadTypeKind) {
         // Write HashMap<key, value>
         self.buffer.text("HashMap<");
         self.visit(key);
@@ -147,7 +143,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text(">");
     }
 
-    fn walk_tuple(&mut self, inner: &[ladfile::LadFieldOrVariableKind]) {
+    fn walk_tuple(&mut self, inner: &[ladfile::LadTypeKind]) {
         // Write (inner1, inner2, ...)
         self.buffer.text("(");
         for (idx, arg) in inner.iter().enumerate() {
@@ -159,7 +155,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text(")");
     }
 
-    fn walk_union(&mut self, inner: &[ladfile::LadFieldOrVariableKind]) {
+    fn walk_union(&mut self, inner: &[ladfile::LadTypeKind]) {
         // Write `T1 | T2`
         for (idx, arg) in inner.iter().enumerate() {
             self.visit(arg);
@@ -169,7 +165,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
     }
 
-    fn walk_array(&mut self, inner: &ladfile::LadFieldOrVariableKind, size: usize) {
+    fn walk_array(&mut self, inner: &ladfile::LadTypeKind, size: usize) {
         // Write [inner; size]
         self.buffer.text("[");
         self.visit(inner);
@@ -192,7 +188,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
 
 #[cfg(test)]
 mod test {
-    use ladfile::{LadFieldOrVariableKind, ReflectionPrimitiveKind};
+    use ladfile::{LadTypeKind, ReflectionPrimitiveKind};
 
     use super::*;
 
@@ -284,7 +280,7 @@ mod test {
         let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadFieldOrVariableKind::Ref(first_type_id.clone()));
+        visitor.visit(&LadTypeKind::Ref(first_type_id.clone()));
         assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
@@ -295,7 +291,7 @@ mod test {
         let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadFieldOrVariableKind::Mut(first_type_id.clone()));
+        visitor.visit(&LadTypeKind::Mut(first_type_id.clone()));
         assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
@@ -306,7 +302,7 @@ mod test {
         let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadFieldOrVariableKind::Val(first_type_id.clone()));
+        visitor.visit(&LadTypeKind::Val(first_type_id.clone()));
         assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
@@ -316,9 +312,9 @@ mod test {
 
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadFieldOrVariableKind::Option(Box::new(
-            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::Bool),
-        )));
+        visitor.visit(&LadTypeKind::Option(Box::new(LadTypeKind::Primitive(
+            ReflectionPrimitiveKind::Bool,
+        ))));
         assert_eq!(visitor.buffer.build(), "Optional<Bool>");
     }
 
@@ -328,9 +324,9 @@ mod test {
 
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadFieldOrVariableKind::Vec(Box::new(
-            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::Bool),
-        )));
+        visitor.visit(&LadTypeKind::Vec(Box::new(LadTypeKind::Primitive(
+            ReflectionPrimitiveKind::Bool,
+        ))));
         assert_eq!(visitor.buffer.build(), "Vec<Bool>");
     }
 
@@ -340,13 +336,9 @@ mod test {
 
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadFieldOrVariableKind::HashMap(
-            Box::new(LadFieldOrVariableKind::Primitive(
-                ReflectionPrimitiveKind::Bool,
-            )),
-            Box::new(LadFieldOrVariableKind::Primitive(
-                ReflectionPrimitiveKind::String,
-            )),
+        visitor.visit(&LadTypeKind::HashMap(
+            Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool)),
+            Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::String)),
         ));
 
         assert_eq!(visitor.buffer.build(), "HashMap<Bool, String>");
@@ -359,15 +351,13 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
         let first_type_id = &plain_struct_id();
 
-        visitor.visit(&LadFieldOrVariableKind::HashMap(
-            Box::new(LadFieldOrVariableKind::Primitive(
-                ReflectionPrimitiveKind::Bool,
-            )),
-            Box::new(LadFieldOrVariableKind::Union(vec![
-                LadFieldOrVariableKind::Val(first_type_id.clone()),
-                LadFieldOrVariableKind::Union(vec![
-                    LadFieldOrVariableKind::Val(first_type_id.clone()),
-                    LadFieldOrVariableKind::Val(first_type_id.clone()),
+        visitor.visit(&LadTypeKind::HashMap(
+            Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool)),
+            Box::new(LadTypeKind::Union(vec![
+                LadTypeKind::Val(first_type_id.clone()),
+                LadTypeKind::Union(vec![
+                    LadTypeKind::Val(first_type_id.clone()),
+                    LadTypeKind::Val(first_type_id.clone()),
                 ]),
             ])),
         ));
@@ -383,9 +373,9 @@ mod test {
 
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadFieldOrVariableKind::Tuple(vec![
-            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::Bool),
-            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::String),
+        visitor.visit(&LadTypeKind::Tuple(vec![
+            LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool),
+            LadTypeKind::Primitive(ReflectionPrimitiveKind::String),
         ]));
         assert_eq!(visitor.buffer.build(), "(Bool, String)");
     }
@@ -396,10 +386,8 @@ mod test {
 
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadFieldOrVariableKind::Array(
-            Box::new(LadFieldOrVariableKind::Primitive(
-                ReflectionPrimitiveKind::Bool,
-            )),
+        visitor.visit(&LadTypeKind::Array(
+            Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool)),
             5,
         ));
         assert_eq!(visitor.buffer.build(), "[Bool; 5]");
@@ -413,7 +401,7 @@ mod test {
 
         let first_type_id = &plain_struct_id();
 
-        visitor.visit(&LadFieldOrVariableKind::Unknown(first_type_id.clone()));
+        visitor.visit(&LadTypeKind::Unknown(first_type_id.clone()));
         assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 }

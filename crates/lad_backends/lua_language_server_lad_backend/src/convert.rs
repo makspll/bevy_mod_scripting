@@ -1,8 +1,7 @@
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use indexmap::{IndexMap, IndexSet};
 use ladfile::{
-    ArgumentVisitor, LadFieldOrVariableKind, LadFile, LadFunction, LadTypeId,
-    ReflectionPrimitiveKind,
+    ArgumentVisitor, LadFile, LadFunction, LadTypeId, LadTypeKind, ReflectionPrimitiveKind,
 };
 
 use crate::{
@@ -492,7 +491,7 @@ pub fn lad_function_to_lua_function(
         .filter(|a| {
             !matches!(
                 a.kind,
-                LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
+                LadTypeKind::Primitive(ReflectionPrimitiveKind::FunctionCallContext)
             )
         })
         .enumerate()
@@ -508,7 +507,7 @@ pub fn lad_function_to_lua_function(
                     Err(_) => format!("_{ident}"),
                 },
                 lad_instance_to_lua_type(ladfile, &a.kind)?,
-                matches!(a.kind, LadFieldOrVariableKind::Option(..)),
+                matches!(a.kind, LadTypeKind::Option(..)),
                 a.documentation.as_ref().map(|d| d.to_string()),
             ))
         })
@@ -517,9 +516,7 @@ pub fn lad_function_to_lua_function(
     let has_self = match &function.namespace {
         ladfile::LadFunctionNamespace::Type(lad_type_id) => {
             function.arguments.first().is_some_and(|a| match &a.kind {
-                LadFieldOrVariableKind::Ref(i)
-                | LadFieldOrVariableKind::Mut(i)
-                | LadFieldOrVariableKind::Val(i) => lad_type_id == i,
+                LadTypeKind::Ref(i) | LadTypeKind::Mut(i) | LadTypeKind::Val(i) => lad_type_id == i,
                 _ => false,
             })
         }
@@ -547,7 +544,7 @@ pub fn lad_function_to_lua_function(
 
 pub fn to_lua_many(
     ladfile: &LadFile,
-    lad_types: &[ladfile::LadFieldOrVariableKind],
+    lad_types: &[ladfile::LadTypeKind],
 ) -> Result<Vec<LuaType>, anyhow::Error> {
     let lua_types = lad_types
         .iter()
@@ -558,13 +555,13 @@ pub fn to_lua_many(
 
 pub fn lad_instance_to_lua_type(
     ladfile: &LadFile,
-    lad_type: &ladfile::LadFieldOrVariableKind,
+    lad_type: &ladfile::LadTypeKind,
 ) -> Result<LuaType, anyhow::Error> {
     Ok(match &lad_type {
-        ladfile::LadFieldOrVariableKind::Primitive(prim) => lad_primitive_to_lua_type(prim),
-        ladfile::LadFieldOrVariableKind::Ref(lad_type_id)
-        | ladfile::LadFieldOrVariableKind::Mut(lad_type_id)
-        | ladfile::LadFieldOrVariableKind::Val(lad_type_id) => {
+        ladfile::LadTypeKind::Primitive(prim) => lad_primitive_to_lua_type(prim),
+        ladfile::LadTypeKind::Ref(lad_type_id)
+        | ladfile::LadTypeKind::Mut(lad_type_id)
+        | ladfile::LadTypeKind::Val(lad_type_id) => {
             if let Some((generic_type, args)) = ladfile.get_generic_instance(lad_type_id) {
                 LuaType::Generic {
                     name: generic_type.identifier.clone(),
@@ -581,42 +578,42 @@ pub fn lad_instance_to_lua_type(
                 ));
             }
         }
-        ladfile::LadFieldOrVariableKind::Option(lad_type_kind) => LuaType::Union(vec![
+        ladfile::LadTypeKind::Option(lad_type_kind) => LuaType::Union(vec![
             lad_instance_to_lua_type(ladfile, lad_type_kind)?,
             LuaType::Primitive(LuaPrimitiveType::Nil),
         ]),
-        ladfile::LadFieldOrVariableKind::Vec(lad_type_kind) => {
+        ladfile::LadTypeKind::Vec(lad_type_kind) => {
             LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
         }
-        ladfile::LadFieldOrVariableKind::HashMap(key, value) => LuaType::Dictionary {
+        ladfile::LadTypeKind::HashMap(key, value) => LuaType::Dictionary {
             key: Box::new(lad_instance_to_lua_type(ladfile, key)?),
             value: Box::new(lad_instance_to_lua_type(ladfile, value)?),
         },
-        ladfile::LadFieldOrVariableKind::HashSet(key) => LuaType::Dictionary {
+        ladfile::LadTypeKind::HashSet(key) => LuaType::Dictionary {
             key: Box::new(lad_instance_to_lua_type(ladfile, key)?),
             value: Box::new(LuaType::Primitive(LuaPrimitiveType::Boolean)),
         },
-        ladfile::LadFieldOrVariableKind::InteropResult(lad_type_kind) => {
+        ladfile::LadTypeKind::InteropResult(lad_type_kind) => {
             lad_instance_to_lua_type(ladfile, lad_type_kind)? // TODO: currently ignores the possibility of an error type, we should have a custom class abstraction here
         }
-        ladfile::LadFieldOrVariableKind::Tuple(lad_type_kinds) => {
+        ladfile::LadTypeKind::Tuple(lad_type_kinds) => {
             if lad_type_kinds.is_empty() {
                 LuaType::Primitive(LuaPrimitiveType::Nil)
             } else {
                 LuaType::Tuple(to_lua_many(ladfile, lad_type_kinds)?)
             }
         }
-        ladfile::LadFieldOrVariableKind::UntypedTuple => LuaType::Variadic(Box::new(
+        ladfile::LadTypeKind::UntypedTuple => LuaType::Variadic(Box::new(
             lad_primitive_to_lua_type(&ReflectionPrimitiveKind::ScriptValue),
         )),
-        ladfile::LadFieldOrVariableKind::Array(lad_type_kind, _) => {
+        ladfile::LadTypeKind::Array(lad_type_kind, _) => {
             LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
         }
-        ladfile::LadFieldOrVariableKind::Union(lad_type_kinds) => {
+        ladfile::LadTypeKind::Union(lad_type_kinds) => {
             LuaType::Union(to_lua_many(ladfile, lad_type_kinds)?)
         }
-        ladfile::LadFieldOrVariableKind::Unknown(_) => LuaType::Any,
-        ladfile::LadFieldOrVariableKind::Fields { type_id, variant } => {
+        ladfile::LadTypeKind::Unknown(_) => LuaType::Any,
+        ladfile::LadTypeKind::Fields { type_id, variant } => {
             let variant = variant.as_deref();
             if is_enum_payload(ladfile, type_id, variant) {
                 LuaType::Primitive(LuaPrimitiveType::Table)
@@ -638,11 +635,8 @@ fn lad_generic_argument_to_lua_type(ladfile: &LadFile, type_id: &LadTypeId) -> L
     if !ladfile.types.contains_key(type_id) {
         return LuaType::Any;
     }
-    lad_instance_to_lua_type(
-        ladfile,
-        &ladfile::LadFieldOrVariableKind::Val(type_id.clone()),
-    )
-    .unwrap_or(LuaType::Any)
+    lad_instance_to_lua_type(ladfile, &ladfile::LadTypeKind::Val(type_id.clone()))
+        .unwrap_or(LuaType::Any)
 }
 
 /// The class scripts see for enum variants, which variant classes extend.
@@ -823,7 +817,7 @@ fn fields_module(
         .ok_or_else(|| anyhow::anyhow!("Type not found: {type_id}"))?;
     let type_name = ladfile.get_type_identifier(type_id, None);
 
-    let field = |name: String, ty: &LadFieldOrVariableKind, has_default: bool| ClassField {
+    let field = |name: String, ty: &LadTypeKind, has_default: bool| ClassField {
         name,
         ty: lad_instance_to_lua_type(ladfile, ty).unwrap_or_else(|e| {
             log::warn!("error converting field of {class_name}: {e}");
@@ -1030,7 +1024,7 @@ mod test {
         LadTypeLayout,
     };
 
-    fn arg(name: &'static str, kind: LadFieldOrVariableKind) -> LadArgument {
+    fn arg(name: &'static str, kind: LadTypeKind) -> LadArgument {
         LadArgument {
             kind,
             documentation: None,
@@ -1042,7 +1036,7 @@ mod test {
         file: &mut LadFile,
         namespace: LadFunctionNamespace,
         arguments: Vec<LadArgument>,
-        return_kind: LadFieldOrVariableKind,
+        return_kind: LadTypeKind,
     ) {
         let id = LadFunctionId::new_string_id(format!("{namespace:?}::new"));
         if let LadFunctionNamespace::Type(type_id) = &namespace {
@@ -1092,12 +1086,12 @@ mod test {
             LadFunctionNamespace::Type(plain.clone()),
             vec![arg(
                 "payload",
-                LadFieldOrVariableKind::Fields {
+                LadTypeKind::Fields {
                     type_id: plain.clone(),
                     variant: None,
                 },
             )],
-            LadFieldOrVariableKind::Val(plain),
+            LadTypeKind::Val(plain),
         );
 
         // the enum level constructor, `EnumType.new{ variant = ..., ... }`
@@ -1107,12 +1101,12 @@ mod test {
             LadFunctionNamespace::Type(enum_type.clone()),
             vec![arg(
                 "payload",
-                LadFieldOrVariableKind::Fields {
+                LadTypeKind::Fields {
                     type_id: enum_type.clone(),
                     variant: None,
                 },
             )],
-            LadFieldOrVariableKind::Val(enum_type.clone()),
+            LadTypeKind::Val(enum_type.clone()),
         );
 
         // the generic variant constructor, documented as it is at runtime
@@ -1127,20 +1121,16 @@ mod test {
             &mut file,
             LadFunctionNamespace::Type(variant_ref.clone()),
             vec![
-                arg("variant", LadFieldOrVariableKind::Val(variant_ref.clone())),
+                arg("variant", LadTypeKind::Val(variant_ref.clone())),
                 arg(
                     "payload",
-                    LadFieldOrVariableKind::HashMap(
-                        Box::new(LadFieldOrVariableKind::Primitive(
-                            ReflectionPrimitiveKind::String,
-                        )),
-                        Box::new(LadFieldOrVariableKind::Primitive(
-                            ReflectionPrimitiveKind::ScriptValue,
-                        )),
+                    LadTypeKind::HashMap(
+                        Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::String)),
+                        Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::ScriptValue)),
                     ),
                 ),
             ],
-            LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::ReflectReference),
+            LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference),
         );
 
         // and bound to each variant by the builder
@@ -1152,16 +1142,16 @@ mod test {
                     variant: variant.into(),
                 },
                 vec![
-                    arg("variant", LadFieldOrVariableKind::Val(variant_ref.clone())),
+                    arg("variant", LadTypeKind::Val(variant_ref.clone())),
                     arg(
                         "payload",
-                        LadFieldOrVariableKind::Fields {
+                        LadTypeKind::Fields {
                             type_id: enum_type.clone(),
                             variant: Some(variant.into()),
                         },
                     ),
                 ],
-                LadFieldOrVariableKind::Val(enum_type.clone()),
+                LadTypeKind::Val(enum_type.clone()),
             );
         }
         file
@@ -1250,10 +1240,10 @@ mod test {
                 overload_index: None,
                 arguments: vec![arg(
                     "path",
-                    LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::String),
+                    LadTypeKind::Primitive(ReflectionPrimitiveKind::String),
                 )],
                 return_type: LadArgument {
-                    kind: LadFieldOrVariableKind::Primitive(ReflectionPrimitiveKind::ScriptValue),
+                    kind: LadTypeKind::Primitive(ReflectionPrimitiveKind::ScriptValue),
                     documentation: None,
                     name: None,
                 },
@@ -1427,7 +1417,7 @@ mod test {
         );
 
         assert_eq!(
-            lad_instance_to_lua_type(&file, &LadFieldOrVariableKind::Val(nested))
+            lad_instance_to_lua_type(&file, &LadTypeKind::Val(nested))
                 .map(|ty| format!("{ty:?}"))
                 .unwrap(),
             format!(
@@ -1442,7 +1432,7 @@ mod test {
             )
         );
         assert_eq!(
-            lad_instance_to_lua_type(&file, &LadFieldOrVariableKind::Val(unknown))
+            lad_instance_to_lua_type(&file, &LadTypeKind::Val(unknown))
                 .map(|ty| format!("{ty:?}"))
                 .unwrap(),
             format!(
@@ -1462,9 +1452,7 @@ mod test {
         assert!(file.types[&generic_struct].generic_type.is_none());
 
         // there is no class for the type to refer to
-        assert!(
-            lad_instance_to_lua_type(&file, &LadFieldOrVariableKind::Val(generic_struct)).is_err()
-        );
+        assert!(lad_instance_to_lua_type(&file, &LadTypeKind::Val(generic_struct)).is_err());
         let rendered = render(&file);
         assert!(
             !rendered.contains("---@class GenericStructType"),

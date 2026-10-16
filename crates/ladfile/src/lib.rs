@@ -178,7 +178,7 @@ impl Default for LadFile {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LadInstance {
     /// The kind of the instance
-    pub type_kind: LadFieldOrVariableKind,
+    pub type_kind: LadTypeKind,
 
     /// whether the instance is static or not
     ///
@@ -286,7 +286,7 @@ impl LadFunctionNamespace {
 /// An argument definition used in a LAD file.
 pub struct LadArgument {
     /// The kind and type of argument
-    pub kind: LadFieldOrVariableKind,
+    pub kind: LadTypeKind,
 
     /// The provided documentation for this argument. Normally derived from the function docstring.
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -308,7 +308,7 @@ pub struct LadArgument {
 ///
 /// In generating documents, it's convenient to distinguish a few core "containers" to provide useful information.
 #[serde(rename_all = "camelCase")]
-pub enum LadFieldOrVariableKind {
+pub enum LadTypeKind {
     /// a `Ref` wrapped argument
     Ref(LadTypeId),
     /// a `Mut` wrapped argument
@@ -316,25 +316,25 @@ pub enum LadFieldOrVariableKind {
     /// a `Val` wrapped argument
     Val(LadTypeId),
     /// an `Option` wrapped argument
-    Option(Box<LadFieldOrVariableKind>),
+    Option(Box<LadTypeKind>),
     /// a `Vec`
-    Vec(Box<LadFieldOrVariableKind>),
+    Vec(Box<LadTypeKind>),
     /// a `HashMap`
-    HashMap(Box<LadFieldOrVariableKind>, Box<LadFieldOrVariableKind>),
+    HashMap(Box<LadTypeKind>, Box<LadTypeKind>),
     /// a `HashSet`
-    HashSet(Box<LadFieldOrVariableKind>),
+    HashSet(Box<LadTypeKind>),
     /// A `InteropResult`
-    InteropResult(Box<LadFieldOrVariableKind>),
+    InteropResult(Box<LadTypeKind>),
     /// A tuple of arguments
-    Tuple(Vec<LadFieldOrVariableKind>),
+    Tuple(Vec<LadTypeKind>),
     /// A variadic tuple
     UntypedTuple,
     /// An array
-    Array(Box<LadFieldOrVariableKind>, usize),
+    Array(Box<LadTypeKind>, usize),
     /// A primitive type, implementing `IntoScript` and `FromScript` natively in BMS.
     Primitive(ReflectionPrimitiveKind),
     /// A union of two or more types
-    Union(Vec<LadFieldOrVariableKind>),
+    Union(Vec<LadTypeKind>),
     /// An arbitrary type which is either unsupported, doesn't contain type information, or is generally unknown.
     ///
     /// This will be the variant used for external primitives as well.
@@ -364,7 +364,7 @@ impl LadVisitable for LadTypeId {
     }
 }
 
-impl LadVisitable for LadFieldOrVariableKind {
+impl LadVisitable for LadTypeKind {
     fn accept(&self, visitor: &mut dyn ArgumentVisitor) {
         visitor.visit(self);
     }
@@ -411,40 +411,40 @@ pub trait ArgumentVisitor {
     }
 
     /// traverse an `Option` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_option(&mut self, inner: &LadFieldOrVariableKind) {
+    fn walk_option(&mut self, inner: &LadTypeKind) {
         self.visit(inner);
     }
 
     /// traverse a `Vec` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_vec(&mut self, inner: &LadFieldOrVariableKind) {
+    fn walk_vec(&mut self, inner: &LadTypeKind) {
         self.visit(inner);
     }
 
     /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
-    fn walk_hash_map(&mut self, key: &LadFieldOrVariableKind, value: &LadFieldOrVariableKind) {
+    fn walk_hash_map(&mut self, key: &LadTypeKind, value: &LadTypeKind) {
         self.visit(key);
         self.visit(value);
     }
 
     /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
-    fn walk_hash_set(&mut self, key: &LadFieldOrVariableKind) {
+    fn walk_hash_set(&mut self, key: &LadTypeKind) {
         self.visit(key);
     }
 
     /// traverse an `InteropResult` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_interop_result(&mut self, inner: &LadFieldOrVariableKind) {
+    fn walk_interop_result(&mut self, inner: &LadTypeKind) {
         self.visit(inner);
     }
 
     /// traverse a tuple of arguments, by default calls `visit` on each argument
-    fn walk_tuple(&mut self, inner: &[LadFieldOrVariableKind]) {
+    fn walk_tuple(&mut self, inner: &[LadTypeKind]) {
         for arg in inner {
             self.visit(arg);
         }
     }
 
     /// traverse an array of arguments, by default calls `visit` on the inner argument
-    fn walk_array(&mut self, inner: &LadFieldOrVariableKind, size: usize) {
+    fn walk_array(&mut self, inner: &LadTypeKind, size: usize) {
         self.visit(inner);
     }
 
@@ -454,7 +454,7 @@ pub trait ArgumentVisitor {
     }
 
     /// traverse a union of arguments, by default calls `visit` on each argument
-    fn walk_union(&mut self, inner: &[LadFieldOrVariableKind]) {
+    fn walk_union(&mut self, inner: &[LadTypeKind]) {
         for arg in inner {
             self.visit(arg);
         }
@@ -475,25 +475,23 @@ pub trait ArgumentVisitor {
     /// Each walk variant will walk over nested kinds, and visit the leaf types.
     ///
     /// If you want to do something with the parent types, you WILL have to override each individual walk method.
-    fn visit(&mut self, kind: &LadFieldOrVariableKind) {
+    fn visit(&mut self, kind: &LadTypeKind) {
         match kind {
-            LadFieldOrVariableKind::Ref(type_id) => self.walk_ref(type_id),
-            LadFieldOrVariableKind::Mut(type_id) => self.walk_mut(type_id),
-            LadFieldOrVariableKind::Val(type_id) => self.walk_val(type_id),
-            LadFieldOrVariableKind::Option(inner) => self.walk_option(inner),
-            LadFieldOrVariableKind::Vec(inner) => self.walk_vec(inner),
-            LadFieldOrVariableKind::HashMap(key, value) => self.walk_hash_map(key, value),
-            LadFieldOrVariableKind::HashSet(key) => self.walk_hash_set(key),
-            LadFieldOrVariableKind::InteropResult(inner) => self.walk_interop_result(inner),
-            LadFieldOrVariableKind::Tuple(inner) => self.walk_tuple(inner),
-            LadFieldOrVariableKind::Array(inner, size) => self.walk_array(inner, *size),
-            LadFieldOrVariableKind::Primitive(primitive_kind) => {
-                self.walk_primitive(primitive_kind)
-            }
-            LadFieldOrVariableKind::Union(inner) => self.walk_union(inner),
-            LadFieldOrVariableKind::Unknown(type_id) => self.walk_unknown(type_id),
-            LadFieldOrVariableKind::UntypedTuple => self.visit_untyped_tuple(),
-            LadFieldOrVariableKind::Fields { type_id, variant } => {
+            LadTypeKind::Ref(type_id) => self.walk_ref(type_id),
+            LadTypeKind::Mut(type_id) => self.walk_mut(type_id),
+            LadTypeKind::Val(type_id) => self.walk_val(type_id),
+            LadTypeKind::Option(inner) => self.walk_option(inner),
+            LadTypeKind::Vec(inner) => self.walk_vec(inner),
+            LadTypeKind::HashMap(key, value) => self.walk_hash_map(key, value),
+            LadTypeKind::HashSet(key) => self.walk_hash_set(key),
+            LadTypeKind::InteropResult(inner) => self.walk_interop_result(inner),
+            LadTypeKind::Tuple(inner) => self.walk_tuple(inner),
+            LadTypeKind::Array(inner, size) => self.walk_array(inner, *size),
+            LadTypeKind::Primitive(primitive_kind) => self.walk_primitive(primitive_kind),
+            LadTypeKind::Union(inner) => self.walk_union(inner),
+            LadTypeKind::Unknown(type_id) => self.walk_unknown(type_id),
+            LadTypeKind::UntypedTuple => self.visit_untyped_tuple(),
+            LadTypeKind::Fields { type_id, variant } => {
                 self.walk_fields(type_id, variant.as_deref())
             }
         }
@@ -759,7 +757,7 @@ pub enum LadVariant {
 pub struct LadField {
     /// The type of the field.
     #[serde(rename = "type")]
-    pub type_: LadFieldOrVariableKind,
+    pub type_: LadTypeKind,
     /// True if the type of the field has a registered `Default` implementation.
     #[serde(skip_serializing_if = "is_false", default)]
     pub has_default: bool,
@@ -772,7 +770,7 @@ pub struct LadNamedField {
     pub name: String,
     #[serde(rename = "type")]
     /// The type of the field.
-    pub type_: LadFieldOrVariableKind,
+    pub type_: LadTypeKind,
     /// True if the type of the field has a registered `Default` implementation.
     #[serde(skip_serializing_if = "is_false", default)]
     pub has_default: bool,
