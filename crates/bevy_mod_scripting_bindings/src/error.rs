@@ -245,11 +245,6 @@ pub enum InteropError {
         /// The actual number of arguments
         got: usize,
     },
-    /// A garbage collected allocation was used
-    GarbageCollectedAllocation {
-        /// The reference to the allocation
-        reference: Box<ReflectReference>,
-    },
     /// An unregistered reflect base was used
     UnregisteredReflectBase {
         /// The base that was unregistered
@@ -471,13 +466,6 @@ impl InteropError {
         Self::ArgumentCountMismatch { expected, got }
     }
 
-    /// Creates a new garbage collected allocation error.
-    pub fn garbage_collected_allocation(reference: ReflectReference) -> Self {
-        Self::GarbageCollectedAllocation {
-            reference: Box::new(reference),
-        }
-    }
-
     /// Creates a new unregistered base error.
     pub fn unregistered_base(base: ReflectBaseType) -> Self {
         Self::UnregisteredReflectBase {
@@ -677,13 +665,6 @@ impl DisplayWithTypeInfo for InteropError {
             }
             InteropError::ArgumentCountMismatch { expected, got } => {
                 write!(f, "Argument count mismatch: expected {expected}, got {got}")
-            }
-            InteropError::GarbageCollectedAllocation { reference } => {
-                write!(
-                    f,
-                    "Garbage collected allocation used: {}",
-                    WithTypeInfo::new_with_opt_info(reference, type_info_provider)
-                )
             }
             InteropError::UnregisteredReflectBase { base } => {
                 write!(

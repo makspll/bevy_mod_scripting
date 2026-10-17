@@ -5,7 +5,7 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 
-use crate::{AccessByteSet, AccessMap, WorldAccessRange};
+use crate::{AccessByteSet, AccessMap, AccessOwner, WorldAccessRange};
 
 use super::access_map::DynamicSystemMeta;
 use ::bevy_ecs::{
@@ -83,7 +83,7 @@ pub trait CachedRegistry: Any {
 }
 
 /// Aliases the type used as the registry cache for the world guard.
-pub type RegistryCache = [Rc<RefCell<dyn Any>>; 7];
+pub type RegistryCache = [Rc<RefCell<dyn Any>>; 6];
 
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {
@@ -137,6 +137,18 @@ impl<'w> WorldAccessGuard<'w> {
     /// Claims write access to the given type.
     pub fn claim_write_access(&self, raid: impl Into<WorldAccessRange>) -> bool {
         self.inner.accesses.claim_write_access(raid)
+    }
+
+    #[track_caller]
+    /// Claims read or write access to a value outside the world, which `owner` keeps alive until the access is released,
+    /// see [`DynamicSystemMeta::claim_access_owned`].
+    pub fn claim_access_owned(
+        &self,
+        raid: impl Into<WorldAccessRange>,
+        write: bool,
+        owner: AccessOwner,
+    ) -> bool {
+        self.inner.accesses.claim_access_owned(raid, write, owner)
     }
 
     /// Releases read or write access to the given type.

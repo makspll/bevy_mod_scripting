@@ -563,11 +563,6 @@ pub fn perform_benchmark_with_generator<
             || {
                 let mut rng_guard = RNG.lock().unwrap();
                 unsafe { world_guard.release_all_accesses() };
-                {
-                    let allocator = world_guard.allocator();
-                    let mut allocator = allocator.write();
-                    allocator.clean_garbage_allocations();
-                }
 
                 // lock a random amount of fake components/resources, to make benchmarks more natural
                 for _ in 0..rng_guard.random_range(0..=5) {

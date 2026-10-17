@@ -371,4 +371,36 @@ mod test {
         assert!(globals.get::<Value>("hello_world_from_first_load").is_ok());
         assert!(globals.get::<Value>("hello_world_from_second_load").is_ok());
     }
+
+    /// Values allocated for scripts are freed with their last reference, which can be a userdata collected by Lua,
+    /// freeing Lua values held by the allocated value from inside Lua's garbage collector.
+    #[test]
+    fn allocated_values_holding_lua_values_can_be_freed_by_lua_gc() {
+        use bevy_mod_scripting_bindings::ReflectReference;
+        use bindings::{reference::LuaReflectReference, script_value::LuaScriptValue};
+        use mlua::{FromLua, IntoLua};
+
+        let lua = Lua::new();
+        // dropped with the Lua function, which our value must release first
+        let alive = std::sync::Arc::new(());
+        for _ in 0..100 {
+            // a value holding a Lua function, only referenced from a Lua userdata
+            let captured = alive.clone();
+            let function = lua
+                .create_function(move |_, ()| Ok(std::sync::Arc::strong_count(&captured)))
+                .unwrap();
+            let value = LuaScriptValue::from_lua(Value::Function(function), &lua).unwrap();
+            let reference = ReflectReference::new_allocated(ScriptValue::from(value));
+            let userdata = LuaReflectReference(reference).into_lua(&lua).unwrap();
+            lua.globals().set("held", userdata).unwrap();
+            lua.globals().set("held", Value::Nil).unwrap();
+            lua.gc_collect().unwrap();
+            lua.gc_collect().unwrap();
+        }
+        lua.gc_collect().unwrap();
+        // every value and Lua function was freed
+        assert_eq!(std::sync::Arc::strong_count(&alive), 1);
+        // the state still works
+        assert_eq!(lua.load("return 1 + 1").eval::<i64>().unwrap(), 2);
+    }
 }

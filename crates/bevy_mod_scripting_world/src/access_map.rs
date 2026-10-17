@@ -1,5 +1,7 @@
 //! A map of access claims used to safely and dynamically access the world.
 
+use std::{any::Any, sync::Arc};
+
 use bevy_ecs::component::ComponentId;
 
 use bevy_platform::collections::HashMap;
@@ -254,6 +256,18 @@ pub trait DynamicSystemMeta {
     #[track_caller]
     fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool;
 
+    /// Claims read or write access like [`Self::claim_read_access`] and [`Self::claim_write_access`],
+    /// for a value outside the world ([`WorldAccessRange::External`]) which is kept alive by `owner` until the access is released.
+    ///
+    /// Used where references to the value can outlive what pointed to it, but not the claim.
+    #[track_caller]
+    fn claim_access_owned<K: Into<WorldAccessRange>>(
+        &self,
+        key: K,
+        write: bool,
+        owner: AccessOwner,
+    ) -> bool;
+
     /// Releases an access claimed for the provided key.
     ///
     /// # Panics
@@ -283,17 +297,36 @@ struct AccessMapInner {
     cant_access_global: bool,
     component_access: AccessByteSet,
     world_access: AccessBitField,
-    external_accesses: HashMap<usize, AccessBitField>,
+    external_accesses: HashMap<usize, ExternalAccess>,
     /// The length of [`Self::undo`] when each running [`DynamicSystemMeta::with_scope`] started, innermost last
     scope_marks: Vec<usize>,
     /// The changes made inside the running scopes, undone when they end
     undo: Vec<ScopeUndo>,
 }
 
+/// Keeps a value outside the world alive while it's accessed, see [`DynamicSystemMeta::claim_access_owned`].
+pub type AccessOwner = Arc<dyn Any + Send + Sync>;
+
+/// The claims on a value outside the world.
+#[derive(Default, Debug, Clone)]
+struct ExternalAccess {
+    bits: AccessBitField,
+    /// Set while the access is claimed, if a claim was made with an owner
+    owner: Option<AccessOwner>,
+}
+
 /// A change to an [`AccessMapInner`], recorded so a scope can roll it back:
 /// the state of an access before it changed, `None` for an external access without an entry.
 #[derive(Debug, Clone)]
-struct ScopeUndo(WorldAccessRange, Option<AccessBitField>);
+struct ScopeUndo(
+    WorldAccessRange,
+    Option<AccessBitField>,
+    Option<AccessOwner>,
+);
+
+/// Owners which were released while the access map was locked,
+/// dropped once it's unlocked since dropping one can free a value and run arbitrary code.
+type Released = smallvec::SmallVec<[AccessOwner; 4]>;
 
 #[profiling::all_functions]
 impl AccessMapInner {
@@ -303,31 +336,39 @@ impl AccessMapInner {
         if self.scope_marks.is_empty() {
             return;
         }
-        let previous = match key {
-            WorldAccessRange::ComponentOrResource(id) => {
-                Some(*self.component_access.entry_mut(id.index()))
-            }
-            WorldAccessRange::External(idx) => self.external_accesses.get(&idx).copied(),
-            WorldAccessRange::Global => Some(self.world_access),
+        let undo = match key {
+            WorldAccessRange::ComponentOrResource(id) => ScopeUndo(
+                key,
+                Some(*self.component_access.entry_mut(id.index())),
+                None,
+            ),
+            WorldAccessRange::External(idx) => match self.external_accesses.get(&idx) {
+                Some(access) => ScopeUndo(key, Some(access.bits), access.owner.clone()),
+                None => ScopeUndo(key, None, None),
+            },
+            WorldAccessRange::Global => ScopeUndo(key, Some(self.world_access), None),
         };
-        self.undo.push(ScopeUndo(key, previous));
+        self.undo.push(undo);
     }
 
     /// Undoes the changes recorded since the undo log had the given length
-    fn rollback(&mut self, mark: usize) {
+    fn rollback(&mut self, mark: usize, released: &mut Released) {
         while self.undo.len() > mark {
-            let Some(ScopeUndo(key, previous)) = self.undo.pop() else {
+            let Some(ScopeUndo(key, previous, owner)) = self.undo.pop() else {
                 break;
             };
             match (key, previous) {
                 (WorldAccessRange::ComponentOrResource(id), previous) => {
                     *self.component_access.entry_mut(id.index()) = previous.unwrap_or_default();
                 }
-                (WorldAccessRange::External(idx), Some(previous)) => {
-                    self.external_accesses.insert(idx, previous);
-                }
-                (WorldAccessRange::External(idx), None) => {
-                    self.external_accesses.remove(&idx);
+                (WorldAccessRange::External(idx), previous) => {
+                    let replaced = match previous {
+                        Some(bits) => self
+                            .external_accesses
+                            .insert(idx, ExternalAccess { bits, owner }),
+                        None => self.external_accesses.remove(&idx),
+                    };
+                    released.extend(replaced.and_then(|access| access.owner));
                 }
                 (WorldAccessRange::Global, previous) => {
                     self.world_access = previous.unwrap_or_default();
@@ -344,7 +385,12 @@ impl AccessMapInner {
         return free;
     }
 
-    fn claim_if_free(&mut self, key: WorldAccessRange, write: bool) -> bool {
+    fn claim_if_free(
+        &mut self,
+        key: WorldAccessRange,
+        write: bool,
+        owner: Option<AccessOwner>,
+    ) -> bool {
         self.record(key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
@@ -355,9 +401,13 @@ impl AccessMapInner {
             }
 
             WorldAccessRange::External(idx) => {
-                let elem = self.external_accesses.entry(idx).or_default();
-                let (free, new) = elem.claim_if_free(write);
-                *elem = new;
+                let access = self.external_accesses.entry(idx).or_default();
+                let (free, new) = access.bits.claim_if_free(write);
+                access.bits = new;
+                if free && access.owner.is_none() {
+                    access.owner = owner;
+                }
+                // an owner which isn't kept is a clone of one the caller still holds, so dropping it here frees nothing
                 return free;
             }
 
@@ -378,7 +428,7 @@ impl AccessMapInner {
         }
     }
     #[inline]
-    fn clear_access(&mut self, key: WorldAccessRange) {
+    fn clear_access(&mut self, key: WorldAccessRange) -> Option<AccessOwner> {
         self.record(key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
@@ -387,8 +437,12 @@ impl AccessMapInner {
             }
 
             WorldAccessRange::External(idx) => {
-                if let Some(field) = self.external_accesses.get_mut(&idx) {
-                    *field = field.decrement_count()
+                if let Some(access) = self.external_accesses.get_mut(&idx) {
+                    access.bits = access.bits.decrement_count();
+                    if access.bits.access_count() == 0 {
+                        // the last claim keeps the value alive no longer
+                        return access.owner.take();
+                    }
                 }
             }
 
@@ -396,6 +450,7 @@ impl AccessMapInner {
                 self.world_access = self.world_access.decrement_count();
             }
         }
+        None
     }
     // #[inline]
     // fn entry(&self, key: WorldAccessRange) -> Option<&AccessCount> {
@@ -473,19 +528,26 @@ struct ScopeEnd<'a>(&'a Mutex<AccessMapInner>);
 
 impl Drop for ScopeEnd<'_> {
     fn drop(&mut self) {
-        let mut inner = self.0.lock();
-        if let Some(mark) = inner.scope_marks.pop() {
-            inner.rollback(mark);
+        let mut released = Released::new();
+        {
+            let mut inner = self.0.lock();
+            if let Some(mark) = inner.scope_marks.pop() {
+                inner.rollback(mark, &mut released);
+            }
         }
+        drop(released);
     }
 }
 
 #[profiling::all_functions]
 impl DynamicSystemMeta for AccessMap {
     fn release_access<K: Into<WorldAccessRange>>(&self, key: K) {
-        let mut inner = self.0.lock();
-        let range: WorldAccessRange = key.into();
-        inner.clear_access(range);
+        let released = {
+            let mut inner = self.0.lock();
+            let range: WorldAccessRange = key.into();
+            inner.clear_access(range)
+        };
+        drop(released);
     }
 
     fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
@@ -503,14 +565,26 @@ impl DynamicSystemMeta for AccessMap {
     fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool {
         let mut inner = self.0.lock();
         let key = key.into();
-        inner.claim_if_free(key, false)
+        inner.claim_if_free(key, false, None)
     }
 
     #[track_caller]
     fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool {
         let mut inner = self.0.lock();
         let key = key.into();
-        inner.claim_if_free(key, true)
+        inner.claim_if_free(key, true, None)
+    }
+
+    #[track_caller]
+    fn claim_access_owned<K: Into<WorldAccessRange>>(
+        &self,
+        key: K,
+        write: bool,
+        owner: AccessOwner,
+    ) -> bool {
+        let mut inner = self.0.lock();
+        let key = key.into();
+        inner.claim_if_free(key, write, Some(owner))
     }
 
     fn list_accesses(&self) -> Vec<(WorldAccessRange, bool)> {
@@ -524,7 +598,7 @@ impl DynamicSystemMeta for AccessMap {
             })
         });
         let external = inner.external_accesses.iter().flat_map(|(k, v)| {
-            (0..v.access_count()).map(|_| (WorldAccessRange::External(*k), v.is_write()))
+            (0..v.bits.access_count()).map(|_| (WorldAccessRange::External(*k), v.bits.is_write()))
         });
 
         let mut accesses = comps.chain(external).collect::<Vec<_>>();
@@ -542,16 +616,20 @@ impl DynamicSystemMeta for AccessMap {
     }
 
     fn release_all_accesses(&self) {
-        let mut inner = self.0.lock();
-        match inner.scope_marks.last().copied() {
-            // the accesses from before the scope belong to callers, which release them themselves
-            Some(mark) => inner.rollback(mark),
-            None => {
-                inner.component_access.clear();
-                inner.external_accesses.clear();
-                inner.world_access = Default::default();
+        let mut released = Released::new();
+        {
+            let mut inner = self.0.lock();
+            match inner.scope_marks.last().copied() {
+                // the accesses from before the scope belong to callers, which release them themselves
+                Some(mark) => inner.rollback(mark, &mut released),
+                None => {
+                    inner.component_access.clear();
+                    released.extend(inner.external_accesses.drain().filter_map(|(_, a)| a.owner));
+                    inner.world_access = Default::default();
+                }
             }
         }
+        drop(released);
     }
 }
 
@@ -819,6 +897,53 @@ mod test {
         // outside a scope everything is released
         access_map.release_all_accesses();
         assert!(access_map.list_accesses().is_empty());
+    }
+
+    #[test]
+    fn access_map_owners_live_until_their_access_is_released() {
+        let access_map = AccessMap::new();
+        let owner: AccessOwner = Arc::new(());
+        let count = || Arc::strong_count(&owner);
+
+        assert!(access_map.claim_access_owned(WorldAccessRange::External(1), false, owner.clone()));
+        // a second claim keeps the first owner, the clone it was given is dropped
+        assert!(access_map.claim_access_owned(WorldAccessRange::External(1), false, owner.clone()));
+        assert_eq!(count(), 2);
+        access_map.release_access(WorldAccessRange::External(1));
+        assert_eq!(count(), 2);
+        access_map.release_access(WorldAccessRange::External(1));
+        assert_eq!(count(), 1);
+    }
+
+    #[test]
+    fn access_map_scopes_drop_and_restore_owners() {
+        let access_map = AccessMap::new();
+        let owner: AccessOwner = Arc::new(());
+        let count = || Arc::strong_count(&owner);
+
+        // claimed in a scope: dropped when it ends
+        access_map.with_scope(|| {
+            assert!(access_map.claim_access_owned(
+                WorldAccessRange::External(1),
+                true,
+                owner.clone()
+            ));
+            assert_eq!(count(), 2);
+        });
+        assert_eq!(count(), 1);
+
+        // claimed before a scope and released in it: back when it ends
+        assert!(access_map.claim_access_owned(WorldAccessRange::External(1), true, owner.clone()));
+        access_map.with_scope(|| {
+            access_map.release_access(WorldAccessRange::External(1));
+            assert!(access_map.list_accesses().is_empty());
+        });
+        assert_eq!(access_map.list_accesses().len(), 1);
+        assert_eq!(count(), 2);
+
+        // released outside any scope: dropped
+        access_map.release_all_accesses();
+        assert_eq!(count(), 1);
     }
 
     #[test]

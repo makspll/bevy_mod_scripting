@@ -188,9 +188,7 @@ fn typed_handle_reference(
             })?;
         reflect_handle.typed(handle)
     };
-    let allocator = world.allocator();
-    let mut allocator = allocator.write();
-    Ok(ReflectReference::new_allocated_boxed(boxed, &mut allocator))
+    Ok(ReflectReference::new_allocated_boxed(boxed))
 }
 
 #[script_bindings(
