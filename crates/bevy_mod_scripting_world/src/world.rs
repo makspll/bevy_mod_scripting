@@ -504,6 +504,8 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Should only really be used for testing purposes
+    ///
+    /// Inside an access scope (see [`Self::with_access_scope`]) only releases the accesses claimed in that scope.
     pub unsafe fn release_all_accesses(&self) {
         self.inner.accesses.release_all_accesses();
     }
