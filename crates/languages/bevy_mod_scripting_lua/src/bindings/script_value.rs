@@ -192,13 +192,27 @@ impl FromLua for LuaScriptValue {
 /// The context for calling a function from Lua
 pub const LUA_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext::new(Language::Lua);
 
+/// The value returned by a function called from Lua, a tuple is returned as multiple values.
+struct LuaFunctionReturn(ScriptValue);
+
+impl IntoLuaMulti for LuaFunctionReturn {
+    fn into_lua_multi(self, lua: &mlua::Lua) -> mlua::Result<MultiValue> {
+        match self.0 {
+            ScriptValue::Tuple(VariadicTuple(tuple)) => {
+                MultiLuaScriptValue(tuple).into_lua_multi(lua)
+            }
+            value => LuaScriptValue(value).into_lua_multi(lua),
+        }
+    }
+}
+
 /// Calls a function from Lua, the location of the call is only looked up for errors.
 fn call_from_lua(
     lua: &mlua::Lua,
     call: impl FnOnce(FunctionCallContext) -> Result<ScriptValue, InteropError>,
-) -> mlua::Result<MultiLuaScriptValue> {
+) -> mlua::Result<LuaFunctionReturn> {
     match call(LUA_CALLER_CONTEXT) {
-        Ok(out) => Ok(MultiLuaScriptValue::from_script_value(out)),
+        Ok(out) => Ok(LuaFunctionReturn(out)),
         Err(mut error) => {
             if let InteropError::FunctionInteropError { context, .. } = &mut error
                 && let Some(context) = &mut **context
