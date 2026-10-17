@@ -39,8 +39,7 @@ impl FromScript for MyFunkyArgumentType {
             ScriptValue::Integer(i) => Ok(Self::Number(i as usize)),
             ScriptValue::Float(f) => Ok(Self::Number(f as usize)),
             ScriptValue::Reference(reflect_reference) => {
-                // references are backed by an allocator over reflected values
-
+                // references point into the world, or to values allocated for scripts
                 // you can use with_reflect if you don't want to clone the value, otherwise use downcast
                 reflect_reference.with_reflect(world, |my_val| {
                     // and here we have a normal reflect reference

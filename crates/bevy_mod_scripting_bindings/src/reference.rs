@@ -27,7 +27,7 @@ use {
 
 /// A reference to an arbitrary reflected instance.
 ///
-/// The reference can point to either the ECS, or to the allocator.
+/// The reference can point to either the ECS, or to a value allocated for scripts which it keeps alive.
 ///
 /// References are composed of two parts:
 /// - The base kind, which specifies where the reference points to

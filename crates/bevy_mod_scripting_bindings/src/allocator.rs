@@ -1,10 +1,6 @@
 //! Values allocated for scripts, i.e. values returned by functions, owned by the references pointing to them.
 
-use ::{
-    bevy_app::{App, Plugin, PostUpdate},
-    bevy_diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
-    bevy_reflect::PartialReflect,
-};
+use ::bevy_reflect::PartialReflect;
 use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DebugWithTypeInfoBuilder, DisplayWithTypeInfo,
 };
@@ -20,19 +16,6 @@ use std::{
         atomic::{AtomicUsize, Ordering::Relaxed},
     },
 };
-
-/// The path used for the total number of allocations diagnostic
-pub const ALLOCATOR_TOTAL_DIAG_PATH: DiagnosticPath =
-    DiagnosticPath::const_new("scripting_allocator_total");
-
-/// The path used for the number of allocations freed since the last measurement
-pub const ALLOCATOR_TOTAL_COLLECTED_DIAG_PATH: DiagnosticPath =
-    DiagnosticPath::const_new("scripting_allocator_total_collected");
-
-/// The number of live allocations
-static LIVE: AtomicUsize = AtomicUsize::new(0);
-/// The number of allocations freed since the last [`measure_allocations`]
-static FREED: AtomicUsize = AtomicUsize::new(0);
 
 /// A value allocated for scripts and its unique id. Clones share the value, which is freed with the last of them.
 ///
@@ -78,28 +61,9 @@ impl AllocatedValue for Boxed {
     }
 }
 
-impl<T> Drop for Inline<T> {
-    fn drop(&mut self) {
-        freed();
-    }
-}
-
-impl Drop for Boxed {
-    fn drop(&mut self) {
-        freed();
-    }
-}
-
-/// Counts a freed allocation
-fn freed() {
-    LIVE.fetch_sub(1, Relaxed);
-    FREED.fetch_add(1, Relaxed);
-}
-
 /// Hands out unique allocation ids
 fn next_id() -> usize {
     static COUNTER: AtomicUsize = AtomicUsize::new(0);
-    LIVE.fetch_add(1, Relaxed);
     COUNTER.fetch_add(1, Relaxed)
 }
 
@@ -204,26 +168,6 @@ impl PartialOrd for ReflectAllocationId {
 impl Ord for ReflectAllocationId {
     fn cmp(&self, other: &Self) -> Ordering {
         self.id().cmp(&other.id())
-    }
-}
-
-/// Measures the number of live allocations and the number freed since the last measurement
-pub fn measure_allocations(mut diagnostics: Diagnostics) {
-    diagnostics.add_measurement(&ALLOCATOR_TOTAL_DIAG_PATH, || LIVE.load(Relaxed) as f64);
-    diagnostics.add_measurement(&ALLOCATOR_TOTAL_COLLECTED_DIAG_PATH, || {
-        FREED.swap(0, Relaxed) as f64
-    });
-}
-
-/// A plugin which registers various allocator diagnostics
-pub struct AllocatorDiagnosticPlugin;
-impl Plugin for AllocatorDiagnosticPlugin {
-    fn build(&self, app: &mut App) {
-        app.register_diagnostic(Diagnostic::new(ALLOCATOR_TOTAL_DIAG_PATH).with_suffix(" allocs"))
-            .register_diagnostic(
-                Diagnostic::new(ALLOCATOR_TOTAL_COLLECTED_DIAG_PATH).with_suffix(" deallocs"),
-            )
-            .add_systems(PostUpdate, measure_allocations);
     }
 }
 

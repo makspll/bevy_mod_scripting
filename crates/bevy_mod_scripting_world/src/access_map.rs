@@ -12,7 +12,7 @@ use parking_lot::Mutex;
 pub enum WorldAccessRange {
     /// An access into a resource or component in the world
     ComponentOrResource(ComponentId),
-    /// An access outside the world, for example into an external allocator
+    /// An access outside the world, for example into a value allocated for scripts
     External(usize),
     /// A whole world read or write
     Global,

@@ -95,8 +95,6 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     type_registry: TypeRegistryArc,
 
     cached_slots: RegistryCache,
-    // /// The script allocator for the world
-    // allocator: AppReflectAllocator,
     // /// The function registry for the world
     // function_registry: AppScriptFunctionRegistry,
     // /// The schedule registry for the world

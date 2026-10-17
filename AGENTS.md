@@ -13,7 +13,7 @@ Multi-language scripting for Bevy (Lua, Rhai, Rune). Scripts are Bevy assets; th
 * `docs/` — mdbook; `release-notes/`, per-crate `CHANGELOG.md` managed by release-plz.
 
 ## Big choices
-* Scripts never touch Rust types directly: everything crosses the boundary as `ScriptValue`, with references to reflected data (`ReflectReference`) rather than copies.
+* Scripts never touch Rust types directly: everything crosses the boundary as `ScriptValue`, with references to reflected data (`ReflectReference`) rather than copies. Values made for scripts (i.e. returned `V<T>`) are owned by the references to them (`ReflectAllocationId` wraps an `Arc`), there is no allocator or garbage collection.
 * BMS uses its own reflection paths (`bindings/src/path`) instead of native Bevy ones, to support script-specific access semantics (e.g. 1-based indexing correction).
 * World access is arbitrary at runtime, so `bevy_mod_scripting_world` enforces borrow safety dynamically via an access map + `WorldGuard`, rather than Bevy's static system params.
 * Script lifecycle (load / attach / reload / unload) is a staged pipeline with per-language context management, in `core/src/pipeline`.
