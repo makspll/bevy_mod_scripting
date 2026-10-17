@@ -83,7 +83,7 @@ impl Default for ReflectReference {
         Self {
             base: ReflectBaseType {
                 type_id: None::<TypeId>.or_fake_id(),
-                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
+                base_id: ReflectBase::Owned(ReflectAllocationId::unallocated(())),
             },
             reflect_path: Default::default(),
         }
@@ -348,7 +348,6 @@ impl ReflectReference {
 
     /// Attempts to create a `Box<dyn PartialReflect>` from the reference. This is possible using a few strategies:
     /// - If the reference is to a world, a [`crate::world::WorldCallbackAccess`] is created and boxed
-    /// - If the reference is to an allocation with no reflection path and references to it, the value is taken as is.
     /// - If the reference has a [`bevy_reflect::ReflectFromReflect`] type data associated with it, the value is cloned using that impl.
     /// - If all above fails, [`bevy_reflect::PartialReflect::clone_value`] is used to clone the value.
     ///
@@ -356,29 +355,6 @@ impl ReflectReference {
         &self,
         world: WorldGuard,
     ) -> Result<Box<dyn PartialReflect>, InteropError> {
-        if let ReflectBase::Owned(id) = &self.base.base_id
-            && self.reflect_path.is_empty()
-            && id.strong_count() == 0
-        {
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            let arc = allocator
-                .remove(id)
-                .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
-
-            if world.claim_write_access(id) {
-                // Safety: we claim write access, nobody else is accessing this
-                if unsafe { &*arc.get_ptr() }.try_as_reflect().is_some() {
-                    // Safety: the only accesses exist in this function
-                    unsafe { world.release_access(id) };
-                    return Ok(unsafe { arc.take() });
-                } else {
-                    unsafe { world.release_access(id) };
-                }
-            }
-            allocator.insert(id.clone(), arc);
-        }
-
         self.with_reflect(world.clone(), |r| {
             <dyn PartialReflect>::from_reflect_or_clone(r, world.clone())
         })?
@@ -496,18 +472,11 @@ impl ReflectReference {
         world: WorldGuard<'w>,
     ) -> Result<Option<&'w dyn PartialReflect>, InteropError> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            let allocator = world.allocator();
-            let allocator = allocator.read();
-
-            let arc = allocator
-                .get(id)
-                .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
-
-            // safety: caller promises it's fine :)
+            // safety: caller promises it's fine :), the allocator keeps the value alive until no id points to it
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
 
-            return self.walk_path(unsafe { &*arc.get_ptr() }, &type_registry);
+            return self.walk_path(unsafe { &*id.allocation().get_ptr() }, &type_registry);
         }
 
         if let ReflectBase::Asset(handle, _) = &self.base.base_id {
@@ -575,16 +544,10 @@ impl ReflectReference {
         world: WorldGuard<'w>,
     ) -> Result<Option<&'w mut dyn PartialReflect>, InteropError> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            let allocator = world.allocator();
-            let allocator = allocator.read();
-            let arc = allocator
-                .get(id)
-                .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
-
-            // Safety: caller promises this is fine :)
+            // Safety: caller promises this is fine :), the allocator keeps the value alive until no id points to it
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
-            return self.walk_path_mut(unsafe { &mut *arc.get_ptr() }, &type_registry);
+            return self.walk_path_mut(unsafe { &mut *id.allocation().get_ptr() }, &type_registry);
         };
 
         if let ReflectBase::Asset(handle, _) = &self.base.base_id {

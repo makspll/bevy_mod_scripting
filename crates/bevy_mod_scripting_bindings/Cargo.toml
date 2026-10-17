@@ -28,6 +28,7 @@ bevy_app = { workspace = true }
 bevy_platform = { workspace = true }
 parking_lot = { workspace = true }
 smallvec = { workspace = true }
+equivalent = { workspace = true }
 itertools = { workspace = true }
 profiling = { workspace = true }
 bevy_asset = { workspace = true }

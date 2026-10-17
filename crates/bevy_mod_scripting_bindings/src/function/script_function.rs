@@ -125,6 +125,11 @@ impl FunctionCallContext {
     pub fn location(&self) -> Option<&LocationContext> {
         self.location_context.as_ref()
     }
+
+    /// Sets the call location inside the script, i.e. once an error needs it
+    pub fn set_location(&mut self, location_context: Option<LocationContext>) {
+        self.location_context = location_context;
+    }
 }
 
 #[derive(Reflect, Clone, DebugWithTypeInfo)]
@@ -230,6 +235,13 @@ impl DynamicScriptFunction {
     /// Get the name of the function
     pub fn name(&self) -> &Cow<'static, str> {
         &self.info.name
+    }
+
+    /// An id shared by the clones of this function, valid while one of them is alive.
+    ///
+    /// Languages can use it to cache their own wrappers of registered functions.
+    pub fn identity(&self) -> usize {
+        Arc::as_ptr(&self.func) as *const () as usize
     }
 
     /// Binds a function shared between all types, i.e. one registered on [`StaticTypeRef`], to the given type.
@@ -388,6 +400,29 @@ pub struct FunctionKey {
     pub type_id: TypeId,
 }
 
+/// A [`FunctionKey`] borrowing its name, so lookups don't allocate. Hashes the same as the key.
+#[derive(Hash)]
+struct FunctionKeyRef<'a> {
+    name: &'a str,
+    type_id: TypeId,
+}
+
+impl equivalent::Equivalent<FunctionKey> for FunctionKeyRef<'_> {
+    fn equivalent(&self, key: &FunctionKey) -> bool {
+        self.type_id == key.type_id && self.name == key.name
+    }
+}
+
+/// A key of [`ScriptFunctionRegistry::bound_to_type`] borrowing its name. Hashes the same as the key.
+#[derive(Hash)]
+struct BoundKeyRef<'a>(TypeId, &'a str);
+
+impl equivalent::Equivalent<(TypeId, Cow<'static, str>)> for BoundKeyRef<'_> {
+    fn equivalent(&self, key: &(TypeId, Cow<'static, str>)) -> bool {
+        self.0 == key.0 && self.1 == key.1
+    }
+}
+
 #[derive(Default, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 /// A registry of the functions on types.
@@ -511,37 +546,45 @@ impl ScriptFunctionRegistry {
     }
 
     /// Get the function with the given name on the type
-    pub fn get_function(
+    ///
+    /// Returns the name back if there is no such function.
+    pub fn get_function<'n>(
         &self,
         type_id: TypeId,
-        name: impl Into<Cow<'static, str>>,
-    ) -> Result<&DynamicScriptFunction, Cow<'static, str>> {
-        let key = FunctionKey {
-            name: name.into(),
+        name: impl Into<Cow<'n, str>>,
+    ) -> Result<&DynamicScriptFunction, Cow<'n, str>> {
+        let name = name.into();
+        match self.functions.get(&FunctionKeyRef {
+            name: &name,
             type_id,
-        };
-        match self.functions.get(&key) {
+        }) {
             Some(func) => Ok(func),
-            None => Err(key.name),
+            None => Err(name),
         }
     }
 
     /// Gets a function registered on [`StaticTypeRef`], bound to the given type with [`DynamicScriptFunction::bind_to_type`].
     ///
     /// Bound functions are cached until the registry changes.
-    pub fn get_bound_to_type(
+    pub fn get_bound_to_type<'n>(
         &self,
         type_info: &'static TypeInfo,
-        name: impl Into<Cow<'static, str>>,
-    ) -> Result<DynamicScriptFunction, Cow<'static, str>> {
-        let key = (type_info.type_id(), name.into());
-        if let Some(func) = self.bound_to_type.lock().get(&key) {
+        name: impl Into<Cow<'n, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'n, str>> {
+        let name = name.into();
+        if let Some(func) = self
+            .bound_to_type
+            .lock()
+            .get(&BoundKeyRef(type_info.type_id(), &name))
+        {
             return Ok(func.clone());
         }
         let func = self
-            .get_function(TypeId::of::<StaticTypeRef>(), key.1.clone())?
+            .get_function(TypeId::of::<StaticTypeRef>(), name)?
             .bind_to_type(type_info);
-        self.bound_to_type.lock().insert(key, func.clone());
+        self.bound_to_type
+            .lock()
+            .insert((type_info.type_id(), func.info.name.clone()), func.clone());
         Ok(func)
     }
 

@@ -213,7 +213,7 @@ impl AccessByteSet {
 
     /// Clear accesses leaving the current capacity intact
     pub fn clear(&mut self) {
-        self.data.iter_mut().for_each(|a| _ = a.clear_accesses());
+        self.data.iter_mut().for_each(|a| *a = a.clear_accesses());
     }
 }
 
@@ -236,7 +236,8 @@ pub struct AccessMap(Mutex<AccessMapInner>);
 pub trait DynamicSystemMeta {
     /// Executes the provided closure within a temporary access scope.
     ///
-    /// Any accesses claimed within the scope are rolled back once the closure returns.
+    /// Any accesses claimed or released within the scope are rolled back once the closure returns or panics.
+    /// Scopes can be nested, an inner scope rolls back only its own changes.
     fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O;
 
     /// Attempts to claim read access for the given key.
@@ -270,9 +271,10 @@ pub trait DynamicSystemMeta {
     /// In the case of a global lock, this method considers that as a single active access.
     fn count_accesses(&self) -> usize;
 
-    /// Releases all active accesses.
+    /// Releases all active accesses, both individual and global.
     ///
-    /// Both individual and global accesses will be removed.
+    /// Inside a [`Self::with_scope`] only the accesses claimed in the innermost scope are released,
+    /// the ones from before it are released by whoever claimed them.
     fn release_all_accesses(&self);
 }
 
@@ -282,10 +284,58 @@ struct AccessMapInner {
     component_access: AccessByteSet,
     world_access: AccessBitField,
     external_accesses: HashMap<usize, AccessBitField>,
+    /// The length of [`Self::undo`] when each running [`DynamicSystemMeta::with_scope`] started, innermost last
+    scope_marks: Vec<usize>,
+    /// The changes made inside the running scopes, undone when they end
+    undo: Vec<ScopeUndo>,
 }
+
+/// A change to an [`AccessMapInner`], recorded so a scope can roll it back:
+/// the state of an access before it changed, `None` for an external access without an entry.
+#[derive(Debug, Clone)]
+struct ScopeUndo(WorldAccessRange, Option<AccessBitField>);
 
 #[profiling::all_functions]
 impl AccessMapInner {
+    /// Records the current state of an access before it changes, if a scope is running
+    #[inline]
+    fn record(&mut self, key: WorldAccessRange) {
+        if self.scope_marks.is_empty() {
+            return;
+        }
+        let previous = match key {
+            WorldAccessRange::ComponentOrResource(id) => {
+                Some(*self.component_access.entry_mut(id.index()))
+            }
+            WorldAccessRange::External(idx) => self.external_accesses.get(&idx).copied(),
+            WorldAccessRange::Global => Some(self.world_access),
+        };
+        self.undo.push(ScopeUndo(key, previous));
+    }
+
+    /// Undoes the changes recorded since the undo log had the given length
+    fn rollback(&mut self, mark: usize) {
+        while self.undo.len() > mark {
+            let Some(ScopeUndo(key, previous)) = self.undo.pop() else {
+                break;
+            };
+            match (key, previous) {
+                (WorldAccessRange::ComponentOrResource(id), previous) => {
+                    *self.component_access.entry_mut(id.index()) = previous.unwrap_or_default();
+                }
+                (WorldAccessRange::External(idx), Some(previous)) => {
+                    self.external_accesses.insert(idx, previous);
+                }
+                (WorldAccessRange::External(idx), None) => {
+                    self.external_accesses.remove(&idx);
+                }
+                (WorldAccessRange::Global, previous) => {
+                    self.world_access = previous.unwrap_or_default();
+                }
+            }
+        }
+    }
+
     pub fn claim_component_if_free(&mut self, id: ComponentId, write: bool) -> bool {
         let idx = id.index();
         let elem = self.component_access.entry_mut(idx);
@@ -295,6 +345,7 @@ impl AccessMapInner {
     }
 
     fn claim_if_free(&mut self, key: WorldAccessRange, write: bool) -> bool {
+        self.record(key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
                 if self.world_access.is_write() || self.world_access.access_count() != 0 && write {
@@ -328,6 +379,7 @@ impl AccessMapInner {
     }
     #[inline]
     fn clear_access(&mut self, key: WorldAccessRange) {
+        self.record(key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
                 let entry = self.component_access.entry_mut(component_id.index());
@@ -412,6 +464,22 @@ impl AccessMap {
     }
 }
 
+/// Ends a [`DynamicSystemMeta::with_scope`] when dropped, so the scope is rolled back even if its closure panics.
+///
+/// Scopes nest and end innermost first (also when a panic unwinds through them),
+/// so the scope ending is always the last one in [`AccessMapInner::scope_marks`],
+/// and it rolls back only the changes recorded after its mark.
+struct ScopeEnd<'a>(&'a Mutex<AccessMapInner>);
+
+impl Drop for ScopeEnd<'_> {
+    fn drop(&mut self) {
+        let mut inner = self.0.lock();
+        if let Some(mark) = inner.scope_marks.pop() {
+            inner.rollback(mark);
+        }
+    }
+}
+
 #[profiling::all_functions]
 impl DynamicSystemMeta for AccessMap {
     fn release_access<K: Into<WorldAccessRange>>(&self, key: K) {
@@ -421,21 +489,14 @@ impl DynamicSystemMeta for AccessMap {
     }
 
     fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
-        // Snapshot the current inner state.
-        let backup = {
-            let inner = self.0.lock();
-            inner.clone()
-        };
-
-        let result = f();
-
-        // Roll back the inner state.
+        // record the changes made inside the scope instead of copying the whole map
         {
             let mut inner = self.0.lock();
-            *inner = backup;
+            let mark = inner.undo.len();
+            inner.scope_marks.push(mark);
         }
-
-        result
+        let _end = ScopeEnd(&self.0);
+        f()
     }
 
     #[track_caller]
@@ -482,9 +543,15 @@ impl DynamicSystemMeta for AccessMap {
 
     fn release_all_accesses(&self) {
         let mut inner = self.0.lock();
-        inner.component_access.clear();
-        inner.external_accesses.clear();
-        inner.world_access = Default::default();
+        match inner.scope_marks.last().copied() {
+            // the accesses from before the scope belong to callers, which release them themselves
+            Some(mark) => inner.rollback(mark),
+            None => {
+                inner.component_access.clear();
+                inner.external_accesses.clear();
+                inner.world_access = Default::default();
+            }
+        }
     }
 }
 
@@ -674,6 +741,84 @@ mod test {
         let (k, count) = &accesses[0];
         assert_eq!(*k, TestAccess(3).into());
         assert!(!count);
+    }
+
+    #[test]
+    fn access_map_nested_scopes_unroll_only_their_own_accesses() {
+        let access_map = AccessMap::new();
+        access_map.with_scope(|| {
+            assert!(access_map.claim_read_access(TestAccess(1)));
+            access_map.with_scope(|| {
+                assert!(access_map.claim_write_access(TestAccess(2)));
+                // releasing an outer access inside the inner scope only lasts until it ends
+                access_map.release_access(TestAccess(1));
+                assert_eq!(access_map.list_accesses().len(), 1);
+            });
+            // the inner write is gone, the outer read is back
+            assert_eq!(
+                access_map.list_accesses(),
+                vec![(WorldAccessRange::from(TestAccess(1)), false)]
+            );
+            assert!(access_map.claim_write_access(TestAccess(2)));
+        });
+        assert!(access_map.list_accesses().is_empty());
+    }
+
+    #[test]
+    fn access_map_scope_unrolls_when_its_closure_panics() {
+        let access_map = AccessMap::new();
+        access_map.with_scope(|| {
+            assert!(access_map.claim_read_access(TestAccess(1)));
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                access_map.with_scope(|| {
+                    assert!(access_map.claim_write_access(TestAccess(2)));
+                    panic!("binding panicked");
+                })
+            }));
+            assert!(result.is_err());
+            // the panicking scope ended, the outer one is intact
+            assert_eq!(
+                access_map.list_accesses(),
+                vec![(WorldAccessRange::from(TestAccess(1)), false)]
+            );
+        });
+        assert!(access_map.list_accesses().is_empty());
+        // no scope is left open, so nothing is recorded anymore
+        assert!(access_map.claim_write_access(TestAccess(3)));
+        assert!(access_map.0.lock().undo.is_empty());
+    }
+
+    #[test]
+    fn access_map_release_all_in_scope_releases_only_the_scope_accesses() {
+        let access_map = AccessMap::new();
+        assert!(access_map.claim_read_access(TestAccess(1)));
+        access_map.with_scope(|| {
+            assert!(access_map.claim_read_access(TestAccess(2)));
+            access_map.with_scope(|| {
+                assert!(access_map.claim_write_access(TestAccess(3)));
+                access_map.release_all_accesses();
+                // only the innermost scope's write is gone
+                let mut accesses = access_map.list_accesses();
+                accesses.sort_by_key(|(k, _)| format!("{k:?}"));
+                assert_eq!(
+                    accesses,
+                    vec![
+                        (WorldAccessRange::from(TestAccess(1)), false),
+                        (WorldAccessRange::from(TestAccess(2)), false)
+                    ]
+                );
+                // and the scope can keep claiming
+                assert!(access_map.claim_write_access(TestAccess(3)));
+            });
+            assert_eq!(access_map.list_accesses().len(), 2);
+        });
+        assert_eq!(
+            access_map.list_accesses(),
+            vec![(WorldAccessRange::from(TestAccess(1)), false)]
+        );
+        // outside a scope everything is released
+        access_map.release_all_accesses();
+        assert!(access_map.list_accesses().is_empty());
     }
 
     #[test]

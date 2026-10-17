@@ -1,13 +1,13 @@
-use std::any::TypeId;
+use std::{any::TypeId, borrow::Cow};
 
 use bevy_mod_scripting_bindings::{ReflectReference, WorldGuard, dispatch, error::InteropError};
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
-use mlua::{MetaMethod, UserData, UserDataMethods};
+use mlua::{FromLua, IntoLua, MetaMethod, UserData, UserDataMethods};
 
 use crate::IntoMluaError;
 
-use super::script_value::{LUA_CALLER_CONTEXT, LuaScriptValue};
+use super::script_value::{LUA_CALLER_CONTEXT, LuaScriptValue, registered_function_into_lua};
 
 /// Lua UserData wrapper for [`ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
@@ -63,10 +63,32 @@ impl UserData for LuaReflectReference {
         // methods come back unbound, `v:method()` passes the value itself
         m.add_meta_function(
             MetaMethod::Index,
-            |_, (self_, key): (LuaReflectReference, LuaScriptValue)| {
+            |lua, (self_, key): (mlua::UserDataRef<LuaReflectReference>, mlua::Value)| {
                 profiling::function_scope!("MetaMethod::Index");
-                with_world(|world| dispatch::index(world, self_.0, key.into(), LUA_CALLER_CONTEXT))
-                    .map(|member| LuaScriptValue(member.into()))
+                let member = match &key {
+                    // names and the receiver are only copied for field access
+                    mlua::Value::String(name) => {
+                        let name = name.to_str()?;
+                        with_world(|world| {
+                            dispatch::index_name(
+                                world,
+                                Cow::Borrowed(&self_.0),
+                                &*name,
+                                LUA_CALLER_CONTEXT,
+                            )
+                        })?
+                    }
+                    _ => {
+                        let key = LuaScriptValue::from_lua(key, lua)?;
+                        with_world(|world| {
+                            dispatch::index(world, self_.0.clone(), key.into(), LUA_CALLER_CONTEXT)
+                        })?
+                    }
+                };
+                match member {
+                    dispatch::Member::Method(func) => registered_function_into_lua(lua, func),
+                    member => LuaScriptValue(member.into()).into_lua(lua),
+                }
             },
         );
 

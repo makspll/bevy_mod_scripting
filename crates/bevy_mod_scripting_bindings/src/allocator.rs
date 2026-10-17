@@ -12,7 +12,6 @@ use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DebugWithTypeInfoBuilder, DisplayWithTypeInfo,
 };
 use bevy_mod_scripting_world::{WorldAccessRange, WorldGuard};
-use bevy_platform::collections::HashMap;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{
     cell::UnsafeCell,
@@ -30,14 +29,33 @@ pub const ALLOCATOR_TOTAL_DIAG_PATH: DiagnosticPath =
 pub const ALLOCATOR_TOTAL_COLLECTED_DIAG_PATH: DiagnosticPath =
     DiagnosticPath::const_new("scripting_allocator_total_collected");
 
-/// Unique identifier for an allocation
-#[derive(Clone, DebugWithTypeInfo)]
-#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-pub struct ReflectAllocationId(pub(crate) Arc<usize>);
+/// Unique identifier for an allocation, which also holds the allocated value.
+///
+/// The [`ReflectAllocator`] keeps every allocation alive until a garbage collection pass finds no other ids pointing to it.
+#[derive(Clone)]
+pub struct ReflectAllocationId(pub(crate) Arc<AllocationEntry>);
+
+/// The id and value of an allocation
+pub(crate) struct AllocationEntry {
+    id: usize,
+    value: ReflectAllocation,
+}
+
+impl DebugWithTypeInfo for ReflectAllocationId {
+    fn to_string_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        type_info_provider: Option<&WorldGuard>,
+    ) -> std::fmt::Result {
+        f.debug_tuple_with_type_info("ReflectAllocationId", type_info_provider)
+            .field(&self.id())
+            .finish()
+    }
+}
 
 impl From<&ReflectAllocationId> for WorldAccessRange {
     fn from(val: &ReflectAllocationId) -> Self {
-        WorldAccessRange::External(*val.0)
+        WorldAccessRange::External(val.id())
     }
 }
 
@@ -54,12 +72,20 @@ impl DisplayWithTypeInfo for ReflectAllocationId {
 impl ReflectAllocationId {
     /// Returns the id of the allocation
     pub fn id(&self) -> usize {
-        *self.0
+        self.0.id
     }
 
-    /// Creates a new [`ReflectAllocationId`] from its id
-    pub(crate) fn new(id: usize) -> Self {
-        Self(Arc::new(id))
+    /// The allocated value
+    pub fn allocation(&self) -> &ReflectAllocation {
+        &self.0.value
+    }
+
+    /// Creates an id holding a value which is not kept alive by an allocator, i.e. for placeholders.
+    pub(crate) fn unallocated<T: PartialReflect>(value: T) -> Self {
+        Self(Arc::new(AllocationEntry {
+            id: usize::MAX,
+            value: ReflectAllocation::new(Box::new(value)),
+        }))
     }
 
     /// Returns the number of strong references to this id
@@ -160,7 +186,7 @@ impl ReflectAllocation {
 
 impl Display for ReflectAllocationId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.id())
     }
 }
 
@@ -196,8 +222,9 @@ impl AppReflectAllocator {
 #[derive(Default, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub struct ReflectAllocator {
-    // TODO: experiment with object pools, sparse set etc.
-    allocations: HashMap<ReflectAllocationId, ReflectAllocation>,
+    /// Keeps the allocations alive until [`Self::clean_garbage_allocations`] finds them unused,
+    /// the values are reached through their ids.
+    allocations: Vec<ReflectAllocationId>,
 }
 
 #[profiling::all_functions]
@@ -212,53 +239,34 @@ impl ReflectAllocator {
     pub fn allocate_boxed(&mut self, value: Box<dyn PartialReflect>) -> ReflectAllocationId {
         static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
-        let id =
-            ReflectAllocationId::new(COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
-        let value = ReflectAllocation::new(value);
-        self.allocations.insert(id.clone(), value);
+        let id = ReflectAllocationId(Arc::new(AllocationEntry {
+            id: COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+            value: ReflectAllocation::new(value),
+        }));
+        self.allocations.push(id.clone());
         id
     }
 
-    /// Insert a value into the allocator with a given id
-    pub fn insert(
-        &mut self,
-        id: ReflectAllocationId,
-        value: ReflectAllocation,
-    ) -> Option<ReflectAllocation> {
-        self.allocations.insert(id, value)
-    }
-
-    /// Remove a value from the allocator with a given id
-    pub fn remove(&mut self, id: &ReflectAllocationId) -> Option<ReflectAllocation> {
-        self.allocations.remove(id)
-    }
-
-    /// Get the type id of a value with a given id
-    pub fn get_mut(&mut self, id: &ReflectAllocationId) -> Option<&mut ReflectAllocation> {
-        self.allocations.get_mut(id)
-    }
-
     /// Get the reflect value with a given id
-    pub fn get(&self, id: &ReflectAllocationId) -> Option<&ReflectAllocation> {
-        self.allocations.get(id)
-    }
-
-    /// Deallocates the `PartialReflect` value with the given [`ReflectAllocationId`]
-    pub fn deallocate(&mut self, id: &ReflectAllocationId) {
-        self.allocations.remove(id);
+    pub fn get<'a>(&self, id: &'a ReflectAllocationId) -> Option<&'a ReflectAllocation> {
+        Some(id.allocation())
     }
 
     /// Runs a garbage collection pass on the allocations, removing any allocations which have no more strong references
     /// Needs to be run periodically to prevent memory leaks
     pub fn clean_garbage_allocations(&mut self) {
-        self.allocations.retain(|k, _| Arc::strong_count(&k.0) > 1);
+        self.allocations.retain(|id| id.strong_count() > 1);
+        // don't keep scanning the capacity of a past spike of allocations
+        if self.allocations.len() * 4 < self.allocations.capacity() {
+            self.allocations.shrink_to(self.allocations.len() * 2);
+        }
     }
 
     /// Returns an iterator over all allocations
     pub fn iter_allocations(
         &self,
     ) -> impl Iterator<Item = (&ReflectAllocationId, &ReflectAllocation)> {
-        self.allocations.iter()
+        self.allocations.iter().map(|id| (id, id.allocation()))
     }
 }
 
