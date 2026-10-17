@@ -236,7 +236,8 @@ pub struct AccessMap(Mutex<AccessMapInner>);
 pub trait DynamicSystemMeta {
     /// Executes the provided closure within a temporary access scope.
     ///
-    /// Any accesses claimed within the scope are rolled back once the closure returns.
+    /// Any accesses claimed or released within the scope are rolled back once the closure returns or panics.
+    /// Scopes can be nested, an inner scope rolls back only its own changes.
     fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O;
 
     /// Attempts to claim read access for the given key.
@@ -479,6 +480,24 @@ impl AccessMap {
     }
 }
 
+/// Ends a [`DynamicSystemMeta::with_scope`] when dropped, so the scope is rolled back even if its closure panics.
+///
+/// Scopes nest: each one only rolls back the changes recorded after its `mark`, i.e. its own and those of
+/// any inner scopes which didn't end (a panic unwinding through them ends them first, innermost first).
+struct ScopeEnd<'a> {
+    map: &'a Mutex<AccessMapInner>,
+    /// The length of the undo log when the scope started
+    mark: usize,
+}
+
+impl Drop for ScopeEnd<'_> {
+    fn drop(&mut self) {
+        let mut inner = self.map.lock();
+        inner.rollback(self.mark);
+        inner.scope_depth -= 1;
+    }
+}
+
 #[profiling::all_functions]
 impl DynamicSystemMeta for AccessMap {
     fn release_access<K: Into<WorldAccessRange>>(&self, key: K) {
@@ -489,21 +508,15 @@ impl DynamicSystemMeta for AccessMap {
 
     fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
         // record the changes made inside the scope instead of copying the whole map
-        let mark = {
+        let _end = {
             let mut inner = self.0.lock();
             inner.scope_depth += 1;
-            inner.undo.len()
+            ScopeEnd {
+                map: &self.0,
+                mark: inner.undo.len(),
+            }
         };
-
-        let result = f();
-
-        {
-            let mut inner = self.0.lock();
-            inner.rollback(mark);
-            inner.scope_depth -= 1;
-        }
-
-        result
+        f()
     }
 
     #[track_caller]
@@ -750,6 +763,51 @@ mod test {
         let (k, count) = &accesses[0];
         assert_eq!(*k, TestAccess(3).into());
         assert!(!count);
+    }
+
+    #[test]
+    fn access_map_nested_scopes_unroll_only_their_own_accesses() {
+        let access_map = AccessMap::new();
+        access_map.with_scope(|| {
+            assert!(access_map.claim_read_access(TestAccess(1)));
+            access_map.with_scope(|| {
+                assert!(access_map.claim_write_access(TestAccess(2)));
+                // releasing an outer access inside the inner scope only lasts until it ends
+                access_map.release_access(TestAccess(1));
+                assert_eq!(access_map.list_accesses().len(), 1);
+            });
+            // the inner write is gone, the outer read is back
+            assert_eq!(
+                access_map.list_accesses(),
+                vec![(WorldAccessRange::from(TestAccess(1)), false)]
+            );
+            assert!(access_map.claim_write_access(TestAccess(2)));
+        });
+        assert!(access_map.list_accesses().is_empty());
+    }
+
+    #[test]
+    fn access_map_scope_unrolls_when_its_closure_panics() {
+        let access_map = AccessMap::new();
+        access_map.with_scope(|| {
+            assert!(access_map.claim_read_access(TestAccess(1)));
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                access_map.with_scope(|| {
+                    assert!(access_map.claim_write_access(TestAccess(2)));
+                    panic!("binding panicked");
+                })
+            }));
+            assert!(result.is_err());
+            // the panicking scope ended, the outer one is intact
+            assert_eq!(
+                access_map.list_accesses(),
+                vec![(WorldAccessRange::from(TestAccess(1)), false)]
+            );
+        });
+        assert!(access_map.list_accesses().is_empty());
+        // no scope is left open, so nothing is recorded anymore
+        assert!(access_map.claim_write_access(TestAccess(3)));
+        assert!(access_map.0.lock().undo.is_empty());
     }
 
     #[test]
