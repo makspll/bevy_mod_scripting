@@ -4,7 +4,10 @@ assert(type_of(script_asset) != "()", "ScriptAsset is registered");
 
 // loading is asynchronous, so the handle is only checked for its path and state
 let handle = world.load_asset.call("tests/bindings/asset/asset.rhai", script_asset);
-assert(world.asset_path.call(handle) == "tests/bindings/asset/asset.rhai", "asset_path");
+// this script is already loaded, so on windows the path is the one it was loaded with, with `\` separators
+let path = world.asset_path.call(handle);
+path.replace("\\", "/");
+assert(path == "tests/bindings/asset/asset.rhai", "asset_path: " + path);
 
 let state = world.load_state.call(handle);
 assert(state == "NotLoaded" || state == "Loading" || state == "Loaded", "load_state");
