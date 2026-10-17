@@ -341,5 +341,4 @@ mod test {
         allocator.clean_garbage_allocations();
         assert_eq!(allocator.allocations.len(), 1);
     }
-
 }

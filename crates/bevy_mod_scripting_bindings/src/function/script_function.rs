@@ -582,10 +582,9 @@ impl ScriptFunctionRegistry {
         let func = self
             .get_function(TypeId::of::<StaticTypeRef>(), name)?
             .bind_to_type(type_info);
-        self.bound_to_type.lock().insert(
-            (type_info.type_id(), func.info.name.clone()),
-            func.clone(),
-        );
+        self.bound_to_type
+            .lock()
+            .insert((type_info.type_id(), func.info.name.clone()), func.clone());
         Ok(func)
     }
 

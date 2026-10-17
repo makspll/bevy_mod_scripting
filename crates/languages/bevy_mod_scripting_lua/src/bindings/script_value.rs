@@ -218,12 +218,14 @@ fn call_from_lua(
                 && let Some(context) = &mut **context
             {
                 profiling::scope!("function call context");
-                context.set_location(lua.inspect_stack(1, |debug| LocationContext {
-                    line: debug.current_line().unwrap_or_default() as u32,
-                    col: None,
-                    script_name: lua
-                        .app_data_ref::<LuaContextAppData>()
-                        .and_then(|v| v.last_loaded_script_name.as_ref().map(|n| n.to_string())),
+                context.set_location(lua.inspect_stack(1, |debug| {
+                    LocationContext {
+                        line: debug.current_line().unwrap_or_default() as u32,
+                        col: None,
+                        script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
+                            v.last_loaded_script_name.as_ref().map(|n| n.to_string())
+                        }),
+                    }
                 }));
             }
             Err(error.to_lua_error())
