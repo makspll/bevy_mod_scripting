@@ -213,7 +213,7 @@ impl AccessByteSet {
 
     /// Clear accesses leaving the current capacity intact
     pub fn clear(&mut self) {
-        self.data.iter_mut().for_each(|a| _ = a.clear_accesses());
+        self.data.iter_mut().for_each(|a| *a = a.clear_accesses());
     }
 }
 
