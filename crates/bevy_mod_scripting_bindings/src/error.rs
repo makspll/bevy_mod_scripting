@@ -1,6 +1,6 @@
 //! Error types for the bindings
 use crate::{
-    FunctionCallContext, FunctionScope, ReflectAllocationId, ReflectBaseType, ReflectReference,
+    FunctionCallContext, FunctionScope, ReflectBaseType, ReflectReference,
     script_value::ScriptValue,
 };
 use bevy_ecs::{component::ComponentId, entity::Entity};
@@ -103,11 +103,7 @@ impl DisplayWithTypeInfo for WorldAccessRangeWithDisplay {
                 WorldAccessRange::External(idx) => {
                     f.write_str("Allocation to: ")?;
 
-                    write!(
-                        f,
-                        "{}",
-                        WithTypeInfo::new_with_info(&ReflectAllocationId::new(idx), provider)
-                    )
+                    write!(f, "{idx}")
                 }
                 WorldAccessRange::Global => f.write_str("World Access"),
             }
