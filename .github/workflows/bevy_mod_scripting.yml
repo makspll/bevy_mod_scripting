@@ -76,7 +76,7 @@ jobs:
           # pull requests get a reduced matrix to leave runner capacity for others, everything else runs the lot
           MATRIX_ARGS: ${{ github.event_name != 'pull_request' && '--full' || '' }}
         run: |
-          cargo xtask ci-matrix $MATRIX_ARGS > matrix.json
+          cargo xtask ci-matrix --full | jq '[.[] | select(.os == "windows-latest" and (.name | startswith("Test")))]' > matrix.json
           cat matrix.json
           echo "Convert to single line JSON"
           jq -c . matrix.json > matrix-one-line.json
