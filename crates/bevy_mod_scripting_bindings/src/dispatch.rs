@@ -53,45 +53,33 @@ pub fn index(
     key: ScriptValue,
     ctx: FunctionCallContext,
 ) -> Result<Member, InteropError> {
-    if let ScriptValue::String(name) = &key
-        && let Some(member) = member(&world, &reference, name)?
-    {
-        return Ok(member);
+    match key.as_string() {
+        Ok(name) => index_name(world, Cow::Owned(reference), name, ctx),
+        Err(key) => magic_get(world, reference, key, ctx),
     }
-    magic_get(world, reference, key, ctx)
 }
 
-/// [`index`] with a borrowed string key, the key and the reference are only copied for field access.
-pub fn index_name(
+/// [`index`] with a string key, which is only copied when it names no member, i.e. for field access.
+///
+/// The reference is only cloned for field access too.
+pub fn index_name<'n>(
     world: WorldGuard,
-    reference: &ReflectReference,
-    name: &str,
+    reference: Cow<'_, ReflectReference>,
+    name: impl Into<Cow<'n, str>>,
     ctx: FunctionCallContext,
 ) -> Result<Member, InteropError> {
-    match member(&world, reference, name)? {
-        Some(member) => Ok(member),
-        None => magic_get(
+    profiling::function_scope!("dispatch::index");
+    let type_id = reference.tail_type_id(world.clone())?.or_fake_id();
+    match world.lookup_member(&reference, type_id, name) {
+        Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => Ok(Member::Method(func)),
+        Ok(member) => Ok(Member::Static(member)),
+        Err(name) => magic_get(
             world,
-            reference.clone(),
-            ScriptValue::String(Cow::Owned(name.to_owned())),
+            reference.into_owned(),
+            ScriptValue::String(Cow::Owned(name.into_owned())),
             ctx,
         ),
     }
-}
-
-/// Looks up a member by name, see [`WorldExtensions::lookup_member`].
-fn member(
-    world: &WorldGuard,
-    reference: &ReflectReference,
-    name: &str,
-) -> Result<Option<Member>, InteropError> {
-    profiling::function_scope!("dispatch::member");
-    let type_id = reference.tail_type_id(world.clone())?.or_fake_id();
-    Ok(match world.lookup_member(reference, type_id, name) {
-        Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => Some(Member::Method(func)),
-        Ok(member) => Some(Member::Static(member)),
-        Err(_) => None,
-    })
 }
 
 /// Accesses a field or element with the [`crate::MagicFunctions::get`] function.

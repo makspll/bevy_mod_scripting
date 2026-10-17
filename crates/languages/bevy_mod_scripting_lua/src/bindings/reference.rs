@@ -1,4 +1,4 @@
-use std::any::TypeId;
+use std::{any::TypeId, borrow::Cow};
 
 use bevy_mod_scripting_bindings::{ReflectReference, WorldGuard, dispatch, error::InteropError};
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
@@ -70,7 +70,12 @@ impl UserData for LuaReflectReference {
                     mlua::Value::String(name) => {
                         let name = name.to_str()?;
                         with_world(|world| {
-                            dispatch::index_name(world, &self_.0, &name, LUA_CALLER_CONTEXT)
+                            dispatch::index_name(
+                                world,
+                                Cow::Borrowed(&self_.0),
+                                &*name,
+                                LUA_CALLER_CONTEXT,
+                            )
                         })?
                     }
                     _ => {
