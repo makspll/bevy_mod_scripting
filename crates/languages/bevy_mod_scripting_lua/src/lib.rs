@@ -218,6 +218,7 @@ pub fn lua_context_load(
     context.set_app_data(LuaContextAppData {
         last_loaded_script_name: context_key.script().path().cloned(),
     });
+    context.set_app_data(bindings::script_value::LuaFunctionCache::default());
 
     load_lua_content_into_context(&mut context, context_key, content, world_id)?;
     Ok(context)

@@ -237,7 +237,7 @@ fn call_from_lua(
 ///
 /// Keeps the function alive with its Lua function, so its [`DynamicScriptFunction::identity`] can't be reused.
 #[derive(Default)]
-struct LuaFunctionCache(HashMap<usize, (DynamicScriptFunction, mlua::Function)>);
+pub(crate) struct LuaFunctionCache(HashMap<usize, (DynamicScriptFunction, mlua::Function)>);
 
 /// Converts a registered function to a Lua function, reusing the one created the last time.
 ///
@@ -258,9 +258,7 @@ pub(crate) fn registered_function_into_lua(
             call_from_lua(lua, |context| function.call(args.0, context))
         }
     })?;
-    if lua.app_data_ref::<LuaFunctionCache>().is_none() {
-        lua.set_app_data(LuaFunctionCache::default());
-    }
+    // the cache is created with the context, inserting app data here could panic if any is borrowed
     if let Some(mut cache) = lua.app_data_mut::<LuaFunctionCache>() {
         cache.0.insert(key, (function, lua_function.clone()));
     }
