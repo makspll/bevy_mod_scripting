@@ -1,4 +1,4 @@
-use std::any::TypeId;
+use std::{any::TypeId, borrow::Cow};
 
 use bevy_mod_scripting_bindings::{ReflectReference, WorldGuard, dispatch, error::InteropError};
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
@@ -63,20 +63,25 @@ impl UserData for LuaReflectReference {
         // methods come back unbound, `v:method()` passes the value itself
         m.add_meta_function(
             MetaMethod::Index,
-            |lua, (self_, key): (LuaReflectReference, mlua::Value)| {
+            |lua, (self_, key): (mlua::UserDataRef<LuaReflectReference>, mlua::Value)| {
                 profiling::function_scope!("MetaMethod::Index");
                 let member = match &key {
-                    // names are only copied if they are no member, i.e. fields
+                    // names and the receiver are only copied for field access
                     mlua::Value::String(name) => {
                         let name = name.to_str()?;
                         with_world(|world| {
-                            dispatch::index_name(world, self_.0, &*name, LUA_CALLER_CONTEXT)
+                            dispatch::index_name(
+                                world,
+                                Cow::Borrowed(&self_.0),
+                                &*name,
+                                LUA_CALLER_CONTEXT,
+                            )
                         })?
                     }
                     _ => {
                         let key = LuaScriptValue::from_lua(key, lua)?;
                         with_world(|world| {
-                            dispatch::index(world, self_.0, key.into(), LUA_CALLER_CONTEXT)
+                            dispatch::index(world, self_.0.clone(), key.into(), LUA_CALLER_CONTEXT)
                         })?
                     }
                 };

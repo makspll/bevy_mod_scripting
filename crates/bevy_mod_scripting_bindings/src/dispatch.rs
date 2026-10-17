@@ -54,15 +54,17 @@ pub fn index(
     ctx: FunctionCallContext,
 ) -> Result<Member, InteropError> {
     match key.as_string() {
-        Ok(name) => index_name(world, reference, name, ctx),
+        Ok(name) => index_name(world, Cow::Owned(reference), name, ctx),
         Err(key) => magic_get(world, reference, key, ctx),
     }
 }
 
 /// [`index`] with a string key, which is only copied when it names no member, i.e. for field access.
+///
+/// The reference is only cloned for field access too.
 pub fn index_name<'n>(
     world: WorldGuard,
-    reference: ReflectReference,
+    reference: Cow<'_, ReflectReference>,
     name: impl Into<Cow<'n, str>>,
     ctx: FunctionCallContext,
 ) -> Result<Member, InteropError> {
@@ -73,7 +75,7 @@ pub fn index_name<'n>(
         Ok(member) => Ok(Member::Static(member)),
         Err(name) => magic_get(
             world,
-            reference,
+            reference.into_owned(),
             ScriptValue::String(Cow::Owned(name.into_owned())),
             ctx,
         ),
