@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0](https://github.com/makspll/bevy_mod_scripting/compare/ladfile_builder-v0.23.0...ladfile_builder-v0.24.0) - 2026-10-17
+
+### Added
+
+- [**breaking**] namespace members and builtins replace script globals ([#635](https://github.com/makspll/bevy_mod_scripting/pull/635))
+- [**breaking**] document generic types in LAD files and the Lua declarations ([#631](https://github.com/makspll/bevy_mod_scripting/pull/631))
+- [**breaking**] hand-written asset, camera and render bindings ([#626](https://github.com/makspll/bevy_mod_scripting/pull/626))
+
+### Refactored
+
+- [**breaking**] flat ThroughTypeInfo, ScriptType derive, richer LAD and shared backend visitor ([#633](https://github.com/makspll/bevy_mod_scripting/pull/633))
+- [**breaking**] language-agnostic dispatch, type values and shared currying ([#632](https://github.com/makspll/bevy_mod_scripting/pull/632))
+
 ## [0.23.0](https://github.com/makspll/bevy_mod_scripting/compare/ladfile_builder-v0.22.0...ladfile_builder-v0.23.0) - 2026-10-14
 
 ### Added

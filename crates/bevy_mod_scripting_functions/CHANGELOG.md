@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.23.0...bevy_mod_scripting_functions-v0.24.0) - 2026-10-17
+
+### Added
+
+- [**breaking**] namespace members and builtins replace script globals ([#635](https://github.com/makspll/bevy_mod_scripting/pull/635))
+- [**breaking**] reach types through category namespaces instead of globals ([#629](https://github.com/makspll/bevy_mod_scripting/pull/629))
+- [**breaking**] hand-written gizmos, animation, audio and state bindings ([#628](https://github.com/makspll/bevy_mod_scripting/pull/628))
+- [**breaking**] hand-written sprite, text and ui bindings ([#627](https://github.com/makspll/bevy_mod_scripting/pull/627))
+- [**breaking**] hand-written asset, camera and render bindings ([#626](https://github.com/makspll/bevy_mod_scripting/pull/626))
+- [**breaking**] hand-written color, input and window bindings ([#625](https://github.com/makspll/bevy_mod_scripting/pull/625))
+- [**breaking**] hand-written time and transform bindings ([#624](https://github.com/makspll/bevy_mod_scripting/pull/624))
+- [**breaking**] hand-written ecs bindings, generic eq and clone ([#623](https://github.com/makspll/bevy_mod_scripting/pull/623))
+- [**breaking**] hand-written math bindings ([#621](https://github.com/makspll/bevy_mod_scripting/pull/621))
+- [**breaking**] remove the deprecated types global and short names in get_type_by_name ([#615](https://github.com/makspll/bevy_mod_scripting/pull/615))
+
+### Refactored
+
+- [**breaking**] language-agnostic dispatch, type values and shared currying ([#632](https://github.com/makspll/bevy_mod_scripting/pull/632))
+
 ## [0.23.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.22.0...bevy_mod_scripting_functions-v0.23.0) - 2026-10-14
 
 ### Added
