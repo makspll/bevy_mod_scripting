@@ -39,34 +39,25 @@ pub use rand;
 pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
     NamespaceBuilder::<World>::new_unregistered(world)
-        .register("_get_mock_type", |s: FunctionCallContext| {
-            let world = s.world().unwrap();
+        .register("_get_mock_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(reg, &mut allocator)
+            ReflectReference::new_allocated(reg)
         })
-        .register("_get_mock_component_type", |s: FunctionCallContext| {
-            let world = s.world().unwrap();
+        .register("_get_mock_component_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
             let comp = ScriptComponentRegistration::new(reg, ComponentId::new(999999999999999));
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(comp, &mut allocator)
+            ReflectReference::new_allocated(comp)
         })
-        .register("_get_mock_resource_type", |s: FunctionCallContext| {
-            let world = s.world().unwrap();
+        .register("_get_mock_resource_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
             let comp = ScriptResourceRegistration::new(reg, ComponentId::new(999999999999999));
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(comp, &mut allocator)
+            ReflectReference::new_allocated(comp)
         })
         .register("_sleep", |time: f64| {
             std::thread::sleep(std::time::Duration::from_secs_f64(time));
@@ -74,18 +65,13 @@ pub fn register_test_functions(world: &mut App) {
         })
         .register(
             "_get_entity_with_test_component",
-            |s: FunctionCallContext, name: String| {
-                let world = s.world().unwrap();
+            |_s: FunctionCallContext, name: String| {
                 World::enumerate_test_components()
                     .iter()
                     .find(|(n, _, _)| n.contains(&name))
                     .map(|(_, _, c)| {
-                        let allocator = world.allocator();
-                        let mut allocator = allocator.write();
-
                         ReflectReference::new_allocated(
                             c.unwrap_or(Entity::from_raw_u32(9999).unwrap()),
-                            &mut allocator,
                         )
                     })
             },
@@ -143,31 +129,19 @@ pub fn register_test_functions(world: &mut App) {
 
     // helpers of the script tests, `import_namespace("test_utils").noop()`
     NamespaceBuilder::<NamespaceMembers>::in_namespace(world, "test_utils")
-        .register("_make_invalid_entity", |s: FunctionCallContext| {
-            let world = s.world().unwrap();
-
+        .register("_make_invalid_entity", |_s: FunctionCallContext| {
             let entity = Entity::from_raw_u32(u32::MAX - 2).unwrap();
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(entity, &mut allocator)
+            ReflectReference::new_allocated(entity)
         })
-        .register("_make_placeholder_entity", |s: FunctionCallContext| {
-            let world = s.world().unwrap();
-
+        .register("_make_placeholder_entity", |_s: FunctionCallContext| {
             let entity = Entity::PLACEHOLDER;
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(entity, &mut allocator)
+            ReflectReference::new_allocated(entity)
         })
         .register(
             "_entity_from_index",
-            |s: FunctionCallContext, index: u32| {
-                let world = s.world().unwrap();
-
+            |_s: FunctionCallContext, index: u32| {
                 let entity = Entity::from_raw_u32(index).unwrap();
-                let allocator = world.allocator();
-                let mut allocator = allocator.write();
-                ReflectReference::new_allocated(entity, &mut allocator)
+                ReflectReference::new_allocated(entity)
             },
         )
         .register("global_hello_world", || Ok("hi!"))
@@ -218,9 +192,7 @@ pub fn register_test_functions(world: &mut App) {
                 let handle = world.with_resource_mut(|mut assets: Mut<Assets<TestAsset>>| {
                     assets.add(test_asset)
                 })?;
-                let allocator = world.allocator();
-                let mut allocator = allocator.write();
-                Ok(ReflectReference::new_allocated(handle, &mut allocator))
+                Ok(ReflectReference::new_allocated(handle))
             },
         );
 }

@@ -61,66 +61,85 @@ impl IntoScriptErased for ReflectReference {
         self_: ReflectReference,
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError> {
-        self_.with_reflect(world.clone(), |r| {
-            into_script_erased(self_.clone(), r, world)
-        })?
+        let erased = self_.with_reflect(world.clone(), |r| into_script_erased(r, world))??;
+        Ok(match erased {
+            Erased::Value(value) => value,
+            Erased::Reference { somes } => {
+                let mut self_ = self_;
+                for _ in 0..somes {
+                    // don't want correction to mess with this
+                    self_.push_path(ReferencePart::IntegerAccess(0, false));
+                }
+                ScriptValue::Reference(self_)
+            }
+        })
     }
 }
 
-#[profiling::function]
-fn into_script_erased(
-    mut self_: ReflectReference,
-    r: &dyn PartialReflect,
-    world: WorldGuard,
-) -> Result<ScriptValue, InteropError> {
+fn into_script_erased(r: &dyn PartialReflect, world: WorldGuard) -> Result<Erased, InteropError> {
     let type_id = r
         .get_represented_type_info()
         .map(|i| i.type_id())
         .or_fake_id();
 
+    let value = |v: Result<ScriptValue, InteropError>| v.map(Erased::Value);
     match_by_type! (
         match type_id {
-            ta : usize   => return downcast_into_value!(r, usize).into_script(world),
-            tb : isize   => return downcast_into_value!(r, isize).into_script(world),
-            tc : u8      => return downcast_into_value!(r, u8).into_script(world),
-            td : u16     => return downcast_into_value!(r, u16).into_script(world),
-            te : u32     => return downcast_into_value!(r, u32).into_script(world),
-            tf : u64     => return downcast_into_value!(r, u64).into_script(world),
-            tg : u128    => return downcast_into_value!(r, u128).into_script(world),
-            th : i8      => return downcast_into_value!(r, i8).into_script(world),
-            ti : i16     => return downcast_into_value!(r, i16).into_script(world),
-            tj : i32     => return downcast_into_value!(r, i32).into_script(world),
-            tk : i64     => return downcast_into_value!(r, i64).into_script(world),
-            tl : i128    => return downcast_into_value!(r, i128).into_script(world),
-            tm : f32     => return downcast_into_value!(r, f32).into_script(world),
-            tn : f64     => return downcast_into_value!(r, f64).into_script(world),
-            to : bool    => return downcast_into_value!(r, bool).into_script(world),
-            tp : char    => return downcast_into_value!(r, char).into_script(world),
-            tq : String  => return downcast_into_value!(r, String).clone().into_script(world),
+            ta : usize   => return value(downcast_into_value!(r, usize).into_script(world)),
+            tb : isize   => return value(downcast_into_value!(r, isize).into_script(world)),
+            tc : u8      => return value(downcast_into_value!(r, u8).into_script(world)),
+            td : u16     => return value(downcast_into_value!(r, u16).into_script(world)),
+            te : u32     => return value(downcast_into_value!(r, u32).into_script(world)),
+            tf : u64     => return value(downcast_into_value!(r, u64).into_script(world)),
+            tg : u128    => return value(downcast_into_value!(r, u128).into_script(world)),
+            th : i8      => return value(downcast_into_value!(r, i8).into_script(world)),
+            ti : i16     => return value(downcast_into_value!(r, i16).into_script(world)),
+            tj : i32     => return value(downcast_into_value!(r, i32).into_script(world)),
+            tk : i64     => return value(downcast_into_value!(r, i64).into_script(world)),
+            tl : i128    => return value(downcast_into_value!(r, i128).into_script(world)),
+            tm : f32     => return value(downcast_into_value!(r, f32).into_script(world)),
+            tn : f64     => return value(downcast_into_value!(r, f64).into_script(world)),
+            to : bool    => return value(downcast_into_value!(r, bool).into_script(world)),
+            tp : char    => return value(downcast_into_value!(r, char).into_script(world)),
+            tq : String  => return value(downcast_into_value!(r, String).clone().into_script(world)),
             tcs: Cow<'static, str> => match r.try_downcast_ref::<Cow<'static, str>>() {
-                Some(cow) => return Ok(ScriptValue::String(cow.clone())),
+                Some(cow) => return Ok(Erased::Value(ScriptValue::String(cow.clone()))),
                 None => return Err(InteropError::type_mismatch(
                     std::any::TypeId::of::<Cow<str>>(),
                     r.get_represented_type_info().map(|i| i.type_id()),
                 )),
             },
-            tr : PathBuf => return downcast_into_value!(r, PathBuf).clone().into_script(world),
-            ts : OsString=> return downcast_into_value!(r, OsString).clone().into_script(world),
-            tsv: ScriptValue=> return Ok(downcast_into_value!(r, ScriptValue).clone()),
-            tn : ()      => return Ok(ScriptValue::Unit)
+            tr : PathBuf => return value(downcast_into_value!(r, PathBuf).clone().into_script(world)),
+            ts : OsString=> return value(downcast_into_value!(r, OsString).clone().into_script(world)),
+            tsv: ScriptValue=> return Ok(Erased::Value(downcast_into_value!(r, ScriptValue).clone())),
+            tn : ()      => return Ok(Erased::Value(ScriptValue::Unit))
         }
     );
 
     // either return nil or ref into
     if let Ok(as_option) = r.as_option() {
-        return if let Some(s) = as_option {
-            // don't want correction to mess with this
-            self_.push_path(ReferencePart::IntegerAccess(0, false));
-            into_script_erased(self_, s, world)
-        } else {
-            Ok(ScriptValue::Unit)
+        return match as_option {
+            Some(s) => into_script_erased(s, world).map(Erased::inside_some),
+            None => Ok(Erased::Value(ScriptValue::Unit)),
         };
     }
 
-    Ok(ScriptValue::Reference(self_))
+    Ok(Erased::Reference { somes: 0 })
+}
+
+/// What a reference converts to, worked out while borrowing the value, so the reference is only moved into the result when needed.
+enum Erased {
+    /// A value converted on its own, i.e. a primitive
+    Value(ScriptValue),
+    /// The reference itself, through `somes` levels of `Some` (i.e. `Option<Option<T>>`)
+    Reference { somes: usize },
+}
+
+impl Erased {
+    fn inside_some(self) -> Self {
+        match self {
+            Erased::Reference { somes } => Erased::Reference { somes: somes + 1 },
+            value => value,
+        }
+    }
 }

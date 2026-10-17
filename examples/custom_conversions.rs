@@ -11,9 +11,7 @@ use std::any::TypeId;
 use bevy::reflect::Typed;
 use bevy::{prelude::*, reflect::TypeRegistry};
 use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_bindings::{
-    AppReflectAllocator, FromScript, InteropError, ReflectReference, WorldExtensions,
-};
+use bevy_mod_scripting_bindings::{FromScript, InteropError, ReflectReference};
 
 // `ScriptType` implements everything else a type needs to be used in function signatures, `from = custom` leaves `FromScript` to us
 #[derive(Clone, ScriptType, Reflect)]
@@ -73,7 +71,7 @@ pub enum MyFunkyReturnType {
 impl bevy_mod_scripting::bindings::IntoScript for MyFunkyReturnType {
     fn into_script(
         self,
-        world: bevy_mod_scripting_bindings::WorldGuard,
+        _world: bevy_mod_scripting_bindings::WorldGuard,
     ) -> std::result::Result<ScriptValue, InteropError> {
         match self {
             // note if we return primitives, the type is no longer callable!
@@ -83,10 +81,7 @@ impl bevy_mod_scripting::bindings::IntoScript for MyFunkyReturnType {
             // references stay callabke though, in this case we change the type
             MyFunkyReturnType::HandleToSprite(handle) => {
                 // here in order to create a reference to this handle, we must allocate it first
-                let allocator = world.allocator();
-                let mut allocator_guard = allocator.write();
-                let allocated = ReflectReference::new_allocated(handle, &mut allocator_guard);
-                Ok(allocated.into())
+                Ok(ReflectReference::new_allocated(handle).into())
             }
         }
     }
@@ -118,8 +113,7 @@ pub fn main() {
             Startup,
             move |mut commands: Commands,
                   mut script_assets: ResMut<Assets<ScriptAsset>>,
-                  mut callbacks: MessageWriter<ScriptCallbackMessage>,
-                  allocator: ResMut<AppReflectAllocator>| {
+                  mut callbacks: MessageWriter<ScriptCallbackMessage>| {
                 let content = r#"
                     function on_example(my_funky_argument_payload)
                         print("input:", my_funky_argument_payload)
@@ -132,9 +126,8 @@ pub fn main() {
                 let handle = script_assets.add(script_asset);
                 let attachment = ScriptAttachment::StaticScript(handle.clone());
 
-                let mut allocator = allocator.write();
                 let reference_payload =
-                    ReflectReference::new_allocated(MyFunkyArgumentType::Number(2), &mut allocator);
+                    ReflectReference::new_allocated(MyFunkyArgumentType::Number(2));
 
                 commands.queue(AttachScript::<LuaScriptingPlugin>::new(attachment.clone()));
                 callbacks.write(

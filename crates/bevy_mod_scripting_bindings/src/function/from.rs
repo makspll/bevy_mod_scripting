@@ -3,7 +3,7 @@
 use super::bound::BoundFields;
 use super::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
 use crate::{
-    EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
+    EnumVariantRef, ReflectBase, ReflectReference, ScriptValue, construct::construct_reference,
     error::InteropError, script_value::VariadicTuple,
 };
 use bevy_mod_scripting_world::WorldAccessRange;
@@ -182,6 +182,17 @@ impl FromScript for ReflectReference {
     }
 }
 
+/// Claims access for a borrow which outlives `reference` ([`R`] and [`M`]): a value allocated for scripts
+/// is kept alive by the claim until it's released, see [`ReflectReference::reflect_unsafe`].
+fn claim_for_borrow(world: &WorldGuard, reference: &ReflectReference, write: bool) -> bool {
+    let raid: WorldAccessRange = (&reference.base.base_id).into();
+    match &reference.base.base_id {
+        ReflectBase::Owned(id) => world.claim_access_owned(raid, write, id.owner()),
+        _ if write => world.claim_write_access(raid),
+        _ => world.claim_read_access(raid),
+    }
+}
+
 fn variant_as_value<T: 'static>(
     reference: &ReflectReference,
     world: &WorldGuard,
@@ -313,7 +324,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
                 let raid: WorldAccessRange = (&reflect_reference.base.base_id).into();
-                if world.claim_read_access(raid) {
+                if claim_for_borrow(&world, &reflect_reference, false) {
                     // Safety: we just claimed access
                     let ref_ =
                         unsafe { reflect_reference.reflect_unsafe_non_empty(world.clone()) }?;
@@ -389,7 +400,7 @@ impl<T: FromReflect> FromScript for M<'_, T> {
             ScriptValue::Reference(reflect_reference) => {
                 let raid: WorldAccessRange = (&reflect_reference.base.base_id).into();
 
-                if world.claim_write_access(raid) {
+                if claim_for_borrow(&world, &reflect_reference, true) {
                     // Safety: we just claimed write access
                     let ref_ = unsafe { reflect_reference.reflect_mut_unsafe_non_empty(world) }?;
                     let type_id = ref_.get_represented_type_info().map(|i| i.type_id());

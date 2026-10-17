@@ -10,9 +10,7 @@ use bevy::{
     },
     reflect::Reflect,
 };
-use bevy_mod_scripting_bindings::{
-    FromScript, IntoScript, M, R, ReflectReference, ScriptValue, V, WorldExtensions,
-};
+use bevy_mod_scripting_bindings::{FromScript, IntoScript, M, R, ReflectReference, ScriptValue, V};
 use criterion::{
     BatchSize, BenchmarkFilter, BenchmarkGroup, Criterion, criterion_main, measurement::Measurement,
 };
@@ -211,11 +209,7 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
 
     perform_benchmark_with_generator(
         "ScriptValue::Reference::from_into",
-        &|rng, world| {
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(ReflectyVal(rng.random()), &mut allocator)
-        },
+        &|rng, _world| ReflectReference::new_allocated(ReflectyVal(rng.random())),
         &|w, i| {
             let i = i.into_script(w.clone()).unwrap();
             let _ = ReflectReference::from_script(i, w).unwrap();

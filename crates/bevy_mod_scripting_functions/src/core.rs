@@ -788,11 +788,7 @@ impl ReflectReference {
         let copy = reference.with_reflect(world.clone(), |value| {
             <dyn PartialReflect>::from_reflect_or_clone(value, world.clone())
         })??;
-        let copy = {
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated_boxed_parial_reflect(copy, &mut allocator)?
-        };
+        let copy = ReflectReference::new_allocated_boxed_parial_reflect(copy)?;
         ReflectReference::into_script_erased(copy, world)
     }
 
@@ -897,12 +893,8 @@ impl ReflectReference {
         )?;
         reference.with_reflect_mut(world.clone(), |s| match s.try_map_get(key.as_ref())? {
             Some(value) => {
-                let reference = {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-                    let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
-                    ReflectReference::new_allocated_boxed(owned_value, &mut allocator)
-                };
+                let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
+                let reference = ReflectReference::new_allocated_boxed(owned_value);
                 Ok(Some(ReflectReference::into_script_erased(
                     reference, world,
                 )?))
@@ -952,11 +944,7 @@ impl ReflectReference {
         profiling::function_scope!("pop");
         let world = ctxt.world()?;
         let o = reference.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
-        let reference = {
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated_boxed_parial_reflect(o, &mut allocator)?
-        };
+        let reference = ReflectReference::new_allocated_boxed_parial_reflect(o)?;
 
         ReflectReference::into_script_erased(reference, world)
     }
@@ -1068,11 +1056,7 @@ impl ReflectReference {
         let removed = reference.with_reflect_mut(world.clone(), |s| s.try_remove_boxed(key))??;
         match removed {
             Some(removed) => {
-                let reference = {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-                    ReflectReference::new_allocated_boxed_parial_reflect(removed, &mut allocator)?
-                };
+                let reference = ReflectReference::new_allocated_boxed_parial_reflect(removed)?;
                 ReflectReference::into_script_erased(reference, world)
             }
             None => Ok(ScriptValue::Unit),

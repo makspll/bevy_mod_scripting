@@ -25,7 +25,7 @@ use bevy_ecs::{
 };
 use bevy_log::{debug, error, warn_once};
 use bevy_mod_scripting_bindings::{
-    AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
+    AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, AppScriptTypeCatalogue, CurrentScriptAttachment, InteropError,
     IntoScript, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
     ScriptResourceRegistration, V, WorldExtensions,
@@ -187,7 +187,6 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     component_registry: AppScriptComponentRegistry,
     callback_runners: AppScriptCallbackRunners,
     type_catalogue: AppScriptTypeCatalogue,
-    allocator: AppReflectAllocator,
     subset: AccessByteSet,
     callback_label: CallbackLabel,
     system_params: Vec<ScriptSystemParam>,
@@ -286,7 +285,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         let mut payload = Vec::with_capacity(state.system_params.len());
         let cache = WorldAccessGuard::setup_cache_raw(
             CurrentScriptAttachment(Some(self.target_attachment.clone())),
-            state.allocator.clone(),
             state.function_registry.clone(),
             state.schedule_registry.clone(),
             state.component_registry.clone(),
@@ -472,7 +470,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 .get_resource_or_init::<AppScriptFunctionRegistry>()
                 .clone(),
             schedule_registry: world.get_resource_or_init::<AppScheduleRegistry>().clone(),
-            allocator: world.get_resource_or_init::<AppReflectAllocator>().clone(),
             component_registry: world
                 .get_resource_or_init::<AppScriptComponentRegistry>()
                 .clone(),

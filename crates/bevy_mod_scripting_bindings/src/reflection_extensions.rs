@@ -8,7 +8,7 @@ use std::{
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, ReflectRef, TypeInfo};
 
-use crate::{ReflectReference, WorldExtensions, error::InteropError};
+use crate::{ReflectReference, error::InteropError};
 
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
@@ -422,10 +422,8 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         }
     }
 
-    fn allocate(boxed: Box<dyn Reflect>, world: WorldGuard) -> ReflectReference {
-        let allocator = world.allocator();
-        let mut allocator = allocator.write();
-        ReflectReference::new_allocated_boxed(boxed, &mut allocator)
+    fn allocate(boxed: Box<dyn Reflect>, _world: WorldGuard) -> ReflectReference {
+        ReflectReference::new_allocated_boxed(boxed)
     }
 }
 
