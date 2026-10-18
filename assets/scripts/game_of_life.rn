@@ -32,7 +32,7 @@ pub fn on_script_loaded() {
 
     // set some cells alive
     for _ in 0..1000 {
-        let index = (game_of_life.rand() * 1000000.0).to_integer() % len;
+        let index = (game_of_life.rand() * 1000000.0).to::<i64>() % len;
         cells[index] = 255;
     }
 }
