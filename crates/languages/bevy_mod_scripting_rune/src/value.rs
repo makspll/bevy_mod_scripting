@@ -171,7 +171,9 @@ pub fn from_rune(value: &Value) -> Result<ScriptValue, InteropError> {
         });
     }
     if hash == <Function as TypeHash>::HASH {
-        return Ok(ScriptValue::Function(rune_function_to_script(value.clone())));
+        return Ok(ScriptValue::Function(rune_function_to_script(
+            value.clone(),
+        )));
     }
     Err(type_error(value))
 }
@@ -189,15 +191,17 @@ pub fn rune_function_to_script(function: Value) -> DynamicScriptFunction {
         functions.retain(|_, function| function.strong_count() > 0);
         functions.insert(id, Arc::downgrade(&function));
     }
-    DynamicScriptFunction::from(move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
-        let result = rune::from_value::<Function>(function.get().clone())
-            .map_err(IntoInteropError::to_bms_error)
-            .and_then(|function| call_rune_function(&function, args));
-        match result {
-            Ok(value) => value,
-            Err(error) => ScriptValue::Error(error),
-        }
-    })
+    DynamicScriptFunction::from(
+        move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
+            let result = rune::from_value::<Function>(function.get().clone())
+                .map_err(IntoInteropError::to_bms_error)
+                .and_then(|function| call_rune_function(&function, args));
+            match result {
+                Ok(value) => value,
+                Err(error) => ScriptValue::Error(error),
+            }
+        },
+    )
     .with_info(FunctionInfo::new().with_name(format!("{RUNE_FUNCTION_PREFIX}{id}")))
 }
 
@@ -222,8 +226,7 @@ const RUNE_FUNCTION_PREFIX: &str = "rune function #";
 
 /// The Rune functions which were passed to BMS, so they come back as the very same function.
 fn rune_functions() -> &'static Mutex<StdHashMap<u64, Weak<SendWrapper<Value>>>> {
-    static FUNCTIONS: OnceLock<Mutex<StdHashMap<u64, Weak<SendWrapper<Value>>>>> =
-        OnceLock::new();
+    static FUNCTIONS: OnceLock<Mutex<StdHashMap<u64, Weak<SendWrapper<Value>>>>> = OnceLock::new();
     FUNCTIONS.get_or_init(Default::default)
 }
 
@@ -262,14 +265,10 @@ pub fn function_to_rune(
     let variadic = unknown_arguments
         || function
             .info
-        .arg_info
-        .iter()
-        .any(|arg| arg.type_id == TypeId::of::<VariadicTuple>());
-    let arity = function
-        .info
-        .arg_info
-        .len()
-        .checked_sub(bound.unwrap_or(0));
+            .arg_info
+            .iter()
+            .any(|arg| arg.type_id == TypeId::of::<VariadicTuple>());
+    let arity = function.info.arg_info.len().checked_sub(bound.unwrap_or(0));
     let function = ScriptFunction::Plain(function);
     match arity {
         Some(arity) if !variadic && arity <= MAX_CALLABLE_ARITY => {

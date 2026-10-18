@@ -151,10 +151,7 @@ fn call_member_inner(name: &str, values: &[Value]) -> Result<Value, InteropError
     let (receiver, rest) = values
         .split_first()
         .ok_or_else(|| InteropError::str("a method needs a receiver"))?;
-    let args = rest
-        .iter()
-        .map(from_rune)
-        .collect::<Result<Vec<_>, _>>()?;
+    let args = rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>()?;
     let result = if let Ok(this) = receiver.borrow_ref::<RuneRef>() {
         let member = dispatch::index_name(
             world()?,
@@ -361,13 +358,13 @@ pub fn register_types(
     )?;
 
     module.associated_function(&Protocol::INTO_ITER, |this: &RuneRef| {
-        vm((|| {
-            match dispatch::iter(world()?, this.0.clone(), RUNE_CALLER_CONTEXT)? {
+        vm(
+            (|| match dispatch::iter(world()?, this.0.clone(), RUNE_CALLER_CONTEXT)? {
                 ScriptValue::FunctionMut(f) => Ok(RuneIter(ScriptFunction::Mut(f))),
                 ScriptValue::Function(f) => Ok(RuneIter(ScriptFunction::Plain(f))),
                 _ => Err(InteropError::str("iterating returned no function")),
-            }
-        })())
+            })(),
+        )
     })?;
     module.associated_function(&Protocol::NEXT, |this: &mut RuneIter| {
         vm((|| match this.0.call(Vec::new())? {
@@ -376,14 +373,17 @@ pub fn register_types(
         })())
     })?;
 
-    module.associated_function(&Protocol::DISPLAY_FMT, |this: &RuneRef, f: &mut Formatter| {
-        let text = rune::vm_try!(vm(world().and_then(|world| dispatch::display(
-            world,
-            this.0.clone(),
-            RUNE_CALLER_CONTEXT
-        ))));
-        rune::vm_write!(f, "{}", text)
-    })?;
+    module.associated_function(
+        &Protocol::DISPLAY_FMT,
+        |this: &RuneRef, f: &mut Formatter| {
+            let text = rune::vm_try!(vm(world().and_then(|world| dispatch::display(
+                world,
+                this.0.clone(),
+                RUNE_CALLER_CONTEXT
+            ))));
+            rune::vm_write!(f, "{}", text)
+        },
+    )?;
     module.associated_function(&Protocol::DEBUG_FMT, |this: &RuneRef, f: &mut Formatter| {
         let text = rune::vm_try!(vm(world().and_then(|world| dispatch::debug(
             world,
@@ -404,10 +404,7 @@ pub fn register_types(
                 let function = function
                     .borrow_ref::<RuneFunction>()
                     .map_err(crate::error::IntoInteropError::to_bms_error)?;
-                let args = rest
-                    .iter()
-                    .map(from_rune)
-                    .collect::<Result<Vec<_>, _>>()?;
+                let args = rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>()?;
                 to_rune(function.0.call(args)?)
             }),
         )

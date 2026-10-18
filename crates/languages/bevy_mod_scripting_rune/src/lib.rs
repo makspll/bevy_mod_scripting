@@ -198,7 +198,8 @@ fn register_callback(callback: String, function: Function) -> Result<(), Interop
             Arc::new(
                 move |args: Vec<ScriptValue>, context: &mut RuneContext, world_id: WorldId| {
                     let pre_handling_callbacks =
-                        RuneScriptingPlugin::readonly_configuration(world_id).pre_handling_callbacks;
+                        RuneScriptingPlugin::readonly_configuration(world_id)
+                            .pre_handling_callbacks;
                     pre_handling_callbacks
                         .iter()
                         .try_for_each(|init| init(&attachment, context))?;

@@ -16,8 +16,8 @@ use criterion::{
 };
 use regex::Regex;
 use script_integration_test_harness::{
-    make_test_lua_plugin, perform_benchmark_with_generator,
-    run_lua_benchmark, run_plugin_callback_command_benchmark, run_plugin_callback_event_benchmark,
+    make_test_lua_plugin, perform_benchmark_with_generator, run_lua_benchmark,
+    run_plugin_callback_command_benchmark, run_plugin_callback_event_benchmark,
     run_plugin_script_load_benchmark, test_functions::rand::Rng,
 };
 use test_utils::{Test, discover_all_tests};

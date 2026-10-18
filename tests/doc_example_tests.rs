@@ -99,9 +99,12 @@ impl Example {
     fn script(&self) -> String {
         match self.language.as_str() {
             "rune" if !self.code.contains("fn main") => {
-                format!("pub fn main() {{
+                format!(
+                    "pub fn main() {{
 {}}}
-", self.code)
+",
+                    self.code
+                )
             }
             _ => self.code.clone(),
         }

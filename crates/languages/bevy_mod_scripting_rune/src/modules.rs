@@ -58,9 +58,10 @@ pub fn register_globals(
     }
 
     module
-        .function("register_callback", move |callback: String, function: Function| {
-            vm(register_callback(callback, function))
-        })
+        .function(
+            "register_callback",
+            move |callback: String, function: Function| vm(register_callback(callback, function)),
+        )
         .build()?;
 
     // runs a function, like Lua's `pcall`: `Ok(value)`, or `Err(message)` if it failed
@@ -109,8 +110,15 @@ pub fn math_module() -> Result<Module, ContextError> {
             $(module.function(stringify!($name), |x: f64| x.$name()).build()?;)*
         };
     }
-    unary!(sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, exp, ln, log2, log10, trunc, fract, signum, to_degrees, to_radians);
-    module.function("atan2", |y: f64, x: f64| y.atan2(x)).build()?;
-    module.function("log", |x: f64, base: f64| x.log(base)).build()?;
+    unary!(
+        sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, exp, ln, log2, log10, trunc, fract,
+        signum, to_degrees, to_radians
+    );
+    module
+        .function("atan2", |y: f64, x: f64| y.atan2(x))
+        .build()?;
+    module
+        .function("log", |x: f64, base: f64| x.log(base))
+        .build()?;
     Ok(module)
 }
