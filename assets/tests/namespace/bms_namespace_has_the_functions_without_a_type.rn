@@ -1,0 +1,17 @@
+pub fn main() {
+    let bms = import_namespace("bms");
+
+    // functions which don't belong to a type are members of a namespace, not globals
+    // (there is no equivalent of checking a global is nil, an unknown name doesn't compile in Rune)
+    assert!(catch(|| bms.log_info).is_ok(), "log_info is a member of bms");
+    assert!(catch(|| bms.construct).is_ok(), "construct is a member of bms");
+}
+
+pub fn on_test() {
+    let bms = import_namespace("bms");
+    // the running script's entity and handle are looked up when asked for
+    assert!(bms.current_entity() != (), "the script is attached to an entity");
+    assert!(bms.current_script() != (), "the running script has a handle");
+    bms.log_info("logged through the bms namespace");
+    true
+}

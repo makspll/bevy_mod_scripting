@@ -1,0 +1,28 @@
+pub fn main() {
+    let SimpleStruct = import_namespace("test_utils").SimpleStruct;
+    let SimpleTupleStruct = import_namespace("test_utils").SimpleTupleStruct;
+    let bms = import_namespace("bms");
+    let world = bms.world;
+
+    let constructed = SimpleStruct.new(#{ foo: 123 });
+    assert!(constructed.foo == 123, "expected foo to be 123 but got {}", constructed.foo);
+
+    // defaults fill in missing fields
+    let defaulted = SimpleStruct.new(#{});
+    assert!(defaulted.foo == 0, "expected foo to be 0 but got {}", defaulted.foo);
+
+    // tuple structs use positional keys, which are 0 based
+    let tuple_struct = SimpleTupleStruct.new(#{ "0": 5 });
+    assert!(tuple_struct[0] == 5, "expected first field to be 5 but got {}", tuple_struct[0]);
+
+    // a list is taken as the fields in order
+    let positional = SimpleTupleStruct.new([9]);
+    assert!(positional[0] == 9, "expected first field to be 9 but got {}", positional[0]);
+
+    // `construct` works for every type, the same way
+    let struct_type = world.get_type_by_name("test_utils::test_data::SimpleStruct");
+    let constructed_via_global = bms.construct(struct_type, #{ foo: 3 });
+    assert!(constructed_via_global.foo == 3, "expected foo to be 3 but got {}", constructed_via_global.foo);
+    let tuple_type = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct");
+    assert!(bms.construct(tuple_type, [4])[0] == 4, "expected construct to accept positional fields");
+}

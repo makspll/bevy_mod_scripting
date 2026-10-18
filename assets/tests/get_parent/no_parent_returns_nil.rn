@@ -1,0 +1,7 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let entity = world.spawn();
+    let parent = world.get_parent(entity);
+
+    assert!(parent == (), "Expected no parents");
+}

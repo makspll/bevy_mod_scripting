@@ -1,0 +1,10 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let entity = world.spawn();
+    let child = world.spawn();
+    let child2 = world.spawn();
+
+    world.push_children(entity, [child, child2]);
+
+    assert!(world.get_children(entity).len() == 2);
+}

@@ -34,7 +34,6 @@ Each language supported by BMS can be switched-on via feature flag as below:
 | Luajit | luajit |
 | Luajit52 | luajit52 |
 | Luau | luau |
-| Rhai | rhai |
 | Rune | rune |
 
 ## Extra Features

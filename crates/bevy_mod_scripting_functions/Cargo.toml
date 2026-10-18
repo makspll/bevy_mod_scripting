@@ -32,7 +32,7 @@ bevy_ui = ["bevy_mod_scripting_bevy_ui_bindings"]
 
 core_functions = []
 lua_bindings = ["bevy_mod_scripting_lua"]
-rhai_bindings = ["bevy_mod_scripting_rhai"]
+rune_bindings = ["bevy_mod_scripting_rune"]
 
 
 [dependencies]
@@ -44,7 +44,7 @@ bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_script = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true, version = "0.23.0" }
-bevy_mod_scripting_rhai = { path = "../languages/bevy_mod_scripting_rhai", optional = true, version = "0.23.0" }
+bevy_mod_scripting_rune = { path = "../languages/bevy_mod_scripting_rune", optional = true, version = "0.23.0" }
 bevy_mod_scripting_world = { workspace = true }
 bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.23.0" }
 

@@ -1,0 +1,32 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let entity_a = world.spawn();
+    let entity_b = world.spawn();
+    let entity_c = world.spawn();
+    let entity_d = world._get_entity_with_test_component("CompWithFromWorldAndComponentData");
+
+    let component_with = world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData");
+    let component_without = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData");
+
+    world.add_default_component(entity_a, component_with);
+    world.add_default_component(entity_b, component_with);
+    world.add_default_component(entity_c, component_with);
+
+    world.add_default_component(entity_b, component_without);
+
+    let found_entities = [];
+    for result in world.query().component(component_with).without(component_without).build() {
+        found_entities.push(result.entity());
+    }
+
+    assert!(found_entities.len() == 3, "Expected 3 entities, got {}", found_entities.len());
+
+    let expected_entities = [entity_d, entity_a, entity_c];
+
+    let i = 0;
+    for entity in found_entities {
+        assert!(entity.index() == expected_entities[i].index(),
+            "Expected entity {} but got {}", expected_entities[i].index(), entity.index());
+        i += 1;
+    }
+}

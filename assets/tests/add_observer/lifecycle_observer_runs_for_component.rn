@@ -1,0 +1,48 @@
+// the values are kept in the script's state, which is replace only
+fn push_state(key, value) {
+    let list = state()[key];
+    list.push(value);
+    state()[key] = list;
+}
+
+pub fn main() {
+    state()["seen"] = [];
+    register_callback("on_marker_added", |event| {
+        push_state("seen", event.entity);
+    });
+}
+
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+    let bevy_ecs = import_namespace("ecs");
+    let Marker = world.register_new_component("script.test", "ObserverMarker");
+    let observer = world.add_observer(bevy_ecs.AddEvent, "on_marker_added", [Marker]);
+    assert!(observer != (), "observer entity should be returned");
+
+    let with = world.spawn();
+    let without = world.spawn();
+    world.add_default_component(with, Marker);
+    world.add_default_component(without, world.get_type_by_name("bevy_transform::components::transform::Transform"));
+    state()["observer"] = observer;
+    state()["with"] = with;
+    state()["Marker"] = Marker;
+
+    // observers queue their callbacks, they do not run in the middle of this one
+    assert!(state()["seen"].len() == 0, "callbacks must wait for the triggering callback to finish");
+}
+
+pub fn on_test_post_update() {
+    let world = import_namespace("bms").world;
+    let seen = state()["seen"];
+    assert!(seen.len() == 1, "observer should have run exactly once, ran: {}", seen.len());
+    assert!(seen[0] == state()["with"], "observer should receive the entity");
+
+    // despawning the observer removes it
+    world.despawn(state()["observer"]);
+    let again = world.spawn();
+    world.add_default_component(again, state()["Marker"]);
+}
+
+pub fn on_test_last() {
+    assert!(state()["seen"].len() == 1, "despawned observer must not run");
+}

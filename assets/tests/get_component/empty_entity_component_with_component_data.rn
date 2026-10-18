@@ -1,0 +1,8 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let component = world.get_type_by_name("test_utils::test_data::TestComponent");
+    let entity = world.spawn();
+    let retrieved = world.get_component(entity, component);
+
+    assert!(retrieved == (), "Component found");
+}

@@ -24,10 +24,10 @@ impl AnimationNodeIndex {
     /// assert(node:index() == 3)
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let NodeIndex = import_namespace.call("animation").NodeIndex;
-    /// let node = NodeIndex.new_.call(3);
-    /// assert(node.index.call() == 3);
+    /// ```multi-lang-example,rune
+    /// let NodeIndex = import_namespace("animation").NodeIndex;
+    /// let node = NodeIndex.new(3);
+    /// assert!(node.index() == 3);
     /// ```
     fn new(index: u32) -> V<AnimationNodeIndex> {
         V(AnimationNodeIndex::new(index as usize))

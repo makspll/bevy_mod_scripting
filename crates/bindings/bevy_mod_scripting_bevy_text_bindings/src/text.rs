@@ -22,10 +22,10 @@ impl Text {
     /// assert(text:as_str() == "hi")
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Text = import_namespace.call("text").Text;
-    /// let text = Text.new_.call("hi");
-    /// assert(text.as_str.call() == "hi");
+    /// ```multi-lang-example,rune
+    /// let Text = import_namespace("text").Text;
+    /// let text = Text.new("hi");
+    /// assert!(text.as_str() == "hi");
     /// ```
     fn new(text: String) -> V<Text> {
         V(Text::new(text))

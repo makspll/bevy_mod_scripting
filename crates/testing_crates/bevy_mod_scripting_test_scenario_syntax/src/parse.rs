@@ -249,8 +249,8 @@ pub enum ScenarioAttachment {
 pub enum ScenarioLanguage {
     /// Lua
     Lua,
-    /// Rhai
-    Rhai,
+    /// Rune
+    Rune,
     /// The language of the script bound to this scenario
     #[serde(rename = "@this_script_language")]
     ThisScriptLanguage,

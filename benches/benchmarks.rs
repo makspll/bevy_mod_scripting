@@ -16,9 +16,9 @@ use criterion::{
 };
 use regex::Regex;
 use script_integration_test_harness::{
-    make_test_lua_plugin, make_test_rhai_plugin, perform_benchmark_with_generator,
+    make_test_lua_plugin, perform_benchmark_with_generator,
     run_lua_benchmark, run_plugin_callback_command_benchmark, run_plugin_callback_event_benchmark,
-    run_plugin_script_load_benchmark, run_rhai_benchmark, test_functions::rand::Rng,
+    run_plugin_script_load_benchmark, test_functions::rand::Rng,
 };
 use test_utils::{Test, discover_all_tests};
 
@@ -67,12 +67,7 @@ impl BenchmarkExecutor for Test {
                 criterion,
             )
             .expect("Benchmark failed"),
-            test_utils::TestKind::Rhai => run_rhai_benchmark(
-                &self.script_asset_path.to_string_lossy(),
-                &self.benchmark_name(),
-                criterion,
-            )
-            .expect("benchmark failed"),
+            test_utils::TestKind::Rune => unimplemented!("Rune benchmarks"),
         }
     }
 }
@@ -263,17 +258,12 @@ fn script_load_benchmarks(criterion: &mut Criterion) {
     // lua
     let content = include_str!("../assets/macro_benchmarks/loading/empty.lua");
     run_plugin_script_load_benchmark(make_test_lua_plugin, "empty Lua", content, &mut group);
-
-    // rhai
-    let content = include_str!("../assets/macro_benchmarks/loading/empty.rhai");
-    run_plugin_script_load_benchmark(make_test_rhai_plugin, "empty Rhai", content, &mut group);
 }
 
 /// benchmarks measuring the overhead of dispatching callbacks to scripts, the callbacks themselves are empty
 fn callback_benchmarks(criterion: &mut Criterion) {
     let mut group = criterion.benchmark_group("callbacks");
     let lua = include_str!("../assets/macro_benchmarks/callbacks/empty_callback.lua");
-    let rhai = include_str!("../assets/macro_benchmarks/callbacks/empty_callback.rhai");
 
     for script_count in [1, 100] {
         run_plugin_callback_event_benchmark(
@@ -283,17 +273,9 @@ fn callback_benchmarks(criterion: &mut Criterion) {
             script_count,
             &mut group,
         );
-        run_plugin_callback_event_benchmark(
-            make_test_rhai_plugin,
-            &format!("event handler {script_count} scripts Rhai"),
-            rhai,
-            script_count,
-            &mut group,
-        );
     }
 
     run_plugin_callback_command_benchmark(make_test_lua_plugin, "command Lua", lua, &mut group);
-    run_plugin_callback_command_benchmark(make_test_rhai_plugin, "command Rhai", rhai, &mut group);
 }
 
 pub fn benches() {

@@ -48,7 +48,6 @@ changelog_include = [
     "bevy_mod_scripting_lua",
     "bevy_mod_scripting_core",
     "bevy_mod_scripting_derive",
-    "bevy_mod_scripting_rhai",
     "bevy_mod_scripting_rune",
     "bevy_mod_scripting_functions",
     "lua_language_server_lad_backend",
@@ -92,12 +91,8 @@ name = "bevy_mod_scripting_derive"
 version_group = "main"
 
 [[package]]
-name = "bevy_mod_scripting_rhai"
+name = "bevy_mod_scripting_rune"
 version_group = "main"
-
-# [[package]]
-# name = "bevy_mod_scripting_rune"
-# version_group = "main"
 
 [[package]]
 name = "bevy_mod_scripting_functions"

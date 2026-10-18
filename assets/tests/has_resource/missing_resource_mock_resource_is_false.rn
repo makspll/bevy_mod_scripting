@@ -1,0 +1,5 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let type = world._get_mock_resource_type();
+    assert!(world.has_resource(type) == false, "Resource should not exist");
+}

@@ -1,0 +1,14 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let NewComponent = world.register_new_component("script.test", "ScriptComponentA");
+    let new_entity = world.spawn();
+    world.add_default_component(new_entity, NewComponent);
+
+    let component_instance = world.get_component(new_entity, NewComponent);
+    assert!(component_instance != (), "the component should exist");
+
+    world.remove_component(new_entity, NewComponent);
+    let component_instance = world.get_component(new_entity, NewComponent);
+
+    assert!(component_instance == (), "the component should be gone");
+}

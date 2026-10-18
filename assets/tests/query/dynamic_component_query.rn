@@ -1,0 +1,23 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let entity_a = world.spawn();
+    let NewComponent = world.register_new_component("script.test", "NewComponent");
+
+    world.add_default_component(entity_a, NewComponent);
+
+    let found_entities = [];
+    for result in world.query().component(NewComponent).build() {
+        found_entities.push(result.entity());
+    }
+
+    assert!(found_entities.len() == 1, "Expected 1 entities, got {}", found_entities.len());
+
+    let expected_entities = [entity_a];
+
+    let i = 0;
+    for entity in found_entities {
+        assert!(entity.index() == expected_entities[i].index(),
+            "Expected entity {} but got {}", expected_entities[i].index(), entity.index());
+        i += 1;
+    }
+}

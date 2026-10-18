@@ -1,0 +1,9 @@
+pub fn main() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let type = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct");
+    let constructed = bms.construct(type, #{ "0": 123 });
+
+    assert!(constructed[0] == 123,
+        "Value was constructed incorrectly, expected constructed.0 to be 123 but got {}", constructed[0]);
+}

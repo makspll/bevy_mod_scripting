@@ -118,60 +118,51 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
     )
 }
 
-#[cfg(feature = "rhai")]
-pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
+#[cfg(feature = "rune")]
+pub fn make_test_rune_plugin() -> bevy_mod_scripting_rune::RuneScriptingPlugin {
     use bevy_mod_scripting_core::ConfigureScriptPlugin;
-    use bevy_mod_scripting_rhai::{
-        RhaiScriptingPlugin,
-        rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext},
+    use bevy_mod_scripting_rune::{
+        RuneScriptingPlugin,
+        rune::{
+            ContextError, Module,
+            runtime::{Function, Value, VmError, VmResult},
+        },
     };
 
-    RhaiScriptingPlugin::default().add_runtime_initializer(|runtime| {
-        let mut runtime = runtime.write();
-        runtime.set_max_call_levels(1000);
-        runtime.register_fn("assert", |a: Dynamic, b: &str| {
-            if !a.is::<bool>() {
-                panic!("Expected a boolean value, but got {a:?}");
-            }
-            if !a.as_bool().unwrap() {
-                panic!("Assertion failed. {b}");
-            }
-        });
-
-        runtime.register_fn("assert", |a: Dynamic| {
-            if !a.is::<bool>() {
-                panic!("Expected a boolean value, but got {a:?}");
-            }
-            if !a.as_bool().unwrap() {
-                panic!("Assertion failed");
-            }
-        });
-        runtime.register_fn(
-            "assert_throws",
-            |ctxt: NativeCallContext, fn_: FnPtr, regex: String| {
-                let args: [Dynamic; 0] = [];
-                let result = fn_.call_within_context::<()>(&ctxt, args);
-                match result {
-                    Ok(_) => panic!("Expected function to throw error, but it did not."),
-                    Err(e) => {
-                        use bevy_mod_scripting_rhai::IntoInteropError;
-
-                        let e = ScriptError::from(e.into_bms_error());
-                        let err = format!("{e}");
-                        let regex = regex::Regex::new(&regex).unwrap();
-                        if regex.is_match(&err) {
-                            Ok::<(), Box<EvalAltResult>>(())
-                        } else {
-                            panic!(
-                                "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
-                                regex.as_str(),
-                                err
-                            )
-                        }
+    fn test_module(module: &mut Module) -> Result<(), ContextError> {
+        // like in Lua, runs the function and expects it to fail with a message matching the regex
+        module
+            .function("assert_throws", |function: &Function, pattern: &str| {
+                let error = match function.call::<Value>(()).into_result() {
+                    Ok(_) => {
+                        return VmResult::err(VmError::panic(
+                            "Expected function to throw error, but it did not.",
+                        ));
                     }
+                    Err(error) => error.to_string(),
+                };
+                #[allow(clippy::unwrap_used, reason = "tests")]
+                let regex = regex::Regex::new(pattern).unwrap();
+                if regex.is_match(&error) {
+                    VmResult::Ok(())
+                } else {
+                    VmResult::err(VmError::panic(format!(
+                        "Expected error message to match the regex: 
+{}
+
+But got:
+{}",
+                        regex.as_str(),
+                        error
+                    )))
                 }
-            },
-        );
+            })
+            .build()?;
+        Ok(())
+    }
+
+    RuneScriptingPlugin::default().add_runtime_initializer(|runtime| {
+        runtime.add_module(test_module);
         Ok(())
     })
 }
@@ -222,46 +213,6 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
                     span.in_scope(|| {
                         bencher.call::<()>(()).unwrap();
                     })
-                })
-            });
-            Ok(())
-        },
-    )
-}
-
-#[cfg(feature = "rhai")]
-pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
-    script_id: &str,
-    label: &str,
-    criterion: &mut criterion::BenchmarkGroup<M>,
-) -> Result<(), String> {
-    use bevy_mod_scripting_rhai::rhai::Dynamic;
-    let span = tracing::trace_span!("bench_fn");
-
-    let plugin = make_test_rhai_plugin();
-    run_plugin_benchmark(
-        plugin,
-        script_id.to_string(),
-        label,
-        criterion,
-        |ctxt, runtime, label, criterion| {
-            let runtime = runtime.read();
-            const ARGS: [usize; 0] = [];
-            let has_pre_bench = ctxt.ast.iter_functions().any(|f| f.name == "pre_bench");
-            criterion.bench_function(label, |c| {
-                // call "pre_bench" if any
-                if has_pre_bench {
-                    let _ = runtime
-                        .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "pre_bench", ARGS)
-                        .unwrap();
-                }
-
-                c.iter(|| {
-                    span.in_scope(|| {
-                        let _ = runtime
-                            .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)
-                            .unwrap();
-                    });
                 })
             });
             Ok(())

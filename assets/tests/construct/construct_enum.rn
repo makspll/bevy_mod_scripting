@@ -1,0 +1,27 @@
+pub fn main() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let type = world.get_type_by_name("test_utils::test_data::SimpleEnum");
+
+    // Struct Variant
+    let constructed = bms.construct(type, #{ variant: "Struct", foo: 123 });
+
+    assert!(constructed.variant_name() == "Struct",
+        "Value was constructed incorrectly, expected constructed.variant to be Struct but got {}", constructed.variant_name());
+    assert!(constructed.foo == 123,
+        "Value was constructed incorrectly, expected constructed.foo to be 123 but got {}", constructed.foo);
+
+    // TupleStruct Variant, the fields of tuples are named by their index, which is 0 based
+    let constructed = bms.construct(type, #{ variant: "TupleStruct", "0": 123 });
+
+    assert!(constructed.variant_name() == "TupleStruct",
+        "Value was constructed incorrectly, expected constructed.variant to be TupleStruct but got {}", constructed.variant_name());
+    assert!(constructed[0] == 123,
+        "Value was constructed incorrectly, expected constructed._0 to be 123 but got {}", constructed[0]);
+
+    // Unit Variant
+    let constructed = bms.construct(type, #{ variant: "Unit" });
+
+    assert!(constructed.variant_name() == "Unit",
+        "Value was constructed incorrectly, expected constructed.variant to be Unit but got {}", constructed.variant_name());
+}

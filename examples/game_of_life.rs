@@ -55,15 +55,9 @@ fn run_script_cmd(
                     bevy::log::info!("Using static script instead of spawning an entity");
                     let handle = asset_server.load(script_path);
                     static_scripts.push(handle.clone());
-                    if language == "lua" {
-                        commands.queue(AttachScript::<LuaScriptingPlugin>::new(
-                            ScriptAttachment::StaticScript(handle),
-                        ));
-                    } else {
-                        commands.queue(AttachScript::<RhaiScriptingPlugin>::new(
-                            ScriptAttachment::StaticScript(handle),
-                        ))
-                    }
+                    commands.queue(AttachScript::<LuaScriptingPlugin>::new(
+                        ScriptAttachment::StaticScript(handle),
+                    ));
                 }
             }
             GameOfLifeCommand::Stop => {
@@ -79,9 +73,6 @@ fn run_script_cmd(
                     commands.queue(DetachScript::<LuaScriptingPlugin>::new(
                         ScriptAttachment::StaticScript(script.clone()),
                     ));
-                    commands.queue(DetachScript::<RhaiScriptingPlugin>::new(
-                        ScriptAttachment::StaticScript(script.clone()),
-                    ));
                 }
             }
         }
@@ -94,7 +85,7 @@ fn run_script_cmd(
 pub enum GameOfLifeCommand {
     /// Start the game of life by spawning an entity with the game_of_life.{language} script
     Start {
-        /// The language to use for the script, i.e. "lua" or "rhai"
+        /// The language to use for the script, i.e. "lua"
         #[clap(default_value = "lua")]
         language: String,
 
@@ -122,9 +113,7 @@ fn game_of_life_app(app: &mut App) -> &mut App {
                 send_on_update.after(update_rendered_state),
                 (
                     event_handler::<OnUpdate, LuaScriptingPlugin>,
-                    event_handler::<OnUpdate, RhaiScriptingPlugin>,
                     event_handler::<OnClick, LuaScriptingPlugin>,
-                    event_handler::<OnClick, RhaiScriptingPlugin>,
                 )
                     .after(send_on_update),
             ),

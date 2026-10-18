@@ -1,0 +1,8 @@
+pub fn main() {
+    register_callback("double_impl", |x| x * 2);
+}
+
+pub fn on_test() {
+    export_namespace("script.reload", "double", "double_impl");
+    "exported"
+}

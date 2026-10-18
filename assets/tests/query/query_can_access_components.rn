@@ -1,0 +1,28 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let TestComponent = import_namespace("test_utils").TestComponent;
+    let entity_a = world.spawn();
+
+    let componentA = world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData");
+    let componentB = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData");
+    let componentC = world.get_type_by_name("test_utils::test_data::TestComponent");
+
+    world.add_default_component(entity_a, componentA);
+    world.add_default_component(entity_a, componentB);
+    world.insert_component(entity_a, componentC, TestComponent.new(#{ strings: ["asd"] }));
+
+    let query_result = world.query().component(componentA).component(componentA).component(componentC).build();
+
+    assert!(query_result.len() == 1, "Expected 1 result, got {}", query_result.len());
+    for result in query_result {
+        assert!(result.entity().index() == entity_a.index(), "Expected entity_a, got {}", result.entity().index());
+        let components = result.components();
+        assert!(components.len() == 3, "Expected 3 components, got {}", components.len());
+        let A = components[0];
+        let B = components[1];
+        let C = components[2];
+        assert!(A[0] == "Default", "Expected 'Default', got: {}", A[0]);
+        assert!(B[0] == "Default", "Expected 'Default', got: {}", B[0]);
+        assert!(C.strings[0] == "asd", "Expected 'asd', got: {}", C.strings[0]);
+    }
+}

@@ -246,7 +246,7 @@ mod test {
     fn runs_every_language_and_replaces_runner_of_same_language() {
         let runners = AppScriptCallbackRunners::default();
         runners.register(Language::Lua, runner_answering(1));
-        runners.register(Language::Rhai, runner_answering(2));
+        runners.register(Language::Rune, runner_answering(2));
         assert_eq!(run(&runners), vec![1, 2]);
 
         runners.register(Language::Lua, runner_answering(3));

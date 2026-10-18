@@ -1,0 +1,9 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let res_type = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields");
+    let res = world.get_resource(res_type);
+
+    let removed = res.vec_usize.remove(4);
+
+    assert!(removed == 5, "Remove did not work");
+}

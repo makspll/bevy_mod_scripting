@@ -17,5 +17,9 @@ bevy_utils = { workspace = true, default-features = false, features = [
 ] }
 
 
+[features]
+# discover `.rn` Rune scripts as tests, off until the Rune backend can run them
+rune = []
+
 [lib]
 path = "src/lib.rs"

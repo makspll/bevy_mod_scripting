@@ -1,0 +1,13 @@
+pub fn main() {
+    let test_utils = import_namespace("test_utils");
+    let my_fn = test_utils.into_script_function(
+        |text, list| {
+            println!("{} {:?}", text, list);
+            assert!(text == "test", "string is not test got: {}", text);
+            assert!(list[0] == "test", "list[0] is not test, got: {}", list[0]);
+        }
+    );
+
+    // functions which are values are called like any other
+    my_fn("test", ["test"]);
+}

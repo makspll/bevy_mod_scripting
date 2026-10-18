@@ -1,0 +1,10 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let first = world.register_new_component("script.test", "ScriptComponentAllowExisting");
+    let second = world.register_new_component("script.test", "ScriptComponentAllowExisting", true);
+
+    let entity = world.spawn();
+    world.add_default_component(entity, first);
+
+    assert!(world.has_component(entity, second), "allow_existing should return the original component");
+}

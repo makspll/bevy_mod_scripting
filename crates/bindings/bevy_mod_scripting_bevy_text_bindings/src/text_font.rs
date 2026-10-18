@@ -23,10 +23,10 @@ impl TextFont {
     /// assert(font:with_font_size(30.0) ~= nil)
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let TextFont = import_namespace.call("text").TextFont;
-    /// let font = TextFont.from_font_size.call(20.0);
-    /// assert(font.with_font_size.call(30.0) != ());
+    /// ```multi-lang-example,rune
+    /// let TextFont = import_namespace("text").TextFont;
+    /// let font = TextFont.from_font_size(20.0);
+    /// assert!(font.with_font_size(30.0) != ());
     /// ```
     fn from_font_size(font_size: f32) -> V<TextFont> {
         V(TextFont::from_font_size(font_size))

@@ -47,8 +47,7 @@ The languages currently supported are as follows:
 |Luajit|
 |Luajit52|
 |Luau|
-|Rhai|
-|~~Rune~~ temporarilly on hold[^1]|
+|Rune|
 
 ## Documentation
 
@@ -81,7 +80,6 @@ BMS generates code based on each bevy release, which is why we pin the patch ver
 | MacOS    | yes |
 | WASM     | no, see [this issue](https://github.com/makspll/bevy_mod_scripting/issues/166) |
 
-[^1]: Due to the recent re-write of the crate, documentation generation as well as rune support are temporarilly on hold. They will likely be re-implemented in the future.
 
 [^2]: the coverage does not include generated bindings. 
 

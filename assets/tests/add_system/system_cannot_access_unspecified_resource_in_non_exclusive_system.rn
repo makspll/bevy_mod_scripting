@@ -1,0 +1,49 @@
+// the values are kept in the script's state, which is replace only
+fn push_state(key, value) {
+    let list = state()[key];
+    list.push(value);
+    state()[key] = list;
+}
+
+pub fn on_test() {
+    let bms = import_namespace("bms");
+    let ScriptAttachment = bms.ScriptAttachment;
+    let world = bms.world;
+    state()["runs"] = [];
+    // a non-exclusive system can't import `world`, which is looked up at the start
+    state()["world"] = world;
+
+    let post_update_schedule = world.get_schedule_by_name("PostUpdate");
+    let script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script());
+
+    world.add_system(
+        post_update_schedule,
+        bms.system_builder("my_non_exclusive_system", script_attachment)
+    );
+
+    true
+}
+
+pub fn my_non_exclusive_system() {
+    println!("my_non_exclusive_system");
+    push_state("runs", "my_non_exclusive_system");
+
+    let world = state()["world"];
+    let ResourceType = world.get_type_by_name("test_utils::test_data::TestResource");
+    assert_throws(|| {
+        let res = world.get_resource(ResourceType);
+        let blah = res.bytes;
+    }, ".*annot claim access to.*");
+    // errors inside systems are only logged, so record that we got to the end
+    push_state("runs", "finished");
+}
+
+pub fn on_test_post_update() {
+    true
+}
+
+pub fn on_test_last() {
+    let runs = state()["runs"];
+    assert!(runs.len() == 2 && runs[1] == "finished", "the system did not finish, runs: {:?}", runs);
+    true
+}

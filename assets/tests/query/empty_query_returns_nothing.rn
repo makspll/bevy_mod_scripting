@@ -1,0 +1,8 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let component_a = world.get_type_by_name("test_utils::test_data::TestComponent");
+
+    for result in world.query().component(component_a).without(component_a).build() {
+        assert!(false, "This should not be reached");
+    }
+}

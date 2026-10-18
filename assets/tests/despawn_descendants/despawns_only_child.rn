@@ -1,0 +1,10 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let entity = world.spawn();
+    let child = world.spawn();
+    world.push_children(entity, [child]);
+    world.despawn_descendants(entity);
+
+    assert!(world.has_entity(entity) == true, "Parent should not be despawned");
+    assert!(world.has_entity(child) == false, "Child should be despawned");
+}

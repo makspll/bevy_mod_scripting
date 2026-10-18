@@ -20,8 +20,6 @@ use std::borrow::Cow;
 )]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub enum Language {
-    /// The Rhai scripting language
-    Rhai,
     /// The Lua scripting language
     Lua,
     /// The Rune scripting language
@@ -58,7 +56,6 @@ impl std::fmt::Display for Language {
 impl From<&Language> for Cow<'static, str> {
     fn from(val: &Language) -> Self {
         match val {
-            Language::Rhai => Cow::Borrowed("Rhai"),
             Language::Lua => Cow::Borrowed("Lua"),
             Language::Rune => Cow::Borrowed("Rune"),
             Language::External { name, .. } => name.clone(),
@@ -113,7 +110,6 @@ impl Default for LanguageExtensions {
         LanguageExtensions::new([
             ("lua", Language::Lua),
             ("luau", Language::Lua),
-            ("rhai", Language::Rhai),
             ("rn", Language::Rune),
         ])
     }

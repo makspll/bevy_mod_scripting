@@ -3,7 +3,7 @@ SetCurrentLanguage language="Lua"
 InstallPlugin emit_responses=false
 SetupHandler OnTest=null, Update=null
 
-SetCurrentLanguage language="Rhai"
+SetCurrentLanguage language="Rune"
 InstallPlugin emit_responses=false
 SetupHandler OnTest=null, Update=null
 FinalizeApp
@@ -14,11 +14,11 @@ LoadScriptAs as_name="script_lua", path="multi_lang.lua"
 WaitForScriptAssetLoaded name="script_lua"
 AttachStaticScript script="script_lua"
 
-// load rhai script
-SetCurrentLanguage language="Rhai"
-LoadScriptAs as_name="script_rhai", path="multi_lang.rhai"
-WaitForScriptAssetLoaded name="script_rhai"
-AttachStaticScript script="script_rhai"
+// load rune script
+SetCurrentLanguage language="Rune"
+LoadScriptAs as_name="script_rune", path="multi_lang.rn"
+WaitForScriptAssetLoaded name="script_rune"
+AttachStaticScript script="script_rune"
 
 // expect no responses
 RunUpdateOnce
@@ -30,12 +30,12 @@ RunUpdateOnce
 AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Lua", script="script_lua", expect_string_value="Hi from Lua!"
 AssertNoCallbackResponsesEmitted
 
-EmitScriptCallbackEvent emit_response=true, label="OnTest", language="Rhai", recipients="AllScripts", script="script_rhai"
+EmitScriptCallbackEvent emit_response=true, label="OnTest", language="Rune", recipients="AllScripts", script="script_rune"
 RunUpdateOnce
-AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Rhai", script="script_rhai", expect_string_value="Hi from Rhai!"
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Rune", script="script_rune", expect_string_value="Hi from Rune!"
 AssertNoCallbackResponsesEmitted
 
 EmitScriptCallbackEvent emit_response=true, label="OnTest", recipients="AllScripts", script="script_lua", expect_string_value="Hi from Lua!"
 RunUpdateOnce
 AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Lua", script="script_lua"
-AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Rhai", script="script_rhai"
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Rune", script="script_rune"

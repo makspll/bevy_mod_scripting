@@ -28,9 +28,9 @@ pub mod lua {
     pub use bevy_mod_scripting_lua::*;
 }
 
-#[cfg(feature = "rhai")]
-pub mod rhai {
-    pub use bevy_mod_scripting_rhai::*;
+#[cfg(feature = "rune")]
+pub mod rune {
+    pub use bevy_mod_scripting_rune::*;
 }
 
 #[cfg(feature = "lua_language_server_files")]
@@ -52,8 +52,8 @@ plugin_group! {
         :BMSScriptingInfrastructurePlugin,
         #[custom(cfg(feature = "lua"))]
         bevy_mod_scripting_lua:::LuaScriptingPlugin,
-        #[custom(cfg(feature = "rhai"))]
-        bevy_mod_scripting_rhai:::RhaiScriptingPlugin,
+        #[custom(cfg(feature = "rune"))]
+        bevy_mod_scripting_rune:::RuneScriptingPlugin,
         #[custom(cfg(feature = "lua_language_server_files"))]
         ladfile_builder::plugin:::ScriptingFilesGenerationPlugin
     }

@@ -41,14 +41,14 @@ impl Timer {
     /// assert(timer:finished())
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Timer = import_namespace.call("time").Timer;
-    /// let TimerMode = import_namespace.call("time").TimerMode;
-    /// let timer = Timer.from_seconds.call(2.0, TimerMode.Repeating);
-    /// timer.tick.call(1.0);
-    /// assert(!timer.finished.call());
-    /// timer.tick.call(1.5);
-    /// assert(timer.finished.call());
+    /// ```multi-lang-example,rune
+    /// let Timer = import_namespace("time").Timer;
+    /// let TimerMode = import_namespace("time").TimerMode;
+    /// let timer = Timer.from_seconds(2.0, TimerMode.Repeating);
+    /// timer.tick(1.0);
+    /// assert!(!timer.finished());
+    /// timer.tick(1.5);
+    /// assert!(timer.finished());
     /// ```
     fn from_seconds(secs: f32, mode: R<TimerMode>) -> Result<V<Timer>, InteropError> {
         let duration = Duration::try_from_secs_f32(secs).map_err(|_| {

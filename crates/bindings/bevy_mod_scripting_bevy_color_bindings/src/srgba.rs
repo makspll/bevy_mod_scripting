@@ -25,10 +25,10 @@ impl Srgba {
     /// assert(c.alpha == 0.5)
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Srgba = import_namespace.call("color").Srgba;
-    /// let c = Srgba.new_.call(1.0, 0.0, 0.0, 0.5);
-    /// assert(c.alpha == 0.5);
+    /// ```multi-lang-example,rune
+    /// let Srgba = import_namespace("color").Srgba;
+    /// let c = Srgba.new(1.0, 0.0, 0.0, 0.5);
+    /// assert!(c.alpha == 0.5);
     /// ```
     fn new(red: f32, green: f32, blue: f32, alpha: f32) -> V<Srgba> {
         V(Srgba::new(red, green, blue, alpha))

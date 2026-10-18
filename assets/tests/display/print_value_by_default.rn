@@ -1,0 +1,79 @@
+// normalize allocation ids before comparison so tests don't fail on runtime-generated ids
+fn strip_alloc_ids(s) {
+    let marker = "ReflectAllocationId(";
+    let out = String::new();
+    let rest = s;
+    while let Some((before, after)) = rest.split_once(marker) {
+        out.push_str(before);
+        out.push_str("ReflectAllocationId()");
+        // skip to the matching parenthesis
+        let depth = 1;
+        let tail = String::new();
+        for c in after.chars() {
+            if depth == 0 {
+                tail.push(c);
+            } else if c == '(' {
+                depth += 1;
+            } else if c == ')' {
+                depth -= 1;
+            }
+        }
+        rest = tail;
+    }
+    out.push_str(rest);
+    out
+}
+
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let test_utils = import_namespace("test_utils");
+    let Vec3 = import_namespace("math").Vec3;
+    let vec = Vec3.new(1, 2, 3);
+
+    assert!(vec.display() == "Vec3 { x: 1.0, y: 2.0, z: 3.0 }",
+        "Vec3 display incorrect, expected Vec3 {{ x: 1.0, y: 2.0, z: 3.0 }} but got {}", vec.display());
+
+    // multiline
+    let expected_vec3_debug = " ReflectReference {
+    base: ReflectBaseType {
+        type_id: TypeId(
+            \"glam::Vec3\",
+        ),
+        base_id: Owned(
+            ReflectAllocationId(*anything*),
+        ),
+    },
+    reflect_path: ReferencePath {
+        one_indexed: false,
+        path: [],
+    },
+}
+";
+    test_utils.assert_str_eq(strip_alloc_ids(vec.debug()), strip_alloc_ids(expected_vec3_debug));
+
+    let test_resource = world.get_resource(world.get_type_by_name("test_utils::test_data::TestResource"));
+
+    let expected_test_resource_debug = "ReflectReference {
+    base: ReflectBaseType {
+        type_id: TypeId(
+            \"test_utils::test_data::TestResource\",
+        ),
+        base_id: Resource(
+            ComponentId(
+                test_utils::test_data::TestResource,
+            ),
+        ),
+    },
+    reflect_path: ReferencePath {
+        one_indexed: false,
+        path: [],
+    },
+}
+";
+
+    test_utils.assert_str_eq(strip_alloc_ids(test_resource.debug()), strip_alloc_ids(expected_test_resource_debug),
+        "TestResource debug incorrect");
+
+    test_utils.assert_str_eq(test_resource.display(), "TestResource { bytes: [0, 1, 2, 3, 4, 5] }",
+        "TestResource display incorrect");
+}

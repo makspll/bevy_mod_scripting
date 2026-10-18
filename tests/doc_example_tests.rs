@@ -44,7 +44,7 @@ struct Example {
     source: PathBuf,
     /// The line of the opening fence, starting at 1
     line: usize,
-    /// The script file extension of the block's language, i.e. `lua`
+    /// The language of the block, as written after `multi-lang-example,`, i.e. `lua` or `rune`
     language: String,
     /// The scenario to run the block with
     scenario: String,
@@ -87,13 +87,33 @@ impl Example {
         )
     }
 
+    /// The file extension of scripts in the block's language
+    fn extension(&self) -> &str {
+        match self.language.as_str() {
+            "rune" => "rn",
+            other => other,
+        }
+    }
+
+    /// The script to run: Rune has no top level statements, so the block runs in the `main` function, which runs when the script loads.
+    fn script(&self) -> String {
+        match self.language.as_str() {
+            "rune" if !self.code.contains("fn main") => {
+                format!("pub fn main() {{
+{}}}
+", self.code)
+            }
+            _ => self.code.clone(),
+        }
+    }
+
     /// The path of the generated script, relative to the assets folder.
     fn script_path(&self) -> PathBuf {
         let file = format!(
             "{}_L{}.{}",
             self.source.to_string_lossy().replace(['/', '\\', '.'], "_"),
             self.line,
-            self.language
+            self.extension()
         );
         Path::new(GENERATED_DIR).join(file)
     }
@@ -102,7 +122,7 @@ impl Example {
     fn disabled_reason(&self) -> Option<String> {
         let language_enabled = match self.language.as_str() {
             "lua" => cfg!(feature = "lua"),
-            "rhai" => cfg!(feature = "rhai"),
+            "rune" => cfg!(feature = "rune"),
             _ => return Some(format!("unsupported language `{}`", self.language)),
         };
         if !language_enabled {
@@ -216,7 +236,7 @@ fn main() {
             if disabled.is_none() && !example.ignore {
                 fs::write(
                     manifest_dir.join("assets").join(example.script_path()),
-                    &example.code,
+                    example.script(),
                 )
                 .unwrap();
             }

@@ -639,9 +639,9 @@ impl World {
                 &schedule,
                 builder.into_inner(),
             )?,
-            #[cfg(feature = "rhai_bindings")]
-            bevy_mod_scripting_asset::Language::Rhai => {
-                _world.add_system::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>(
+            #[cfg(feature = "rune_bindings")]
+            bevy_mod_scripting_asset::Language::Rune => {
+                _world.add_system::<bevy_mod_scripting_rune::RuneScriptingPlugin>(
                     &schedule,
                     builder.into_inner(),
                 )?

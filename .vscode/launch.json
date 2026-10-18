@@ -38,28 +38,6 @@
                 "CARGO_MANIFEST_DIR": "${workspaceFolder}",
                 "LD_LIBRARY_PATH": "${workspaceFolder}/target/debug/deps:${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib"
             }
-        },
-        {
-            "name": "Debug example 'game_of_life_rhai'",
-            "type": "lldb",
-            "request": "launch",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=game_of_life_rhai",
-                    "--package=bevy_mod_scripting",
-                    "--features=rhai,rhai_script_api",
-                ],
-                "filter": {
-                    "name": "game_of_life_rhai",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "CARGO_MANIFEST_DIR": "${workspaceFolder}"
-            }
         }
     ]
 }

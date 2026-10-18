@@ -1,0 +1,11 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let entity = world.spawn();
+    let _type = world.get_type_by_name("test_utils::test_data::CompWithDefault");
+    let entity_with_component = world._get_entity_with_test_component("CompWithDefault");
+    let existing_component = world.get_component(entity_with_component, _type);
+
+    assert_throws(|| {
+        world.insert_component(entity, _type, existing_component);
+    }, "Missing type data ReflectComponent for type: .*CompWithDefault.*");
+}

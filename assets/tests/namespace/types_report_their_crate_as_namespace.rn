@@ -1,0 +1,22 @@
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+
+    // bevy types are grouped by category
+    let transform = world.get_type_by_name("bevy_transform::components::transform::Transform");
+    let entity = world.get_type_by_name("bevy_ecs::entity::Entity");
+    assert!(transform.namespace() == "transform", "got: {}", transform.namespace());
+    assert!(entity.namespace() == "ecs", "got: {}", entity.namespace());
+
+    // BMS' own types live in the `bms` namespace
+    assert!(world.get_type_by_name("bevy_mod_scripting_bindings::query::ScriptTypeRegistration").namespace() == "bms");
+    assert!(world.get_type_by_name("bevy_mod_scripting_script::ScriptAttachment").namespace() == "bms");
+    assert!(world.get_type_by_name("bevy_mod_scripting_bindings::script_component::DynamicComponent").namespace() == "bms");
+
+    // other types are in the namespace of their crate
+    let test_component = world.get_type_by_name("test_utils::test_data::TestComponent");
+    assert!(test_component.namespace() == "test_utils", "got: {}", test_component.namespace());
+
+    // script components are in the namespace they were registered in
+    let Comp = world.register_new_component("script.test", "NamespaceTestComp");
+    assert!(Comp.namespace() == "script.test", "got: {}", Comp.namespace());
+}

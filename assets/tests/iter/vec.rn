@@ -1,0 +1,18 @@
+// Rune has no top-level statements: `main` runs when the script is loaded, the equivalent of a Lua chunk.
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let res_type = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields");
+    let res = world.get_resource(res_type);
+
+    // `for` calls the reference's INTO_ITER protocol, which is `dispatch::iter`, as `pairs` does in Lua
+    let iterated_vals = [];
+    for v in res.vec_usize {
+        iterated_vals.push(v);
+    }
+    assert!(iterated_vals.len() == 5, "Length is not 5");
+    assert!(iterated_vals[0] == 1, "First value is not 1");
+    assert!(iterated_vals[1] == 2, "Second value is not 2");
+    assert!(iterated_vals[2] == 3, "Third value is not 3");
+    assert!(iterated_vals[3] == 4, "Fourth value is not 4");
+    assert!(iterated_vals[4] == 5, "Fifth value is not 5");
+}

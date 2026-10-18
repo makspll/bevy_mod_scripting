@@ -257,10 +257,10 @@ impl Vec2 {
     /// assert(v:length() == 5)
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Vec2 = import_namespace.call("math").Vec2;
-    /// let v = Vec2.new_.call(3.0, 4.0);
-    /// assert(v.length.call() == 5.0);
+    /// ```multi-lang-example,rune
+    /// let Vec2 = import_namespace("math").Vec2;
+    /// let v = Vec2.new(3.0, 4.0);
+    /// assert!(v.length() == 5.0);
     /// ```
     fn new(x: f32, y: f32) -> V<Vec2> {
         V(Vec2::new(x, y))
@@ -343,10 +343,10 @@ impl Vec3 {
     /// assert(v + v == Vec3.new(2, 4, 6))
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Vec3 = import_namespace.call("math").Vec3;
-    /// let v = Vec3.new_.call(1.0, 2.0, 3.0);
-    /// assert(v + v == Vec3.new_.call(2.0, 4.0, 6.0));
+    /// ```multi-lang-example,rune
+    /// let Vec3 = import_namespace("math").Vec3;
+    /// let v = Vec3.new(1.0, 2.0, 3.0);
+    /// assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
     /// ```
     fn new(x: f32, y: f32, z: f32) -> V<Vec3> {
         V(Vec3::new(x, y, z))

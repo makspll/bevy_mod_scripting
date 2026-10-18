@@ -1,0 +1,55 @@
+// the values the observers got are kept in the script's state, which is replace only
+fn record(key, payload) {
+    let got = state()[key];
+    got.push(payload);
+    state()[key] = got;
+}
+
+pub fn main() {
+    state()["got_a"] = [];
+    state()["got_b"] = [];
+    register_callback("on_a", |payload| {
+        record("got_a", payload);
+    });
+}
+
+// a freestanding function works as a callback too
+pub fn on_b(payload) {
+    record("got_b", payload);
+}
+
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+    let EventA = world.register_new_event("script.test", "TestEventA");
+    let EventB = world.register_new_event("script.test", "TestEventB");
+    // registering again returns the same event
+    assert!(world.register_new_event("script.test", "TestEventA", true) != ());
+    assert!(EventA.short_name() == "TestEventA", "got: {}", EventA.short_name());
+    assert!(EventA.namespace() == "script.test", "got: {}", EventA.namespace());
+
+    let observer_a = world.add_observer(EventA, "on_a");
+    world.add_observer(EventB, "on_b");
+    state()["observer_a"] = observer_a;
+    state()["event_a"] = EventA;
+
+    world.trigger_event(EventA, #{ value: 1 });
+    world.trigger_event(EventB, "hello");
+    world.trigger_event(EventA, 3);
+}
+
+pub fn on_test_post_update() {
+    let world = import_namespace("bms").world;
+    let got_a = state()["got_a"];
+    let got_b = state()["got_b"];
+    assert!(got_a.len() == 2, "A observers should see both A triggers, saw {}", got_a.len());
+    assert!(got_a[0].value == 1, "table payload should arrive");
+    assert!(got_a[1] == 3, "number payload should arrive");
+    assert!(got_b.len() == 1 && got_b[0] == "hello", "B observer sees only B");
+
+    world.despawn(state()["observer_a"]);
+    world.trigger_event(state()["event_a"], 5);
+}
+
+pub fn on_test_last() {
+    assert!(state()["got_a"].len() == 2, "despawned observer must not run");
+}

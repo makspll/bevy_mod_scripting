@@ -1,0 +1,18 @@
+pub fn main() {
+    // Val compares by variant only, so the length is checked through the payload, which is the first field
+    let Node = import_namespace("ui").Node;
+    let Val = import_namespace("ui").Val;
+    assert!(Val.px(5)[0] == 5.0, "px payload");
+    assert!(Val.px(5).variant_name() == "Px", "px variant");
+    assert!(Val.percent(50)[0] == 50.0 && Val.percent(50).variant_name() == "Percent", "percent");
+    assert!(Val.vw(10)[0] == 10.0 && Val.vw(10).variant_name() == "Vw", "vw");
+    assert!(Val.vh(10)[0] == 10.0 && Val.vh(10).variant_name() == "Vh", "vh");
+    assert!(Val.vmin(10)[0] == 10.0 && Val.vmin(10).variant_name() == "VMin", "vmin");
+    assert!(Val.vmax(10)[0] == 10.0 && Val.vmax(10).variant_name() == "VMax", "vmax");
+    assert!(Val.auto().variant_name() == "Auto", "auto");
+
+    // a length set on a node
+    let node = Node.new(#{ width: Val.px(100) });
+    assert!(node.width[0] == 100.0 && node.width.variant_name() == "Px", "node width");
+    assert!(node.height.variant_name() == "Auto", "unset fields take their defaults");
+}

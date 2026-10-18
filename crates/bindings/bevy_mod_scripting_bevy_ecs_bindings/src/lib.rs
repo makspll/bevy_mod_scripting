@@ -96,10 +96,10 @@ impl Name {
     /// assert(name:as_str() == "player")
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Name = import_namespace.call("ecs").Name;
-    /// let name = Name.new_.call("player");
-    /// assert(name.as_str.call() == "player");
+    /// ```multi-lang-example,rune
+    /// let Name = import_namespace("ecs").Name;
+    /// let name = Name.new("player");
+    /// assert!(name.as_str() == "player");
     /// ```
     fn new(name: String) -> V<Name> {
         V(Name::new(name))

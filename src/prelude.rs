@@ -20,8 +20,8 @@ pub use bevy_mod_scripting_core::commands::*;
 
 #[cfg(feature = "lua")]
 pub use bevy_mod_scripting_lua::LuaScriptingPlugin;
-#[cfg(feature = "rhai")]
-pub use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
+#[cfg(feature = "rune")]
+pub use bevy_mod_scripting_rune::RuneScriptingPlugin;
 
 pub use crate::{BMSPlugin, ScriptFunctionsPlugin};
 

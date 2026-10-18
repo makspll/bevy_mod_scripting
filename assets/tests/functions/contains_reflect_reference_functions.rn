@@ -1,0 +1,25 @@
+fn contains(list, element) {
+    for value in list {
+        if value == element {
+            return true;
+        }
+    }
+    false
+}
+
+pub fn main() {
+    let world = import_namespace("bms").world;
+
+    let Resource = world.get_type_by_name("test_utils::test_data::TestResource");
+    let resource = world.get_resource(Resource);
+
+    let functions = resource.functions();
+    assert!(functions.len() > 0, "functions should not be empty");
+
+    let available_names = [];
+    for function_ref in functions {
+        available_names.push(function_ref.name);
+    }
+
+    assert!(contains(available_names, "display"), "functions should contain display");
+}

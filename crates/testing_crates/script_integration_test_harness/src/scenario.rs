@@ -31,6 +31,8 @@ use bevy_mod_scripting_core::{
 use bevy_mod_scripting_display::DisplayProxy;
 #[cfg(feature = "lua")]
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
+#[cfg(feature = "rune")]
+use bevy_mod_scripting_rune::RuneScriptingPlugin;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_test_scenario_syntax::*;
 use test_utils::test_data::setup_integration_test;
@@ -332,7 +334,7 @@ impl Scenario {
     pub fn parse_language(language: ScenarioLanguage) -> Language {
         match language {
             ScenarioLanguage::Lua => Language::Lua,
-            ScenarioLanguage::Rhai => Language::Rhai,
+            ScenarioLanguage::Rune => Language::Rune,
             ScenarioLanguage::ThisScriptLanguage => Language::External {
                 name: SCENARIO_SELF_LANGUAGE_NAME.into(),
                 one_indexed: false,
@@ -358,10 +360,10 @@ impl Scenario {
                 .with_name(T::into_callback_label().to_string());
                 app.add_systems(schedule.clone(), system);
             }
-            #[cfg(feature = "rhai")]
-            Language::Rhai => {
+            #[cfg(feature = "rune")]
+            Language::Rune => {
                 let system = IntoSystem::into_system(
-                    event_handler::<T, bevy_mod_scripting_rhai::RhaiScriptingPlugin>,
+                    event_handler::<T, bevy_mod_scripting_rune::RuneScriptingPlugin>,
                 )
                 .with_name(T::into_callback_label().to_string());
                 app.add_systems(schedule.clone(), system);
@@ -714,15 +716,15 @@ impl ScenarioStep {
                             .emit_core_callback_responses(emit_responses);
                         app.add_plugins(plugin);
                     }
-                    #[cfg(feature = "rhai")]
-                    Some(Language::Rhai) => {
+                    #[cfg(feature = "rune")]
+                    Some(Language::Rune) => {
                         use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
                         use std::time::Duration;
                         let mut pipeline = ScriptLoadingPipeline::default();
                         if let Some(budget) = nanoseconds_budget {
-                            pipeline.time_budget = Some(Duration::from_millis(budget));
+                            pipeline.time_budget = Some(Duration::from_nanos(budget));
                         }
-                        let plugin = crate::make_test_rhai_plugin();
+                        let plugin = crate::make_test_rune_plugin();
                         let plugin = plugin
                             .set_context_policy(context_policy)
                             .set_pipeline_settings(pipeline)
@@ -963,14 +965,14 @@ impl ScenarioStep {
                         )
                         .apply(app.world_mut());
                     }
-                    #[cfg(feature = "rhai")]
-                    Some(Language::Rhai) => {
+                    #[cfg(feature = "rune")]
+                    Some(Language::Rune) => {
                         use bevy_mod_scripting_core::commands::AttachScript;
 
-                        AttachScript::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>::new(
+                        AttachScript::<bevy_mod_scripting_rune::RuneScriptingPlugin>::new(
                             ScriptAttachment::StaticScript(script.clone()),
                         )
-                        .apply(app.world_mut())
+                        .apply(app.world_mut());
                     }
                     _ => {
                         return Err(anyhow!(
@@ -993,14 +995,14 @@ impl ScenarioStep {
                         )
                         .apply(app.world_mut());
                     }
-                    #[cfg(feature = "rhai")]
-                    Some(Language::Rhai) => {
+                    #[cfg(feature = "rune")]
+                    Some(Language::Rune) => {
                         use bevy_mod_scripting_core::commands::DetachScript;
 
-                        DetachScript::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>::new(
+                        DetachScript::<bevy_mod_scripting_rune::RuneScriptingPlugin>::new(
                             ScriptAttachment::StaticScript(script.clone()),
                         )
-                        .apply(app.world_mut())
+                        .apply(app.world_mut());
                     }
                     _ => {
                         return Err(anyhow!(
@@ -1024,9 +1026,9 @@ impl ScenarioStep {
                         .resource::<ScriptContexts<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
                         .read()
                         .residents_len(&script),
-                    #[cfg(feature = "rhai")]
-                    Some(Language::Rhai) => world
-                        .resource::<ScriptContexts<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
+                    #[cfg(feature = "rune")]
+                    Some(Language::Rune) => world
+                        .resource::<ScriptContexts<bevy_mod_scripting_rune::RuneScriptingPlugin>>()
                         .read()
                         .residents_len(&script),
                     _ => {
@@ -1081,9 +1083,9 @@ impl ScenarioStep {
                         .read()
                         .get_context(&script)
                         .map(context_to_state),
-                    #[cfg(feature = "rhai")]
-                    Some(Language::Rhai) => world
-                        .resource::<ScriptContexts<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
+                    #[cfg(feature = "rune")]
+                    Some(Language::Rune) => world
+                        .resource::<ScriptContexts<bevy_mod_scripting_rune::RuneScriptingPlugin>>()
                         .read()
                         .get_context(&script)
                         .map(context_to_state),
@@ -1114,11 +1116,11 @@ impl ScenarioStep {
                             .unwrap();
                         machines.budget = nanoseconds_budget;
                     }
-                    #[cfg(feature = "rhai")]
-                    Some(Language::Rhai) => {
+                    #[cfg(feature = "rune")]
+                    Some(Language::Rune) => {
                         let mut machines = app
                             .world_mut()
-                            .get_resource_mut::<ActiveMachines<LuaScriptingPlugin>>()
+                            .get_resource_mut::<ActiveMachines<RuneScriptingPlugin>>()
                             .unwrap();
                         machines.budget = nanoseconds_budget;
                     }

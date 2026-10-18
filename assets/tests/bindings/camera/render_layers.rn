@@ -1,0 +1,18 @@
+pub fn main() {
+    let RenderLayers = import_namespace("camera").RenderLayers;
+    let layers = RenderLayers.layer(2);
+    assert!(layers.intersects(RenderLayers.layer(2)), "same layer intersects");
+    assert!(!layers.intersects(RenderLayers.layer(3)), "other layer does not intersect");
+    assert!(!RenderLayers.none().intersects(RenderLayers.none()), "no layers intersect nothing");
+
+    let both = layers.with(5);
+    assert!(both.intersects(RenderLayers.layer(5)), "with adds a layer");
+    let without_two = both.without(2);
+    assert!(!without_two.intersects(RenderLayers.layer(2)), "without removes a layer");
+    assert!(without_two.intersects(RenderLayers.layer(5)), "without keeps other layers");
+
+    let listed = both.iter();
+    assert!(listed.len() == 2 && listed[0] == 2 && listed[1] == 5, "iter lists the layers in order");
+    assert!(RenderLayers.none().iter().len() == 0, "no layers iter to nothing");
+    assert!(RenderLayers.layer(100).intersects(RenderLayers.none().with(100)), "layers past one block");
+}

@@ -1,0 +1,42 @@
+// the values are kept in the script's state, which is replace only
+fn push_state(key, value) {
+    let list = state()[key];
+    list.push(value);
+    state()[key] = list;
+}
+
+pub fn main() {
+    state()["added"] = [];
+    state()["removed"] = [];
+    register_callback("on_added", |event| {
+        push_state("added", event.entity);
+    });
+    register_callback("on_removed", |event| {
+        push_state("removed", event.entity);
+    });
+}
+
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+    let bevy_ecs = import_namespace("ecs");
+    let Marker = world.register_new_component("script.test", "ObserverFilterMarker");
+    let a = world.spawn();
+    let b = world.spawn();
+    state()["a"] = a;
+    state()["b"] = b;
+
+    // only observes `a`
+    world.add_observer(bevy_ecs.AddEvent, "on_added", [Marker], [a]);
+    world.add_observer(bevy_ecs.RemoveEvent, "on_removed", [Marker]);
+
+    world.add_default_component(a, Marker);
+    world.add_default_component(b, Marker);
+    world.remove_component(b, Marker);
+}
+
+pub fn on_test_post_update() {
+    let added = state()["added"];
+    let removed = state()["removed"];
+    assert!(added.len() == 1 && added[0] == state()["a"], "entity filtered observer should only see a");
+    assert!(removed.len() == 1 && removed[0] == state()["b"], "remove observer should see b");
+}

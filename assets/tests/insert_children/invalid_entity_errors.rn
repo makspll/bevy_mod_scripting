@@ -1,0 +1,15 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let test_utils = import_namespace("test_utils");
+    let fake_entity = test_utils._entity_from_index(0);
+    let fake_entity_valid = test_utils._make_invalid_entity();
+
+    assert_throws(|| {
+        world.insert_children(fake_entity_valid, 0, [fake_entity_valid]);
+    }, "Missing or invalid entity");
+
+    let entity = world.spawn();
+    assert_throws(|| {
+        world.insert_children(entity, 0, [fake_entity]);
+    }, "Are you trying to use an entity in a callback in which it's unavailable?");
+}

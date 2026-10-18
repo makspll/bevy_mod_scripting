@@ -1,0 +1,12 @@
+pub fn on_script_loaded() {
+    register_callback("on_test", dynamic_on_test);
+}
+
+pub fn dynamic_on_test() {
+    register_callback("on_test_last", dynamic_on_test_last);
+    "on test: I am dynamically registered from a normal callback!"
+}
+
+pub fn dynamic_on_test_last() {
+    "on test last: I am dynamically registered from another dynamic callback!"
+}

@@ -1,0 +1,9 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let component = world.get_type_by_name("test_utils::test_data::CompWithDefault");
+    let entity = world._get_entity_with_test_component("CompWithDefault");
+    let retrieved = world.get_component(entity, component);
+
+    assert!(retrieved != (), "Component was not found");
+    assert!(retrieved[0] == "Initial Value", "Component data was not retrieved correctly, retrieved._0 was: {}", retrieved[0]);
+}

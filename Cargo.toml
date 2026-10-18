@@ -29,7 +29,7 @@ path = "src/lib.rs"
 bench = false
 
 [package.metadata."docs.rs"]
-features = ["lua54", "rhai"]
+features = ["lua54"]
 
 [features]
 default = [
@@ -87,11 +87,12 @@ mlua_macros = ["bevy_mod_scripting_lua?/mlua_macros"]
 mlua_async = ["bevy_mod_scripting_lua?/mlua_async"]
 
 
-## rhai
-rhai = ["bevy_mod_scripting_rhai", "bevy_mod_scripting_functions/rhai_bindings"]
-
 ## rune
-# rune = ["bevy_mod_scripting_rune"]
+rune = [
+    "bevy_mod_scripting_rune",
+    "bevy_mod_scripting_functions/rune_bindings",
+    "script_integration_test_harness/rune",
+]
 
 ### Profiling
 profile_with_tracy = ["bevy?/trace_tracy", "dep:bevy"]
@@ -101,7 +102,7 @@ bevy = { workspace = true, optional = true }
 bevy_app = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { workspace = true, optional = true }
-bevy_mod_scripting_rhai = { workspace = true, optional = true }
+bevy_mod_scripting_rune = { workspace = true, optional = true }
 bevy_mod_scripting_functions = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_asset = { workspace = true }
@@ -123,7 +124,7 @@ bevy_system_reflection = { path = "crates/bevy_system_reflection", version = "0.
 ladfile = { path = "crates/ladfile", version = "0.23.0" }
 ladfile_builder = { path = "crates/ladfile_builder", version = "0.23.0" }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.23.0", default-features = false }
-bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.23.0", default-features = false }
+bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.23.0", default-features = false }
 bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version = "0.23.0", default-features = false }
 bevy_mod_scripting_bindings = { path = "crates/bevy_mod_scripting_bindings", version = "0.23.0", default-features = false }
 bevy_mod_scripting_bindings_domain = { path = "crates/bevy_mod_scripting_bindings_domain", version = "0.23.0", default-features = false }
@@ -200,10 +201,8 @@ serde = { version = "1.0", default-features = false }
 dot-writer = { version = "0.1.4", default-features = false }
 parking_lot = { version = "0.12.1", default-features = false }
 strum = { version = "0.26", default-features = false }
-rhai = { version = "=1.24.0", default-features = false }
-# rhai 1.24 accepts any rhai_codegen ^3.1, but 3.2+ generates code which does not compile against it
-rhai_codegen = { version = "=3.1.0", default-features = false }
 mlua = { version = "0.11", default-features = false }
+rune = { version = "0.14" }
 log = { version = "0.4.33", default-features = false }
 env_logger = { version = "0.11", default-features = false }
 clap = { version = "4", default-features = false, features = ["std"] }
@@ -265,8 +264,7 @@ bevy_console = { workspace = true }
 members = [
     "crates/bevy_mod_scripting_core",
     "crates/languages/bevy_mod_scripting_lua",
-    "crates/languages/bevy_mod_scripting_rhai",
-    # "crates/languages/bevy_mod_scripting_rune",
+    "crates/languages/bevy_mod_scripting_rune",
     "crates/bevy_mod_scripting_functions",
     "crates/testing_crates/test_utils",
     "crates/testing_crates/script_integration_test_harness",
@@ -314,7 +312,7 @@ debug = true
 [[example]]
 name = "game_of_life"
 path = "examples/game_of_life.rs"
-required-features = ["lua54", "rhai"]
+required-features = ["lua54"]
 
 [[example]]
 name = "docgen"

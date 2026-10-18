@@ -1,0 +1,24 @@
+pub fn main() {
+    let Vec3 = import_namespace("math").Vec3;
+    let Quat = import_namespace("math").Quat;
+
+    let a = Vec3.new(1.0, 2.0, 3.0);
+    let b = Vec3.new(4.0, 5.0, 6.0);
+
+    assert!((a - 1).x == 0.0, "Subtraction did not work");
+    assert!((a - 1).y == 1.0, "Subtraction did not work");
+    assert!((a - 1).z == 2.0, "Subtraction did not work");
+
+    assert!((a - b).x == -3.0, "Subtraction did not work");
+    assert!((a - b).y == -3.0, "Subtraction did not work");
+    assert!((a - b).z == -3.0, "Subtraction did not work");
+
+    // a number on the left can't use the operator in Rune, `rsub` is the function it calls
+    assert!(a.rsub(10) == Vec3.new(9.0, 8.0, 7.0), "Subtraction with a number on the left did not work");
+
+    // types without `rsub` say so
+    match catch(|| Quat.identity().rsub(1)) {
+        Err(message) => assert!(message.contains("rsub"), "Expected a missing rsub error, got: {}", message),
+        Ok(_) => assert!(false, "Expected a missing rsub error"),
+    }
+}

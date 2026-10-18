@@ -1,0 +1,8 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let type = world._get_mock_resource_type();
+
+    assert_throws(|| {
+        world.remove_resource(type);
+    }, "Missing type data ReflectResource for type: .*");
+}

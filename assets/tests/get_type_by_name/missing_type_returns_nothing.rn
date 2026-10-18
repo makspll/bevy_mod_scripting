@@ -1,0 +1,4 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    assert!(world.get_type_by_name("UnregisteredType") == (), "Unregistered type was found");
+}

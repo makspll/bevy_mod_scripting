@@ -1,0 +1,72 @@
+// Rune has no globals shared between callbacks. `state()` is a per script store which lives as long as the script's context.
+// It is replace only: `state()["k"]` returns a copy, assign a new value to change it.
+pub fn on_test() {
+    let ScriptAttachment = import_namespace("bms").ScriptAttachment;
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    state()["runs"] = [];
+    let ResourceTypeA = world.get_type_by_name("test_utils::test_data::TestResource");
+    let ResourceTypeB = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields");
+    let ComponentA = world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData");
+    let ComponentB = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData");
+
+    let post_update_schedule = world.get_schedule_by_name("PostUpdate");
+
+    let script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script());
+    let entity = world.spawn();
+    let entity2 = world.spawn();
+
+    world.add_default_component(entity, ComponentA);
+    world.add_default_component(entity, ComponentB);
+    world.add_default_component(entity2, ComponentA);
+    world.add_default_component(entity2, ComponentB);
+
+    // systems are referred to by the name of a function in the script, as in Lua
+    world.add_system(
+        post_update_schedule,
+        bms.system_builder("my_parameterised_system", script_attachment)
+            .resource(ResourceTypeA)
+            .query(world.query().component(ComponentA).component(ComponentB))
+            .resource(ResourceTypeB)
+    );
+
+    true
+}
+
+pub fn my_parameterised_system(resourceA, query, resourceB) {
+    println!("my_parameterised_system");
+    let runs = state()["runs"];
+    runs.push("my_non_exclusive_system");
+    state()["runs"] = runs;
+
+    assert!(resourceA != (), "Expected to get resource but got nil");
+    assert!(query != (), "Expected to get query but got nil");
+    assert!(resourceB != (), "Expected to get resource but got nil");
+
+    assert!(resourceA.bytes.len() == 6, "Expected 6 bytes, got: {}", resourceA.bytes.len());
+    assert!(resourceB.string == "Initial Value", "Expected 'Initial Value', got: {}", resourceB.string);
+    assert!(query.len() == 2, "Expected 2 results, got: {}", query.len());
+    for result in query {
+        let components = result.components();
+        assert!(components.len() == 2, "Expected 2 components, got {}", components.len());
+        let componentA = components[0];
+        let componentB = components[1];
+        assert!(componentA[0] == "Default", "Expected 'Default', got: {}", componentA[0]);
+        assert!(componentB[0] == "Default", "Expected 'Default', got: {}", componentB[0]);
+    }
+
+    // errors inside systems are only logged, so record that we got to the end
+    let runs = state()["runs"];
+    runs.push("finished");
+    state()["runs"] = runs;
+}
+
+pub fn on_test_post_update() {
+    true
+}
+
+pub fn on_test_last() {
+    let runs = state()["runs"];
+    assert!(runs.len() == 2 && runs[1] == "finished", "the system did not finish, runs: {:?}", runs);
+    true
+}

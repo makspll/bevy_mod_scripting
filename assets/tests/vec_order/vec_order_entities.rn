@@ -1,0 +1,62 @@
+// regression test for https://github.com/makspll/bevy_mod_scripting/issues/430
+// lists of entities passed into bindings (`Vec<Val<Entity>>`) must keep their order
+
+fn spawn_n(world, n) {
+    let entities = [];
+    for i in 0..n {
+        entities.push(world.spawn());
+    }
+    entities
+}
+
+fn assert_same_entities(expected, actual, label) {
+    assert!(actual.len() == expected.len(), "{}: length mismatch, expected {} got {}", label, expected.len(), actual.len());
+    for i in 0..expected.len() {
+        assert!(actual[i].index() == expected[i].index(), "{}: entity at position {} is wrong", label, i);
+    }
+}
+
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let test_utils = import_namespace("test_utils");
+
+    for n in 1..11 {
+        let entities = spawn_n(world, n);
+
+        // identity round trip
+        assert_same_entities(entities, test_utils.make_vec_entity(entities), format!("round trip, n={}", n));
+
+        // push_children then get_children
+        let parent = world.spawn();
+        world.push_children(parent, entities);
+        assert_same_entities(entities, world.get_children(parent), format!("push_children, n={}", n));
+
+        // entities in reverse order must stay reversed
+        let reversed = [];
+        let i = n;
+        while i > 0 {
+            i -= 1;
+            reversed.push(entities[i]);
+        }
+        assert_same_entities(reversed, test_utils.make_vec_entity(reversed), format!("reversed round trip, n={}", n));
+
+        // insert_children in the middle keeps the given order
+        let parent2 = world.spawn();
+        let first = world.spawn();
+        let last = world.spawn();
+        world.push_children(parent2, [first, last]);
+        world.insert_children(parent2, 1, entities);
+        let expected = [first];
+        for e in entities {
+            expected.push(e);
+        }
+        expected.push(last);
+        assert_same_entities(expected, world.get_children(parent2), format!("insert_children, n={}", n));
+    }
+
+    // lists obtained from the bindings can be passed straight back in
+    let parent = world.spawn();
+    world.push_children(parent, spawn_n(world, 4));
+    let children = world.get_children(parent);
+    assert_same_entities(children, test_utils.make_vec_entity(children), "binding-returned list round trip");
+}
