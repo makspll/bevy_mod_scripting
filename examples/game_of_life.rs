@@ -1,10 +1,7 @@
 #![allow(deprecated)]
 
-use std::time::Duration;
-
 use bevy::{
     asset::RenderAssetUsages,
-    diagnostic::LogDiagnosticsPlugin,
     image::ImageSampler,
     log::LogPlugin,
     prelude::*,
@@ -14,7 +11,6 @@ use bevy::{
 };
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin, make_layer};
 use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_bindings::AllocatorDiagnosticPlugin;
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -299,14 +295,6 @@ fn main() -> std::io::Result<()> {
 
     console_app(&mut app);
     game_of_life_app(&mut app);
-
-    app.add_plugins((
-        AllocatorDiagnosticPlugin,
-        LogDiagnosticsPlugin {
-            wait_duration: Duration::from_secs(60),
-            ..Default::default()
-        },
-    ));
 
     app.run();
 

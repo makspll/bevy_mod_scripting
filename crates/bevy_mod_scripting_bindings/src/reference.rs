@@ -5,8 +5,8 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 use crate::{
-    ReferencePart, ReferencePath, ReflectAllocationId, ReflectAllocator, WorldExtensions,
-    error::InteropError, reflection_extensions::PartialReflectExt,
+    ReferencePart, ReferencePath, ReflectAllocationId, error::InteropError,
+    reflection_extensions::PartialReflectExt,
 };
 use bevy_asset::{ReflectAsset, UntypedHandle};
 use bevy_ecs::{component::Component, ptr::Ptr, resource::Resource};
@@ -27,7 +27,7 @@ use {
 
 /// A reference to an arbitrary reflected instance.
 ///
-/// The reference can point to either the ECS, or to the allocator.
+/// The reference can point to either the ECS, or to a value allocated for scripts which it keeps alive.
 ///
 /// References are composed of two parts:
 /// - The base kind, which specifies where the reference points to
@@ -83,7 +83,7 @@ impl Default for ReflectReference {
         Self {
             base: ReflectBaseType {
                 type_id: None::<TypeId>.or_fake_id(),
-                base_id: ReflectBase::Owned(ReflectAllocationId::unallocated(())),
+                base_id: ReflectBase::Owned(ReflectAllocationId::new(())),
             },
             reflect_path: Default::default(),
         }
@@ -134,17 +134,10 @@ impl ReflectReference {
         })
     }
 
-    /// Create a new reference to a value by allocating it.
-    ///
-    /// You can retrieve the allocator from the world using [`WorldGuard::allocator`].
-    /// Make sure to drop the allocator write guard before doing anything with the reference to prevent deadlocks.
-    ///
-    pub fn new_allocated<T: Reflect>(
-        value: T,
-        allocator: &mut ReflectAllocator,
-    ) -> ReflectReference {
+    /// Create a new reference to a value by allocating it, the value lives as long as references to it.
+    pub fn new_allocated<T: Reflect>(value: T) -> ReflectReference {
         let type_id = std::any::TypeId::of::<T>();
-        let id = allocator.allocate(value);
+        let id = ReflectAllocationId::new(value);
         ReflectReference {
             base: ReflectBaseType {
                 type_id,
@@ -172,21 +165,17 @@ impl ReflectReference {
     /// Will fail if the value does not have represented type info with a specific type id.
     pub fn new_allocated_boxed_parial_reflect(
         value: Box<dyn PartialReflect>,
-        allocator: &mut ReflectAllocator,
     ) -> Result<ReflectReference, InteropError> {
         Ok(ReflectReference {
-            base: ReflectBaseType::new_allocated_base_partial(value, allocator)?,
+            base: ReflectBaseType::new_allocated_base_partial(value)?,
             reflect_path: Default::default(),
         })
     }
 
     /// Create a new reference to a value by allocating it.
-    pub fn new_allocated_boxed(
-        value: Box<dyn Reflect>,
-        allocator: &mut ReflectAllocator,
-    ) -> ReflectReference {
+    pub fn new_allocated_boxed(value: Box<dyn Reflect>) -> ReflectReference {
         ReflectReference {
-            base: ReflectBaseType::new_allocated_base(value, allocator),
+            base: ReflectBaseType::new_allocated_base(value),
             reflect_path: Default::default(),
         }
     }
@@ -467,16 +456,17 @@ impl ReflectReference {
     /// - The caller must ensure no aliasing references to the same value exist at all at the same time
     ///
     /// To do this safely you need to use [`crate::world::WorldAccessGuard::claim_read_access`] or [`crate::world::WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
+    /// Values allocated for scripts need a claim on the value itself (not global access), which also keeps them alive until it's released.
     pub unsafe fn reflect_unsafe<'w>(
         &self,
         world: WorldGuard<'w>,
     ) -> Result<Option<&'w dyn PartialReflect>, InteropError> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            // safety: caller promises it's fine :), the allocator keeps the value alive until no id points to it
+            // Safety: the caller holds a read claim, which keeps the allocation alive
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
 
-            return self.walk_path(unsafe { &*id.allocation().get_ptr() }, &type_registry);
+            return self.walk_path(unsafe { &*id.get_ptr() }, &type_registry);
         }
 
         if let ReflectBase::Asset(handle, _) = &self.base.base_id {
@@ -539,15 +529,16 @@ impl ReflectReference {
     /// - The caller must ensure no other references to the same value exist at all at the same time (even if you have the correct access)
     ///
     /// To do this safely you need to use [`crate::world::WorldAccessGuard::claim_write_access`] or [`crate::world::WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
+    /// Values allocated for scripts need a claim on the value itself (not global access), which also keeps them alive until it's released.
     pub unsafe fn reflect_mut_unsafe<'w>(
         &self,
         world: WorldGuard<'w>,
     ) -> Result<Option<&'w mut dyn PartialReflect>, InteropError> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            // Safety: caller promises this is fine :), the allocator keeps the value alive until no id points to it
+            // Safety: the caller holds a write claim, which keeps the allocation alive
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
-            return self.walk_path_mut(unsafe { &mut *id.allocation().get_ptr() }, &type_registry);
+            return self.walk_path_mut(unsafe { &mut *id.get_ptr() }, &type_registry);
         };
 
         if let ReflectBase::Asset(handle, _) = &self.base.base_id {
@@ -673,24 +664,23 @@ impl ReflectBaseType {
         })
     }
 
-    /// Create a new reflection base pointing to a value which will be allocated in the allocator
-    pub fn new_allocated_base(value: Box<dyn Reflect>, allocator: &mut ReflectAllocator) -> Self {
+    /// Create a new reflection base pointing to a newly allocated value
+    pub fn new_allocated_base(value: Box<dyn Reflect>) -> Self {
         let type_id = (*value).type_id();
-        let id = allocator.allocate_boxed(value.into_partial_reflect());
+        let id = ReflectAllocationId::new_boxed(value.into_partial_reflect());
         Self {
             type_id,
             base_id: ReflectBase::Owned(id),
         }
     }
 
-    /// Create a new reflection base pointing to a value which will be allocated in the allocator
+    /// Create a new reflection base pointing to a newly allocated value
     pub fn new_allocated_base_partial(
         value: Box<dyn PartialReflect>,
-        allocator: &mut ReflectAllocator,
     ) -> Result<Self, InteropError> {
         match value.get_represented_type_info() {
             Some(i) => {
-                let id = allocator.allocate_boxed(value);
+                let id = ReflectAllocationId::new_boxed(value);
                 Ok(Self {
                     type_id: i.type_id(),
                     base_id: ReflectBase::Owned(id),
@@ -791,19 +781,17 @@ impl DisplayWithTypeInfo for ReflectBase {
                     .display_with_type_info(f, type_info_provider)
             }
             ReflectBase::Owned(id) => {
-                if let Some(guard) = type_info_provider {
-                    let allocator = guard.allocator();
-                    let allocator = allocator.read();
-                    if let Some(allocation) = allocator.get(id) {
-                        let ptr = allocation.get_ptr();
-                        if let Ok(v) = guard.with_read_access(id, || {
-                            // Safety:: have access to this id
-                            PrintReflectAsDebug::new_with_opt_info(unsafe { &*ptr }, Some(guard))
-                                .to_string_with_type_info(f, Some(guard))
-                        }) {
-                            return v;
-                        }
-                    }
+                if let Some(guard) = type_info_provider
+                    && let Ok(v) = guard.with_read_access(id, || {
+                        // Safety: we have read access, and `id` keeps the value alive
+                        PrintReflectAsDebug::new_with_opt_info(
+                            unsafe { &*id.get_ptr() },
+                            Some(guard),
+                        )
+                        .to_string_with_type_info(f, Some(guard))
+                    })
+                {
+                    return v;
                 }
 
                 f.write_str("allocated value with id: ")?;
@@ -971,7 +959,7 @@ mod test {
     };
 
     use crate::{
-        AppReflectAllocator, CurrentScriptAttachment, WorldExtensions,
+        CurrentScriptAttachment, WorldExtensions,
         function::script_function::AppScriptFunctionRegistry,
     };
 
@@ -994,9 +982,6 @@ mod test {
         }
 
         world.insert_resource(type_registry);
-
-        let allocator = AppReflectAllocator::default();
-        world.insert_resource(allocator);
 
         let script_function_registry = AppScriptFunctionRegistry::default();
         world.insert_resource(script_function_registry);
@@ -1182,10 +1167,7 @@ mod test {
         let value: TestComponent = TestComponent(vec!["hello".to_owned(), "world".to_owned()]);
 
         let world_guard = WorldGuard::new_exclusive(&mut world, cache);
-        let allocator = world_guard.allocator();
-        let mut allocator_write = allocator.write();
-        let mut allocation_ref = ReflectReference::new_allocated(value, &mut allocator_write);
-        drop(allocator_write);
+        let mut allocation_ref = ReflectReference::new_allocated(value);
 
         // index into component
         assert_eq!(

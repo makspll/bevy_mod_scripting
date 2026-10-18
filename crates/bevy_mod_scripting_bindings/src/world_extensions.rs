@@ -2,8 +2,8 @@
 //! Implementations of [`WorldExtensions`] trait on the world guard.
 
 use super::{
-    AnyTypeRegistration, AppReflectAllocator, AppScriptCallbackRunners, AppScriptComponentRegistry,
-    EnumVariantRef, ReflectBase, ReflectBaseType, ReflectReference, ScriptBundleRegistration,
+    AnyTypeRegistration, AppScriptCallbackRunners, AppScriptComponentRegistry, EnumVariantRef,
+    ReflectBase, ReflectBaseType, ReflectReference, ScriptBundleRegistration,
     ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration, StaticTypeRef,
     Union,
     function::{
@@ -409,9 +409,6 @@ pub trait WorldExtensions {
     /// Returns the type catalogue.
     fn type_catalogue(&'_ self) -> Ref<'_, AppScriptTypeCatalogue>;
 
-    /// Returns the allocator used for reflection.
-    fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator>;
-
     /// Returns the component registry.
     fn component_registry(&'_ self) -> Ref<'_, AppScriptComponentRegistry>;
 
@@ -441,7 +438,6 @@ pub trait WorldExtensions {
     /// Initializes cached registries from the world, from raw components.
     fn setup_cache_raw(
         attachment: CurrentScriptAttachment,
-        allocator: AppReflectAllocator,
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
@@ -847,7 +843,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 InteropError::missing_type_data(event.type_id(), "ReflectEvent".to_owned())
             })?
             .clone();
-        let allocator = self.allocator().clone();
         let runners = self.script_callback_runners().clone();
         let recipients = Recipients::from(attachment.clone());
 
@@ -859,7 +854,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                     return;
                 }
             };
-            let reference = ReflectReference::new_allocated_boxed(value, &mut allocator.write());
+            let reference = ReflectReference::new_allocated_boxed(value);
             run_observer_callback(
                 &mut world,
                 &runners,
@@ -1360,14 +1355,6 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         self.get_cached_registry().unwrap()
     }
 
-    fn allocator(&'_ self) -> Ref<'_, AppReflectAllocator> {
-        #[allow(
-            clippy::unwrap_used,
-            reason = "internal domain boundary, enforced at creation of the guard"
-        )]
-        self.get_cached_registry().unwrap()
-    }
-
     fn component_registry(&'_ self) -> Ref<'_, AppScriptComponentRegistry> {
         #[allow(
             clippy::unwrap_used,
@@ -1477,23 +1464,20 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
 
     fn setup_cache_raw(
         attachment: CurrentScriptAttachment,
-        allocator: AppReflectAllocator,
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
         component_registry: AppScriptComponentRegistry,
         callback_runners: AppScriptCallbackRunners,
         type_catalogue: AppScriptTypeCatalogue,
     ) -> RegistryCache {
-        debug_assert_eq!(AppReflectAllocator::SLOT, 0);
-        debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
-        debug_assert_eq!(AppScheduleRegistry::SLOT, 2);
-        debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
-        debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
-        debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
-        debug_assert_eq!(AppScriptTypeCatalogue::SLOT, 6);
+        debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 0);
+        debug_assert_eq!(AppScheduleRegistry::SLOT, 1);
+        debug_assert_eq!(AppScriptComponentRegistry::SLOT, 2);
+        debug_assert_eq!(CurrentScriptAttachment::SLOT, 3);
+        debug_assert_eq!(AppScriptCallbackRunners::SLOT, 4);
+        debug_assert_eq!(AppScriptTypeCatalogue::SLOT, 5);
 
         [
-            Rc::new(RefCell::new(allocator)),
             Rc::new(RefCell::new(function_registry)),
             Rc::new(RefCell::new(schedule_registry)),
             Rc::new(RefCell::new(component_registry)),
@@ -1504,21 +1488,14 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     }
 
     fn setup_cache(world: &World, attachment: CurrentScriptAttachment) -> RegistryCache {
-        debug_assert_eq!(AppReflectAllocator::SLOT, 0);
-        debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 1);
-        debug_assert_eq!(AppScheduleRegistry::SLOT, 2);
-        debug_assert_eq!(AppScriptComponentRegistry::SLOT, 3);
-        debug_assert_eq!(CurrentScriptAttachment::SLOT, 4);
-        debug_assert_eq!(AppScriptCallbackRunners::SLOT, 5);
-        debug_assert_eq!(AppScriptTypeCatalogue::SLOT, 6);
+        debug_assert_eq!(AppScriptFunctionRegistry::SLOT, 0);
+        debug_assert_eq!(AppScheduleRegistry::SLOT, 1);
+        debug_assert_eq!(AppScriptComponentRegistry::SLOT, 2);
+        debug_assert_eq!(CurrentScriptAttachment::SLOT, 3);
+        debug_assert_eq!(AppScriptCallbackRunners::SLOT, 4);
+        debug_assert_eq!(AppScriptTypeCatalogue::SLOT, 5);
 
         [
-            Rc::new(RefCell::new(
-                world
-                    .get_resource::<AppReflectAllocator>()
-                    .cloned()
-                    .unwrap_or_default(),
-            )),
             Rc::new(RefCell::new(
                 world
                     .get_resource::<AppScriptFunctionRegistry>()
@@ -1753,17 +1730,14 @@ fn lookup_bound_type_function<'n>(
     registry.get_bound_to_type(type_info, name)
 }
 
-impl CachedRegistry for AppReflectAllocator {
+impl CachedRegistry for AppScriptFunctionRegistry {
     const SLOT: usize = 0;
 }
-impl CachedRegistry for AppScriptFunctionRegistry {
+impl CachedRegistry for AppScheduleRegistry {
     const SLOT: usize = 1;
 }
-impl CachedRegistry for AppScheduleRegistry {
-    const SLOT: usize = 2;
-}
 impl CachedRegistry for AppScriptComponentRegistry {
-    const SLOT: usize = 3;
+    const SLOT: usize = 2;
 }
 
 /// The script whose callback is currently running, cached in each world guard.
@@ -1782,13 +1756,13 @@ impl CurrentScriptAttachment {
     }
 }
 impl CachedRegistry for CurrentScriptAttachment {
-    const SLOT: usize = 4;
+    const SLOT: usize = 3;
 }
 impl CachedRegistry for AppScriptCallbackRunners {
-    const SLOT: usize = 5;
+    const SLOT: usize = 4;
 }
 impl CachedRegistry for AppScriptTypeCatalogue {
-    const SLOT: usize = 6;
+    const SLOT: usize = 5;
 }
 
 /// Default constructs an instance of the given type, using its `ReflectDefault` or `ReflectFromWorld` type data.
@@ -1874,7 +1848,7 @@ mod test {
         let registration_of = |type_id: TypeId| {
             let registration = world.type_registry().read().get(type_id).unwrap().clone();
             let registration = ScriptTypeRegistration::new(Arc::new(registration));
-            ReflectReference::new_allocated(registration, &mut world.allocator().write())
+            ReflectReference::new_allocated(registration)
         };
 
         // a registration, i.e. an entry of `import_namespace`, gives access to the static functions of its type
@@ -2867,10 +2841,8 @@ mod test {
             .unwrap()
     }
 
-    fn allocate<T: Reflect>(guard: &WorldAccessGuard<'_>, value: T) -> ReflectReference {
-        let allocator = guard.allocator();
-        let mut allocator = allocator.write();
-        ReflectReference::new_allocated(value, &mut allocator)
+    fn allocate<T: Reflect>(_guard: &WorldAccessGuard<'_>, value: T) -> ReflectReference {
+        ReflectReference::new_allocated(value)
     }
 
     #[test]
@@ -2962,10 +2934,6 @@ mod test {
         let mut world = setup_world(|_, _| {});
         let cache = WorldAccessGuard::setup_cache_raw(
             CurrentScriptAttachment::empty(),
-            world
-                .get_resource::<AppReflectAllocator>()
-                .cloned()
-                .unwrap_or_default(),
             world
                 .get_resource::<AppScriptFunctionRegistry>()
                 .cloned()
@@ -3130,8 +3098,7 @@ mod test {
                     ScriptAttachment::StaticScript(Handle::default()),
                 )
                 .unwrap();
-            let reference =
-                ReflectReference::new_allocated(ObsEvent, &mut guard.allocator().write());
+            let reference = ReflectReference::new_allocated(ObsEvent);
             guard.trigger_event(registration, &reference).unwrap();
             drop(guard);
             assert_eq!(f.count("event"), 1, "trigger_event");
@@ -3190,10 +3157,8 @@ mod test {
             ScriptTypeRegistration::new(Arc::new(registry.get(TypeId::of::<T>()).unwrap().clone()))
         }
 
-        fn allocate<T: Reflect>(guard: &WorldGuard, value: T) -> ReflectReference {
-            let allocator = guard.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(value, &mut allocator)
+        fn allocate<T: Reflect>(_guard: &WorldGuard, value: T) -> ReflectReference {
+            ReflectReference::new_allocated(value)
         }
 
         #[test]

@@ -3,7 +3,7 @@
 //! This is the language-agnostic core behind `construct` and the type level `new` constructors.
 
 use crate::{
-    ReflectReference, WorldExtensions,
+    ReflectReference,
     error::InteropError,
     function::{
         bound::BoundFields, from::FromScript, from_ref::FromScriptErased, namespace::FunctionScope,
@@ -265,15 +265,13 @@ pub fn construct_reference(
                 "Could not construct the type",
             )
         })?;
-    let allocator = guard.allocator();
-    let mut allocator = allocator.write();
-    Ok(ReflectReference::new_allocated_boxed(value, &mut allocator))
+    Ok(ReflectReference::new_allocated_boxed(value))
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::CurrentScriptAttachment;
+    use crate::{CurrentScriptAttachment, WorldExtensions};
     use bevy_mod_scripting_world::WorldAccessGuard;
     use bevy_reflect::Reflect;
     use std::fmt::Debug;

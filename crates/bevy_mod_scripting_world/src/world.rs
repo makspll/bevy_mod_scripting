@@ -83,7 +83,7 @@ pub trait CachedRegistry: Any {
 }
 
 /// Aliases the type used as the registry cache for the world guard.
-pub type RegistryCache = [Rc<RefCell<dyn Any>>; 7];
+pub type RegistryCache = [Rc<RefCell<dyn Any>>; 6];
 
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {
@@ -95,8 +95,6 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     type_registry: TypeRegistryArc,
 
     cached_slots: RegistryCache,
-    // /// The script allocator for the world
-    // allocator: AppReflectAllocator,
     // /// The function registry for the world
     // function_registry: AppScriptFunctionRegistry,
     // /// The schedule registry for the world
@@ -158,7 +156,7 @@ impl<'w> WorldAccessGuard<'w> {
         f: F,
     ) -> Result<O, DynWorldAccessError> {
         let key = key.into();
-        if !self.inner.accesses.claim_read_access(key) {
+        if !self.inner.accesses.claim_read_access(key.clone()) {
             Err(DynWorldAccessError::cannot_claim_access(
                 key,
                 "Could not claim read access",
@@ -185,7 +183,7 @@ impl<'w> WorldAccessGuard<'w> {
         DynWorldAccessError: Into<E>,
     {
         let key = key.into();
-        if !self.inner.accesses.claim_read_access(key) {
+        if !self.inner.accesses.claim_read_access(key.clone()) {
             Err(DynWorldAccessError::cannot_claim_access(key, "Could not claim read access").into())
         } else {
             let res = f()?;
@@ -204,7 +202,7 @@ impl<'w> WorldAccessGuard<'w> {
         f: F,
     ) -> Result<O, DynWorldAccessError> {
         let key = key.into();
-        if !self.inner.accesses.claim_write_access(key) {
+        if !self.inner.accesses.claim_write_access(key.clone()) {
             Err(DynWorldAccessError::cannot_claim_access(
                 key,
                 "Could not claim write access",
@@ -231,7 +229,7 @@ impl<'w> WorldAccessGuard<'w> {
         DynWorldAccessError: Into<E>,
     {
         let key = key.into();
-        if !self.inner.accesses.claim_write_access(key) {
+        if !self.inner.accesses.claim_write_access(key.clone()) {
             Err(
                 DynWorldAccessError::cannot_claim_access(key, "Could not claim write access")
                     .into(),

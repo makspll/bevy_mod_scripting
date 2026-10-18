@@ -29,9 +29,9 @@ use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, Script
 use bevy_mod_scripting_display::DisplayProxy;
 
 use bevy_mod_scripting_bindings::{
-    AppReflectAllocator, AppScheduleRegistry, AppScriptCallbackRunners, AppScriptFunctionRegistry,
+    AppScheduleRegistry, AppScriptCallbackRunners, AppScriptFunctionRegistry,
     DynamicScriptComponentPlugin, MarkAsCore, ReflectReference, ScriptObserverPlugin,
-    ScriptTypeRegistration, ScriptValue, garbage_collector,
+    ScriptTypeRegistration, ScriptValue,
 };
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
 use event::{ScriptCallbackMessage, ScriptCallbackResponseMessage};
@@ -57,9 +57,6 @@ pub mod script_system;
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 /// Labels for various BMS systems
 pub enum ScriptingSystemSet {
-    /// Systems in [`PostUpdate`] which handle the garbage collection of allocated values
-    GarbageCollection,
-
     /// Systems in [`PreUpdate`] dispatching pipeline events whenever handles are added or removed from [`ScriptComponent`]'s
     SyncScriptingComponents,
 
@@ -373,7 +370,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         app.add_message::<ScriptErrorMessage>()
             .add_message::<ScriptCallbackMessage>()
             .add_message::<ScriptCallbackResponseMessage>()
-            .init_resource::<AppReflectAllocator>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
             .init_resource::<AppScriptCallbackRunners>()
@@ -385,11 +381,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         app.register_asset_reflect::<ScriptAsset>();
         app.register_type::<ReflectReference>();
         app.register_type_data::<Handle<ScriptAsset>, MarkAsCore>();
-
-        app.add_systems(
-            PostUpdate,
-            ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
-        );
 
         app.add_systems(
             PreUpdate,

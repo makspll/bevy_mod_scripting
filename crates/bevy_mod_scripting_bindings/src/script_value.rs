@@ -41,7 +41,7 @@ pub enum ScriptValue {
     Reference(ReflectReference),
     /// Represents a type itself, i.e. the [`crate::StaticTypeRef`] scripts use to reach a type's static members.
     ///
-    /// Unlike a reference, a type carries no data, so it never touches the allocator.
+    /// Unlike a reference, a type carries no data, so it never allocates.
     Type(TypeId),
     /// A dynamic script function possibly storing state. Preffer using the [`ScriptValue::Function`] variant instead if possible.
     FunctionMut(DynamicScriptFunctionMut),

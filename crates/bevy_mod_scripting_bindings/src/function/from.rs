@@ -6,7 +6,6 @@ use crate::{
     EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
     error::InteropError, script_value::VariadicTuple,
 };
-use bevy_mod_scripting_world::WorldAccessRange;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{FromReflect, Reflect};
@@ -312,8 +311,8 @@ impl<T: FromReflect> FromScript for R<'_, T> {
     ) -> Result<Self::This<'_>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
-                let raid: WorldAccessRange = (&reflect_reference.base.base_id).into();
-                if world.claim_read_access(raid) {
+                // the claim keeps an allocated value alive, the borrow outlives `reflect_reference`
+                if world.claim_read_access(&reflect_reference.base.base_id) {
                     // Safety: we just claimed access
                     let ref_ =
                         unsafe { reflect_reference.reflect_unsafe_non_empty(world.clone()) }?;
@@ -329,7 +328,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
                     }
                 } else {
                     Err(InteropError::cannot_claim_access(
-                        raid,
+                        (&reflect_reference.base.base_id).into(),
                         format!("In conversion to type: R<{}>", std::any::type_name::<T>()),
                     ))
                 }
@@ -387,9 +386,8 @@ impl<T: FromReflect> FromScript for M<'_, T> {
     ) -> Result<Self::This<'_>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
-                let raid: WorldAccessRange = (&reflect_reference.base.base_id).into();
-
-                if world.claim_write_access(raid) {
+                // the claim keeps an allocated value alive, the borrow outlives `reflect_reference`
+                if world.claim_write_access(&reflect_reference.base.base_id) {
                     // Safety: we just claimed write access
                     let ref_ = unsafe { reflect_reference.reflect_mut_unsafe_non_empty(world) }?;
                     let type_id = ref_.get_represented_type_info().map(|i| i.type_id());
@@ -399,7 +397,7 @@ impl<T: FromReflect> FromScript for M<'_, T> {
                     Ok(M(cast))
                 } else {
                     Err(InteropError::cannot_claim_access(
-                        raid,
+                        (&reflect_reference.base.base_id).into(),
                         format!("In conversion to type: Mut<{}>", std::any::type_name::<T>()),
                     ))
                 }

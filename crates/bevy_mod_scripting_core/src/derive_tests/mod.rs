@@ -89,10 +89,7 @@ mod tests {
                 .get_function(TypeId::of::<MyThing>(), "test")
                 .unwrap()
                 .clone();
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            let allocated = ReflectReference::new_allocated(MyThing(42), &mut allocator);
-            drop(allocator);
+            let allocated = ReflectReference::new_allocated(MyThing(42));
             let out = func
                 .call(
                     vec![allocated.into()],

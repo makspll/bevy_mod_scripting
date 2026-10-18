@@ -10,7 +10,7 @@ use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DisplayWithTypeInfo, OrFakeId, PrintReflectAsDebug, WithTypeInfo,
 };
 use bevy_mod_scripting_world::{
-    DynWorldAccessError, WorldAccessGuard, WorldAccessRange, WorldGuard,
+    DynWorldAccessError, WorldAccessGuard, WorldAccessRange, WorldGuard, external_access_id,
 };
 use bevy_reflect::{ApplyError, PartialReflect, Reflect};
 use std::{any::TypeId, borrow::Cow, error::Error, fmt::Display, sync::Arc};
@@ -90,33 +90,32 @@ impl DisplayWithTypeInfo for WorldAccessRangeWithDisplay {
         type_info_provider: Option<&WorldAccessGuard>,
     ) -> std::fmt::Result {
         if let Some(provider) = type_info_provider {
-            match self.0 {
+            match &self.0 {
                 WorldAccessRange::ComponentOrResource(component_id) => {
                     f.write_str("Component or Resource: ")?;
-                    let component_id: ComponentId = component_id;
+                    let component_id: ComponentId = *component_id;
                     write!(
                         f,
                         "{}",
                         WithTypeInfo::new_with_info(&component_id, provider)
                     )
                 }
-                WorldAccessRange::External(idx) => {
+                WorldAccessRange::External(owner) => {
                     f.write_str("Allocation to: ")?;
 
-                    write!(f, "{idx}")
+                    write!(f, "{}", external_access_id(owner))
                 }
                 WorldAccessRange::Global => f.write_str("World Access"),
             }
         } else {
-            match self.0 {
+            match &self.0 {
                 WorldAccessRange::ComponentOrResource(component_id) => {
                     f.write_str("Component or Resource: ")?;
-                    let component_id: ComponentId = component_id;
                     f.write_str(&component_id.index().to_string())
                 }
-                WorldAccessRange::External(non_zero) => {
+                WorldAccessRange::External(owner) => {
                     f.write_str("Allocation to: ")?;
-                    f.write_str(&non_zero.to_string())
+                    f.write_str(&external_access_id(owner).to_string())
                 }
                 WorldAccessRange::Global => f.write_str("World Access"),
             }
@@ -244,11 +243,6 @@ pub enum InteropError {
         expected: usize,
         /// The actual number of arguments
         got: usize,
-    },
-    /// A garbage collected allocation was used
-    GarbageCollectedAllocation {
-        /// The reference to the allocation
-        reference: Box<ReflectReference>,
     },
     /// An unregistered reflect base was used
     UnregisteredReflectBase {
@@ -471,13 +465,6 @@ impl InteropError {
         Self::ArgumentCountMismatch { expected, got }
     }
 
-    /// Creates a new garbage collected allocation error.
-    pub fn garbage_collected_allocation(reference: ReflectReference) -> Self {
-        Self::GarbageCollectedAllocation {
-            reference: Box::new(reference),
-        }
-    }
-
     /// Creates a new unregistered base error.
     pub fn unregistered_base(base: ReflectBaseType) -> Self {
         Self::UnregisteredReflectBase {
@@ -677,13 +664,6 @@ impl DisplayWithTypeInfo for InteropError {
             }
             InteropError::ArgumentCountMismatch { expected, got } => {
                 write!(f, "Argument count mismatch: expected {expected}, got {got}")
-            }
-            InteropError::GarbageCollectedAllocation { reference } => {
-                write!(
-                    f,
-                    "Garbage collected allocation used: {}",
-                    WithTypeInfo::new_with_opt_info(reference, type_info_provider)
-                )
             }
             InteropError::UnregisteredReflectBase { base } => {
                 write!(
