@@ -1,0 +1,11 @@
+pub fn pre_bench() {
+    let world = import_namespace("bms").world;
+    #{
+        world: world,
+        resource_type: world.get_type_by_name("test_utils::test_data::TestResource"),
+    }
+}
+
+pub fn bench(ctx) {
+    ctx.world.get_resource(ctx.resource_type);
+}

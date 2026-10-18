@@ -1,0 +1,10 @@
+pub fn pre_bench() {
+    let Vec3 = import_namespace("math").Vec3;
+    let Mat3 = import_namespace("math").Mat3;
+    let m = Mat3.from_cols(Vec3.new(1.0, 2.0, 3.0), Vec3.new(4.0, 5.0, 6.0), Vec3.new(7.0, 8.0, 9.0));
+    m.x_axis
+}
+
+pub fn bench(x_axis) {
+    let l = x_axis.length();
+}

@@ -1,0 +1,7 @@
+pub fn pre_bench() {
+    import_namespace("test_utils")
+}
+
+pub fn bench(test_utils) {
+    test_utils.noop_4_args(1, "asd", [1, 2, 3], #{ asd: 1 });
+}

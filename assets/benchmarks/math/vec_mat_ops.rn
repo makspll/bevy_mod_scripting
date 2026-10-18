@@ -1,0 +1,25 @@
+pub fn main() {
+    import_namespace("test_utils").reseed();
+}
+
+pub fn pre_bench() {
+    let test_utils = import_namespace("test_utils");
+    let Mat3 = import_namespace("math").Mat3;
+    let Vec3 = import_namespace("math").Vec3;
+
+    // generate random 3x3 matrix and 3x1 vec
+    let vector = Vec3.new(test_utils.random(1, 999), test_utils.random(1, 999), test_utils.random(1, 999));
+    let matrix = Mat3.from_cols(
+        Vec3.new(test_utils.random(1, 999), test_utils.random(1, 999), test_utils.random(1, 999)),
+        Vec3.new(test_utils.random(1, 999), test_utils.random(1, 999), test_utils.random(1, 999)),
+        Vec3.new(test_utils.random(1, 999), test_utils.random(1, 999), test_utils.random(1, 999))
+    );
+    #{ matrix: matrix, vector: vector }
+}
+
+pub fn bench(ctx) {
+    let matrix = ctx.matrix;
+    let mul = matrix * ctx.vector;
+    let add = matrix + matrix;
+    let compose = matrix * matrix;
+}

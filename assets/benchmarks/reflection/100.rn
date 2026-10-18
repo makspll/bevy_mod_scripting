@@ -1,0 +1,48 @@
+// a dynamic component with a number of nested fields, which are indexed through one after another
+fn make_path(step_keys, index) {
+    let path = #{};
+    if index < step_keys.len() {
+        path[step_keys[index]] = make_path(step_keys, index + 1);
+    }
+    path
+}
+
+pub fn main() {
+    import_namespace("test_utils").reseed();
+    let world = import_namespace("bms").world;
+    world.register_new_component("script.test", "DeepComponent");
+    state()["entity"] = world.spawn();
+}
+
+pub fn pre_bench() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let test_utils = import_namespace("test_utils");
+    let Component = world.register_new_component("script.test", "DeepComponent", true);
+    let entity = state()["entity"];
+    let keys = ["_0", "my_key", "longish_key"];
+
+    // choose keys for every step
+    let step_keys = [];
+    for i in 0..100 {
+        step_keys.push(keys[test_utils.random_int(1, keys.len()) - 1]);
+    }
+
+    // build the nested map
+    let instance = make_path(step_keys, 0);
+    world.remove_component(entity, Component);
+    world.insert_component(entity, Component, bms.construct(world.get_type_by_name("bevy_mod_scripting_bindings::script_component::DynamicComponent"), #{
+        data: instance,
+    }));
+    #{ reference: world.get_component(entity, Component), step_keys: step_keys }
+}
+
+pub fn bench(ctx) {
+    // reference into random key into the reference steps times
+    let reference = ctx.reference.data;
+    let current_step = 0;
+    while current_step < 100 {
+        reference = reference[ctx.step_keys[current_step]];
+        current_step += 1;
+    }
+}

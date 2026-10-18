@@ -220,6 +220,45 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
     )
 }
 
+#[cfg(feature = "rune")]
+pub fn run_rune_benchmark<M: criterion::measurement::Measurement>(
+    script_id: &str,
+    label: &str,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+) -> Result<(), String> {
+    use bevy_mod_scripting_rune::rune::runtime::Value;
+    let span = tracing::trace_span!("bench_fn");
+
+    let plugin = make_test_rune_plugin();
+    run_plugin_benchmark(
+        plugin,
+        script_id.to_string(),
+        label,
+        criterion,
+        |ctxt, _runtime, label, criterion| {
+            // Rune has no globals to share state between `pre_bench` and `bench`, what `pre_bench` returns is given to `bench`
+            let vm = ctxt.vm();
+            let bench = vm.lookup_function(["bench"]).map_err(|e| e.to_string())?;
+            let pre_bench = vm.lookup_function(["pre_bench"]).ok();
+            criterion.bench_function(label, |c| {
+                let input: Option<Value> = pre_bench
+                    .as_ref()
+                    .map(|pre_bench| pre_bench.call::<Value>(()).into_result().unwrap());
+                c.iter(|| {
+                    span.in_scope(|| {
+                        let result = match &input {
+                            Some(input) => bench.call::<Value>((input.clone(),)),
+                            None => bench.call::<Value>(()),
+                        };
+                        result.into_result().unwrap();
+                    })
+                })
+            });
+            Ok(())
+        },
+    )
+}
+
 pub fn run_plugin_benchmark<'a, P, F, M: criterion::measurement::Measurement>(
     plugin: P,
     script_path: impl Into<AssetPath<'a>>,

@@ -1,0 +1,12 @@
+pub fn pre_bench() {
+    let world = import_namespace("bms").world;
+    #{
+        world: world,
+        entity: world._get_entity_with_test_component("TestComponent"),
+        component_type: world.get_type_by_name("test_utils::test_data::TestComponent"),
+    }
+}
+
+pub fn bench(ctx) {
+    ctx.world.get_component(ctx.entity, ctx.component_type);
+}
