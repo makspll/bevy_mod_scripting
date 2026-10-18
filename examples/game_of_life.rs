@@ -55,9 +55,15 @@ fn run_script_cmd(
                     bevy::log::info!("Using static script instead of spawning an entity");
                     let handle = asset_server.load(script_path);
                     static_scripts.push(handle.clone());
-                    commands.queue(AttachScript::<LuaScriptingPlugin>::new(
-                        ScriptAttachment::StaticScript(handle),
-                    ));
+                    match language.as_str() {
+                        #[cfg(feature = "rune")]
+                        "rune" => commands.queue(AttachScript::<RuneScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(handle),
+                        )),
+                        _ => commands.queue(AttachScript::<LuaScriptingPlugin>::new(
+                            ScriptAttachment::StaticScript(handle),
+                        )),
+                    }
                 }
             }
             GameOfLifeCommand::Stop => {
@@ -73,6 +79,10 @@ fn run_script_cmd(
                     commands.queue(DetachScript::<LuaScriptingPlugin>::new(
                         ScriptAttachment::StaticScript(script.clone()),
                     ));
+                    #[cfg(feature = "rune")]
+                    commands.queue(DetachScript::<RuneScriptingPlugin>::new(
+                        ScriptAttachment::StaticScript(script.clone()),
+                    ));
                 }
             }
         }
@@ -85,7 +95,7 @@ fn run_script_cmd(
 pub enum GameOfLifeCommand {
     /// Start the game of life by spawning an entity with the game_of_life.{language} script
     Start {
-        /// The language to use for the script, i.e. "lua"
+        /// The language to use for the script, i.e. "lua" or "rune" (which needs the `rune` feature)
         #[clap(default_value = "lua")]
         language: String,
 
@@ -118,6 +128,15 @@ fn game_of_life_app(app: &mut App) -> &mut App {
                     .after(send_on_update),
             ),
         );
+    #[cfg(feature = "rune")]
+    app.add_systems(
+        FixedUpdate,
+        (
+            event_handler::<OnUpdate, RuneScriptingPlugin>,
+            event_handler::<OnClick, RuneScriptingPlugin>,
+        )
+            .after(send_on_update),
+    );
     register_script_functions(app)
 }
 
