@@ -67,7 +67,9 @@ impl std::hash::Hash for WorldAccessRange {
 impl std::fmt::Debug for WorldAccessRange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::ComponentOrResource(id) => f.debug_tuple("ComponentOrResource").field(id).finish(),
+            Self::ComponentOrResource(id) => {
+                f.debug_tuple("ComponentOrResource").field(id).finish()
+            }
             Self::External(owner) => f
                 .debug_tuple("External")
                 .field(&external_access_id(owner))
@@ -414,11 +416,7 @@ impl AccessMapInner {
 
     /// Claims the access if it's free, returns whether it was claimed,
     /// and the key's owner if the map didn't keep it, to be dropped once the map is unlocked.
-    fn claim_if_free(
-        &mut self,
-        key: WorldAccessRange,
-        write: bool,
-    ) -> (bool, Option<AccessOwner>) {
+    fn claim_if_free(&mut self, key: WorldAccessRange, write: bool) -> (bool, Option<AccessOwner>) {
         self.record(&key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {

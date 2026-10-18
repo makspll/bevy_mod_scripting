@@ -181,7 +181,6 @@ impl FromScript for ReflectReference {
     }
 }
 
-
 fn variant_as_value<T: 'static>(
     reference: &ReflectReference,
     world: &WorldGuard,
