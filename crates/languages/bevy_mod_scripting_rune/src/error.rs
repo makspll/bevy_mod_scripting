@@ -14,6 +14,23 @@ impl std::fmt::Display for RuneError {
 
 impl std::error::Error for RuneError {}
 
+/// Turns an error from running a script into one with the script, the line and what was wrong, i.e. the name of a missing function,
+/// which are in the debug information of the compiled script and the script's text.
+///
+/// The text is the one of the script which the error came from, an error from another script might point at the wrong text.
+pub fn describe_vm_error(error: &VmError, sources: &rune::Sources) -> InteropError {
+    let mut writer = rune::termcolor::NoColor::new(Vec::<u8>::new());
+    let message = match error.emit(&mut writer, sources) {
+        Ok(()) => String::from_utf8_lossy(&writer.into_inner()).trim().to_owned(),
+        Err(_) => error.to_string(),
+    };
+    InteropError::external(RuneError(if message.is_empty() {
+        error.to_string()
+    } else {
+        message
+    }))
+}
+
 /// A trait to convert Rune errors into [`InteropError`]
 pub trait IntoInteropError {
     /// Convert into [`InteropError`]

@@ -13,7 +13,7 @@ use rune::{
 };
 
 use crate::{
-    error::{IntoInteropError, RuneError},
+    error::{IntoInteropError, RuneError, describe_vm_error},
     types::{RuneFunction, RuneNamespace, RuneRef, RuneType, ScriptFunction},
 };
 
@@ -184,7 +184,7 @@ pub fn rune_function_to_script(function: Value) -> Result<DynamicScriptFunction,
         })?;
     Ok(DynamicScriptFunction::from(
         move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
-            match call_sync_function(&function, args) {
+            match call_sync_function(&function, args, None) {
                 Ok(value) => value,
                 Err(error) => ScriptValue::Error(error),
             }
@@ -196,15 +196,19 @@ fn rune_args(args: VecDeque<ScriptValue>) -> Result<Vec<Value>, InteropError> {
     args.into_iter().map(to_rune).collect()
 }
 
-/// Calls a Rune function with the given arguments.
+/// Calls a Rune function with the given arguments, errors are described with the text of the script if it is given, see [`describe_vm_error`].
 pub fn call_rune_function(
     function: &Function,
     args: VecDeque<ScriptValue>,
+    sources: Option<&rune::Sources>,
 ) -> Result<ScriptValue, InteropError> {
     let value = function
         .call::<Value>(rune_args(args)?)
         .into_result()
-        .map_err(IntoInteropError::to_bms_error)?;
+        .map_err(|error| match sources {
+            Some(sources) => describe_vm_error(&error, sources),
+            None => error.to_bms_error(),
+        })?;
     from_rune(&value)
 }
 
@@ -212,11 +216,15 @@ pub fn call_rune_function(
 pub fn call_sync_function(
     function: &SyncFunction,
     args: VecDeque<ScriptValue>,
+    sources: Option<&rune::Sources>,
 ) -> Result<ScriptValue, InteropError> {
     let value = function
         .call::<Value>(rune_args(args)?)
         .into_result()
-        .map_err(IntoInteropError::to_bms_error)?;
+        .map_err(|error| match sources {
+            Some(sources) => describe_vm_error(&error, sources),
+            None => error.to_bms_error(),
+        })?;
     from_rune(&value)
 }
 

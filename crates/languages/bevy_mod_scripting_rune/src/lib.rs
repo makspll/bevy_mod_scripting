@@ -81,6 +81,8 @@ impl RuneRuntime {
 /// This keeps the compiled script, and the [`modules::StateStore`].
 pub struct RuneContext {
     unit: Arc<Unit>,
+    /// the text of the script, to describe errors with
+    sources: Arc<Sources>,
     runtime: Arc<RuntimeContext>,
     state: StateStore,
     fingerprint: Fingerprint,
@@ -207,7 +209,7 @@ fn register_callback(callback: String, function: Function) -> Result<(), Interop
                     pre_handling_callbacks
                         .iter()
                         .try_for_each(|init| init(&attachment, context))?;
-                    call_sync_function(&function, args.into())
+                    call_sync_function(&function, args.into(), Some(&context.sources))
                 },
             ),
         )
@@ -295,6 +297,7 @@ fn compile(
 
     Ok(RuneContext {
         unit: Arc::new(unit),
+        sources: Arc::new(sources),
         runtime,
         state,
         fingerprint,
@@ -318,7 +321,7 @@ fn initialize(
         .try_for_each(|init| init(context_key, context))?;
 
     if let Ok(main) = context.vm().lookup_function(["main"]) {
-        call_rune_function(&main, Default::default())?;
+        call_rune_function(&main, Default::default(), Some(&context.sources))?;
     }
     Ok(())
 }
@@ -345,6 +348,7 @@ pub fn rune_context_reload(
 ) -> Result<(), InteropError> {
     let new = compile(context_key, content, old_ctxt.state.clone(), world_id)?;
     old_ctxt.unit = new.unit;
+    old_ctxt.sources = new.sources;
     old_ctxt.runtime = new.runtime;
     old_ctxt.fingerprint = new.fingerprint;
     initialize(old_ctxt, context_key, world_id)
@@ -399,5 +403,5 @@ pub fn rune_handler(
         }
     };
 
-    call_rune_function(&handler, args.into())
+    call_rune_function(&handler, args.into(), Some(&context.sources))
 }
