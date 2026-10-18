@@ -10,7 +10,8 @@
 //! * Rune has no unary minus or power operator for types, use the `neg` and `pow` functions
 //! * operators with a value on the right (`2 * v`) are not supported, use `v * 2` or the reflected functions, i.e. `v.rmul(2)`
 //! * indexes are 0 based
-//! * functions which are values (`let f = v.length;`) are called as `f()` when they take a known number of up to 5 arguments, other ones (variadic functions, exports) with `f.call(..)`
+//! * functions which are values (`let f = v.length;`) are called as `f()` when they take a known number of up to 5 arguments, other ones (variadic functions, exports, functions from scripts) with `f.call(..)`
+//! * closures passed to BMS (`register_callback`, `into_script_function`) can only capture numbers, strings, lists and maps of them, since BMS calls them from any thread
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
@@ -41,7 +42,6 @@ use rune::{
 pub mod error;
 pub mod modules;
 pub mod names;
-pub mod send;
 pub mod types;
 pub mod value;
 
@@ -51,8 +51,7 @@ use crate::{
     error::RuneError,
     modules::StateStore,
     names::{Fingerprint, collect_names},
-    send::SendWrapper,
-    value::call_rune_function,
+    value::{call_rune_function, call_sync_function},
 };
 
 make_plugin_config_static!(RuneScriptingPlugin);
@@ -189,7 +188,12 @@ fn register_callback(callback: String, function: Function) -> Result<(), Interop
     let attachment = world.current_attachment().0.ok_or_else(|| {
         InteropError::str("Cannot register callback, missing script attachment context.")
     })?;
-    let function = SendWrapper::new(function);
+    // the callback is stored where any thread can call it, see `rune_function_to_script`
+    let function = function.into_sync().map_err(|error| {
+        InteropError::external(RuneError(format!(
+            "this callback can't be registered, closures can only capture numbers, strings, lists and maps of them: {error}"
+        )))
+    })?;
 
     world.with_resource_mut(|res: Mut<ScriptCallbacks<RuneScriptingPlugin>>| {
         let mut callbacks = res.callbacks.write();
@@ -203,7 +207,7 @@ fn register_callback(callback: String, function: Function) -> Result<(), Interop
                     pre_handling_callbacks
                         .iter()
                         .try_for_each(|init| init(&attachment, context))?;
-                    call_rune_function(function.get(), args.into())
+                    call_sync_function(&function, args.into())
                 },
             ),
         )

@@ -1,27 +1,19 @@
 //! Conversions between [`ScriptValue`] and Rune values.
-use std::{
-    any::TypeId,
-    collections::{HashMap as StdHashMap, VecDeque},
-    sync::{
-        Arc, Mutex, OnceLock, Weak,
-        atomic::{AtomicU64, Ordering},
-    },
-};
+use std::{any::TypeId, collections::VecDeque};
 
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
-    FunctionInfo, InteropError, ScriptValue, VariadicTuple,
+    InteropError, ScriptValue, VariadicTuple,
     function::script_function::{DynamicScriptFunction, FunctionCallContext},
 };
 use bevy_platform::collections::HashMap;
 use rune::{
     alloc,
-    runtime::{Function, Object, OwnedTuple, TypeHash, Value, VmResult},
+    runtime::{Function, Object, OwnedTuple, SyncFunction, TypeHash, Value, VmResult},
 };
 
 use crate::{
     error::{IntoInteropError, RuneError},
-    send::SendWrapper,
     types::{RuneFunction, RuneNamespace, RuneRef, RuneType, ScriptFunction},
 };
 
@@ -171,38 +163,37 @@ pub fn from_rune(value: &Value) -> Result<ScriptValue, InteropError> {
         });
     }
     if hash == <Function as TypeHash>::HASH {
-        return Ok(ScriptValue::Function(rune_function_to_script(
-            value.clone(),
-        )));
+        return rune_function_to_script(value.clone()).map(ScriptValue::Function);
     }
     Err(type_error(value))
 }
 
 /// Wraps a function from a script to be called by BMS.
 ///
-/// The function is remembered, when it comes back to a script it is that function and not a wrapper of the wrapper.
-pub fn rune_function_to_script(function: Value) -> DynamicScriptFunction {
-    static NEXT_ID: AtomicU64 = AtomicU64::new(0);
-    let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-    let function = Arc::new(SendWrapper::new(function));
-    {
-        let mut functions = rune_functions().lock().unwrap_or_else(|e| e.into_inner());
-        // forget the functions which were dropped
-        functions.retain(|_, function| function.strong_count() > 0);
-        functions.insert(id, Arc::downgrade(&function));
-    }
-    DynamicScriptFunction::from(
+/// BMS stores and calls functions from any thread, so the function has to be a [`SyncFunction`], which Rune only makes of functions
+/// which capture nothing but constants (numbers, strings, lists and maps of them). Closures capturing anything else, i.e. references,
+/// can't be passed to BMS.
+pub fn rune_function_to_script(function: Value) -> Result<DynamicScriptFunction, InteropError> {
+    let function = rune::from_value::<Function>(function)
+        .map_err(IntoInteropError::to_bms_error)?
+        .into_sync()
+        .map_err(|error| {
+            InteropError::external(RuneError(format!(
+                "this function can't be passed to BMS, closures can only capture numbers, strings, lists and maps of them: {error}"
+            )))
+        })?;
+    Ok(DynamicScriptFunction::from(
         move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
-            let result = rune::from_value::<Function>(function.get().clone())
-                .map_err(IntoInteropError::to_bms_error)
-                .and_then(|function| call_rune_function(&function, args));
-            match result {
+            match call_sync_function(&function, args) {
                 Ok(value) => value,
                 Err(error) => ScriptValue::Error(error),
             }
         },
-    )
-    .with_info(FunctionInfo::new().with_name(format!("{RUNE_FUNCTION_PREFIX}{id}")))
+    ))
+}
+
+fn rune_args(args: VecDeque<ScriptValue>) -> Result<Vec<Value>, InteropError> {
+    args.into_iter().map(to_rune).collect()
 }
 
 /// Calls a Rune function with the given arguments.
@@ -210,24 +201,23 @@ pub fn call_rune_function(
     function: &Function,
     args: VecDeque<ScriptValue>,
 ) -> Result<ScriptValue, InteropError> {
-    let args = args
-        .into_iter()
-        .map(to_rune)
-        .collect::<Result<std::vec::Vec<_>, _>>()?;
     let value = function
-        .call::<Value>(args)
+        .call::<Value>(rune_args(args)?)
         .into_result()
         .map_err(IntoInteropError::to_bms_error)?;
     from_rune(&value)
 }
 
-/// The prefix of the names of functions made from Rune functions, followed by an id, see [`rune_function_to_script`].
-const RUNE_FUNCTION_PREFIX: &str = "rune function #";
-
-/// The Rune functions which were passed to BMS, so they come back as the very same function.
-fn rune_functions() -> &'static Mutex<StdHashMap<u64, Weak<SendWrapper<Value>>>> {
-    static FUNCTIONS: OnceLock<Mutex<StdHashMap<u64, Weak<SendWrapper<Value>>>>> = OnceLock::new();
-    FUNCTIONS.get_or_init(Default::default)
+/// Calls a function which can be called from any thread, see [`rune_function_to_script`].
+pub fn call_sync_function(
+    function: &SyncFunction,
+    args: VecDeque<ScriptValue>,
+) -> Result<ScriptValue, InteropError> {
+    let value = function
+        .call::<Value>(rune_args(args)?)
+        .into_result()
+        .map_err(IntoInteropError::to_bms_error)?;
+    from_rune(&value)
 }
 
 /// The most arguments a function value can take to be called as `f(a, b)`, which is as many as Rune can make functions for, see [`function_to_rune`].
@@ -236,7 +226,8 @@ const MAX_CALLABLE_ARITY: usize = 5;
 /// Converts a function to a Rune value.
 ///
 /// Functions which are values in scripts are called like any function, `f(a, b)`, when their number of arguments is known
-/// and not variable. Exports of scripts and functions made from closures are not like that. Rune checks that number, so arguments which have defaults have to be passed too.
+/// and not variable. Exports of scripts and functions made from closures, including ones which come from scripts, are not like that.
+/// Rune checks that number, so arguments which have defaults have to be passed too.
 /// Other functions are [`RuneFunction`]s, which are called with `f.call(a, b)`.
 ///
 /// `bound` is the number of arguments which are already given to the function, i.e. its receiver.
@@ -244,22 +235,6 @@ pub fn function_to_rune(
     function: DynamicScriptFunction,
     bound: Option<usize>,
 ) -> Result<Value, InteropError> {
-    // functions from scripts come back as they were
-    if let Some(id) = function
-        .name()
-        .strip_prefix(RUNE_FUNCTION_PREFIX)
-        .and_then(|id| id.parse::<u64>().ok())
-    {
-        let original = rune_functions()
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .get(&id)
-            .and_then(Weak::upgrade);
-        if let Some(original) = original {
-            return Ok(original.get().clone());
-        }
-    }
-
     // functions made from closures, i.e. exports, don't say how many arguments they take
     let unknown_arguments = function.name().contains("{{closure}}");
     let variadic = unknown_arguments

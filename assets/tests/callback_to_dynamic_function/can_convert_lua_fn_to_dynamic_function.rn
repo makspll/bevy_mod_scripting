@@ -8,6 +8,6 @@ pub fn main() {
         }
     );
 
-    // functions which are values are called like any other
-    my_fn("test", ["test"]);
+    // functions which come from scripts are called with `.call(..)`, as Rune can't know how many arguments they take
+    my_fn.call("test", ["test"]);
 }
