@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-52b9f3f8.js";
+            window.path_to_searchindex_js = "../searchindex-c79c2edf.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-19ba8b69.js"></script>
+        <script src="../toc-5cd6b6f5.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -222,6 +222,13 @@ Values go in <code>AppScriptNamespaceMembers::register_value</code>, made each t
 <li>Renames: <code>Namespace</code> → <code>FunctionScope</code>, <code>IntoNamespace</code> → <code>IntoFunctionScope</code>, <code>FromScriptRef</code>/<code>IntoScriptRef</code> → <code>FromScriptErased</code>/<code>IntoScriptErased</code>, <code>try_call_overloads</code> → <code>call_operator</code>.</li>
 <li>Functions on <code>StaticTypeRef</code> take <code>StaticTypeRef</code> instead of <code>V&lt;StaticTypeRef&gt;</code>.</li>
 <li><code>ScriptFunctionRegistry</code> is keyed by <code>TypeId</code> instead of <code>FunctionScope</code>: <code>register(type_id, ..)</code>, <code>get_function(type_id, name)</code>, <code>iter_namespace</code> → <code>iter_type</code>.</li>
+<li>Values allocated for scripts are owned by the references to them and freed with the last one, the allocator is removed (<code>ReflectAllocator</code>, <code>AppReflectAllocator</code>, <code>WorldExtensions::allocator</code>, <code>AllocatorDiagnosticPlugin</code>, <code>ScriptingSystemSet::GarbageCollection</code>, <code>InteropError::GarbageCollectedAllocation</code>). Drop the allocator argument:
+<pre><code class="language-rust ignore">// before
+let reference = ReflectReference::new_allocated(value, &amp;mut world.allocator().write());
+// after
+let reference = ReflectReference::new_allocated(value);</code></pre>
+<code>new_allocated_boxed</code> and <code>new_allocated_boxed_parial_reflect</code> change the same way.</li>
+<li><code>WorldAccessRange::External</code> holds the value’s owner (<code>AccessOwner</code>) instead of an id, and the access map keeps it alive until the claim is released. Build it from the value (<code>(&amp;allocation_id).into()</code>); <code>WorldAccessRange</code> is no longer <code>Copy</code>.</li>
 </ul>
 <h3 id="language-implementations"><a class="header" href="#language-implementations">Language implementations</a></h3>
 <ul>

@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-52b9f3f8.js";
+            window.path_to_searchindex_js = "../../searchindex-c79c2edf.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-19ba8b69.js"></script>
+        <script src="../../toc-5cd6b6f5.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -198,18 +198,18 @@
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./dir3/eq.html">eq</a></td><td>Whether both directions have exactly the same components.</td></tr>
+<tr><td><a href="./dir3/neg_x.html">neg_x</a></td><td>The direction along the negative x axis.</td></tr>
+<tr><td><a href="./dir3/as_vec3.html">as_vec3</a></td><td>This direction as a unit [`Vec3`](bevy_math::Vec3).</td></tr>
 <tr><td><a href="./dir3/mul.html">mul</a></td><td>This direction scaled by `length`, as a [`Vec3`](bevy_math::Vec3).</td></tr>
+<tr><td><a href="./dir3/neg.html">neg</a></td><td>The opposite direction.</td></tr>
 <tr><td><a href="./dir3/z.html">z</a></td><td>The direction along the positive z axis.</td></tr>
 <tr><td><a href="./dir3/slerp.html">slerp</a></td><td>Spherically interpolates between this direction and `other` by `t`, from 0 to 1.</td></tr>
-<tr><td><a href="./dir3/neg_x.html">neg_x</a></td><td>The direction along the negative x axis.</td></tr>
-<tr><td><a href="./dir3/x.html">x</a></td><td>The direction along the positive x axis.</td></tr>
-<tr><td><a href="./dir3/neg.html">neg</a></td><td>The opposite direction.</td></tr>
-<tr><td><a href="./dir3/neg_y.html">neg_y</a></td><td>The direction along the negative y axis.</td></tr>
 <tr><td><a href="./dir3/new.html">new</a></td><td>A unit direction pointing the same way as the vector, or nil if the vector is zero or not finite.</td></tr>
-<tr><td><a href="./dir3/neg_z.html">neg_z</a></td><td>The direction along the negative z axis.</td></tr>
+<tr><td><a href="./dir3/eq.html">eq</a></td><td>Whether both directions have exactly the same components.</td></tr>
 <tr><td><a href="./dir3/y.html">y</a></td><td>The direction along the positive y axis.</td></tr>
-<tr><td><a href="./dir3/as_vec3.html">as_vec3</a></td><td>This direction as a unit [`Vec3`](bevy_math::Vec3).</td></tr>
+<tr><td><a href="./dir3/neg_y.html">neg_y</a></td><td>The direction along the negative y axis.</td></tr>
+<tr><td><a href="./dir3/neg_z.html">neg_z</a></td><td>The direction along the negative z axis.</td></tr>
+<tr><td><a href="./dir3/x.html">x</a></td><td>The direction along the positive x axis.</td></tr>
 </tbody>
 </table>
 </div>
@@ -218,11 +218,11 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/dir2/as_vec2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/dir2/y.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/dir3/eq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/dir3/neg_x.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -232,11 +232,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/dir2/as_vec2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/dir2/y.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/dir3/eq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/dir3/neg_x.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
