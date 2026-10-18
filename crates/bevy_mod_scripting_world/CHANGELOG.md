@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_world-v0.23.0...bevy_mod_scripting_world-v0.24.0) - 2026-10-18
+
+### Other
+
+- [**breaking**] delete allocator + other optimisations ([#637](https://github.com/makspll/bevy_mod_scripting/pull/637))
+- [**breaking**] reduce script interop call overhead ([#636](https://github.com/makspll/bevy_mod_scripting/pull/636))
+
 ## [0.23.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_world-v0.22.0...bevy_mod_scripting_world-v0.23.0) - 2026-10-14
 
 ### Added
