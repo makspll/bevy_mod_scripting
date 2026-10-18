@@ -5,7 +5,7 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 
-use crate::{AccessByteSet, AccessMap, AccessOwner, WorldAccessRange};
+use crate::{AccessByteSet, AccessMap, WorldAccessRange};
 
 use super::access_map::DynamicSystemMeta;
 use ::bevy_ecs::{
@@ -137,18 +137,6 @@ impl<'w> WorldAccessGuard<'w> {
         self.inner.accesses.claim_write_access(raid)
     }
 
-    #[track_caller]
-    /// Claims read or write access to a value outside the world, which `owner` keeps alive until the access is released,
-    /// see [`DynamicSystemMeta::claim_access_owned`].
-    pub fn claim_access_owned(
-        &self,
-        raid: impl Into<WorldAccessRange>,
-        write: bool,
-        owner: AccessOwner,
-    ) -> bool {
-        self.inner.accesses.claim_access_owned(raid, write, owner)
-    }
-
     /// Releases read or write access to the given type.
     ///
     /// # Safety
@@ -168,7 +156,7 @@ impl<'w> WorldAccessGuard<'w> {
         f: F,
     ) -> Result<O, DynWorldAccessError> {
         let key = key.into();
-        if !self.inner.accesses.claim_read_access(key) {
+        if !self.inner.accesses.claim_read_access(key.clone()) {
             Err(DynWorldAccessError::cannot_claim_access(
                 key,
                 "Could not claim read access",
@@ -195,7 +183,7 @@ impl<'w> WorldAccessGuard<'w> {
         DynWorldAccessError: Into<E>,
     {
         let key = key.into();
-        if !self.inner.accesses.claim_read_access(key) {
+        if !self.inner.accesses.claim_read_access(key.clone()) {
             Err(DynWorldAccessError::cannot_claim_access(key, "Could not claim read access").into())
         } else {
             let res = f()?;
@@ -214,7 +202,7 @@ impl<'w> WorldAccessGuard<'w> {
         f: F,
     ) -> Result<O, DynWorldAccessError> {
         let key = key.into();
-        if !self.inner.accesses.claim_write_access(key) {
+        if !self.inner.accesses.claim_write_access(key.clone()) {
             Err(DynWorldAccessError::cannot_claim_access(
                 key,
                 "Could not claim write access",
@@ -241,7 +229,7 @@ impl<'w> WorldAccessGuard<'w> {
         DynWorldAccessError: Into<E>,
     {
         let key = key.into();
-        if !self.inner.accesses.claim_write_access(key) {
+        if !self.inner.accesses.claim_write_access(key.clone()) {
             Err(
                 DynWorldAccessError::cannot_claim_access(key, "Could not claim write access")
                     .into(),

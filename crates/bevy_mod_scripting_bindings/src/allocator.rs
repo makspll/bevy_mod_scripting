@@ -4,27 +4,22 @@ use ::bevy_reflect::PartialReflect;
 use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DebugWithTypeInfoBuilder, DisplayWithTypeInfo,
 };
-use bevy_mod_scripting_world::{AccessOwner, WorldAccessRange, WorldGuard};
+use bevy_mod_scripting_world::{WorldAccessRange, WorldGuard};
 use std::{
     any::Any,
     cell::UnsafeCell,
     cmp::Ordering,
     fmt::{Display, Formatter},
     hash::Hasher,
-    sync::{
-        Arc,
-        atomic::{AtomicUsize, Ordering::Relaxed},
-    },
+    sync::Arc,
 };
 
-/// A value allocated for scripts and its unique id. Clones share the value, which is freed with the last of them.
+/// A value allocated for scripts. Clones share the value, which is freed with the last of them.
 ///
-/// Accesses to the value are claimed in the world's access map under [`WorldAccessRange::External`] with the id,
-/// a claim made with [`Self::owner`] keeps the value alive until it's released, see [`crate::ReflectReference::reflect_unsafe`].
+/// Accesses to the value are claimed in the world's access map under [`WorldAccessRange::External`],
+/// which holds the value alive until the claim is released.
 #[derive(Clone)]
 pub struct ReflectAllocationId {
-    /// Kept next to the pointer, so access keys don't need to read the allocation
-    id: usize,
     value: Arc<dyn AllocatedValue>,
 }
 
@@ -61,17 +56,10 @@ impl AllocatedValue for Boxed {
     }
 }
 
-/// Hands out unique allocation ids
-fn next_id() -> usize {
-    static COUNTER: AtomicUsize = AtomicUsize::new(0);
-    COUNTER.fetch_add(1, Relaxed)
-}
-
 impl ReflectAllocationId {
-    /// Allocates a value, in a single heap allocation together with its id.
+    /// Allocates a value, in a single heap allocation together with its reference counts.
     pub fn new<T: PartialReflect>(value: T) -> Self {
         Self {
-            id: next_id(),
             value: Arc::new(Inline(UnsafeCell::new(value))),
         }
     }
@@ -81,33 +69,26 @@ impl ReflectAllocationId {
         // Safety: `UnsafeCell<T>` has the same layout as `T`
         let value: Box<UnsafeCell<dyn PartialReflect>> = unsafe { std::mem::transmute(value) };
         Self {
-            id: next_id(),
             value: Arc::new(Boxed(value)),
         }
     }
 
-    /// Returns the id of the allocation
+    /// Returns the id of the allocation, unique while it's alive: its address, the same id as its access key
     pub fn id(&self) -> usize {
-        self.id
+        Arc::as_ptr(&self.value) as *const () as usize
     }
 
     /// Returns a pointer to the allocated value.
     ///
     /// Creating references from it is only safe while holding the matching claim in the world's access map,
-    /// and while the allocation is alive (i.e. by keeping this id, or claiming with [`Self::owner`]).
+    /// which also keeps the value alive.
     pub fn get_ptr(&self) -> *mut dyn PartialReflect {
         self.value.get_ptr()
     }
 
-    /// Returns the number of ids pointing to this allocation, including owners held by claims
+    /// Returns the number of ids pointing to this allocation, including the ones held by claims
     pub fn strong_count(&self) -> usize {
         Arc::strong_count(&self.value)
-    }
-
-    /// Something keeping the allocation alive, for claims which must keep the value alive until they're released.
-    pub fn owner(&self) -> AccessOwner {
-        // the same allocation, upcast
-        self.value.clone()
     }
 }
 
@@ -125,7 +106,8 @@ impl DebugWithTypeInfo for ReflectAllocationId {
 
 impl From<&ReflectAllocationId> for WorldAccessRange {
     fn from(val: &ReflectAllocationId) -> Self {
-        WorldAccessRange::External(val.id())
+        // the same allocation, upcast
+        WorldAccessRange::External(val.value.clone())
     }
 }
 
@@ -176,12 +158,18 @@ mod test {
     use super::*;
 
     #[test]
-    fn owners_and_clones_share_the_allocation() {
+    fn access_keys_and_clones_share_the_allocation() {
         let id = ReflectAllocationId::new(1usize);
-        let owner = id.owner();
+        let key = WorldAccessRange::from(&id);
         let clone = id.clone();
         assert_eq!(id.strong_count(), 3);
-        drop(owner);
+        // the key identifies the allocation by the same id
+        let WorldAccessRange::External(owner) = &key else {
+            panic!("allocations are external")
+        };
+        assert_eq!(bevy_mod_scripting_world::external_access_id(owner), id.id());
+        assert_eq!(clone.id(), id.id());
+        drop(key);
         drop(clone);
         assert_eq!(id.strong_count(), 1);
     }

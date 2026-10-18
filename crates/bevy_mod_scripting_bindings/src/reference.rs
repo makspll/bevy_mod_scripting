@@ -455,16 +455,14 @@ impl ReflectReference {
     /// - The caller must ensure the cell has permission to access the underlying value
     /// - The caller must ensure no aliasing references to the same value exist at all at the same time
     ///
-    /// - For a value allocated for scripts ([`ReflectBase::Owned`]): the caller must keep it alive for as long as the returned reference,
-    ///   i.e. by keeping this reference, or by claiming the access with [`WorldAccessGuard::claim_access_owned`] and the allocation's [`ReflectAllocationId::owner`]
-    ///
     /// To do this safely you need to use [`crate::world::WorldAccessGuard::claim_read_access`] or [`crate::world::WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
+    /// Values allocated for scripts need a claim on the value itself (not global access), which also keeps them alive until it's released.
     pub unsafe fn reflect_unsafe<'w>(
         &self,
         world: WorldGuard<'w>,
     ) -> Result<Option<&'w dyn PartialReflect>, InteropError> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            // Safety: the caller holds a read claim and keeps the allocation alive
+            // Safety: the caller holds a read claim, which keeps the allocation alive
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
 
@@ -530,15 +528,14 @@ impl ReflectReference {
     /// - The caller must ensure the cell has permission to access the underlying value
     /// - The caller must ensure no other references to the same value exist at all at the same time (even if you have the correct access)
     ///
-    /// - For a value allocated for scripts: the caller must keep it alive for as long as the returned reference, see [`Self::reflect_unsafe`]
-    ///
     /// To do this safely you need to use [`crate::world::WorldAccessGuard::claim_write_access`] or [`crate::world::WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
+    /// Values allocated for scripts need a claim on the value itself (not global access), which also keeps them alive until it's released.
     pub unsafe fn reflect_mut_unsafe<'w>(
         &self,
         world: WorldGuard<'w>,
     ) -> Result<Option<&'w mut dyn PartialReflect>, InteropError> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            // Safety: the caller holds a write claim and keeps the allocation alive
+            // Safety: the caller holds a write claim, which keeps the allocation alive
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
             return self.walk_path_mut(unsafe { &mut *id.get_ptr() }, &type_registry);
