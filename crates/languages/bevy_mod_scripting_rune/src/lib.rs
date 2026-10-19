@@ -9,7 +9,8 @@
 //! * there is no `math.pi` etc. in Rune, they are in the `math` module, where `math::PI` is the constant
 //! * Rune has no unary minus or power operator for types, use the `neg` and `pow` functions
 //! * operators with a value on the right (`2 * v`) are not supported, use `v * 2` or the reflected functions, i.e. `v.rmul(2)`
-//! * indexes are 0 based
+//! * indexes are 0 based, the fields of tuples are `v.0`, `v.1`, .. but are assigned with `v[0] = x`, Rune doesn't support `v.0 = x` on types from Rust
+//! * members can be assigned with the operators, `t.translation += v`
 //! * functions which are values (`let f = v.length;`) are called as `f()` when they take a known number of up to 5 arguments, other ones (variadic functions, exports, functions from scripts) with `f.call(..)`
 //! * closures passed to BMS (`register_callback`, `into_script_function`) can only capture numbers, strings, lists and maps of them, since BMS calls them from any thread
 use std::{
@@ -50,7 +51,7 @@ pub use error::IntoInteropError;
 use crate::{
     error::RuneError,
     modules::StateStore,
-    names::{Fingerprint, collect_names},
+    names::source_names,
     value::{call_rune_function, call_sync_function},
 };
 
@@ -77,22 +78,19 @@ impl RuneRuntime {
 
 /// A Rune context, a compiled script and what it runs with.
 ///
-/// The context is rebuilt when new names are registered in the app, i.e. fields of types registered by scripts, see [`types`].
-/// This keeps the compiled script, and the [`modules::StateStore`].
+/// What it runs with has every name in the script registered, see [`types`].
+/// A reload keeps the [`modules::StateStore`].
 pub struct RuneContext {
     unit: Arc<Unit>,
     /// the text of the script, to describe errors with
     sources: Arc<Sources>,
     runtime: Arc<RuntimeContext>,
     state: StateStore,
-    fingerprint: Fingerprint,
 }
 
 impl std::fmt::Debug for RuneContext {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RuneContext")
-            .field("fingerprint", &self.fingerprint)
-            .finish_non_exhaustive()
+        f.debug_struct("RuneContext").finish_non_exhaustive()
     }
 }
 
@@ -246,26 +244,15 @@ fn build_rune_context(
     Ok(context)
 }
 
-/// The names and fingerprint of the world, if it is available.
-fn world_names() -> (std::collections::BTreeSet<&'static str>, Fingerprint) {
-    match ThreadWorldContainer.try_get_context() {
-        Ok(context) => (
-            collect_names(&context.world),
-            Fingerprint::of(&context.world),
-        ),
-        Err(_) => Default::default(),
-    }
-}
-
 fn compile(
     context_key: &ScriptAttachment,
     content: &[u8],
     state: StateStore,
     world_id: WorldId,
 ) -> Result<RuneContext, InteropError> {
-    let (names, fingerprint) = world_names();
+    let text = std::str::from_utf8(content).map_err(context_error)?;
     let config = RuneScriptingPlugin::readonly_configuration(world_id);
-    let context = build_rune_context(&names, state.clone(), config.runtime)?;
+    let context = build_rune_context(&source_names(text), state.clone(), config.runtime)?;
     let runtime = Arc::new(context.runtime().map_err(context_error)?);
 
     let name = context_key
@@ -273,7 +260,6 @@ fn compile(
         .path()
         .map(|p| p.to_string())
         .unwrap_or_else(|| "script".to_owned());
-    let text = std::str::from_utf8(content).map_err(context_error)?;
     let mut sources = Sources::new();
     sources
         .insert(Source::new(name, text).map_err(context_error)?)
@@ -300,7 +286,6 @@ fn compile(
         sources: Arc::new(sources),
         runtime,
         state,
-        fingerprint,
     })
 }
 
@@ -350,25 +335,7 @@ pub fn rune_context_reload(
     old_ctxt.unit = new.unit;
     old_ctxt.sources = new.sources;
     old_ctxt.runtime = new.runtime;
-    old_ctxt.fingerprint = new.fingerprint;
     initialize(old_ctxt, context_key, world_id)
-}
-
-/// Rebuilds what the context runs with, if new names were registered in the app since it was built.
-fn refresh_names(context: &mut RuneContext, world_id: WorldId) -> Result<(), InteropError> {
-    let Ok(thread_context) = ThreadWorldContainer.try_get_context() else {
-        return Ok(());
-    };
-    let fingerprint = Fingerprint::of(&thread_context.world);
-    if fingerprint == context.fingerprint {
-        return Ok(());
-    }
-    let names = collect_names(&thread_context.world);
-    let config = RuneScriptingPlugin::readonly_configuration(world_id);
-    let rune_context = build_rune_context(&names, context.state.clone(), config.runtime)?;
-    context.runtime = Arc::new(rune_context.runtime().map_err(context_error)?);
-    context.fingerprint = fingerprint;
-    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -387,8 +354,6 @@ pub fn rune_handler(
         .pre_handling_callbacks
         .iter()
         .try_for_each(|init| init(context_key, context))?;
-
-    refresh_names(context, world_id)?;
 
     let handler = match context.vm().lookup_function([callback_label.as_ref()]) {
         Ok(handler) => handler,

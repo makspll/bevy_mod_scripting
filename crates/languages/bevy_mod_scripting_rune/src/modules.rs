@@ -10,8 +10,8 @@ use rune::{
 
 use crate::{
     error::vm,
-    types::{ScriptFunction, call_raw},
-    value::{from_rune, namespace_to_rune, to_rune},
+    types::{ScriptFunction, call_raw, converter},
+    value::{from_rune, to_rune},
 };
 
 /// The values stored by a script with `state()`, kept as long as its context.
@@ -37,6 +37,7 @@ pub fn register_globals(
 ) -> Result<(), ContextError> {
     for (name, function) in builtins() {
         let function = ScriptFunction::Plain(function);
+        let convert = converter(name);
         module
             .raw_function(
                 name,
@@ -45,13 +46,7 @@ pub fn register_globals(
                         .iter()
                         .map(from_rune)
                         .collect::<Result<Vec<_>, _>>()?;
-                    let result = function.call(args)?;
-                    // the namespaces are what the method syntax is for
-                    if name == "import_namespace" {
-                        namespace_to_rune(result)
-                    } else {
-                        to_rune(result)
-                    }
+                    convert(function.call(args)?)
                 }),
             )
             .build()?;

@@ -1,8 +1,8 @@
 //! The types scripts see: references, types, namespaces and functions, and how their members are resolved.
 //!
 //! Rune resolves `v.name` and `v.name()` by the hash of the name, in a table fixed when the context is built.
-//! There is no fallback for names it doesn't know, so every name which can be a member (function names, field names, type names, ..)
-//! is registered as a method and a field of each of the types here, see [`register_types`]. `v["name"]` never needs that, it goes through
+//! There is no fallback for names it doesn't know, so every identifier in the script is registered as a method and a field
+//! of each of the types here, see [`register_types`] and [`crate::names`]. `v["name"]` never needs that, it goes through
 //! the index protocol, which gets the name as a value.
 use std::{any::TypeId, borrow::Cow, cmp::Ordering, collections::BTreeSet, sync::Arc};
 
@@ -147,7 +147,13 @@ where
 }
 
 /// Calls the member `name` of the receiver, which is the first value on the stack, with the rest as arguments.
-fn call_member_inner(name: &str, values: &[Value]) -> Result<Value, InteropError> {
+///
+/// `convert` converts the result, see [`converter`].
+fn call_member_inner(
+    name: &str,
+    convert: fn(ScriptValue) -> Result<Value, InteropError>,
+    values: &[Value],
+) -> Result<Value, InteropError> {
     let (receiver, rest) = values
         .split_first()
         .ok_or_else(|| InteropError::str("a method needs a receiver"))?;
@@ -186,13 +192,92 @@ fn call_member_inner(name: &str, values: &[Value]) -> Result<Value, InteropError
     } else {
         return Err(InteropError::str("unsupported receiver"));
     };
-    // namespaces are what `import_namespace` returns
+    convert(result)
+}
+
+/// How the result of the function `name` is converted, the namespaces `import_namespace` returns can call their functions with the method syntax.
+pub fn converter(name: &str) -> fn(ScriptValue) -> Result<Value, InteropError> {
     if name == "import_namespace" {
-        namespace_to_rune(result)
+        namespace_to_rune
     } else {
-        to_rune(result)
+        to_rune
     }
 }
+
+/// Applies an operator to numbers like Rune does, a float with an integer gives a float, or to references through BMS.
+fn apply_operator(
+    operator: ScriptOperatorNames,
+    lhs: ScriptValue,
+    rhs: ScriptValue,
+) -> Result<ScriptValue, InteropError> {
+    use ScriptOperatorNames::*;
+    let floats = match (&lhs, &rhs) {
+        (ScriptValue::Integer(a), ScriptValue::Integer(b)) => {
+            let out = match operator {
+                Addition => a.checked_add(*b),
+                Subtraction => a.checked_sub(*b),
+                Multiplication => a.checked_mul(*b),
+                Division => a.checked_div(*b),
+                Remainder => a.checked_rem(*b),
+                _ => None,
+            };
+            return out
+                .map(ScriptValue::Integer)
+                .ok_or_else(|| InteropError::str("integer overflow or division by zero"));
+        }
+        (ScriptValue::Float(a), ScriptValue::Float(b)) => Some((*a, *b)),
+        (ScriptValue::Integer(a), ScriptValue::Float(b)) => Some((*a as f64, *b)),
+        (ScriptValue::Float(a), ScriptValue::Integer(b)) => Some((*a, *b as f64)),
+        _ => None,
+    };
+    let Some((a, b)) = floats else {
+        return dispatch::binary(world()?, operator, lhs, rhs, RUNE_CALLER_CONTEXT);
+    };
+    Ok(ScriptValue::Float(match operator {
+        Addition => a + b,
+        Subtraction => a - b,
+        Multiplication => a * b,
+        Division => a / b,
+        Remainder => a % b,
+        _ => return Err(InteropError::str("unsupported operator")),
+    }))
+}
+
+/// `v.name += x`, `v.0 += x` and the other compound assignments, the result of the operator is assigned to the member.
+fn assign_member(
+    operator: ScriptOperatorNames,
+    this: &RuneRef,
+    key: ScriptValue,
+    value: &Value,
+) -> Result<(), InteropError> {
+    let member = match &key {
+        ScriptValue::String(name) => dispatch::index_name(
+            world()?,
+            Cow::Borrowed(&this.0),
+            name.to_string(),
+            RUNE_CALLER_CONTEXT,
+        )?,
+        _ => dispatch::index(world()?, this.0.clone(), key.clone(), RUNE_CALLER_CONTEXT)?,
+    };
+    let current = match member {
+        Member::Static(value) => value,
+        Member::Method(_) => return Err(InteropError::str("a method can't be assigned to")),
+    };
+    let result = apply_operator(operator, current, from_rune(value)?)?;
+    dispatch::set_index(world()?, this.0.clone(), key, result, RUNE_CALLER_CONTEXT)
+}
+
+/// The compound assignments supported on members, see [`assign_member`].
+const COMPOUND_ASSIGNMENTS: [(&Protocol, ScriptOperatorNames); 5] = [
+    (&Protocol::ADD_ASSIGN, ScriptOperatorNames::Addition),
+    (&Protocol::SUB_ASSIGN, ScriptOperatorNames::Subtraction),
+    (&Protocol::MUL_ASSIGN, ScriptOperatorNames::Multiplication),
+    (&Protocol::DIV_ASSIGN, ScriptOperatorNames::Division),
+    (&Protocol::REM_ASSIGN, ScriptOperatorNames::Remainder),
+];
+
+/// How many fields of tuples can be accessed with `v.0`, `v.1`, .. the others with `v[16]` etc.
+const TUPLE_FIELDS: usize = 16;
 
 fn binary(operator: ScriptOperatorNames, this: &RuneRef, other: &Value) -> VmResult<Value> {
     vm((|| {
@@ -410,12 +495,30 @@ pub fn register_types(
         )
         .build_associated::<RuneFunction>()?;
 
+    // `v.0` and `v.0 += x`, the same as `v[0]`, Rune has no protocol for `v.0 = x`
+    for index in 0..TUPLE_FIELDS {
+        let key = move || ScriptValue::Integer(index as i64);
+        module.index_function(&Protocol::GET, index, move |this: &RuneRef| {
+            vm((|| {
+                let world = world()?;
+                let member = dispatch::index(world, this.0.clone(), key(), RUNE_CALLER_CONTEXT)?;
+                member_to_rune(member, Some(&this.0))
+            })())
+        })?;
+        for (protocol, operator) in COMPOUND_ASSIGNMENTS {
+            module.index_function(protocol, index, move |this: &RuneRef, value: Value| {
+                vm(assign_member(operator, this, key(), &value))
+            })?;
+        }
+    }
+
     for &name in names {
         // `v.name(..)`
+        let convert = converter(name);
         for container in [Container::Ref, Container::Type, Container::Namespace] {
             let builder = module.raw_function(
                 name,
-                call_raw(move |values: &[Value]| call_member_inner(name, values)),
+                call_raw(move |values: &[Value]| call_member_inner(name, convert, values)),
             );
             match container {
                 Container::Ref => builder.build_associated::<RuneRef>()?,
@@ -439,6 +542,17 @@ pub fn register_types(
                 )
             })())
         })?;
+        // `v.name += x` etc.
+        for (protocol, operator) in COMPOUND_ASSIGNMENTS {
+            module.field_function(protocol, name, move |this: &RuneRef, value: Value| {
+                vm(assign_member(
+                    operator,
+                    this,
+                    ScriptValue::String(name.to_owned().into()),
+                    &value,
+                ))
+            })?;
+        }
         module.field_function(&Protocol::GET, name, move |this: &RuneType| {
             vm(get_type_member(this, name))
         })?;

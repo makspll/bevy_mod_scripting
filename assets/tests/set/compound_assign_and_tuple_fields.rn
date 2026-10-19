@@ -1,0 +1,28 @@
+pub fn main() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let Resource = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields");
+    let resource = world.get_resource(Resource);
+
+    resource.int = 40;
+    resource.int += 4;
+    resource.int -= 2;
+    assert!(resource.int == 42, "Expected 42, got {}", resource.int);
+    resource.int *= 2;
+    resource.int /= 4;
+    resource.int %= 4;
+    assert!(resource.int == 1, "Expected 1, got {}", resource.int);
+
+    resource.float = 1.5;
+    resource.float += 1;
+    resource.float *= 2.0;
+    assert!(resource.float == 5.0, "Expected 5.0, got {}", resource.float);
+
+    let type = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct");
+    let tuple = bms.construct(type, #{ "0": 123 });
+    assert!(tuple.0 == 123, "Expected 123, got {}", tuple.0);
+    tuple[0] = 321;
+    assert!(tuple.0 == 321, "Expected 321, got {}", tuple.0);
+    tuple.0 += 1;
+    assert!(tuple[0] == 322, "Expected 322, got {}", tuple[0]);
+}
