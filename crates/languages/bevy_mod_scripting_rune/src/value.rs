@@ -150,13 +150,22 @@ pub fn from_rune(value: &Value) -> Result<ScriptValue, InteropError> {
         }
         return Ok(ScriptValue::Map(map));
     }
-    if let Ok(reference) = value.borrow_ref::<RuneRef>() {
+    if hash == <RuneRef as TypeHash>::HASH {
+        let reference = value
+            .borrow_ref::<RuneRef>()
+            .map_err(IntoInteropError::to_bms_error)?;
         return Ok(ScriptValue::Reference(reference.0.clone()));
     }
-    if let Ok(type_ref) = value.borrow_ref::<RuneType>() {
+    if hash == <RuneType as TypeHash>::HASH {
+        let type_ref = value
+            .borrow_ref::<RuneType>()
+            .map_err(IntoInteropError::to_bms_error)?;
         return Ok(ScriptValue::Type(type_ref.0));
     }
-    if let Ok(function) = value.borrow_ref::<RuneFunction>() {
+    if hash == <RuneFunction as TypeHash>::HASH {
+        let function = value
+            .borrow_ref::<RuneFunction>()
+            .map_err(IntoInteropError::to_bms_error)?;
         return Ok(match &function.0 {
             ScriptFunction::Plain(f) => ScriptValue::Function(f.clone()),
             ScriptFunction::Mut(f) => ScriptValue::FunctionMut(f.clone()),

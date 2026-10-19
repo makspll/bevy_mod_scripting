@@ -38,7 +38,7 @@ All lookup rules live in `bevy_mod_scripting_bindings::dispatch`; a language map
 
 `index` returns functions which are called on the indexed value as `Member::Method`, without the value bound to them. Delivering the receiver is the language's job:
 - Lua passes it with its colon syntax, `v:length()`, so the function is returned as is.
-- Rune has method syntax, but resolves `v.name` by a table fixed when its context is built, so every name which can follow a `.` is registered up front (and `v["name"]` always works), see `bevy_mod_scripting_rune::types`. The receiver is passed to the function as the first argument.
+- Rune has method syntax, but resolves `v.name` by a table fixed when its context is built, so every identifier in the script is registered when it is compiled (and `v["name"]` always works), see `bevy_mod_scripting_rune::types`. The receiver is passed to the function as the first argument.
 
 ### Static members
 
