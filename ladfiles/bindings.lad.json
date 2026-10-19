@@ -395,51 +395,51 @@
       "path": "bevy_ecs::world::World",
       "documentation": "The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bevy App.",
       "associated_functions": [
-        "World::has_entity",
-        "World::get_parent",
-        "World::spawn_bundle",
-        "World::write_message",
-        "World::get_state",
-        "World::insert_bundle",
-        "World::is_loaded",
-        "World::push_children",
-        "World::get_type_by_name",
-        "World::time",
-        "World::load_asset",
-        "World::trigger_event",
-        "World::despawn_descendants",
-        "World::add_asset",
-        "World::fixed_time",
-        "World::has_resource",
         "World::gamepads",
-        "World::get_asset",
+        "World::add_system",
+        "World::register_new_event",
+        "World::has_resource",
+        "World::despawn_recursive",
+        "World::register_new_component",
+        "World::push_children",
+        "World::has_entity",
         "World::despawn",
         "World::exit",
-        "World::register_new_event",
-        "World::add_system",
-        "World::asset_path",
-        "World::virtual_time",
         "World::add_observer",
         "World::get_enum_variant",
-        "World::insert_component",
-        "World::has_component",
-        "World::get_children",
-        "World::remove_resource",
-        "World::set_next_state",
-        "World::despawn_recursive",
-        "World::load_state",
-        "World::real_time",
+        "World::add_asset",
         "World::spawn",
-        "World::insert_children",
-        "World::remove_component",
-        "World::query",
-        "World::add_default_component",
+        "World::set_next_state",
+        "World::write_message",
+        "World::real_time",
         "World::find_entity_by_name",
+        "World::insert_component",
+        "World::spawn_bundle",
+        "World::query",
+        "World::virtual_time",
+        "World::load_state",
+        "World::despawn_descendants",
+        "World::remove_component",
+        "World::fixed_time",
+        "World::get_type_by_name",
+        "World::get_asset",
+        "World::get_component",
         "World::get_resource",
+        "World::insert_children",
+        "World::trigger_event",
+        "World::get_children",
+        "World::insert_bundle",
+        "World::has_component",
         "World::has_asset",
+        "World::is_loaded",
+        "World::add_default_component",
+        "World::get_state",
+        "World::asset_path",
+        "World::get_parent",
         "World::get_schedule_by_name",
-        "World::register_new_component",
-        "World::get_component"
+        "World::load_asset",
+        "World::time",
+        "World::remove_resource"
       ],
       "layout": null,
       "generated": false,
@@ -458,18 +458,18 @@
       "namespace": "animation",
       "documentation": " Animation controls.\n\n Automatically added to any root animations of a scene when it is\n spawned.",
       "associated_functions": [
-        "bevy_animation::AnimationPlayer::seek_to",
-        "bevy_animation::AnimationPlayer::pause_all",
-        "bevy_animation::AnimationPlayer::all_paused",
-        "bevy_animation::AnimationPlayer::stop_all",
-        "bevy_animation::AnimationPlayer::play",
-        "bevy_animation::AnimationPlayer::set_repeat_forever",
-        "bevy_animation::AnimationPlayer::set_speed",
-        "bevy_animation::AnimationPlayer::is_playing_animation",
-        "bevy_animation::AnimationPlayer::animation_is_finished",
-        "bevy_animation::AnimationPlayer::stop",
-        "bevy_animation::AnimationPlayer::all_finished",
         "bevy_animation::AnimationPlayer::resume_all",
+        "bevy_animation::AnimationPlayer::stop_all",
+        "bevy_animation::AnimationPlayer::pause_all",
+        "bevy_animation::AnimationPlayer::is_playing_animation",
+        "bevy_animation::AnimationPlayer::play",
+        "bevy_animation::AnimationPlayer::all_paused",
+        "bevy_animation::AnimationPlayer::set_repeat_forever",
+        "bevy_animation::AnimationPlayer::all_finished",
+        "bevy_animation::AnimationPlayer::stop",
+        "bevy_animation::AnimationPlayer::seek_to",
+        "bevy_animation::AnimationPlayer::set_speed",
+        "bevy_animation::AnimationPlayer::animation_is_finished",
         "bevy_animation::AnimationPlayer::new"
       ],
       "layout": {
@@ -508,9 +508,9 @@
       "namespace": "animation",
       "documentation": " A graph structure that describes how animation clips are to be blended\n together.\n\n Applications frequently want to be able to play multiple animations at once\n and to fine-tune the influence that animations have on a skinned mesh. Bevy\n uses an *animation graph* to store this information. Animation graphs are a\n directed acyclic graph (DAG) that describes how animations are to be\n weighted and combined together. Every frame, Bevy evaluates the graph from\n the root and blends the animations together in a bottom-up fashion to\n produce the final pose.\n\n There are three types of nodes: *blend nodes*, *add nodes*, and *clip\n nodes*, all of which can have an associated weight. Blend nodes and add\n nodes have no associated animation clip and combine the animations of their\n children according to those children's weights. Clip nodes specify an\n animation clip to play. When a graph is created, it starts with only a\n single blend node, the root node.\n\n For example, consider the following graph:\n\n ```text\n ┌────────────┐                                      \n │            │                                      \n │    Idle    ├─────────────────────┐                \n │            │                     │                \n └────────────┘                     │                \n                                    │                \n ┌────────────┐                     │  ┌────────────┐\n │            │                     │  │            │\n │    Run     ├──┐                  ├──┤    Root    │\n │            │  │  ┌────────────┐  │  │            │\n └────────────┘  │  │   Blend    │  │  └────────────┘\n                 ├──┤            ├──┘                \n ┌────────────┐  │  │    0.5     │                   \n │            │  │  └────────────┘                   \n │    Walk    ├──┘                                   \n │            │                                      \n └────────────┘                                      \n ```\n\n In this case, assuming that Idle, Run, and Walk are all playing with weight\n 1.0, the Run and Walk animations will be equally blended together, then\n their weights will be halved and finally blended with the Idle animation.\n Thus the weight of Run and Walk are effectively half of the weight of Idle.\n\n Nodes can optionally have a *mask*, a bitfield that restricts the set of\n animation targets that the node and its descendants affect. Each bit in the\n mask corresponds to a *mask group*, which is a set of animation targets\n (bones). An animation target can belong to any number of mask groups within\n the context of an animation graph.\n\n When the appropriate bit is set in a node's mask, neither the node nor its\n descendants will animate any animation targets belonging to that mask group.\n That is, setting a mask bit to 1 *disables* the animation targets in that\n group. If an animation target belongs to multiple mask groups, masking any\n one of the mask groups that it belongs to will mask that animation target.\n (Thus an animation target will only be animated if *all* of its mask groups\n are unmasked.)\n\n A common use of masks is to allow characters to hold objects. For this, the\n typical workflow is to assign each character's hand to a mask group. Then,\n when the character picks up an object, the application masks out the hand\n that the object is held in for the character's animation set, then positions\n the hand's digits as necessary to grasp the object. The character's\n animations will continue to play but will not affect the hand, which will\n continue to be depicted as holding the object.\n\n Animation graphs are assets and can be serialized to and loaded from [RON]\n files. Canonically, such files have an `.animgraph.ron` extension.\n\n The animation graph implements [RFC 51]. See that document for more\n information.\n\n [RON]: https://github.com/ron-rs/ron\n\n [RFC 51]: https://github.com/bevyengine/rfcs/blob/main/rfcs/51-animation-composition.md",
       "associated_functions": [
+        "bevy_animation::graph::AnimationGraph::root_node",
         "bevy_animation::graph::AnimationGraph::add_clip",
         "bevy_animation::graph::AnimationGraph::from_clip",
-        "bevy_animation::graph::AnimationGraph::root_node",
         "bevy_animation::graph::AnimationGraph::new"
       ],
       "layout": {
@@ -561,13 +561,13 @@
       "namespace": "audio",
       "documentation": " Initial settings to be used when audio starts playing.\n\n If you would like to control the audio while it is playing, query for the\n [`AudioSink`](crate::AudioSink) or [`SpatialAudioSink`](crate::SpatialAudioSink)\n components. Changes to this component will *not* be applied to already-playing audio.",
       "associated_functions": [
-        "bevy_audio::audio::PlaybackSettings::with_volume",
         "bevy_audio::audio::PlaybackSettings::once",
-        "bevy_audio::audio::PlaybackSettings::with_spatial",
-        "bevy_audio::audio::PlaybackSettings::remove",
-        "bevy_audio::audio::PlaybackSettings::looping",
-        "bevy_audio::audio::PlaybackSettings::despawn",
         "bevy_audio::audio::PlaybackSettings::with_speed",
+        "bevy_audio::audio::PlaybackSettings::looping",
+        "bevy_audio::audio::PlaybackSettings::remove",
+        "bevy_audio::audio::PlaybackSettings::despawn",
+        "bevy_audio::audio::PlaybackSettings::with_volume",
+        "bevy_audio::audio::PlaybackSettings::with_spatial",
         "bevy_audio::audio::PlaybackSettings::new"
       ],
       "layout": {
@@ -659,9 +659,9 @@
       "associated_functions": [
         "bevy_camera::camera::Camera::logical_viewport_rect",
         "bevy_camera::camera::Camera::viewport_to_world_2d",
-        "bevy_camera::camera::Camera::world_to_viewport",
-        "bevy_camera::camera::Camera::logical_viewport_size",
         "bevy_camera::camera::Camera::viewport_to_world",
+        "bevy_camera::camera::Camera::logical_viewport_size",
+        "bevy_camera::camera::Camera::world_to_viewport",
         "bevy_camera::camera::Camera::physical_viewport_size",
         "bevy_camera::camera::Camera::new"
       ],
@@ -883,8 +883,8 @@
       "namespace": "camera",
       "documentation": " User indication of whether an entity is visible. Propagates down the entity hierarchy.\n\n If an entity is hidden in this way, all [`Children`] (and all of their children and so on) who\n are set to [`Inherited`](Self::Inherited) will also be hidden.\n\n Users should set this component if they wish to change the visibility of an entity.\n\n To read the visibility of an entity, query for its [`InheritedVisibility`] instead.\n For more information, see [module level documentation](self#what-is-the-difference-between-visibility-components).",
       "associated_functions": [
-        "bevy_camera::visibility::Visibility::toggle_visible_hidden",
         "bevy_camera::visibility::Visibility::toggle_inherited_visible",
+        "bevy_camera::visibility::Visibility::toggle_visible_hidden",
         "bevy_camera::visibility::Visibility::new"
       ],
       "layout": [
@@ -920,12 +920,12 @@
       "namespace": "camera",
       "documentation": " Defines which rendering layers an entity belongs to.\n\n A camera renders an entity only when their render layers intersect.\n\n The [`Default`] instance of `RenderLayers` contains layer `0`, the first layer. Entities\n without this component also belong to layer `0`.\n\n An empty `RenderLayers` makes the entity invisible.",
       "associated_functions": [
-        "bevy_camera::visibility::render_layers::RenderLayers::layer",
         "bevy_camera::visibility::render_layers::RenderLayers::iter",
-        "bevy_camera::visibility::render_layers::RenderLayers::without",
-        "bevy_camera::visibility::render_layers::RenderLayers::intersects",
-        "bevy_camera::visibility::render_layers::RenderLayers::with",
         "bevy_camera::visibility::render_layers::RenderLayers::none",
+        "bevy_camera::visibility::render_layers::RenderLayers::with",
+        "bevy_camera::visibility::render_layers::RenderLayers::intersects",
+        "bevy_camera::visibility::render_layers::RenderLayers::layer",
+        "bevy_camera::visibility::render_layers::RenderLayers::without",
         "bevy_camera::visibility::render_layers::RenderLayers::new"
       ],
       "layout": {
@@ -958,33 +958,33 @@
       "namespace": "color",
       "documentation": " An enumerated type that can represent any of the color types in this crate.\n\n This is useful when you need to store a color in a data structure that can't be generic over\n the color type.\n <div>\n </div>\n\n # Operations\n\n [`Color`] supports all the standard color operations, such as [mixing](Mix),\n [luminance](Luminance) and [hue](Hue) adjustment,\n and [diffing](EuclideanDistance). These operations delegate to the concrete color space contained\n by [`Color`], but will convert to [`Oklch`](Oklcha) for operations which aren't supported in the\n current space. After performing the operation, if a conversion was required, the result will be\n converted back into the original color space.\n\n ```rust\n # use bevy_color::{Hue, Color};\n let red_hsv = Color::hsv(0., 1., 1.);\n let red_srgb = Color::srgb(1., 0., 0.);\n\n // HSV has a definition of hue, so it will be returned.\n red_hsv.hue();\n\n // SRGB doesn't have a native definition for hue.\n // Converts to Oklch and returns that result.\n red_srgb.hue();\n ```\n\n [`Oklch`](Oklcha) has been chosen as the intermediary space in cases where conversion is required\n due to its perceptual uniformity and broad support for Bevy's color operations.\n To avoid the cost of repeated conversion, and ensure consistent results where that is desired,\n first convert this [`Color`] into your desired color space.",
       "associated_functions": [
-        "bevy_color::color::Color::white",
-        "bevy_color::color::Color::lighter",
-        "bevy_color::color::Color::linear_rgb",
-        "bevy_color::color::Color::darker",
-        "bevy_color::color::Color::mix",
-        "bevy_color::color::Color::named",
-        "bevy_color::color::Color::black",
-        "bevy_color::color::Color::hex",
-        "bevy_color::color::Color::with_alpha",
+        "bevy_color::color::Color::srgba",
         "bevy_color::color::Color::to_srgba",
-        "bevy_color::color::Color::to_linear",
-        "bevy_color::color::Color::hsv",
-        "bevy_color::color::Color::alpha",
-        "bevy_color::color::Color::luminance",
-        "bevy_color::color::Color::srgb_u8",
         "bevy_color::color::Color::eq",
+        "bevy_color::color::Color::hsv",
+        "bevy_color::color::Color::srgb",
+        "bevy_color::color::Color::white",
+        "bevy_color::color::Color::with_alpha",
+        "bevy_color::color::Color::luminance",
+        "bevy_color::color::Color::named",
+        "bevy_color::color::Color::alpha",
+        "bevy_color::color::Color::linear_rgb",
+        "bevy_color::color::Color::to_hex",
         "bevy_color::color::Color::hsl",
+        "bevy_color::color::Color::black",
+        "bevy_color::color::Color::to_linear",
         "bevy_color::color::Color::none",
+        "bevy_color::color::Color::srgba_u8",
+        "bevy_color::color::Color::hsla",
+        "bevy_color::color::Color::hex",
+        "bevy_color::color::Color::mix",
         "bevy_color::color::Color::hsva",
         "bevy_color::color::Color::set_alpha",
-        "bevy_color::color::Color::is_fully_transparent",
-        "bevy_color::color::Color::srgba",
-        "bevy_color::color::Color::srgb",
-        "bevy_color::color::Color::hsla",
+        "bevy_color::color::Color::darker",
+        "bevy_color::color::Color::lighter",
         "bevy_color::color::Color::linear_rgba",
-        "bevy_color::color::Color::to_hex",
-        "bevy_color::color::Color::srgba_u8",
+        "bevy_color::color::Color::srgb_u8",
+        "bevy_color::color::Color::is_fully_transparent",
         "bevy_color::color::Color::new"
       ],
       "layout": [
@@ -1164,8 +1164,8 @@
       "namespace": "color",
       "documentation": " Color in Hue-Saturation-Lightness (HSL) color space with alpha.\n Further information on this color model can be found on [Wikipedia](https://en.wikipedia.org/wiki/HSL_and_HSV).\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::hsla::Hsla::new",
-        "bevy_color::hsla::Hsla::to_color"
+        "bevy_color::hsla::Hsla::to_color",
+        "bevy_color::hsla::Hsla::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -1218,8 +1218,8 @@
       "namespace": "color",
       "documentation": " Color in Hue-Saturation-Value (HSV) color space with alpha.\n Further information on this color model can be found on [Wikipedia](https://en.wikipedia.org/wiki/HSL_and_HSV).\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::hsva::Hsva::new",
-        "bevy_color::hsva::Hsva::to_color"
+        "bevy_color::hsva::Hsva::to_color",
+        "bevy_color::hsva::Hsva::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -1272,8 +1272,8 @@
       "namespace": "color",
       "documentation": " Color in Hue-Whiteness-Blackness (HWB) color space with alpha.\n Further information on this color model can be found on [Wikipedia](https://en.wikipedia.org/wiki/HWB_color_model).\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::hwba::Hwba::to_color",
-        "bevy_color::hwba::Hwba::new"
+        "bevy_color::hwba::Hwba::new",
+        "bevy_color::hwba::Hwba::to_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -1326,8 +1326,8 @@
       "namespace": "color",
       "documentation": " Color in LAB color space, with alpha\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::laba::Laba::new",
-        "bevy_color::laba::Laba::to_color"
+        "bevy_color::laba::Laba::to_color",
+        "bevy_color::laba::Laba::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -1380,8 +1380,8 @@
       "namespace": "color",
       "documentation": " Color in LCH color space, with alpha\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::lcha::Lcha::to_color",
-        "bevy_color::lcha::Lcha::new"
+        "bevy_color::lcha::Lcha::new",
+        "bevy_color::lcha::Lcha::to_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -1434,11 +1434,11 @@
       "namespace": "color",
       "documentation": " Linear RGB color with alpha.\n\n SDR colors are in `[0.0, 1.0]`. Values above `1.0` are HDR intensities.\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::linear_rgba::LinearRgba::rgb",
-        "bevy_color::linear_rgba::LinearRgba::to_color",
         "bevy_color::linear_rgba::LinearRgba::eq",
+        "bevy_color::linear_rgba::LinearRgba::mul",
+        "bevy_color::linear_rgba::LinearRgba::rgb",
         "bevy_color::linear_rgba::LinearRgba::new",
-        "bevy_color::linear_rgba::LinearRgba::mul"
+        "bevy_color::linear_rgba::LinearRgba::to_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -1491,8 +1491,8 @@
       "namespace": "color",
       "documentation": " Color in Oklab color space, with alpha\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::oklaba::Oklaba::to_color",
-        "bevy_color::oklaba::Oklaba::new"
+        "bevy_color::oklaba::Oklaba::new",
+        "bevy_color::oklaba::Oklaba::to_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -1599,13 +1599,13 @@
       "namespace": "color",
       "documentation": " Non-linear standard RGB with alpha.\n\n SDR colors are in `[0.0, 1.0]`. Values above `1.0` are HDR intensities.\n <div>\n </div>",
       "associated_functions": [
+        "bevy_color::srgba::Srgba::to_color",
         "bevy_color::srgba::Srgba::hex",
-        "bevy_color::srgba::Srgba::eq",
-        "bevy_color::srgba::Srgba::new",
-        "bevy_color::srgba::Srgba::with_alpha",
-        "bevy_color::srgba::Srgba::to_hex",
         "bevy_color::srgba::Srgba::rgb",
-        "bevy_color::srgba::Srgba::to_color"
+        "bevy_color::srgba::Srgba::to_hex",
+        "bevy_color::srgba::Srgba::with_alpha",
+        "bevy_color::srgba::Srgba::new",
+        "bevy_color::srgba::Srgba::eq"
       ],
       "layout": {
         "kind": "Struct",
@@ -1658,8 +1658,8 @@
       "namespace": "color",
       "documentation": " [CIE 1931](https://en.wikipedia.org/wiki/CIE_1931_color_space) color space, also known as XYZ, with an alpha channel.\n\n The SDR channel bounds below are the D65 white point, `(0.9505, 1.0, 1.0889)`.\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::xyza::Xyza::to_color",
-        "bevy_color::xyza::Xyza::new"
+        "bevy_color::xyza::Xyza::new",
+        "bevy_color::xyza::Xyza::to_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -1911,10 +1911,10 @@
       "namespace": "ecs",
       "documentation": " Unique identifier for an entity in a [`World`].\n Note that this is just an id, not the entity itself.\n Further, the entity this id refers to may no longer exist in the [`World`].\n For more information about entities, their ids, and how to use them, see the module [docs](crate::entity).\n\n # Aliasing\n\n Once an entity is despawned, it ceases to exist.\n However, its [`Entity`] id is still present, and may still be contained in some data.\n This becomes problematic because it is possible for a later entity to be spawned at the exact same id!\n If this happens, which is rare but very possible, it will be logged.\n\n Aliasing can happen without warning.\n Holding onto a [`Entity`] id corresponding to an entity well after that entity was despawned can cause un-intuitive behavior for both ordering, and comparing in general.\n To prevent these bugs, it is generally best practice to stop holding an [`Entity`] or [`EntityGeneration`] value as soon as you know it has been despawned.\n If you must do otherwise, do not assume the [`Entity`] id corresponds to the same entity it originally did.\n See [`EntityGeneration`]'s docs for more information about aliasing and why it occurs.\n\n # Stability warning\n For all intents and purposes, `Entity` should be treated as an opaque identifier. The internal bit\n representation is liable to change from release to release as are the behaviors or performance\n characteristics of any of its trait implementations (i.e. `Ord`, `Hash`, etc.). This means that changes in\n `Entity`'s representation, though made readable through various functions on the type, are not considered\n breaking changes under [SemVer].\n\n In particular, directly serializing with `Serialize` and `Deserialize` make zero guarantee of long\n term wire format compatibility. Changes in behavior will cause serialized `Entity` values persisted\n to long term storage (i.e. disk, databases, etc.) will fail to deserialize upon being updated.\n\n # Usage\n\n This data type is returned by iterating a `Query` that has `Entity` as part of its query fetch type parameter ([learn more]).\n It can also be obtained by calling [`EntityCommands::id`] or [`EntityWorldMut::id`].\n\n ```\n # use bevy_ecs::prelude::*;\n # #[derive(Component)]\n # struct SomeComponent;\n fn setup(mut commands: Commands) {\n     // Calling `spawn` returns `EntityCommands`.\n     let entity = commands.spawn(SomeComponent).id();\n }\n\n fn exclusive_system(world: &mut World) {\n     // Calling `spawn` returns `EntityWorldMut`.\n     let entity = world.spawn(SomeComponent).id();\n }\n #\n # bevy_ecs::system::assert_is_system(setup);\n # bevy_ecs::system::assert_is_system(exclusive_system);\n ```\n\n It can be used to refer to a specific entity to apply [`EntityCommands`], or to call [`Query::get`] (or similar methods) to access its components.\n\n ```\n # use bevy_ecs::prelude::*;\n #\n # #[derive(Component)]\n # struct Expired;\n #\n fn dispose_expired_food(mut commands: Commands, query: Query<Entity, With<Expired>>) {\n     for food_entity in &query {\n         commands.entity(food_entity).despawn();\n     }\n }\n #\n # bevy_ecs::system::assert_is_system(dispose_expired_food);\n ```\n\n [learn more]: crate::system::Query#entity-id-access\n [`EntityCommands::id`]: crate::system::EntityCommands::id\n [`EntityWorldMut::id`]: crate::world::EntityWorldMut::id\n [`EntityCommands`]: crate::system::EntityCommands\n [`Query::get`]: crate::system::Query::get\n [`World`]: crate::world::World\n [SemVer]: https://semver.org/",
       "associated_functions": [
-        "bevy_ecs::entity::Entity::generation",
-        "bevy_ecs::entity::Entity::index",
         "bevy_ecs::entity::Entity::from_bits",
         "bevy_ecs::entity::Entity::eq",
+        "bevy_ecs::entity::Entity::generation",
+        "bevy_ecs::entity::Entity::index",
         "bevy_ecs::entity::Entity::to_bits",
         "bevy_ecs::entity::Entity::new"
       ],
@@ -1965,9 +1965,9 @@
       "namespace": "ecs",
       "documentation": " Component used to identify an entity. Stores a hash for faster comparisons.\n\n The hash is eagerly re-computed upon each update to the name.\n\n [`Name`] should not be treated as a globally unique identifier for entities,\n as multiple entities can have the same name.  [`Entity`] should be\n used instead as the default unique identifier.",
       "associated_functions": [
+        "bevy_ecs::name::Name::set",
         "bevy_ecs::name::Name::new",
         "bevy_ecs::name::Name::as_str",
-        "bevy_ecs::name::Name::set",
         "bevy_ecs::name::Name::eq"
       ],
       "layout": {
@@ -2002,10 +2002,10 @@
         "bevy_image::image::Image::width",
         "bevy_image::image::Image::size",
         "bevy_image::image::Image::size_f32",
-        "bevy_image::image::Image::add_asset",
+        "bevy_image::image::Image::new",
         "bevy_image::image::Image::load",
         "bevy_image::image::Image::get_asset",
-        "bevy_image::image::Image::new"
+        "bevy_image::image::Image::add_asset"
       ],
       "layout": null,
       "generated": false,
@@ -2025,12 +2025,12 @@
       "namespace": "sprite",
       "documentation": " Stores a map used to lookup the position of a texture in a [`TextureAtlas`].\n This can be used to either use and look up a specific section of a texture, or animate frame-by-frame as a sprite sheet.\n\n Optionally it can store a mapping from sub texture handles to the related area index (see\n [`TextureAtlasBuilder`]).\n\n [Example usage animating sprite.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/sprite_sheet.rs)\n [Example usage animating sprite in response to an event.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/sprite_animation.rs)\n [Example usage loading sprite sheet.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/texture_atlas.rs)\n\n [`TextureAtlasBuilder`]: crate::TextureAtlasBuilder",
       "associated_functions": [
-        "bevy_image::texture_atlas::TextureAtlasLayout::len",
         "bevy_image::texture_atlas::TextureAtlasLayout::from_grid",
-        "bevy_image::texture_atlas::TextureAtlasLayout::add_asset",
+        "bevy_image::texture_atlas::TextureAtlasLayout::len",
+        "bevy_image::texture_atlas::TextureAtlasLayout::new",
         "bevy_image::texture_atlas::TextureAtlasLayout::load",
         "bevy_image::texture_atlas::TextureAtlasLayout::get_asset",
-        "bevy_image::texture_atlas::TextureAtlasLayout::new"
+        "bevy_image::texture_atlas::TextureAtlasLayout::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -2069,13 +2069,13 @@
       "namespace": "input",
       "documentation": " Stores a connected gamepad's metadata such as the name and its [`GamepadButton`] and [`GamepadAxis`].\n\n An entity with this component is spawned automatically after [`GamepadConnectionEvent`]\n and updated by [`gamepad_event_processing_system`].\n\n See also [`GamepadSettings`] for configuration.\n\n # Examples\n\n ```\n # use bevy_input::gamepad::{Gamepad, GamepadAxis, GamepadButton};\n # use bevy_ecs::system::Query;\n # use bevy_ecs::name::Name;\n #\n fn gamepad_usage_system(gamepads: Query<(&Name, &Gamepad)>) {\n     for (name, gamepad) in &gamepads {\n         println!(\"{name}\");\n\n         if gamepad.just_pressed(GamepadButton::North) {\n             println!(\"{} just pressed North\", name)\n         }\n\n         if let Some(left_stick_x) = gamepad.get(GamepadAxis::LeftStickX)  {\n             println!(\"left stick X: {}\", left_stick_x)\n         }\n     }\n }\n ```",
       "associated_functions": [
-        "bevy_input::gamepad::Gamepad::left_stick",
-        "bevy_input::gamepad::Gamepad::right_stick",
-        "bevy_input::gamepad::Gamepad::just_pressed",
         "bevy_input::gamepad::Gamepad::get",
+        "bevy_input::gamepad::Gamepad::just_pressed",
         "bevy_input::gamepad::Gamepad::pressed",
-        "bevy_input::gamepad::Gamepad::just_released",
+        "bevy_input::gamepad::Gamepad::left_stick",
         "bevy_input::gamepad::Gamepad::dpad",
+        "bevy_input::gamepad::Gamepad::right_stick",
+        "bevy_input::gamepad::Gamepad::just_released",
         "bevy_input::gamepad::Gamepad::new"
       ],
       "layout": {
@@ -2130,13 +2130,13 @@
       "namespace": "input",
       "documentation": " The key code of a [`KeyboardInput`].\n\n ## Usage\n\n It is used as the generic `T` value of an [`ButtonInput`] to create a `Res<ButtonInput<KeyCode>>`.\n\n Code representing the location of a physical key\n This mostly conforms to the [`UI Events Specification's KeyboardEvent.code`] with a few\n exceptions:\n - The keys that the specification calls `MetaLeft` and `MetaRight` are named `SuperLeft` and\n   `SuperRight` here.\n - The key that the specification calls \"Super\" is reported as `Unidentified` here.\n\n [`UI Events Specification's KeyboardEvent.code`]: https://w3c.github.io/uievents-code/#code-value-tables\n\n ## Updating\n\n The resource is updated inside of the [`keyboard_input_system`].",
       "associated_functions": [
+        "bevy_input::keyboard::KeyCode::any_pressed",
+        "bevy_input::keyboard::KeyCode::just_pressed",
+        "bevy_input::keyboard::KeyCode::just_released",
         "bevy_input::keyboard::KeyCode::get_just_pressed",
         "bevy_input::keyboard::KeyCode::pressed",
-        "bevy_input::keyboard::KeyCode::any_just_pressed",
-        "bevy_input::keyboard::KeyCode::just_pressed",
-        "bevy_input::keyboard::KeyCode::any_pressed",
-        "bevy_input::keyboard::KeyCode::just_released",
         "bevy_input::keyboard::KeyCode::get_pressed",
+        "bevy_input::keyboard::KeyCode::any_just_pressed",
         "bevy_input::keyboard::KeyCode::new"
       ],
       "layout": [
@@ -2944,13 +2944,13 @@
       "namespace": "input",
       "documentation": " A button on a mouse device.\n\n ## Usage\n\n It is used as the generic `T` value of an [`ButtonInput`] to create a `bevy`\n resource.\n\n ## Updating\n\n The resource is updated inside of the [`mouse_button_input_system`].",
       "associated_functions": [
-        "bevy_input::mouse::MouseButton::any_just_pressed",
-        "bevy_input::mouse::MouseButton::pressed",
         "bevy_input::mouse::MouseButton::get_just_pressed",
+        "bevy_input::mouse::MouseButton::any_just_pressed",
         "bevy_input::mouse::MouseButton::just_pressed",
-        "bevy_input::mouse::MouseButton::any_pressed",
         "bevy_input::mouse::MouseButton::get_pressed",
         "bevy_input::mouse::MouseButton::just_released",
+        "bevy_input::mouse::MouseButton::pressed",
+        "bevy_input::mouse::MouseButton::any_pressed",
         "bevy_input::mouse::MouseButton::new"
       ],
       "layout": [
@@ -3003,9 +3003,9 @@
       "namespace": "input",
       "documentation": " Resource representing which entity has input focus, if any. Input events (other than pointer-like inputs) will be\n dispatched to the current focus entity, or to the primary window if no entity has focus.\n\n Changing the input focus is as easy as modifying this resource.\n\n To detect when an entity gains or loses focus, listen for the [`FocusGained`] and [`FocusLost`] events.\n\n # Examples\n\n From within a system:\n\n ```rust\n use bevy_ecs::prelude::*;\n use bevy_input_focus::{FocusCause, InputFocus};\n\n fn clear_focus(mut input_focus: ResMut<InputFocus>) {\n   input_focus.clear();\n }\n ```\n\n With exclusive (or deferred) world access:\n\n ```rust\n use bevy_ecs::prelude::*;\n use bevy_input_focus::{FocusCause, InputFocus};\n\n fn set_focus_from_world(world: &mut World) {\n     let entity = world.spawn_empty().id();\n\n     // Fetch the resource from the world\n     let mut input_focus = world.resource_mut::<InputFocus>();\n     // Then mutate it!\n     input_focus.set(entity, FocusCause::Navigated);\n\n     // Or you can just insert a fresh copy of the resource\n     // which will overwrite the existing one.\n     world.insert_resource(InputFocus::from_entity(entity));\n }\n ```",
       "associated_functions": [
-        "bevy_input_focus::InputFocus::set",
         "bevy_input_focus::InputFocus::get",
         "bevy_input_focus::InputFocus::clear",
+        "bevy_input_focus::InputFocus::set",
         "bevy_input_focus::InputFocus::new"
       ],
       "layout": {
@@ -3066,12 +3066,12 @@
       "associated_functions": [
         "bevy_math::direction::Dir2::x",
         "bevy_math::direction::Dir2::neg_y",
-        "bevy_math::direction::Dir2::slerp",
-        "bevy_math::direction::Dir2::new",
         "bevy_math::direction::Dir2::eq",
+        "bevy_math::direction::Dir2::mul",
         "bevy_math::direction::Dir2::neg",
         "bevy_math::direction::Dir2::neg_x",
-        "bevy_math::direction::Dir2::mul",
+        "bevy_math::direction::Dir2::slerp",
+        "bevy_math::direction::Dir2::new",
         "bevy_math::direction::Dir2::as_vec2",
         "bevy_math::direction::Dir2::y"
       ],
@@ -3104,17 +3104,17 @@
       "documentation": " A normalized vector pointing in a direction in 3D space",
       "associated_functions": [
         "bevy_math::direction::Dir3::neg_x",
+        "bevy_math::direction::Dir3::neg",
+        "bevy_math::direction::Dir3::x",
+        "bevy_math::direction::Dir3::new",
+        "bevy_math::direction::Dir3::slerp",
+        "bevy_math::direction::Dir3::neg_y",
+        "bevy_math::direction::Dir3::eq",
         "bevy_math::direction::Dir3::as_vec3",
         "bevy_math::direction::Dir3::mul",
-        "bevy_math::direction::Dir3::neg",
-        "bevy_math::direction::Dir3::z",
-        "bevy_math::direction::Dir3::slerp",
-        "bevy_math::direction::Dir3::new",
-        "bevy_math::direction::Dir3::eq",
         "bevy_math::direction::Dir3::y",
-        "bevy_math::direction::Dir3::neg_y",
         "bevy_math::direction::Dir3::neg_z",
-        "bevy_math::direction::Dir3::x"
+        "bevy_math::direction::Dir3::z"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -3144,20 +3144,20 @@
       "namespace": "math",
       "documentation": " A rectangle defined by two opposite corners.\n\n The rectangle is axis aligned, and defined by its minimum and maximum coordinates,\n stored in `Rect::min` and `Rect::max`, respectively. The minimum/maximum invariant\n must be upheld by the user when directly assigning the fields, otherwise some methods\n produce invalid results. It is generally recommended to use one of the constructor\n methods instead, which will ensure this invariant is met, unless you already have\n the minimum and maximum corners.",
       "associated_functions": [
-        "bevy_math::rects::rect::Rect::width",
-        "bevy_math::rects::rect::Rect::center",
         "bevy_math::rects::rect::Rect::new",
+        "bevy_math::rects::rect::Rect::center",
         "bevy_math::rects::rect::Rect::size",
-        "bevy_math::rects::rect::Rect::from_corners",
         "bevy_math::rects::rect::Rect::from_center_half_size",
-        "bevy_math::rects::rect::Rect::eq",
-        "bevy_math::rects::rect::Rect::from_center_size",
-        "bevy_math::rects::rect::Rect::inflate",
-        "bevy_math::rects::rect::Rect::intersect",
-        "bevy_math::rects::rect::Rect::height",
-        "bevy_math::rects::rect::Rect::is_empty",
-        "bevy_math::rects::rect::Rect::contains",
         "bevy_math::rects::rect::Rect::union",
+        "bevy_math::rects::rect::Rect::height",
+        "bevy_math::rects::rect::Rect::from_center_size",
+        "bevy_math::rects::rect::Rect::is_empty",
+        "bevy_math::rects::rect::Rect::width",
+        "bevy_math::rects::rect::Rect::from_corners",
+        "bevy_math::rects::rect::Rect::eq",
+        "bevy_math::rects::rect::Rect::contains",
+        "bevy_math::rects::rect::Rect::intersect",
+        "bevy_math::rects::rect::Rect::inflate",
         "bevy_math::rects::rect::Rect::half_size"
       ],
       "layout": {
@@ -3197,17 +3197,17 @@
       "namespace": "math",
       "documentation": " A 2D rotation.\n\n # Example\n\n ```\n # use approx::assert_relative_eq;\n # use bevy_math::{Rot2, Vec2};\n use std::f32::consts::PI;\n\n // Create rotations from counterclockwise angles in radians or degrees\n let rotation1 = Rot2::radians(PI / 2.0);\n let rotation2 = Rot2::degrees(45.0);\n\n // Get the angle back as radians or degrees\n assert_eq!(rotation1.as_degrees(), 90.0);\n assert_eq!(rotation2.as_radians(), PI / 4.0);\n\n // \"Add\" rotations together using `*`\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));\n\n // Rotate vectors\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);\n ```",
       "associated_functions": [
-        "bevy_math::rotation2d::Rot2::slerp",
-        "bevy_math::rotation2d::Rot2::inverse",
-        "bevy_math::rotation2d::Rot2::identity",
-        "bevy_math::rotation2d::Rot2::nlerp",
         "bevy_math::rotation2d::Rot2::degrees",
         "bevy_math::rotation2d::Rot2::as_degrees",
-        "bevy_math::rotation2d::Rot2::mul",
-        "bevy_math::rotation2d::Rot2::radians",
-        "bevy_math::rotation2d::Rot2::as_radians",
-        "bevy_math::rotation2d::Rot2::turn_fraction",
         "bevy_math::rotation2d::Rot2::eq",
+        "bevy_math::rotation2d::Rot2::identity",
+        "bevy_math::rotation2d::Rot2::turn_fraction",
+        "bevy_math::rotation2d::Rot2::nlerp",
+        "bevy_math::rotation2d::Rot2::slerp",
+        "bevy_math::rotation2d::Rot2::as_radians",
+        "bevy_math::rotation2d::Rot2::inverse",
+        "bevy_math::rotation2d::Rot2::radians",
+        "bevy_math::rotation2d::Rot2::mul",
         "bevy_math::rotation2d::Rot2::new"
       ],
       "layout": {
@@ -3249,10 +3249,10 @@
       "associated_functions": [
         "bevy_mesh::mesh::Mesh::from_shape",
         "bevy_mesh::mesh::Mesh::count_vertices",
-        "bevy_mesh::mesh::Mesh::add_asset",
+        "bevy_mesh::mesh::Mesh::new",
         "bevy_mesh::mesh::Mesh::load",
         "bevy_mesh::mesh::Mesh::get_asset",
-        "bevy_mesh::mesh::Mesh::new"
+        "bevy_mesh::mesh::Mesh::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -3340,24 +3340,24 @@
       "crate": "bevy_mod_scripting_bevy_gizmos_bindings",
       "path": "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos",
       "namespace": "gizmos",
-      "documentation": " Immediate mode debug drawing: lines and shapes drawn this frame.\n\n Every function draws straight away, the shapes are shown for the current frame only.\n Needs the gizmo plugin, without it the functions fail with an error.\n\n ```multi-lang-example,lua,ignore\n local Color = import_namespace(\"color\").Color\n local Gizmos = import_namespace(\"gizmos\").Gizmos\n local Vec3 = import_namespace(\"math\").Vec3\n Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())\n ```\n\n ```multi-lang-example,rhai,ignore\n let Color = import_namespace.call(\"color\").Color;\n let Gizmos = import_namespace.call(\"gizmos\").Gizmos;\n let Vec3 = import_namespace.call(\"math\").Vec3;\n Gizmos.line.call(Vec3.zero.call(), Vec3.new_.call(1.0, 0.0, 0.0), Color.white.call());\n ```",
+      "documentation": " Immediate mode debug drawing: lines and shapes drawn this frame.\n\n Every function draws straight away, the shapes are shown for the current frame only.\n Needs the gizmo plugin, without it the functions fail with an error.\n\n ```multi-lang-example,lua,ignore\n local Color = import_namespace(\"color\").Color\n local Gizmos = import_namespace(\"gizmos\").Gizmos\n local Vec3 = import_namespace(\"math\").Vec3\n Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())\n ```\n\n ```multi-lang-example,rune,ignore\n let Color = import_namespace(\"color\").Color;\n let Gizmos = import_namespace(\"gizmos\").Gizmos;\n let Vec3 = import_namespace(\"math\").Vec3;\n Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());\n ```",
       "associated_functions": [
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cross",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cuboid",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::axes",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cross",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cuboid",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::sphere",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::axes",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::new"
       ],
       "layout": {
@@ -3381,8 +3381,8 @@
       "documentation": " A reference to a variant of an enum, independent of any value of that enum.\n\n This is what scripts see when accessing `MyEnum.Variant`, it can be compared to\n the result of `value:variant()` and used to construct values of the variant.",
       "associated_functions": [
         "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::new",
-        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq",
-        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::variant_name"
+        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::variant_name",
+        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq"
       ],
       "layout": {
         "kind": "Struct",
@@ -3441,9 +3441,9 @@
       "namespace": "bms",
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.",
       "associated_functions": [
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::new"
       ],
       "layout": {
@@ -3495,10 +3495,10 @@
       "namespace": "bms",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::new"
       ],
       "layout": null,
@@ -3518,8 +3518,8 @@
       "namespace": "bms",
       "documentation": " A result from a query.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryResult::components",
         "bevy_mod_scripting_bindings::query::ScriptQueryResult::entity",
+        "bevy_mod_scripting_bindings::query::ScriptQueryResult::components",
         "bevy_mod_scripting_bindings::query::ScriptQueryResult::new"
       ],
       "layout": null,
@@ -3539,9 +3539,9 @@
       "namespace": "bms",
       "documentation": " A reference to a resource type's reflection registration.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::new"
       ],
       "layout": {
@@ -3578,9 +3578,9 @@
       "namespace": "bms",
       "documentation": " A reference to a type which is not a `Resource` or `Component`.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace",
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::new"
       ],
       "layout": null,
@@ -3600,8 +3600,8 @@
       "namespace": "bms",
       "documentation": " A handle to a script registered event type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::namespace",
         "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::short_name",
+        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::namespace",
         "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::new"
       ],
       "layout": null,
@@ -3621,11 +3621,11 @@
       "namespace": "bms",
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::new"
       ],
       "layout": null,
@@ -3645,10 +3645,10 @@
       "namespace": "bms",
       "documentation": " Describes the designated recipients of a script event",
       "associated_functions": [
-        "bevy_mod_scripting_script::Recipients::all_contexts",
+        "bevy_mod_scripting_script::Recipients::entity_script",
         "bevy_mod_scripting_script::Recipients::all_scripts",
         "bevy_mod_scripting_script::Recipients::static_script",
-        "bevy_mod_scripting_script::Recipients::entity_script",
+        "bevy_mod_scripting_script::Recipients::all_contexts",
         "bevy_mod_scripting_script::Recipients::new"
       ],
       "layout": [
@@ -3704,8 +3704,8 @@
       "namespace": "bms",
       "documentation": " Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]'s depending on the context policy used.",
       "associated_functions": [
-        "bevy_mod_scripting_script::ScriptAttachment::new_entity_script",
         "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
+        "bevy_mod_scripting_script::ScriptAttachment::new_entity_script",
         "bevy_mod_scripting_script::ScriptAttachment::new"
       ],
       "layout": [
@@ -4163,8 +4163,8 @@
       "namespace": "math",
       "documentation": " A rectangle primitive, which is like a square, except that the width and height can be different",
       "associated_functions": [
-        "bevy_shape::dim2::Rectangle::from_size",
-        "bevy_shape::dim2::Rectangle::new"
+        "bevy_shape::dim2::Rectangle::new",
+        "bevy_shape::dim2::Rectangle::from_size"
       ],
       "layout": {
         "kind": "Struct",
@@ -4274,8 +4274,8 @@
       "namespace": "math",
       "documentation": " A cuboid primitive, which is like a cube, except that the x, y, and z dimensions are not\n required to be the same.",
       "associated_functions": [
-        "bevy_shape::dim3::Cuboid::from_size",
-        "bevy_shape::dim3::Cuboid::new"
+        "bevy_shape::dim3::Cuboid::new",
+        "bevy_shape::dim3::Cuboid::from_size"
       ],
       "layout": {
         "kind": "Struct",
@@ -4455,8 +4455,8 @@
       "namespace": "math",
       "documentation": " An infinite half-line starting at `origin` and going in `direction` in 2D space.",
       "associated_functions": [
-        "bevy_shape::ray::Ray2d::new",
         "bevy_shape::ray::Ray2d::intersect_plane",
+        "bevy_shape::ray::Ray2d::new",
         "bevy_shape::ray::Ray2d::get_point"
       ],
       "layout": {
@@ -4494,9 +4494,9 @@
       "namespace": "math",
       "documentation": " An infinite half-line starting at `origin` and going in `direction` in 3D space.",
       "associated_functions": [
-        "bevy_shape::ray::Ray3d::intersect_plane",
         "bevy_shape::ray::Ray3d::get_point",
-        "bevy_shape::ray::Ray3d::new"
+        "bevy_shape::ray::Ray3d::new",
+        "bevy_shape::ray::Ray3d::intersect_plane"
       ],
       "layout": {
         "kind": "Struct",
@@ -4533,16 +4533,16 @@
       "namespace": "sprite",
       "documentation": " Normalized (relative to its size) offset of a 2d renderable entity from its [`Transform`].",
       "associated_functions": [
-        "bevy_sprite::sprite::Anchor::center_right",
-        "bevy_sprite::sprite::Anchor::top_center",
         "bevy_sprite::sprite::Anchor::bottom_center",
-        "bevy_sprite::sprite::Anchor::top_left",
-        "bevy_sprite::sprite::Anchor::top_right",
-        "bevy_sprite::sprite::Anchor::as_vec",
         "bevy_sprite::sprite::Anchor::center",
-        "bevy_sprite::sprite::Anchor::bottom_right",
         "bevy_sprite::sprite::Anchor::center_left",
         "bevy_sprite::sprite::Anchor::bottom_left",
+        "bevy_sprite::sprite::Anchor::top_center",
+        "bevy_sprite::sprite::Anchor::center_right",
+        "bevy_sprite::sprite::Anchor::as_vec",
+        "bevy_sprite::sprite::Anchor::top_right",
+        "bevy_sprite::sprite::Anchor::bottom_right",
+        "bevy_sprite::sprite::Anchor::top_left",
         "bevy_sprite::sprite::Anchor::new"
       ],
       "layout": {
@@ -4574,10 +4574,10 @@
       "namespace": "sprite",
       "documentation": " Describes a sprite to be rendered to a 2D camera",
       "associated_functions": [
+        "bevy_sprite::sprite::Sprite::from_image",
         "bevy_sprite::sprite::Sprite::from_atlas_image",
         "bevy_sprite::sprite::Sprite::from_color",
         "bevy_sprite::sprite::Sprite::sized",
-        "bevy_sprite::sprite::Sprite::from_image",
         "bevy_sprite::sprite::Sprite::new"
       ],
       "layout": {
@@ -4669,8 +4669,8 @@
       "documentation": " The top-level 2D text component.\n\n Adding `Text2d` to an entity will pull in required components for setting up 2d text.\n [Example usage.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/text2d.rs)\n\n The string in this component is the first 'text span' in a hierarchy of text spans that are collected into\n a [`ComputedTextBlock`]. See `TextSpan` for the component used by children of entities with [`Text2d`].\n\n With `Text2d` the `justify` field of [`TextLayout`] only affects the internal alignment of a block of text and not its\n relative position, which is controlled by the [`Anchor`] component.\n This means that for a block of text consisting of only one line that doesn't wrap, the `justify` field will have no effect.\n\n\n ```\n # use bevy_asset::Handle;\n # use bevy_color::Color;\n # use bevy_color::palettes::basic::BLUE;\n # use bevy_ecs::world::World;\n # use bevy_text::{Font, FontSize, Justify, TextLayout, TextFont, TextColor, TextSpan};\n # use bevy_sprite::Text2d;\n #\n # let font_handle: Handle<Font> = Default::default();\n # let mut world = World::default();\n #\n // Basic usage.\n world.spawn(Text2d::new(\"hello world!\"));\n\n // With non-default style.\n world.spawn((\n     Text2d::new(\"hello world!\"),\n     TextFont {\n         font: font_handle.clone().into(),\n         font_size: FontSize::Px(60.0),\n         ..Default::default()\n     },\n     TextColor(BLUE.into()),\n ));\n\n // With text justification.\n world.spawn((\n     Text2d::new(\"hello world\\nand bevy!\"),\n     TextLayout::justify(Justify::Center)\n ));\n\n // With spans\n world.spawn(Text2d::new(\"hello \")).with_children(|parent| {\n     parent.spawn(TextSpan::new(\"world\"));\n     parent.spawn((TextSpan::new(\"!\"), TextColor(BLUE.into())));\n });\n ```\n\n Viewport-based `FontSize` variants for `Text2d` are resolved based on the primary window’s logical size.",
       "associated_functions": [
         "bevy_sprite::text2d::Text2d::set",
-        "bevy_sprite::text2d::Text2d::as_str",
-        "bevy_sprite::text2d::Text2d::new"
+        "bevy_sprite::text2d::Text2d::new",
+        "bevy_sprite::text2d::Text2d::as_str"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -4701,9 +4701,9 @@
       "namespace": "bms",
       "documentation": " A reflectable schedule.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSchedule::systems",
         "bevy_system_reflection::ReflectSchedule::get_system_by_name",
         "bevy_system_reflection::ReflectSchedule::render_dot",
+        "bevy_system_reflection::ReflectSchedule::systems",
         "bevy_system_reflection::ReflectSchedule::new"
       ],
       "layout": {
@@ -4740,8 +4740,8 @@
       "namespace": "bms",
       "documentation": " A reflectable system.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSystem::path",
         "bevy_system_reflection::ReflectSystem::identifier",
+        "bevy_system_reflection::ReflectSystem::path",
         "bevy_system_reflection::ReflectSystem::new"
       ],
       "layout": null,
@@ -4761,8 +4761,8 @@
       "namespace": "text",
       "documentation": " `TextFont` determines the style of a text span within a [`ComputedTextBlock`], specifically\n the font face, the font size, the line height, and the antialiasing method.",
       "associated_functions": [
-        "bevy_text::text::TextFont::from_font_size",
         "bevy_text::text::TextFont::with_font",
+        "bevy_text::text::TextFont::from_font_size",
         "bevy_text::text::TextFont::with_font_size",
         "bevy_text::text::TextFont::new"
       ],
@@ -4878,9 +4878,9 @@
       "namespace": "text",
       "documentation": " A span of text in a tree of spans.\n\n A `TextSpan` is only valid when it exists as a child of a parent that has either `Text` or\n `Text2d`. The parent's `Text` / `Text2d` component contains the base text content. Any children\n with `TextSpan` extend this text by appending their content to the parent's text in sequence to\n form a [`ComputedTextBlock`]. The parent's [`TextLayout`] determines the layout of the block\n but each node has its own [`TextFont`] and [`TextColor`].",
       "associated_functions": [
-        "bevy_text::text::TextSpan::as_str",
+        "bevy_text::text::TextSpan::set",
         "bevy_text::text::TextSpan::new",
-        "bevy_text::text::TextSpan::set"
+        "bevy_text::text::TextSpan::as_str"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -4911,15 +4911,15 @@
       "namespace": "time",
       "documentation": " A Stopwatch is a struct that tracks elapsed time when started.\n\n Note that in order to advance the stopwatch [`tick`](Stopwatch::tick) **MUST** be called.\n # Examples\n\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut stopwatch = Stopwatch::new();\n assert_eq!(stopwatch.elapsed_secs(), 0.0);\n\n stopwatch.tick(Duration::from_secs_f32(1.0)); // tick one second\n assert_eq!(stopwatch.elapsed_secs(), 1.0);\n\n stopwatch.pause();\n stopwatch.tick(Duration::from_secs_f32(1.0)); // paused stopwatches don't tick\n assert_eq!(stopwatch.elapsed_secs(), 1.0);\n\n stopwatch.reset(); // reset the stopwatch\n assert!(stopwatch.is_paused());\n assert_eq!(stopwatch.elapsed_secs(), 0.0);\n ```",
       "associated_functions": [
-        "bevy_time::stopwatch::Stopwatch::new",
-        "bevy_time::stopwatch::Stopwatch::elapsed_secs",
-        "bevy_time::stopwatch::Stopwatch::is_paused",
         "bevy_time::stopwatch::Stopwatch::set_elapsed",
         "bevy_time::stopwatch::Stopwatch::reset",
         "bevy_time::stopwatch::Stopwatch::pause",
-        "bevy_time::stopwatch::Stopwatch::elapsed",
+        "bevy_time::stopwatch::Stopwatch::new",
+        "bevy_time::stopwatch::Stopwatch::tick",
+        "bevy_time::stopwatch::Stopwatch::is_paused",
+        "bevy_time::stopwatch::Stopwatch::elapsed_secs",
         "bevy_time::stopwatch::Stopwatch::unpause",
-        "bevy_time::stopwatch::Stopwatch::tick"
+        "bevy_time::stopwatch::Stopwatch::elapsed"
       ],
       "layout": {
         "kind": "Struct",
@@ -4958,28 +4958,28 @@
       "namespace": "time",
       "documentation": " Tracks elapsed time. Enters the finished state once `duration` is reached.\n\n Note that in order to advance the timer [`tick`](Timer::tick) **MUST** be called.\n\n # Timer modes\n\n There are two timer modes ([`TimerMode`]):\n\n - Non repeating timers will stop tracking and stay in the finished state until reset.\n - Repeating timers will only be in the finished state on each tick `duration` is reached or\n   exceeded, and can still be reset at any given point.\n\n # Pausing timers\n\n You can pause a timer using [`Timer::pause`]. Paused timers will not have elapsed time increased.\n\n # Elapsing multiple times a frame\n\n Repeating timers might elapse multiple times per frame if the time is advanced by more than the timer duration.\n You can check how many times a timer elapsed each tick with [`Timer::times_finished_this_tick`].\n For non-repeating timers, this will always be 0 or 1.",
       "associated_functions": [
-        "bevy_time::timer::Timer::paused",
-        "bevy_time::timer::Timer::from_seconds",
-        "bevy_time::timer::Timer::fraction_remaining",
-        "bevy_time::timer::Timer::almost_finish",
-        "bevy_time::timer::Timer::elapsed",
-        "bevy_time::timer::Timer::pause",
-        "bevy_time::timer::Timer::just_finished",
-        "bevy_time::timer::Timer::times_finished_this_tick",
-        "bevy_time::timer::Timer::unpause",
-        "bevy_time::timer::Timer::elapsed_secs",
-        "bevy_time::timer::Timer::remaining_secs",
-        "bevy_time::timer::Timer::set_mode",
-        "bevy_time::timer::Timer::remaining",
         "bevy_time::timer::Timer::set_duration",
-        "bevy_time::timer::Timer::duration",
-        "bevy_time::timer::Timer::new",
-        "bevy_time::timer::Timer::reset",
-        "bevy_time::timer::Timer::fraction",
-        "bevy_time::timer::Timer::finished",
         "bevy_time::timer::Timer::mode",
+        "bevy_time::timer::Timer::remaining",
+        "bevy_time::timer::Timer::times_finished_this_tick",
         "bevy_time::timer::Timer::tick",
-        "bevy_time::timer::Timer::set_elapsed"
+        "bevy_time::timer::Timer::pause",
+        "bevy_time::timer::Timer::new",
+        "bevy_time::timer::Timer::fraction",
+        "bevy_time::timer::Timer::set_elapsed",
+        "bevy_time::timer::Timer::set_mode",
+        "bevy_time::timer::Timer::elapsed",
+        "bevy_time::timer::Timer::almost_finish",
+        "bevy_time::timer::Timer::elapsed_secs",
+        "bevy_time::timer::Timer::fraction_remaining",
+        "bevy_time::timer::Timer::finished",
+        "bevy_time::timer::Timer::from_seconds",
+        "bevy_time::timer::Timer::remaining_secs",
+        "bevy_time::timer::Timer::paused",
+        "bevy_time::timer::Timer::just_finished",
+        "bevy_time::timer::Timer::unpause",
+        "bevy_time::timer::Timer::duration",
+        "bevy_time::timer::Timer::reset"
       ],
       "layout": {
         "kind": "Struct",
@@ -5039,23 +5039,23 @@
       "namespace": "transform",
       "documentation": " [`GlobalTransform`] is an affine transformation from entity-local coordinates to worldspace coordinates.\n\n You cannot directly mutate [`GlobalTransform`]; instead, you change an entity's transform by manipulating\n its [`Transform`], which indirectly causes Bevy to update its [`GlobalTransform`].\n\n * To get the global transform of an entity, you should get its [`GlobalTransform`].\n * For transform hierarchies to work correctly, you must have both a [`Transform`] and a [`GlobalTransform`].\n   [`GlobalTransform`] is automatically inserted whenever [`Transform`] is inserted.\n\n ## [`Transform`] and [`GlobalTransform`]\n\n [`Transform`] transforms an entity relative to its parent's reference frame, or relative to world space coordinates,\n if it doesn't have a [`ChildOf`](bevy_ecs::hierarchy::ChildOf) component.\n\n [`GlobalTransform`] is managed by Bevy; it is computed by successively applying the [`Transform`] of each ancestor\n entity which has a Transform. This is done automatically by Bevy-internal systems in the [`TransformSystems::Propagate`]\n system set.\n\n This system runs during [`PostUpdate`](bevy_app::PostUpdate). If you\n update the [`Transform`] of an entity in this schedule or after, you will notice a 1 frame lag\n before the [`GlobalTransform`] is updated.\n\n [`TransformSystems::Propagate`]: crate::TransformSystems::Propagate\n\n # Examples\n\n - [`transform`][transform_example]\n\n [transform_example]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs",
       "associated_functions": [
+        "bevy_transform::components::global_transform::GlobalTransform::from_xyz",
+        "bevy_transform::components::global_transform::GlobalTransform::identity",
         "bevy_transform::components::global_transform::GlobalTransform::down",
         "bevy_transform::components::global_transform::GlobalTransform::up",
-        "bevy_transform::components::global_transform::GlobalTransform::right",
-        "bevy_transform::components::global_transform::GlobalTransform::reparented_to",
-        "bevy_transform::components::global_transform::GlobalTransform::forward",
-        "bevy_transform::components::global_transform::GlobalTransform::back",
-        "bevy_transform::components::global_transform::GlobalTransform::rotation",
         "bevy_transform::components::global_transform::GlobalTransform::transform_point",
-        "bevy_transform::components::global_transform::GlobalTransform::eq",
-        "bevy_transform::components::global_transform::GlobalTransform::translation",
-        "bevy_transform::components::global_transform::GlobalTransform::from_xyz",
-        "bevy_transform::components::global_transform::GlobalTransform::scale",
-        "bevy_transform::components::global_transform::GlobalTransform::compute_transform",
-        "bevy_transform::components::global_transform::GlobalTransform::to_matrix",
-        "bevy_transform::components::global_transform::GlobalTransform::mul",
         "bevy_transform::components::global_transform::GlobalTransform::left",
-        "bevy_transform::components::global_transform::GlobalTransform::identity",
+        "bevy_transform::components::global_transform::GlobalTransform::right",
+        "bevy_transform::components::global_transform::GlobalTransform::translation",
+        "bevy_transform::components::global_transform::GlobalTransform::scale",
+        "bevy_transform::components::global_transform::GlobalTransform::back",
+        "bevy_transform::components::global_transform::GlobalTransform::to_matrix",
+        "bevy_transform::components::global_transform::GlobalTransform::compute_transform",
+        "bevy_transform::components::global_transform::GlobalTransform::reparented_to",
+        "bevy_transform::components::global_transform::GlobalTransform::mul",
+        "bevy_transform::components::global_transform::GlobalTransform::rotation",
+        "bevy_transform::components::global_transform::GlobalTransform::forward",
+        "bevy_transform::components::global_transform::GlobalTransform::eq",
         "bevy_transform::components::global_transform::GlobalTransform::new"
       ],
       "layout": {
@@ -5087,45 +5087,45 @@
       "namespace": "transform",
       "documentation": " Describe the position of an entity. If the entity has a parent, the position is relative\n to its parent position.\n\n * To place or move an entity, you should set its [`Transform`].\n * To get the global transform of an entity, you should get its [`GlobalTransform`].\n * To be displayed, an entity must have both a [`Transform`] and a [`GlobalTransform`].\n   [`GlobalTransform`] is automatically inserted whenever [`Transform`] is inserted.\n\n Transforms compose from right to left: if `t1` and `t2` are transforms, then `t1 * t2`\n corresponds to applying `t2` *first*, *then* applying `t1`.\n\n ## [`Transform`] and [`GlobalTransform`]\n\n [`Transform`] is the position of an entity relative to its parent position, or the reference\n frame if it doesn't have a [`ChildOf`](bevy_ecs::hierarchy::ChildOf) component.\n\n [`GlobalTransform`] is the position of an entity relative to the reference frame.\n\n [`GlobalTransform`] is updated from [`Transform`] in the [`TransformSystems::Propagate`]\n system set.\n\n This system runs during [`PostUpdate`](bevy_app::PostUpdate). If you\n update the [`Transform`] of an entity during this set or after, you will notice a 1 frame lag\n before the [`GlobalTransform`] is updated.\n\n [`TransformSystems::Propagate`]: crate::TransformSystems::Propagate\n\n # Examples\n\n - [`transform`][transform_example]\n\n [transform_example]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs",
       "associated_functions": [
-        "bevy_transform::components::transform::Transform::rotate_local_x",
-        "bevy_transform::components::transform::Transform::rotate_y",
-        "bevy_transform::components::transform::Transform::forward",
-        "bevy_transform::components::transform::Transform::rotate_axis",
         "bevy_transform::components::transform::Transform::down",
-        "bevy_transform::components::transform::Transform::translate_around",
-        "bevy_transform::components::transform::Transform::to_matrix",
+        "bevy_transform::components::transform::Transform::identity",
         "bevy_transform::components::transform::Transform::with_scale",
         "bevy_transform::components::transform::Transform::with_rotation",
-        "bevy_transform::components::transform::Transform::right",
-        "bevy_transform::components::transform::Transform::rotate_local_z",
-        "bevy_transform::components::transform::Transform::eq",
-        "bevy_transform::components::transform::Transform::from_scale",
-        "bevy_transform::components::transform::Transform::rotate_local",
-        "bevy_transform::components::transform::Transform::mul_transform",
-        "bevy_transform::components::transform::Transform::left",
-        "bevy_transform::components::transform::Transform::looking_at",
-        "bevy_transform::components::transform::Transform::identity",
-        "bevy_transform::components::transform::Transform::rotate",
-        "bevy_transform::components::transform::Transform::look_at",
-        "bevy_transform::components::transform::Transform::from_translation",
-        "bevy_transform::components::transform::Transform::from_rotation",
-        "bevy_transform::components::transform::Transform::from_xyz",
-        "bevy_transform::components::transform::Transform::rotate_x",
-        "bevy_transform::components::transform::Transform::rotate_local_y",
-        "bevy_transform::components::transform::Transform::from_matrix",
-        "bevy_transform::components::transform::Transform::with_translation",
-        "bevy_transform::components::transform::Transform::rotate_around",
-        "bevy_transform::components::transform::Transform::up",
-        "bevy_transform::components::transform::Transform::look_to",
-        "bevy_transform::components::transform::Transform::looking_to",
         "bevy_transform::components::transform::Transform::rotate_z",
+        "bevy_transform::components::transform::Transform::eq",
+        "bevy_transform::components::transform::Transform::looking_at",
+        "bevy_transform::components::transform::Transform::translate_around",
+        "bevy_transform::components::transform::Transform::look_to",
+        "bevy_transform::components::transform::Transform::rotate_local_y",
+        "bevy_transform::components::transform::Transform::rotate_local_z",
+        "bevy_transform::components::transform::Transform::with_translation",
+        "bevy_transform::components::transform::Transform::from_scale",
         "bevy_transform::components::transform::Transform::back",
-        "bevy_transform::components::transform::Transform::local_x",
-        "bevy_transform::components::transform::Transform::local_z",
-        "bevy_transform::components::transform::Transform::is_finite",
-        "bevy_transform::components::transform::Transform::mul",
-        "bevy_transform::components::transform::Transform::transform_point",
+        "bevy_transform::components::transform::Transform::up",
         "bevy_transform::components::transform::Transform::local_y",
+        "bevy_transform::components::transform::Transform::rotate_local",
+        "bevy_transform::components::transform::Transform::rotate_y",
+        "bevy_transform::components::transform::Transform::mul_transform",
+        "bevy_transform::components::transform::Transform::right",
+        "bevy_transform::components::transform::Transform::transform_point",
+        "bevy_transform::components::transform::Transform::local_z",
+        "bevy_transform::components::transform::Transform::looking_to",
+        "bevy_transform::components::transform::Transform::from_matrix",
+        "bevy_transform::components::transform::Transform::look_at",
+        "bevy_transform::components::transform::Transform::rotate_axis",
+        "bevy_transform::components::transform::Transform::from_rotation",
+        "bevy_transform::components::transform::Transform::is_finite",
+        "bevy_transform::components::transform::Transform::local_x",
+        "bevy_transform::components::transform::Transform::mul",
+        "bevy_transform::components::transform::Transform::from_translation",
+        "bevy_transform::components::transform::Transform::rotate",
+        "bevy_transform::components::transform::Transform::rotate_x",
+        "bevy_transform::components::transform::Transform::rotate_around",
+        "bevy_transform::components::transform::Transform::left",
+        "bevy_transform::components::transform::Transform::rotate_local_x",
+        "bevy_transform::components::transform::Transform::to_matrix",
+        "bevy_transform::components::transform::Transform::from_xyz",
+        "bevy_transform::components::transform::Transform::forward",
         "bevy_transform::components::transform::Transform::new"
       ],
       "layout": {
@@ -5172,14 +5172,14 @@
       "namespace": "ui",
       "documentation": " A type which is commonly used to define margins, paddings and borders.\n\n # Examples\n\n ## Margin\n\n A margin is used to create space around UI elements, outside of any defined borders.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let margin = UiRect::all(Val::Auto); // Centers the UI element\n ```\n\n ## Padding\n\n A padding is used to create space around UI elements, inside of any defined borders.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let padding = UiRect {\n     left: Val::Px(10.0),\n     right: Val::Px(20.0),\n     top: Val::Px(30.0),\n     bottom: Val::Px(40.0),\n };\n ```\n\n ## Borders\n\n A border is used to define the width of the border of a UI element.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let border = UiRect {\n     left: Val::Px(10.0),\n     right: Val::Px(20.0),\n     top: Val::Px(30.0),\n     bottom: Val::Px(40.0),\n };\n ```",
       "associated_functions": [
-        "bevy_ui::geometry::UiRect::axes",
-        "bevy_ui::geometry::UiRect::px",
-        "bevy_ui::geometry::UiRect::vertical",
-        "bevy_ui::geometry::UiRect::all",
-        "bevy_ui::geometry::UiRect::zero",
         "bevy_ui::geometry::UiRect::horizontal",
-        "bevy_ui::geometry::UiRect::percent",
-        "bevy_ui::geometry::UiRect::new"
+        "bevy_ui::geometry::UiRect::new",
+        "bevy_ui::geometry::UiRect::all",
+        "bevy_ui::geometry::UiRect::px",
+        "bevy_ui::geometry::UiRect::axes",
+        "bevy_ui::geometry::UiRect::zero",
+        "bevy_ui::geometry::UiRect::vertical",
+        "bevy_ui::geometry::UiRect::percent"
       ],
       "layout": {
         "kind": "Struct",
@@ -5232,13 +5232,13 @@
       "namespace": "ui",
       "documentation": " Represents the possible value types for layout properties.\n\n This enum allows specifying values for various [`Node`](crate::Node) properties in different units,\n such as logical pixels, percentages, or automatically determined values.\n\n `Val` also implements [`core::str::FromStr`] to allow parsing values from strings in the format `#.#px`. Whitespaces between the value and unit is allowed. The following units are supported:\n * `px`: logical pixels\n * `%`: percentage\n * `vw`: percentage of the viewport width\n * `vh`: percentage of the viewport height\n * `vmin`: percentage of the viewport's smaller dimension\n * `vmax`: percentage of the viewport's larger dimension\n\n Additionally, `auto` will be parsed as [`Val::Auto`].",
       "associated_functions": [
-        "bevy_ui::geometry::Val::auto",
-        "bevy_ui::geometry::Val::vw",
-        "bevy_ui::geometry::Val::vh",
-        "bevy_ui::geometry::Val::vmin",
         "bevy_ui::geometry::Val::percent",
         "bevy_ui::geometry::Val::px",
         "bevy_ui::geometry::Val::vmax",
+        "bevy_ui::geometry::Val::auto",
+        "bevy_ui::geometry::Val::vmin",
+        "bevy_ui::geometry::Val::vh",
+        "bevy_ui::geometry::Val::vw",
         "bevy_ui::geometry::Val::new"
       ],
       "layout": [
@@ -5416,11 +5416,11 @@
       "namespace": "ui",
       "documentation": " Used to add rounded corners to a UI node. You can set a UI node to have uniformly\n rounded corners, elliptical corners, or specify a different radius for each corner. If a given\n radius exceeds half the length of the node's height or width, the radius will be calculated\n as half the height or width.\n\n Percentage horizontal and vertical values are based on the node's width and height, respectively.\n\n # Example\n ```rust\n # use bevy_ecs::prelude::*;\n # use bevy_ui::prelude::*;\n # use bevy_color::palettes::basic::{BLUE};\n fn setup_ui(mut commands: Commands) {\n     commands.spawn((\n         Node {\n             width: Val::Px(100.),\n             height: Val::Px(100.),\n             border: UiRect::all(Val::Px(2.)),\n             border_radius: BorderRadius {\n                 // rounded corners, x and y radii equal\n                 top_left: CornerRadius::circular(px(10.)),\n                 top_right: percent(20.).into(),\n                 // elliptical corner\n                 bottom_right: CornerRadius::new(px(30.), px(20.)),\n                 bottom_left: CornerRadius { x: px(10.), y: px(40.) },\n             },\n             ..Default::default()\n         },\n         BackgroundColor(BLUE.into()),\n     ));\n }\n ```\n\n <https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius>",
       "associated_functions": [
-        "bevy_ui::ui_node::BorderRadius::px",
         "bevy_ui::ui_node::BorderRadius::max",
-        "bevy_ui::ui_node::BorderRadius::zero",
         "bevy_ui::ui_node::BorderRadius::percent",
+        "bevy_ui::ui_node::BorderRadius::zero",
         "bevy_ui::ui_node::BorderRadius::all",
+        "bevy_ui::ui_node::BorderRadius::px",
         "bevy_ui::ui_node::BorderRadius::new"
       ],
       "layout": {
@@ -5475,9 +5475,9 @@
       "documentation": " Provides the computed size and layout properties of a UI [`Node`].\n\n All of the fields are automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`)\n during `PostUpdate` in the [`UiSystems::Layout`](super::UiSystems) set.\n\n The fields are measured in physical pixels.\n You can multiply by the `inverse_scale_factor` field to convert back to logical pixels.\n\n Fields in this struct are public but should only rarely be directly modified.\n For example, in a scrollbar you may want to derive the handle's size from the proportion of\n scrollable content in-view. You can directly modify `ComputedNode` after layout to set the\n handle size without a frame delay.",
       "associated_functions": [
         "bevy_ui::ui_node::ComputedNode::content_size",
+        "bevy_ui::ui_node::ComputedNode::inverse_scale_factor",
         "bevy_ui::ui_node::ComputedNode::size",
         "bevy_ui::ui_node::ComputedNode::is_empty",
-        "bevy_ui::ui_node::ComputedNode::inverse_scale_factor",
         "bevy_ui::ui_node::ComputedNode::new"
       ],
       "layout": {
@@ -5593,12 +5593,12 @@
       "namespace": "ui",
       "documentation": " Whether to show or hide overflowing items",
       "associated_functions": [
-        "bevy_ui::ui_node::Overflow::clip_x",
         "bevy_ui::ui_node::Overflow::scroll",
-        "bevy_ui::ui_node::Overflow::hidden",
-        "bevy_ui::ui_node::Overflow::visible",
         "bevy_ui::ui_node::Overflow::clip_y",
+        "bevy_ui::ui_node::Overflow::visible",
         "bevy_ui::ui_node::Overflow::clip",
+        "bevy_ui::ui_node::Overflow::hidden",
+        "bevy_ui::ui_node::Overflow::clip_x",
         "bevy_ui::ui_node::Overflow::new"
       ],
       "layout": {
@@ -5721,9 +5721,9 @@
       "namespace": "text",
       "documentation": " The top-level UI text component.\n\n Adding [`Text`] to an entity will pull in required components for setting up a UI text node.\n\n The string in this component is the first 'text span' in a hierarchy of text spans that are collected into\n a [`ComputedTextBlock`]. See [`TextSpan`](bevy_text::TextSpan) for the component used by children of entities with [`Text`].\n\n\n ```\n # use bevy_asset::Handle;\n # use bevy_color::Color;\n # use bevy_color::palettes::basic::BLUE;\n # use bevy_ecs::world::World;\n # use bevy_text::{Font, FontSize, Justify, TextLayout, TextFont, TextColor, TextSpan};\n # use bevy_ui::prelude::Text;\n #\n # let font_handle: Handle<Font> = Default::default();\n # let mut world = World::default();\n #\n // Basic usage.\n world.spawn(Text::new(\"hello world!\"));\n\n // With non-default style.\n world.spawn((\n     Text::new(\"hello world!\"),\n     TextFont {\n         font: font_handle.clone().into(),\n         font_size: FontSize::Px(60.0),\n         ..Default::default()\n     },\n     TextColor(BLUE.into()),\n ));\n\n // With text justification.\n world.spawn((\n     Text::new(\"hello world\\nand bevy!\"),\n     TextLayout::justify(Justify::Center)\n ));\n\n // With spans\n world.spawn(Text::new(\"hello \")).with_children(|parent| {\n     parent.spawn(TextSpan::new(\"world\"));\n     parent.spawn((TextSpan::new(\"!\"), TextColor(BLUE.into())));\n });\n ```",
       "associated_functions": [
-        "bevy_ui::widget::text::Text::set",
         "bevy_ui::widget::text::Text::new",
-        "bevy_ui::widget::text::Text::as_str"
+        "bevy_ui::widget::text::Text::as_str",
+        "bevy_ui::widget::text::Text::set"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -5754,16 +5754,16 @@
       "namespace": "window",
       "documentation": " The defining [`Component`] for window entities,\n storing information about how it should appear and behave.\n\n Each window corresponds to an entity, and is uniquely identified by the value of their [`Entity`].\n When the [`Window`] component is added to an entity, a new window will be opened.\n When it is removed or the entity is despawned, the window will close.\n\n The primary window entity (and the corresponding window) is spawned by default\n by [`WindowPlugin`](crate::WindowPlugin) and is marked with the [`PrimaryWindow`] component.\n\n This component is synchronized with `winit` through `bevy_winit`:\n it will reflect the current state of the window and can be modified to change this state.\n\n # Example\n\n Because this component is synchronized with `winit`, it can be used to perform\n OS-integrated windowing operations. For example, here's a simple system\n to change the window mode:\n\n ```\n # use bevy_ecs::query::With;\n # use bevy_ecs::system::Query;\n # use bevy_window::{WindowMode, PrimaryWindow, Window, MonitorSelection, VideoModeSelection};\n fn change_window_mode(mut windows: Query<&mut Window, With<PrimaryWindow>>) {\n     // Query returns one window typically.\n     for mut window in windows.iter_mut() {\n         window.mode =\n             WindowMode::Fullscreen(MonitorSelection::Current, VideoModeSelection::Current);\n     }\n }\n ```",
       "associated_functions": [
-        "bevy_window::window::Window::scale_factor",
-        "bevy_window::window::Window::physical_height",
-        "bevy_window::window::Window::size",
-        "bevy_window::window::Window::set_cursor_position",
-        "bevy_window::window::Window::height",
-        "bevy_window::window::Window::cursor_position",
         "bevy_window::window::Window::primary_entity",
+        "bevy_window::window::Window::physical_height",
         "bevy_window::window::Window::physical_width",
-        "bevy_window::window::Window::width",
+        "bevy_window::window::Window::height",
+        "bevy_window::window::Window::set_cursor_position",
+        "bevy_window::window::Window::size",
         "bevy_window::window::Window::primary",
+        "bevy_window::window::Window::scale_factor",
+        "bevy_window::window::Window::width",
+        "bevy_window::window::Window::cursor_position",
         "bevy_window::window::Window::new"
       ],
       "layout": {
@@ -6075,11 +6075,11 @@
       "namespace": "window",
       "documentation": " Controls the size of a [`Window`]\n\n ## Physical, logical and requested sizes\n\n There are three sizes associated with a window:\n - the physical size,\n   which represents the actual height and width in physical pixels\n   the window occupies on the monitor,\n - the logical size,\n   which represents the size that should be used to scale elements\n   inside the window, measured in logical pixels,\n - the requested size,\n   measured in logical pixels, which is the value submitted\n   to the API when creating the window, or requesting that it be resized.\n\n ## Scale factor\n\n The reason logical size and physical size are separated and can be different\n is to account for the cases where:\n - several monitors have different pixel densities,\n - the user has set up a pixel density preference in its operating system,\n - the Bevy `App` has specified a specific scale factor between both.\n\n The factor between physical size and logical size can be retrieved with\n [`WindowResolution::scale_factor`].\n\n For the first two cases, a scale factor is set automatically by the operating\n system through the window backend. You can get it with\n [`WindowResolution::base_scale_factor`].\n\n For the third case, you can override this automatic scale factor with\n [`WindowResolution::set_scale_factor_override`].\n\n ## Requested and obtained sizes\n\n The logical size should be equal to the requested size after creating/resizing,\n when possible.\n The reason the requested size and logical size might be different\n is because the corresponding physical size might exceed limits (either the\n size limits of the monitor, or limits defined in [`WindowResizeConstraints`]).\n\n Note: The requested size is not kept in memory, for example requesting a size\n too big for the screen, making the logical size different from the requested size,\n and then setting a scale factor that makes the previous requested size within\n the limits of the screen will not get back that previous requested size.",
       "associated_functions": [
-        "bevy_window::window::WindowResolution::set",
+        "bevy_window::window::WindowResolution::height",
         "bevy_window::window::WindowResolution::width",
-        "bevy_window::window::WindowResolution::scale_factor",
         "bevy_window::window::WindowResolution::new",
-        "bevy_window::window::WindowResolution::height"
+        "bevy_window::window::WindowResolution::set",
+        "bevy_window::window::WindowResolution::scale_factor"
       ],
       "layout": {
         "kind": "Struct",
@@ -6139,8 +6139,8 @@
         "core::time::Duration::lt",
         "core::time::Duration::as_secs",
         "core::time::Duration::from_nanos",
-        "core::time::Duration::zero",
         "core::time::Duration::from_millis",
+        "core::time::Duration::zero",
         "core::time::Duration::is_zero",
         "core::time::Duration::as_millis",
         "core::time::Duration::div",
@@ -6251,29 +6251,29 @@
       "path": "glam::IVec2",
       "namespace": "math",
       "associated_functions": [
-        "glam::IVec2::add",
-        "glam::IVec2::one",
-        "glam::IVec2::neg",
-        "glam::IVec2::sub",
-        "glam::IVec2::unit_x",
-        "glam::IVec2::eq",
-        "glam::IVec2::dot",
-        "glam::IVec2::min_element",
-        "glam::IVec2::max_element",
-        "glam::IVec2::unit_y",
-        "glam::IVec2::max",
-        "glam::IVec2::as_vec2",
-        "glam::IVec2::length_squared",
-        "glam::IVec2::mul",
-        "glam::IVec2::div",
-        "glam::IVec2::splat",
         "glam::IVec2::clamp",
-        "glam::IVec2::to_array",
+        "glam::IVec2::neg",
+        "glam::IVec2::max",
+        "glam::IVec2::unit_x",
         "glam::IVec2::rem",
-        "glam::IVec2::zero",
-        "glam::IVec2::min",
+        "glam::IVec2::splat",
+        "glam::IVec2::min_element",
+        "glam::IVec2::div",
         "glam::IVec2::new",
-        "glam::IVec2::abs"
+        "glam::IVec2::to_array",
+        "glam::IVec2::max_element",
+        "glam::IVec2::as_vec2",
+        "glam::IVec2::add",
+        "glam::IVec2::eq",
+        "glam::IVec2::zero",
+        "glam::IVec2::mul",
+        "glam::IVec2::sub",
+        "glam::IVec2::min",
+        "glam::IVec2::unit_y",
+        "glam::IVec2::dot",
+        "glam::IVec2::abs",
+        "glam::IVec2::one",
+        "glam::IVec2::length_squared"
       ],
       "layout": {
         "kind": "Struct",
@@ -6311,30 +6311,30 @@
       "path": "glam::IVec3",
       "namespace": "math",
       "associated_functions": [
-        "glam::IVec3::one",
-        "glam::IVec3::as_vec3",
-        "glam::IVec3::new",
-        "glam::IVec3::min_element",
-        "glam::IVec3::min",
-        "glam::IVec3::max_element",
-        "glam::IVec3::dot",
-        "glam::IVec3::zero",
-        "glam::IVec3::eq",
-        "glam::IVec3::neg",
-        "glam::IVec3::sub",
-        "glam::IVec3::splat",
-        "glam::IVec3::mul",
-        "glam::IVec3::unit_y",
-        "glam::IVec3::unit_z",
-        "glam::IVec3::abs",
-        "glam::IVec3::max",
-        "glam::IVec3::div",
-        "glam::IVec3::to_array",
-        "glam::IVec3::clamp",
-        "glam::IVec3::length_squared",
-        "glam::IVec3::add",
         "glam::IVec3::rem",
-        "glam::IVec3::unit_x"
+        "glam::IVec3::abs",
+        "glam::IVec3::min",
+        "glam::IVec3::unit_y",
+        "glam::IVec3::new",
+        "glam::IVec3::length_squared",
+        "glam::IVec3::to_array",
+        "glam::IVec3::max_element",
+        "glam::IVec3::unit_x",
+        "glam::IVec3::max",
+        "glam::IVec3::dot",
+        "glam::IVec3::sub",
+        "glam::IVec3::min_element",
+        "glam::IVec3::as_vec3",
+        "glam::IVec3::mul",
+        "glam::IVec3::eq",
+        "glam::IVec3::unit_z",
+        "glam::IVec3::neg",
+        "glam::IVec3::clamp",
+        "glam::IVec3::zero",
+        "glam::IVec3::div",
+        "glam::IVec3::add",
+        "glam::IVec3::splat",
+        "glam::IVec3::one"
       ],
       "layout": {
         "kind": "Struct",
@@ -6379,26 +6379,26 @@
       "path": "glam::Mat3",
       "namespace": "math",
       "associated_functions": [
-        "glam::Mat3::row",
-        "glam::Mat3::from_rotation_x",
-        "glam::Mat3::add",
-        "glam::Mat3::from_rotation_z",
-        "glam::Mat3::eq",
-        "glam::Mat3::col",
-        "glam::Mat3::identity",
-        "glam::Mat3::transpose",
-        "glam::Mat3::from_quat",
-        "glam::Mat3::transform_vector2",
-        "glam::Mat3::mul_vec3",
-        "glam::Mat3::inverse",
-        "glam::Mat3::transform_point2",
-        "glam::Mat3::determinant",
-        "glam::Mat3::div",
-        "glam::Mat3::from_rotation_y",
-        "glam::Mat3::from_cols",
         "glam::Mat3::from_diagonal",
+        "glam::Mat3::transpose",
+        "glam::Mat3::from_cols",
+        "glam::Mat3::from_rotation_z",
+        "glam::Mat3::add",
+        "glam::Mat3::determinant",
+        "glam::Mat3::from_rotation_y",
+        "glam::Mat3::transform_vector2",
+        "glam::Mat3::div",
+        "glam::Mat3::from_rotation_x",
+        "glam::Mat3::col",
+        "glam::Mat3::row",
         "glam::Mat3::sub",
+        "glam::Mat3::mul_vec3",
+        "glam::Mat3::from_quat",
+        "glam::Mat3::inverse",
         "glam::Mat3::mul",
+        "glam::Mat3::identity",
+        "glam::Mat3::transform_point2",
+        "glam::Mat3::eq",
         "glam::Mat3::new"
       ],
       "layout": {
@@ -6444,26 +6444,26 @@
       "path": "glam::Mat4",
       "namespace": "math",
       "associated_functions": [
-        "glam::Mat4::from_quat",
-        "glam::Mat4::from_rotation_translation",
-        "glam::Mat4::identity",
-        "glam::Mat4::eq",
-        "glam::Mat4::mul",
         "glam::Mat4::transpose",
-        "glam::Mat4::from_scale_rotation_translation",
-        "glam::Mat4::determinant",
-        "glam::Mat4::from_translation",
-        "glam::Mat4::div",
-        "glam::Mat4::project_point3",
-        "glam::Mat4::from_cols",
-        "glam::Mat4::transform_point3",
-        "glam::Mat4::sub",
-        "glam::Mat4::inverse",
         "glam::Mat4::row",
-        "glam::Mat4::transform_vector3",
-        "glam::Mat4::from_scale",
         "glam::Mat4::add",
+        "glam::Mat4::inverse",
+        "glam::Mat4::from_scale_rotation_translation",
+        "glam::Mat4::from_cols",
+        "glam::Mat4::transform_vector3",
+        "glam::Mat4::identity",
+        "glam::Mat4::from_rotation_translation",
+        "glam::Mat4::eq",
+        "glam::Mat4::transform_point3",
+        "glam::Mat4::mul",
+        "glam::Mat4::div",
         "glam::Mat4::col",
+        "glam::Mat4::from_scale",
+        "glam::Mat4::determinant",
+        "glam::Mat4::from_quat",
+        "glam::Mat4::sub",
+        "glam::Mat4::project_point3",
+        "glam::Mat4::from_translation",
         "glam::Mat4::new"
       ],
       "layout": {
@@ -6516,31 +6516,31 @@
       "path": "glam::Quat",
       "namespace": "math",
       "associated_functions": [
+        "glam::Quat::xyz",
+        "glam::Quat::from_mat3",
+        "glam::Quat::length",
+        "glam::Quat::from_axis_angle",
+        "glam::Quat::from_rotation_z",
+        "glam::Quat::eq",
+        "glam::Quat::to_euler",
+        "glam::Quat::identity",
+        "glam::Quat::axis",
+        "glam::Quat::angle",
+        "glam::Quat::normalize",
+        "glam::Quat::slerp",
+        "glam::Quat::conjugate",
+        "glam::Quat::mul_vec3",
+        "glam::Quat::is_normalized",
         "glam::Quat::inverse",
-        "glam::Quat::dot",
+        "glam::Quat::lerp",
         "glam::Quat::neg",
         "glam::Quat::from_rotation_x",
-        "glam::Quat::is_normalized",
-        "glam::Quat::lerp",
-        "glam::Quat::from_euler",
-        "glam::Quat::conjugate",
-        "glam::Quat::slerp",
-        "glam::Quat::angle",
-        "glam::Quat::to_euler",
-        "glam::Quat::from_rotation_y",
-        "glam::Quat::from_rotation_z",
+        "glam::Quat::dot",
         "glam::Quat::angle_between",
-        "glam::Quat::from_mat3",
-        "glam::Quat::xyz",
-        "glam::Quat::length",
-        "glam::Quat::from_rotation_arc",
-        "glam::Quat::eq",
-        "glam::Quat::axis",
-        "glam::Quat::normalize",
-        "glam::Quat::from_axis_angle",
+        "glam::Quat::from_rotation_y",
         "glam::Quat::mul",
-        "glam::Quat::identity",
-        "glam::Quat::mul_vec3",
+        "glam::Quat::from_rotation_arc",
+        "glam::Quat::from_euler",
         "glam::Quat::new"
       ],
       "layout": {
@@ -6593,26 +6593,26 @@
       "path": "glam::UVec2",
       "namespace": "math",
       "associated_functions": [
-        "glam::UVec2::clamp",
-        "glam::UVec2::rem",
-        "glam::UVec2::min_element",
-        "glam::UVec2::mul",
-        "glam::UVec2::div",
-        "glam::UVec2::one",
-        "glam::UVec2::new",
-        "glam::UVec2::max",
-        "glam::UVec2::sub",
-        "glam::UVec2::as_vec2",
-        "glam::UVec2::length_squared",
-        "glam::UVec2::add",
-        "glam::UVec2::splat",
-        "glam::UVec2::min",
-        "glam::UVec2::zero",
-        "glam::UVec2::to_array",
+        "glam::UVec2::dot",
         "glam::UVec2::unit_y",
+        "glam::UVec2::add",
+        "glam::UVec2::as_vec2",
+        "glam::UVec2::max",
+        "glam::UVec2::to_array",
+        "glam::UVec2::min_element",
+        "glam::UVec2::div",
+        "glam::UVec2::splat",
+        "glam::UVec2::zero",
+        "glam::UVec2::clamp",
+        "glam::UVec2::sub",
+        "glam::UVec2::rem",
+        "glam::UVec2::one",
+        "glam::UVec2::mul",
+        "glam::UVec2::length_squared",
+        "glam::UVec2::new",
+        "glam::UVec2::min",
         "glam::UVec2::max_element",
         "glam::UVec2::unit_x",
-        "glam::UVec2::dot",
         "glam::UVec2::eq"
       ],
       "layout": {
@@ -6651,28 +6651,28 @@
       "path": "glam::UVec3",
       "namespace": "math",
       "associated_functions": [
-        "glam::UVec3::div",
-        "glam::UVec3::eq",
-        "glam::UVec3::min_element",
-        "glam::UVec3::sub",
-        "glam::UVec3::rem",
-        "glam::UVec3::max_element",
-        "glam::UVec3::max",
-        "glam::UVec3::new",
         "glam::UVec3::as_vec3",
-        "glam::UVec3::one",
-        "glam::UVec3::dot",
-        "glam::UVec3::to_array",
-        "glam::UVec3::zero",
-        "glam::UVec3::unit_y",
-        "glam::UVec3::add",
         "glam::UVec3::length_squared",
+        "glam::UVec3::new",
         "glam::UVec3::clamp",
+        "glam::UVec3::zero",
+        "glam::UVec3::add",
+        "glam::UVec3::rem",
         "glam::UVec3::splat",
-        "glam::UVec3::unit_z",
-        "glam::UVec3::min",
         "glam::UVec3::unit_x",
-        "glam::UVec3::mul"
+        "glam::UVec3::to_array",
+        "glam::UVec3::min_element",
+        "glam::UVec3::min",
+        "glam::UVec3::mul",
+        "glam::UVec3::sub",
+        "glam::UVec3::eq",
+        "glam::UVec3::unit_z",
+        "glam::UVec3::dot",
+        "glam::UVec3::max",
+        "glam::UVec3::div",
+        "glam::UVec3::one",
+        "glam::UVec3::unit_y",
+        "glam::UVec3::max_element"
       ],
       "layout": {
         "kind": "Struct",
@@ -6717,58 +6717,58 @@
       "path": "glam::Vec2",
       "namespace": "math",
       "associated_functions": [
-        "glam::Vec2::round",
-        "glam::Vec2::clamp_length_max",
-        "glam::Vec2::angle_to",
-        "glam::Vec2::dot",
-        "glam::Vec2::max",
-        "glam::Vec2::reject_from",
-        "glam::Vec2::neg",
-        "glam::Vec2::one",
-        "glam::Vec2::from_angle",
         "glam::Vec2::unit_x",
-        "glam::Vec2::clamp_length",
-        "glam::Vec2::as_uvec2",
-        "glam::Vec2::rsub",
+        "glam::Vec2::new",
         "glam::Vec2::rdiv",
-        "glam::Vec2::mul",
-        "glam::Vec2::signum",
-        "glam::Vec2::min_element",
-        "glam::Vec2::floor",
-        "glam::Vec2::perp",
-        "glam::Vec2::extend",
-        "glam::Vec2::reflect",
-        "glam::Vec2::sub",
-        "glam::Vec2::distance",
-        "glam::Vec2::perp_dot",
-        "glam::Vec2::fract",
-        "glam::Vec2::rem",
-        "glam::Vec2::unit_y",
-        "glam::Vec2::try_normalize",
-        "glam::Vec2::length_squared",
-        "glam::Vec2::to_array",
-        "glam::Vec2::lerp",
-        "glam::Vec2::abs",
-        "glam::Vec2::normalize",
-        "glam::Vec2::project_onto",
-        "glam::Vec2::normalize_or_zero",
-        "glam::Vec2::as_dvec2",
-        "glam::Vec2::move_towards",
-        "glam::Vec2::add",
-        "glam::Vec2::max_element",
-        "glam::Vec2::clamp",
-        "glam::Vec2::zero",
-        "glam::Vec2::eq",
-        "glam::Vec2::splat",
         "glam::Vec2::to_angle",
-        "glam::Vec2::ceil",
+        "glam::Vec2::abs",
+        "glam::Vec2::project_onto",
+        "glam::Vec2::reflect",
+        "glam::Vec2::as_dvec2",
+        "glam::Vec2::dot",
+        "glam::Vec2::clamp_length",
+        "glam::Vec2::floor",
         "glam::Vec2::length",
+        "glam::Vec2::as_uvec2",
+        "glam::Vec2::zero",
+        "glam::Vec2::distance",
+        "glam::Vec2::add",
+        "glam::Vec2::round",
+        "glam::Vec2::try_normalize",
+        "glam::Vec2::reject_from",
+        "glam::Vec2::perp",
+        "glam::Vec2::normalize_or_zero",
+        "glam::Vec2::sub",
+        "glam::Vec2::max_element",
+        "glam::Vec2::splat",
+        "glam::Vec2::extend",
         "glam::Vec2::div",
-        "glam::Vec2::rotate",
+        "glam::Vec2::from_angle",
+        "glam::Vec2::unit_y",
         "glam::Vec2::min",
-        "glam::Vec2::as_ivec2",
+        "glam::Vec2::length_squared",
         "glam::Vec2::distance_squared",
-        "glam::Vec2::new"
+        "glam::Vec2::min_element",
+        "glam::Vec2::angle_to",
+        "glam::Vec2::rsub",
+        "glam::Vec2::mul",
+        "glam::Vec2::lerp",
+        "glam::Vec2::ceil",
+        "glam::Vec2::neg",
+        "glam::Vec2::clamp",
+        "glam::Vec2::perp_dot",
+        "glam::Vec2::max",
+        "glam::Vec2::signum",
+        "glam::Vec2::clamp_length_max",
+        "glam::Vec2::one",
+        "glam::Vec2::as_ivec2",
+        "glam::Vec2::rem",
+        "glam::Vec2::move_towards",
+        "glam::Vec2::rotate",
+        "glam::Vec2::fract",
+        "glam::Vec2::to_array",
+        "glam::Vec2::eq",
+        "glam::Vec2::normalize"
       ],
       "layout": {
         "kind": "Struct",
@@ -6806,58 +6806,58 @@
       "path": "glam::Vec3",
       "namespace": "math",
       "associated_functions": [
-        "glam::Vec3::distance_squared",
-        "glam::Vec3::splat",
-        "glam::Vec3::try_normalize",
-        "glam::Vec3::as_ivec3",
-        "glam::Vec3::sub",
-        "glam::Vec3::rem",
-        "glam::Vec3::neg",
+        "glam::Vec3::zero",
+        "glam::Vec3::normalize_or_zero",
+        "glam::Vec3::eq",
+        "glam::Vec3::clamp_length_max",
         "glam::Vec3::cross",
-        "glam::Vec3::clamp_length",
-        "glam::Vec3::dot",
+        "glam::Vec3::min",
+        "glam::Vec3::reflect",
+        "glam::Vec3::unit_x",
+        "glam::Vec3::to_vec3a",
+        "glam::Vec3::normalize",
         "glam::Vec3::move_towards",
+        "glam::Vec3::reject_from",
+        "glam::Vec3::abs",
+        "glam::Vec3::dot",
+        "glam::Vec3::round",
+        "glam::Vec3::splat",
+        "glam::Vec3::clamp",
+        "glam::Vec3::unit_y",
         "glam::Vec3::extend",
         "glam::Vec3::any_orthogonal_vector",
-        "glam::Vec3::as_dvec3",
+        "glam::Vec3::min_element",
         "glam::Vec3::floor",
+        "glam::Vec3::signum",
+        "glam::Vec3::as_uvec3",
+        "glam::Vec3::as_dvec3",
+        "glam::Vec3::try_normalize",
+        "glam::Vec3::truncate",
         "glam::Vec3::length",
-        "glam::Vec3::mul",
-        "glam::Vec3::round",
-        "glam::Vec3::add",
-        "glam::Vec3::max_element",
+        "glam::Vec3::ceil",
+        "glam::Vec3::div",
+        "glam::Vec3::length_squared",
+        "glam::Vec3::angle_between",
+        "glam::Vec3::distance_squared",
+        "glam::Vec3::new",
         "glam::Vec3::fract",
         "glam::Vec3::to_array",
-        "glam::Vec3::unit_x",
-        "glam::Vec3::distance",
-        "glam::Vec3::min",
-        "glam::Vec3::unit_y",
-        "glam::Vec3::div",
-        "glam::Vec3::new",
-        "glam::Vec3::abs",
-        "glam::Vec3::unit_z",
-        "glam::Vec3::length_squared",
-        "glam::Vec3::truncate",
-        "glam::Vec3::normalize_or_zero",
-        "glam::Vec3::project_onto",
-        "glam::Vec3::rsub",
-        "glam::Vec3::signum",
-        "glam::Vec3::to_vec3a",
-        "glam::Vec3::angle_between",
-        "glam::Vec3::reject_from",
-        "glam::Vec3::max",
-        "glam::Vec3::min_element",
-        "glam::Vec3::clamp_length_max",
-        "glam::Vec3::zero",
-        "glam::Vec3::ceil",
-        "glam::Vec3::as_uvec3",
+        "glam::Vec3::max_element",
+        "glam::Vec3::add",
+        "glam::Vec3::one",
+        "glam::Vec3::neg",
+        "glam::Vec3::as_ivec3",
         "glam::Vec3::rdiv",
-        "glam::Vec3::eq",
-        "glam::Vec3::clamp",
-        "glam::Vec3::reflect",
-        "glam::Vec3::normalize",
-        "glam::Vec3::lerp",
-        "glam::Vec3::one"
+        "glam::Vec3::mul",
+        "glam::Vec3::project_onto",
+        "glam::Vec3::rem",
+        "glam::Vec3::max",
+        "glam::Vec3::unit_z",
+        "glam::Vec3::sub",
+        "glam::Vec3::distance",
+        "glam::Vec3::rsub",
+        "glam::Vec3::clamp_length",
+        "glam::Vec3::lerp"
       ],
       "layout": {
         "kind": "Struct",
@@ -6902,8 +6902,8 @@
       "path": "glam::Vec3A",
       "namespace": "math",
       "associated_functions": [
-        "glam::Vec3A::to_vec3",
-        "glam::Vec3A::new"
+        "glam::Vec3A::new",
+        "glam::Vec3A::to_vec3"
       ],
       "layout": {
         "kind": "Struct",
@@ -6948,47 +6948,47 @@
       "path": "glam::Vec4",
       "namespace": "math",
       "associated_functions": [
-        "glam::Vec4::move_towards",
-        "glam::Vec4::mul",
-        "glam::Vec4::clamp_length_max",
-        "glam::Vec4::fract",
-        "glam::Vec4::rem",
+        "glam::Vec4::length_squared",
         "glam::Vec4::distance_squared",
-        "glam::Vec4::lerp",
-        "glam::Vec4::distance",
-        "glam::Vec4::zero",
-        "glam::Vec4::sub",
-        "glam::Vec4::project_onto",
-        "glam::Vec4::div",
-        "glam::Vec4::min_element",
-        "glam::Vec4::abs",
-        "glam::Vec4::rdiv",
-        "glam::Vec4::eq",
-        "glam::Vec4::signum",
         "glam::Vec4::rsub",
-        "glam::Vec4::splat",
-        "glam::Vec4::normalize_or_zero",
-        "glam::Vec4::one",
-        "glam::Vec4::round",
-        "glam::Vec4::length",
+        "glam::Vec4::signum",
+        "glam::Vec4::clamp",
+        "glam::Vec4::reflect",
+        "glam::Vec4::clamp_length_max",
+        "glam::Vec4::normalize",
         "glam::Vec4::floor",
         "glam::Vec4::to_array",
-        "glam::Vec4::new",
-        "glam::Vec4::clamp_length",
-        "glam::Vec4::dot",
-        "glam::Vec4::reject_from",
-        "glam::Vec4::max_element",
         "glam::Vec4::add",
+        "glam::Vec4::max",
+        "glam::Vec4::zero",
+        "glam::Vec4::fract",
+        "glam::Vec4::min_element",
+        "glam::Vec4::div",
         "glam::Vec4::min",
-        "glam::Vec4::reflect",
-        "glam::Vec4::length_squared",
-        "glam::Vec4::clamp",
         "glam::Vec4::neg",
-        "glam::Vec4::ceil",
+        "glam::Vec4::dot",
+        "glam::Vec4::rdiv",
         "glam::Vec4::truncate",
+        "glam::Vec4::sub",
+        "glam::Vec4::new",
+        "glam::Vec4::lerp",
+        "glam::Vec4::ceil",
+        "glam::Vec4::eq",
+        "glam::Vec4::abs",
+        "glam::Vec4::reject_from",
         "glam::Vec4::try_normalize",
-        "glam::Vec4::normalize",
-        "glam::Vec4::max"
+        "glam::Vec4::one",
+        "glam::Vec4::splat",
+        "glam::Vec4::clamp_length",
+        "glam::Vec4::move_towards",
+        "glam::Vec4::distance",
+        "glam::Vec4::project_onto",
+        "glam::Vec4::mul",
+        "glam::Vec4::normalize_or_zero",
+        "glam::Vec4::round",
+        "glam::Vec4::max_element",
+        "glam::Vec4::length",
+        "glam::Vec4::rem"
       ],
       "layout": {
         "kind": "Struct",
@@ -7040,8 +7040,8 @@
       "path": "petgraph::graph::NodeIndex",
       "namespace": "animation",
       "associated_functions": [
-        "petgraph::graph::NodeIndex::new",
-        "petgraph::graph::NodeIndex::index"
+        "petgraph::graph::NodeIndex::index",
+        "petgraph::graph::NodeIndex::new"
       ],
       "layout": null,
       "generated": false,
@@ -7118,12 +7118,12 @@
       ],
       "documentation": " A \"press-able\" input of type `T`.\n\n ## Usage\n\n This type can be used as a resource to keep the current state of an input, by reacting to\n events from the input. For a given input value:\n\n * [`ButtonInput::pressed`] will return `true` between a press and a release event.\n * [`ButtonInput::just_pressed`] will return `true` for one frame after a press event.\n * [`ButtonInput::just_released`] will return `true` for one frame after a release event.\n\n ## Multiple systems\n\n In case multiple systems are checking for [`ButtonInput::just_pressed`] or [`ButtonInput::just_released`]\n but only one should react, for example when modifying a\n [`Resource`], you should consider clearing the input state, either by:\n\n * Using [`ButtonInput::clear_just_pressed`] or [`ButtonInput::clear_just_released`] instead.\n * Calling [`ButtonInput::clear`] or [`ButtonInput::reset`] immediately after the state change.\n\n ## Performance\n\n For all operations, the following conventions are used:\n - **n** is the number of stored inputs.\n - **m** is the number of input arguments passed to the method.\n - **\\***-suffix denotes an amortized cost.\n - **~**-suffix denotes an expected cost.\n\n See Rust's [std::collections doc on performance](https://doc.rust-lang.org/std/collections/index.html#performance) for more details on the conventions used here.\n\n | **[`ButtonInput`] operations**          | **Computational complexity** |\n |-----------------------------------|------------------------------------|\n | [`ButtonInput::any_just_pressed`]       | *O*(m)~                      |\n | [`ButtonInput::any_just_released`]      | *O*(m)~                      |\n | [`ButtonInput::any_pressed`]            | *O*(m)~                      |\n | [`ButtonInput::get_just_pressed`]       | *O*(n)                       |\n | [`ButtonInput::get_just_released`]      | *O*(n)                       |\n | [`ButtonInput::get_pressed`]            | *O*(n)                       |\n | [`ButtonInput::just_pressed`]           | *O*(1)~                      |\n | [`ButtonInput::just_released`]          | *O*(1)~                      |\n | [`ButtonInput::pressed`]                | *O*(1)~                      |\n | [`ButtonInput::press`]                  | *O*(1)~*                     |\n | [`ButtonInput::release`]                | *O*(1)~*                     |\n | [`ButtonInput::release_all`]            | *O*(n)~*                     |\n | [`ButtonInput::clear_just_pressed`]     | *O*(1)~                      |\n | [`ButtonInput::clear_just_released`]    | *O*(1)~                      |\n | [`ButtonInput::reset_all`]              | *O*(n)                       |\n | [`ButtonInput::clear`]                  | *O*(n)                       |\n\n ## Window focus\n\n `ButtonInput<KeyCode>` is tied to window focus. For example, if the user holds a button\n while the window loses focus, [`ButtonInput::just_released`] will be triggered. Similarly if the window\n regains focus, [`ButtonInput::just_pressed`] will be triggered.\n\n `ButtonInput<GamepadButton>` is independent of window focus.\n\n ## Examples\n\n Reading and checking against the current set of pressed buttons:\n ```no_run\n # use bevy_app::{App, NoopPluginGroup as DefaultPlugins, Update};\n # use bevy_ecs::{prelude::{IntoScheduleConfigs, Res, Resource, resource_changed}, schedule::SystemCondition};\n # use bevy_input::{ButtonInput, prelude::{KeyCode, MouseButton}};\n\n fn main() {\n     App::new()\n         .add_plugins(DefaultPlugins)\n         .add_systems(\n             Update,\n             print_mouse.run_if(resource_changed::<ButtonInput<MouseButton>>),\n         )\n         .add_systems(\n             Update,\n             print_keyboard.run_if(resource_changed::<ButtonInput<KeyCode>>),\n         )\n         .run();\n }\n\n fn print_mouse(mouse: Res<ButtonInput<MouseButton>>) {\n     println!(\"Mouse: {:?}\", mouse.get_pressed().collect::<Vec<_>>());\n }\n\n fn print_keyboard(keyboard: Res<ButtonInput<KeyCode>>) {\n     if keyboard.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight])\n         && keyboard.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])\n         && keyboard.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight])\n         && keyboard.any_pressed([KeyCode::SuperLeft, KeyCode::SuperRight])\n         && keyboard.pressed(KeyCode::KeyL)\n     {\n         println!(\"On Windows this opens LinkedIn.\");\n     } else {\n         println!(\"keyboard: {:?}\", keyboard.get_pressed().collect::<Vec<_>>());\n     }\n }\n ```\n\n ## Note\n\n When adding this resource for a new input type, you should:\n\n * Call the [`ButtonInput::press`] method for each press event.\n * Call the [`ButtonInput::release`] method for each release event.\n * Call the [`ButtonInput::clear`] method at each frame start, before processing events.\n\n Note: Calling `clear` from a [`ResMut`] will trigger change detection.\n It may be preferable to use [`DetectChangesMut::bypass_change_detection`]\n to avoid causing the resource to always be marked as changed.\n\n [`ResMut`]: bevy_ecs::system::ResMut\n [`DetectChangesMut::bypass_change_detection`]: bevy_ecs::change_detection::DetectChangesMut::bypass_change_detection",
       "associated_functions": [
+        "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::press",
         "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::release",
-        "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::just_released",
+        "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::get_pressed",
         "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::pressed",
         "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::just_pressed",
-        "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::press",
-        "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::get_pressed",
+        "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::just_released",
         "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::new"
       ],
       "layout": {
@@ -7179,12 +7179,12 @@
       ],
       "documentation": " A \"press-able\" input of type `T`.\n\n ## Usage\n\n This type can be used as a resource to keep the current state of an input, by reacting to\n events from the input. For a given input value:\n\n * [`ButtonInput::pressed`] will return `true` between a press and a release event.\n * [`ButtonInput::just_pressed`] will return `true` for one frame after a press event.\n * [`ButtonInput::just_released`] will return `true` for one frame after a release event.\n\n ## Multiple systems\n\n In case multiple systems are checking for [`ButtonInput::just_pressed`] or [`ButtonInput::just_released`]\n but only one should react, for example when modifying a\n [`Resource`], you should consider clearing the input state, either by:\n\n * Using [`ButtonInput::clear_just_pressed`] or [`ButtonInput::clear_just_released`] instead.\n * Calling [`ButtonInput::clear`] or [`ButtonInput::reset`] immediately after the state change.\n\n ## Performance\n\n For all operations, the following conventions are used:\n - **n** is the number of stored inputs.\n - **m** is the number of input arguments passed to the method.\n - **\\***-suffix denotes an amortized cost.\n - **~**-suffix denotes an expected cost.\n\n See Rust's [std::collections doc on performance](https://doc.rust-lang.org/std/collections/index.html#performance) for more details on the conventions used here.\n\n | **[`ButtonInput`] operations**          | **Computational complexity** |\n |-----------------------------------|------------------------------------|\n | [`ButtonInput::any_just_pressed`]       | *O*(m)~                      |\n | [`ButtonInput::any_just_released`]      | *O*(m)~                      |\n | [`ButtonInput::any_pressed`]            | *O*(m)~                      |\n | [`ButtonInput::get_just_pressed`]       | *O*(n)                       |\n | [`ButtonInput::get_just_released`]      | *O*(n)                       |\n | [`ButtonInput::get_pressed`]            | *O*(n)                       |\n | [`ButtonInput::just_pressed`]           | *O*(1)~                      |\n | [`ButtonInput::just_released`]          | *O*(1)~                      |\n | [`ButtonInput::pressed`]                | *O*(1)~                      |\n | [`ButtonInput::press`]                  | *O*(1)~*                     |\n | [`ButtonInput::release`]                | *O*(1)~*                     |\n | [`ButtonInput::release_all`]            | *O*(n)~*                     |\n | [`ButtonInput::clear_just_pressed`]     | *O*(1)~                      |\n | [`ButtonInput::clear_just_released`]    | *O*(1)~                      |\n | [`ButtonInput::reset_all`]              | *O*(n)                       |\n | [`ButtonInput::clear`]                  | *O*(n)                       |\n\n ## Window focus\n\n `ButtonInput<KeyCode>` is tied to window focus. For example, if the user holds a button\n while the window loses focus, [`ButtonInput::just_released`] will be triggered. Similarly if the window\n regains focus, [`ButtonInput::just_pressed`] will be triggered.\n\n `ButtonInput<GamepadButton>` is independent of window focus.\n\n ## Examples\n\n Reading and checking against the current set of pressed buttons:\n ```no_run\n # use bevy_app::{App, NoopPluginGroup as DefaultPlugins, Update};\n # use bevy_ecs::{prelude::{IntoScheduleConfigs, Res, Resource, resource_changed}, schedule::SystemCondition};\n # use bevy_input::{ButtonInput, prelude::{KeyCode, MouseButton}};\n\n fn main() {\n     App::new()\n         .add_plugins(DefaultPlugins)\n         .add_systems(\n             Update,\n             print_mouse.run_if(resource_changed::<ButtonInput<MouseButton>>),\n         )\n         .add_systems(\n             Update,\n             print_keyboard.run_if(resource_changed::<ButtonInput<KeyCode>>),\n         )\n         .run();\n }\n\n fn print_mouse(mouse: Res<ButtonInput<MouseButton>>) {\n     println!(\"Mouse: {:?}\", mouse.get_pressed().collect::<Vec<_>>());\n }\n\n fn print_keyboard(keyboard: Res<ButtonInput<KeyCode>>) {\n     if keyboard.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight])\n         && keyboard.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])\n         && keyboard.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight])\n         && keyboard.any_pressed([KeyCode::SuperLeft, KeyCode::SuperRight])\n         && keyboard.pressed(KeyCode::KeyL)\n     {\n         println!(\"On Windows this opens LinkedIn.\");\n     } else {\n         println!(\"keyboard: {:?}\", keyboard.get_pressed().collect::<Vec<_>>());\n     }\n }\n ```\n\n ## Note\n\n When adding this resource for a new input type, you should:\n\n * Call the [`ButtonInput::press`] method for each press event.\n * Call the [`ButtonInput::release`] method for each release event.\n * Call the [`ButtonInput::clear`] method at each frame start, before processing events.\n\n Note: Calling `clear` from a [`ResMut`] will trigger change detection.\n It may be preferable to use [`DetectChangesMut::bypass_change_detection`]\n to avoid causing the resource to always be marked as changed.\n\n [`ResMut`]: bevy_ecs::system::ResMut\n [`DetectChangesMut::bypass_change_detection`]: bevy_ecs::change_detection::DetectChangesMut::bypass_change_detection",
       "associated_functions": [
-        "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::press",
         "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::get_pressed",
-        "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::just_pressed",
         "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::release",
         "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::just_released",
         "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::pressed",
+        "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::just_pressed",
+        "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::press",
         "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::new"
       ],
       "layout": {
@@ -7241,11 +7241,11 @@
       "documentation": " A \"press-able\" input of type `T`.\n\n ## Usage\n\n This type can be used as a resource to keep the current state of an input, by reacting to\n events from the input. For a given input value:\n\n * [`ButtonInput::pressed`] will return `true` between a press and a release event.\n * [`ButtonInput::just_pressed`] will return `true` for one frame after a press event.\n * [`ButtonInput::just_released`] will return `true` for one frame after a release event.\n\n ## Multiple systems\n\n In case multiple systems are checking for [`ButtonInput::just_pressed`] or [`ButtonInput::just_released`]\n but only one should react, for example when modifying a\n [`Resource`], you should consider clearing the input state, either by:\n\n * Using [`ButtonInput::clear_just_pressed`] or [`ButtonInput::clear_just_released`] instead.\n * Calling [`ButtonInput::clear`] or [`ButtonInput::reset`] immediately after the state change.\n\n ## Performance\n\n For all operations, the following conventions are used:\n - **n** is the number of stored inputs.\n - **m** is the number of input arguments passed to the method.\n - **\\***-suffix denotes an amortized cost.\n - **~**-suffix denotes an expected cost.\n\n See Rust's [std::collections doc on performance](https://doc.rust-lang.org/std/collections/index.html#performance) for more details on the conventions used here.\n\n | **[`ButtonInput`] operations**          | **Computational complexity** |\n |-----------------------------------|------------------------------------|\n | [`ButtonInput::any_just_pressed`]       | *O*(m)~                      |\n | [`ButtonInput::any_just_released`]      | *O*(m)~                      |\n | [`ButtonInput::any_pressed`]            | *O*(m)~                      |\n | [`ButtonInput::get_just_pressed`]       | *O*(n)                       |\n | [`ButtonInput::get_just_released`]      | *O*(n)                       |\n | [`ButtonInput::get_pressed`]            | *O*(n)                       |\n | [`ButtonInput::just_pressed`]           | *O*(1)~                      |\n | [`ButtonInput::just_released`]          | *O*(1)~                      |\n | [`ButtonInput::pressed`]                | *O*(1)~                      |\n | [`ButtonInput::press`]                  | *O*(1)~*                     |\n | [`ButtonInput::release`]                | *O*(1)~*                     |\n | [`ButtonInput::release_all`]            | *O*(n)~*                     |\n | [`ButtonInput::clear_just_pressed`]     | *O*(1)~                      |\n | [`ButtonInput::clear_just_released`]    | *O*(1)~                      |\n | [`ButtonInput::reset_all`]              | *O*(n)                       |\n | [`ButtonInput::clear`]                  | *O*(n)                       |\n\n ## Window focus\n\n `ButtonInput<KeyCode>` is tied to window focus. For example, if the user holds a button\n while the window loses focus, [`ButtonInput::just_released`] will be triggered. Similarly if the window\n regains focus, [`ButtonInput::just_pressed`] will be triggered.\n\n `ButtonInput<GamepadButton>` is independent of window focus.\n\n ## Examples\n\n Reading and checking against the current set of pressed buttons:\n ```no_run\n # use bevy_app::{App, NoopPluginGroup as DefaultPlugins, Update};\n # use bevy_ecs::{prelude::{IntoScheduleConfigs, Res, Resource, resource_changed}, schedule::SystemCondition};\n # use bevy_input::{ButtonInput, prelude::{KeyCode, MouseButton}};\n\n fn main() {\n     App::new()\n         .add_plugins(DefaultPlugins)\n         .add_systems(\n             Update,\n             print_mouse.run_if(resource_changed::<ButtonInput<MouseButton>>),\n         )\n         .add_systems(\n             Update,\n             print_keyboard.run_if(resource_changed::<ButtonInput<KeyCode>>),\n         )\n         .run();\n }\n\n fn print_mouse(mouse: Res<ButtonInput<MouseButton>>) {\n     println!(\"Mouse: {:?}\", mouse.get_pressed().collect::<Vec<_>>());\n }\n\n fn print_keyboard(keyboard: Res<ButtonInput<KeyCode>>) {\n     if keyboard.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight])\n         && keyboard.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])\n         && keyboard.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight])\n         && keyboard.any_pressed([KeyCode::SuperLeft, KeyCode::SuperRight])\n         && keyboard.pressed(KeyCode::KeyL)\n     {\n         println!(\"On Windows this opens LinkedIn.\");\n     } else {\n         println!(\"keyboard: {:?}\", keyboard.get_pressed().collect::<Vec<_>>());\n     }\n }\n ```\n\n ## Note\n\n When adding this resource for a new input type, you should:\n\n * Call the [`ButtonInput::press`] method for each press event.\n * Call the [`ButtonInput::release`] method for each release event.\n * Call the [`ButtonInput::clear`] method at each frame start, before processing events.\n\n Note: Calling `clear` from a [`ResMut`] will trigger change detection.\n It may be preferable to use [`DetectChangesMut::bypass_change_detection`]\n to avoid causing the resource to always be marked as changed.\n\n [`ResMut`]: bevy_ecs::system::ResMut\n [`DetectChangesMut::bypass_change_detection`]: bevy_ecs::change_detection::DetectChangesMut::bypass_change_detection",
       "associated_functions": [
         "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::just_pressed",
-        "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::just_released",
-        "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::press",
-        "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::release",
         "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::pressed",
         "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::get_pressed",
+        "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::press",
+        "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::release",
+        "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::just_released",
         "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::new"
       ],
       "layout": {
@@ -7301,13 +7301,13 @@
       ],
       "documentation": " A generic clock resource that tracks how much it has advanced since its\n previous update and since its creation.\n\n Multiple instances of this resource are inserted automatically by\n [`TimePlugin`](crate::TimePlugin):\n\n - [`Time<Real>`](crate::real::Real) tracks real wall-clock time elapsed.\n - [`Time<Virtual>`](crate::virt::Virtual) tracks virtual game time that may\n   be paused or scaled.\n - [`Time<Fixed>`](crate::fixed::Fixed) tracks fixed timesteps based on\n   virtual time.\n - [`Time`] is a generic clock that corresponds to \"current\" or \"default\"\n   time for systems. It contains [`Time<Virtual>`](crate::virt::Virtual)\n   except inside the [`FixedMain`](bevy_app::FixedMain) schedule when it\n   contains [`Time<Fixed>`](crate::fixed::Fixed).\n\n The time elapsed since the previous time this clock was advanced is saved as\n [`delta()`](Time::delta) and the total amount of time the clock has advanced\n is saved as [`elapsed()`](Time::elapsed). Both are represented as exact\n [`Duration`] values with fixed nanosecond precision. The clock does not\n support time moving backwards, but it can be updated with [`Duration::ZERO`]\n which will set [`delta()`](Time::delta) to zero.\n\n These values are also available in seconds as `f32` via\n [`delta_secs()`](Time::delta_secs) and\n [`elapsed_secs()`](Time::elapsed_secs), and also in seconds as `f64`\n via [`delta_secs_f64()`](Time::delta_secs_f64) and\n [`elapsed_secs_f64()`](Time::elapsed_secs_f64).\n\n Since [`elapsed_secs()`](Time::elapsed_secs) will grow constantly and\n is `f32`, it will exhibit gradual precision loss. For applications that\n require an `f32` value but suffer from gradual precision loss there is\n [`elapsed_secs_wrapped()`](Time::elapsed_secs_wrapped) available. The\n same wrapped value is also available as [`Duration`] and `f64` for\n consistency. The wrap period is by default 1 hour, and can be set by\n [`set_wrap_period()`](Time::set_wrap_period).\n\n # Accessing clocks\n\n By default, any systems requiring current [`delta()`](Time::delta) or\n [`elapsed()`](Time::elapsed) should use `Res<Time>` to access the default\n time configured for the program. By default, this refers to\n [`Time<Virtual>`](crate::virt::Virtual) except during the\n [`FixedMain`](bevy_app::FixedMain) schedule when it refers to\n [`Time<Fixed>`](crate::fixed::Fixed). This ensures your system can be used\n either in [`Update`](bevy_app::Update) or\n [`FixedUpdate`](bevy_app::FixedUpdate) schedule depending on what is needed.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn ambivalent_system(time: Res<Time>) {\n     println!(\"this how I see time: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n If your system needs to react based on real time (wall clock time), like for\n user interfaces, it should use `Res<Time<Real>>`. The\n [`delta()`](Time::delta) and [`elapsed()`](Time::elapsed) values will always\n correspond to real time and will not be affected by pause, time scaling or\n other tweaks.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn real_time_system(time: Res<Time<Real>>) {\n     println!(\"this will always be real time: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n If your system specifically needs to access fixed timestep clock, even when\n placed in `Update` schedule, you should use `Res<Time<Fixed>>`. The\n [`delta()`](Time::delta) and [`elapsed()`](Time::elapsed) values will\n correspond to the latest fixed timestep that has been run.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn fixed_time_system(time: Res<Time<Fixed>>) {\n     println!(\"this will always be the last executed fixed timestep: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n Finally, if your system specifically needs to know the current virtual game\n time, even if placed inside [`FixedUpdate`](bevy_app::FixedUpdate), for\n example to know if the game is [`was_paused()`](Time::was_paused) or to use\n [`effective_speed()`](Time::effective_speed), you can use\n `Res<Time<Virtual>>`. However, if the system is placed in\n [`FixedUpdate`](bevy_app::FixedUpdate), extra care must be used because your\n system might be run multiple times with the same [`delta()`](Time::delta)\n and [`elapsed()`](Time::elapsed) values as the virtual game time has not\n changed between the iterations.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn fixed_time_system(time: Res<Time<Virtual>>) {\n     println!(\"this will be virtual time for this update: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n     println!(\"also the relative speed of the game is now {}\", time.effective_speed());\n }\n ```\n\n If you need to change the settings for any of the clocks, for example to\n [`pause()`](Time::pause) the game, you should use `ResMut<Time<Virtual>>`.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n #[derive(Message)]\n struct Pause(bool);\n\n fn pause_system(mut time: ResMut<Time<Virtual>>, mut pause_reader: MessageReader<Pause>) {\n     for pause in pause_reader.read() {\n         if pause.0 {\n             time.pause();\n         } else {\n             time.unpause();\n         }\n     }\n }\n ```\n\n # Adding custom clocks\n\n New custom clocks can be created by creating your own struct as a context\n and passing it to [`new_with()`](Time::new_with). These clocks can be\n inserted as resources as normal and then accessed by systems. You can use\n the [`advance_by()`](Time::advance_by) or [`advance_to()`](Time::advance_to)\n methods to move the clock forwards based on your own logic.\n\n If you want to add methods for your time instance and they require access to\n both your context and the generic time part, it's probably simplest to add a\n custom trait for them and implement it for `Time<Custom>`.\n\n Your context struct will need to implement the [`Default`] trait because\n [`Time`] structures support reflection. It also makes initialization trivial\n by being able to call `app.init_resource::<Time<Custom>>()`.\n\n You can also replace the \"generic\" `Time` clock resource if the \"default\"\n time for your game should not be the default virtual time provided. You can\n get a \"generic\" snapshot of your clock by calling `as_generic()` and then\n overwrite the [`Time`] resource with it. The default systems added by\n [`TimePlugin`](crate::TimePlugin) will overwrite the [`Time`] clock during\n [`First`](bevy_app::First) and [`FixedUpdate`](bevy_app::FixedUpdate)\n schedules.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n # use bevy_platform::time::Instant;\n #\n #[derive(Debug)]\n struct Custom {\n     last_external_time: Instant,\n }\n\n impl Default for Custom {\n     fn default() -> Self {\n         Self {\n             last_external_time: Instant::now(),\n         }\n     }\n }\n\n trait CustomTime {\n     fn update_from_external(&mut self, instant: Instant);\n }\n\n impl CustomTime for Time<Custom> {\n     fn update_from_external(&mut self, instant: Instant) {\n          let delta = instant - self.context().last_external_time;\n          self.advance_by(delta);\n          self.context_mut().last_external_time = instant;\n     }\n }\n ```",
       "associated_functions": [
-        "bevy_time::time::Time<()>::elapsed_secs_f64",
-        "bevy_time::time::Time<()>::elapsed",
-        "bevy_time::time::Time<()>::elapsed_secs_wrapped",
-        "bevy_time::time::Time<()>::delta_secs",
-        "bevy_time::time::Time<()>::delta_secs_f64",
         "bevy_time::time::Time<()>::delta",
+        "bevy_time::time::Time<()>::elapsed",
+        "bevy_time::time::Time<()>::elapsed_secs_f64",
+        "bevy_time::time::Time<()>::delta_secs_f64",
+        "bevy_time::time::Time<()>::elapsed_secs_wrapped",
         "bevy_time::time::Time<()>::elapsed_secs",
+        "bevy_time::time::Time<()>::delta_secs",
         "bevy_time::time::Time<()>::new"
       ],
       "layout": {
@@ -7416,15 +7416,15 @@
       "documentation": " A generic clock resource that tracks how much it has advanced since its\n previous update and since its creation.\n\n Multiple instances of this resource are inserted automatically by\n [`TimePlugin`](crate::TimePlugin):\n\n - [`Time<Real>`](crate::real::Real) tracks real wall-clock time elapsed.\n - [`Time<Virtual>`](crate::virt::Virtual) tracks virtual game time that may\n   be paused or scaled.\n - [`Time<Fixed>`](crate::fixed::Fixed) tracks fixed timesteps based on\n   virtual time.\n - [`Time`] is a generic clock that corresponds to \"current\" or \"default\"\n   time for systems. It contains [`Time<Virtual>`](crate::virt::Virtual)\n   except inside the [`FixedMain`](bevy_app::FixedMain) schedule when it\n   contains [`Time<Fixed>`](crate::fixed::Fixed).\n\n The time elapsed since the previous time this clock was advanced is saved as\n [`delta()`](Time::delta) and the total amount of time the clock has advanced\n is saved as [`elapsed()`](Time::elapsed). Both are represented as exact\n [`Duration`] values with fixed nanosecond precision. The clock does not\n support time moving backwards, but it can be updated with [`Duration::ZERO`]\n which will set [`delta()`](Time::delta) to zero.\n\n These values are also available in seconds as `f32` via\n [`delta_secs()`](Time::delta_secs) and\n [`elapsed_secs()`](Time::elapsed_secs), and also in seconds as `f64`\n via [`delta_secs_f64()`](Time::delta_secs_f64) and\n [`elapsed_secs_f64()`](Time::elapsed_secs_f64).\n\n Since [`elapsed_secs()`](Time::elapsed_secs) will grow constantly and\n is `f32`, it will exhibit gradual precision loss. For applications that\n require an `f32` value but suffer from gradual precision loss there is\n [`elapsed_secs_wrapped()`](Time::elapsed_secs_wrapped) available. The\n same wrapped value is also available as [`Duration`] and `f64` for\n consistency. The wrap period is by default 1 hour, and can be set by\n [`set_wrap_period()`](Time::set_wrap_period).\n\n # Accessing clocks\n\n By default, any systems requiring current [`delta()`](Time::delta) or\n [`elapsed()`](Time::elapsed) should use `Res<Time>` to access the default\n time configured for the program. By default, this refers to\n [`Time<Virtual>`](crate::virt::Virtual) except during the\n [`FixedMain`](bevy_app::FixedMain) schedule when it refers to\n [`Time<Fixed>`](crate::fixed::Fixed). This ensures your system can be used\n either in [`Update`](bevy_app::Update) or\n [`FixedUpdate`](bevy_app::FixedUpdate) schedule depending on what is needed.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn ambivalent_system(time: Res<Time>) {\n     println!(\"this how I see time: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n If your system needs to react based on real time (wall clock time), like for\n user interfaces, it should use `Res<Time<Real>>`. The\n [`delta()`](Time::delta) and [`elapsed()`](Time::elapsed) values will always\n correspond to real time and will not be affected by pause, time scaling or\n other tweaks.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn real_time_system(time: Res<Time<Real>>) {\n     println!(\"this will always be real time: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n If your system specifically needs to access fixed timestep clock, even when\n placed in `Update` schedule, you should use `Res<Time<Fixed>>`. The\n [`delta()`](Time::delta) and [`elapsed()`](Time::elapsed) values will\n correspond to the latest fixed timestep that has been run.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn fixed_time_system(time: Res<Time<Fixed>>) {\n     println!(\"this will always be the last executed fixed timestep: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n Finally, if your system specifically needs to know the current virtual game\n time, even if placed inside [`FixedUpdate`](bevy_app::FixedUpdate), for\n example to know if the game is [`was_paused()`](Time::was_paused) or to use\n [`effective_speed()`](Time::effective_speed), you can use\n `Res<Time<Virtual>>`. However, if the system is placed in\n [`FixedUpdate`](bevy_app::FixedUpdate), extra care must be used because your\n system might be run multiple times with the same [`delta()`](Time::delta)\n and [`elapsed()`](Time::elapsed) values as the virtual game time has not\n changed between the iterations.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn fixed_time_system(time: Res<Time<Virtual>>) {\n     println!(\"this will be virtual time for this update: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n     println!(\"also the relative speed of the game is now {}\", time.effective_speed());\n }\n ```\n\n If you need to change the settings for any of the clocks, for example to\n [`pause()`](Time::pause) the game, you should use `ResMut<Time<Virtual>>`.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n #[derive(Message)]\n struct Pause(bool);\n\n fn pause_system(mut time: ResMut<Time<Virtual>>, mut pause_reader: MessageReader<Pause>) {\n     for pause in pause_reader.read() {\n         if pause.0 {\n             time.pause();\n         } else {\n             time.unpause();\n         }\n     }\n }\n ```\n\n # Adding custom clocks\n\n New custom clocks can be created by creating your own struct as a context\n and passing it to [`new_with()`](Time::new_with). These clocks can be\n inserted as resources as normal and then accessed by systems. You can use\n the [`advance_by()`](Time::advance_by) or [`advance_to()`](Time::advance_to)\n methods to move the clock forwards based on your own logic.\n\n If you want to add methods for your time instance and they require access to\n both your context and the generic time part, it's probably simplest to add a\n custom trait for them and implement it for `Time<Custom>`.\n\n Your context struct will need to implement the [`Default`] trait because\n [`Time`] structures support reflection. It also makes initialization trivial\n by being able to call `app.init_resource::<Time<Custom>>()`.\n\n You can also replace the \"generic\" `Time` clock resource if the \"default\"\n time for your game should not be the default virtual time provided. You can\n get a \"generic\" snapshot of your clock by calling `as_generic()` and then\n overwrite the [`Time`] resource with it. The default systems added by\n [`TimePlugin`](crate::TimePlugin) will overwrite the [`Time`] clock during\n [`First`](bevy_app::First) and [`FixedUpdate`](bevy_app::FixedUpdate)\n schedules.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n # use bevy_platform::time::Instant;\n #\n #[derive(Debug)]\n struct Custom {\n     last_external_time: Instant,\n }\n\n impl Default for Custom {\n     fn default() -> Self {\n         Self {\n             last_external_time: Instant::now(),\n         }\n     }\n }\n\n trait CustomTime {\n     fn update_from_external(&mut self, instant: Instant);\n }\n\n impl CustomTime for Time<Custom> {\n     fn update_from_external(&mut self, instant: Instant) {\n          let delta = instant - self.context().last_external_time;\n          self.advance_by(delta);\n          self.context_mut().last_external_time = instant;\n     }\n }\n ```",
       "associated_functions": [
         "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed_secs_f64",
+        "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta_secs",
+        "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed_secs_wrapped",
+        "bevy_time::time::Time<bevy_time::fixed::Fixed>::overstep_fraction",
         "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed_secs",
-        "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta_secs_f64",
+        "bevy_time::time::Time<bevy_time::fixed::Fixed>::timestep",
+        "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta",
         "bevy_time::time::Time<bevy_time::fixed::Fixed>::set_timestep_seconds",
         "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed",
-        "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta_secs",
-        "bevy_time::time::Time<bevy_time::fixed::Fixed>::overstep_fraction",
-        "bevy_time::time::Time<bevy_time::fixed::Fixed>::timestep",
-        "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed_secs_wrapped",
-        "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta",
+        "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta_secs_f64",
         "bevy_time::time::Time<bevy_time::fixed::Fixed>::new"
       ],
       "layout": {
@@ -7532,13 +7532,13 @@
       ],
       "documentation": " A generic clock resource that tracks how much it has advanced since its\n previous update and since its creation.\n\n Multiple instances of this resource are inserted automatically by\n [`TimePlugin`](crate::TimePlugin):\n\n - [`Time<Real>`](crate::real::Real) tracks real wall-clock time elapsed.\n - [`Time<Virtual>`](crate::virt::Virtual) tracks virtual game time that may\n   be paused or scaled.\n - [`Time<Fixed>`](crate::fixed::Fixed) tracks fixed timesteps based on\n   virtual time.\n - [`Time`] is a generic clock that corresponds to \"current\" or \"default\"\n   time for systems. It contains [`Time<Virtual>`](crate::virt::Virtual)\n   except inside the [`FixedMain`](bevy_app::FixedMain) schedule when it\n   contains [`Time<Fixed>`](crate::fixed::Fixed).\n\n The time elapsed since the previous time this clock was advanced is saved as\n [`delta()`](Time::delta) and the total amount of time the clock has advanced\n is saved as [`elapsed()`](Time::elapsed). Both are represented as exact\n [`Duration`] values with fixed nanosecond precision. The clock does not\n support time moving backwards, but it can be updated with [`Duration::ZERO`]\n which will set [`delta()`](Time::delta) to zero.\n\n These values are also available in seconds as `f32` via\n [`delta_secs()`](Time::delta_secs) and\n [`elapsed_secs()`](Time::elapsed_secs), and also in seconds as `f64`\n via [`delta_secs_f64()`](Time::delta_secs_f64) and\n [`elapsed_secs_f64()`](Time::elapsed_secs_f64).\n\n Since [`elapsed_secs()`](Time::elapsed_secs) will grow constantly and\n is `f32`, it will exhibit gradual precision loss. For applications that\n require an `f32` value but suffer from gradual precision loss there is\n [`elapsed_secs_wrapped()`](Time::elapsed_secs_wrapped) available. The\n same wrapped value is also available as [`Duration`] and `f64` for\n consistency. The wrap period is by default 1 hour, and can be set by\n [`set_wrap_period()`](Time::set_wrap_period).\n\n # Accessing clocks\n\n By default, any systems requiring current [`delta()`](Time::delta) or\n [`elapsed()`](Time::elapsed) should use `Res<Time>` to access the default\n time configured for the program. By default, this refers to\n [`Time<Virtual>`](crate::virt::Virtual) except during the\n [`FixedMain`](bevy_app::FixedMain) schedule when it refers to\n [`Time<Fixed>`](crate::fixed::Fixed). This ensures your system can be used\n either in [`Update`](bevy_app::Update) or\n [`FixedUpdate`](bevy_app::FixedUpdate) schedule depending on what is needed.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn ambivalent_system(time: Res<Time>) {\n     println!(\"this how I see time: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n If your system needs to react based on real time (wall clock time), like for\n user interfaces, it should use `Res<Time<Real>>`. The\n [`delta()`](Time::delta) and [`elapsed()`](Time::elapsed) values will always\n correspond to real time and will not be affected by pause, time scaling or\n other tweaks.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn real_time_system(time: Res<Time<Real>>) {\n     println!(\"this will always be real time: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n If your system specifically needs to access fixed timestep clock, even when\n placed in `Update` schedule, you should use `Res<Time<Fixed>>`. The\n [`delta()`](Time::delta) and [`elapsed()`](Time::elapsed) values will\n correspond to the latest fixed timestep that has been run.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn fixed_time_system(time: Res<Time<Fixed>>) {\n     println!(\"this will always be the last executed fixed timestep: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n Finally, if your system specifically needs to know the current virtual game\n time, even if placed inside [`FixedUpdate`](bevy_app::FixedUpdate), for\n example to know if the game is [`was_paused()`](Time::was_paused) or to use\n [`effective_speed()`](Time::effective_speed), you can use\n `Res<Time<Virtual>>`. However, if the system is placed in\n [`FixedUpdate`](bevy_app::FixedUpdate), extra care must be used because your\n system might be run multiple times with the same [`delta()`](Time::delta)\n and [`elapsed()`](Time::elapsed) values as the virtual game time has not\n changed between the iterations.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn fixed_time_system(time: Res<Time<Virtual>>) {\n     println!(\"this will be virtual time for this update: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n     println!(\"also the relative speed of the game is now {}\", time.effective_speed());\n }\n ```\n\n If you need to change the settings for any of the clocks, for example to\n [`pause()`](Time::pause) the game, you should use `ResMut<Time<Virtual>>`.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n #[derive(Message)]\n struct Pause(bool);\n\n fn pause_system(mut time: ResMut<Time<Virtual>>, mut pause_reader: MessageReader<Pause>) {\n     for pause in pause_reader.read() {\n         if pause.0 {\n             time.pause();\n         } else {\n             time.unpause();\n         }\n     }\n }\n ```\n\n # Adding custom clocks\n\n New custom clocks can be created by creating your own struct as a context\n and passing it to [`new_with()`](Time::new_with). These clocks can be\n inserted as resources as normal and then accessed by systems. You can use\n the [`advance_by()`](Time::advance_by) or [`advance_to()`](Time::advance_to)\n methods to move the clock forwards based on your own logic.\n\n If you want to add methods for your time instance and they require access to\n both your context and the generic time part, it's probably simplest to add a\n custom trait for them and implement it for `Time<Custom>`.\n\n Your context struct will need to implement the [`Default`] trait because\n [`Time`] structures support reflection. It also makes initialization trivial\n by being able to call `app.init_resource::<Time<Custom>>()`.\n\n You can also replace the \"generic\" `Time` clock resource if the \"default\"\n time for your game should not be the default virtual time provided. You can\n get a \"generic\" snapshot of your clock by calling `as_generic()` and then\n overwrite the [`Time`] resource with it. The default systems added by\n [`TimePlugin`](crate::TimePlugin) will overwrite the [`Time`] clock during\n [`First`](bevy_app::First) and [`FixedUpdate`](bevy_app::FixedUpdate)\n schedules.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n # use bevy_platform::time::Instant;\n #\n #[derive(Debug)]\n struct Custom {\n     last_external_time: Instant,\n }\n\n impl Default for Custom {\n     fn default() -> Self {\n         Self {\n             last_external_time: Instant::now(),\n         }\n     }\n }\n\n trait CustomTime {\n     fn update_from_external(&mut self, instant: Instant);\n }\n\n impl CustomTime for Time<Custom> {\n     fn update_from_external(&mut self, instant: Instant) {\n          let delta = instant - self.context().last_external_time;\n          self.advance_by(delta);\n          self.context_mut().last_external_time = instant;\n     }\n }\n ```",
       "associated_functions": [
-        "bevy_time::time::Time<bevy_time::real::Real>::delta_secs",
-        "bevy_time::time::Time<bevy_time::real::Real>::delta",
-        "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs_f64",
-        "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs_wrapped",
-        "bevy_time::time::Time<bevy_time::real::Real>::delta_secs_f64",
         "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs",
+        "bevy_time::time::Time<bevy_time::real::Real>::delta",
+        "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs_wrapped",
         "bevy_time::time::Time<bevy_time::real::Real>::elapsed",
+        "bevy_time::time::Time<bevy_time::real::Real>::delta_secs_f64",
+        "bevy_time::time::Time<bevy_time::real::Real>::delta_secs",
+        "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs_f64",
         "bevy_time::time::Time<bevy_time::real::Real>::new"
       ],
       "layout": {
@@ -7647,20 +7647,20 @@
       ],
       "documentation": " A generic clock resource that tracks how much it has advanced since its\n previous update and since its creation.\n\n Multiple instances of this resource are inserted automatically by\n [`TimePlugin`](crate::TimePlugin):\n\n - [`Time<Real>`](crate::real::Real) tracks real wall-clock time elapsed.\n - [`Time<Virtual>`](crate::virt::Virtual) tracks virtual game time that may\n   be paused or scaled.\n - [`Time<Fixed>`](crate::fixed::Fixed) tracks fixed timesteps based on\n   virtual time.\n - [`Time`] is a generic clock that corresponds to \"current\" or \"default\"\n   time for systems. It contains [`Time<Virtual>`](crate::virt::Virtual)\n   except inside the [`FixedMain`](bevy_app::FixedMain) schedule when it\n   contains [`Time<Fixed>`](crate::fixed::Fixed).\n\n The time elapsed since the previous time this clock was advanced is saved as\n [`delta()`](Time::delta) and the total amount of time the clock has advanced\n is saved as [`elapsed()`](Time::elapsed). Both are represented as exact\n [`Duration`] values with fixed nanosecond precision. The clock does not\n support time moving backwards, but it can be updated with [`Duration::ZERO`]\n which will set [`delta()`](Time::delta) to zero.\n\n These values are also available in seconds as `f32` via\n [`delta_secs()`](Time::delta_secs) and\n [`elapsed_secs()`](Time::elapsed_secs), and also in seconds as `f64`\n via [`delta_secs_f64()`](Time::delta_secs_f64) and\n [`elapsed_secs_f64()`](Time::elapsed_secs_f64).\n\n Since [`elapsed_secs()`](Time::elapsed_secs) will grow constantly and\n is `f32`, it will exhibit gradual precision loss. For applications that\n require an `f32` value but suffer from gradual precision loss there is\n [`elapsed_secs_wrapped()`](Time::elapsed_secs_wrapped) available. The\n same wrapped value is also available as [`Duration`] and `f64` for\n consistency. The wrap period is by default 1 hour, and can be set by\n [`set_wrap_period()`](Time::set_wrap_period).\n\n # Accessing clocks\n\n By default, any systems requiring current [`delta()`](Time::delta) or\n [`elapsed()`](Time::elapsed) should use `Res<Time>` to access the default\n time configured for the program. By default, this refers to\n [`Time<Virtual>`](crate::virt::Virtual) except during the\n [`FixedMain`](bevy_app::FixedMain) schedule when it refers to\n [`Time<Fixed>`](crate::fixed::Fixed). This ensures your system can be used\n either in [`Update`](bevy_app::Update) or\n [`FixedUpdate`](bevy_app::FixedUpdate) schedule depending on what is needed.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn ambivalent_system(time: Res<Time>) {\n     println!(\"this how I see time: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n If your system needs to react based on real time (wall clock time), like for\n user interfaces, it should use `Res<Time<Real>>`. The\n [`delta()`](Time::delta) and [`elapsed()`](Time::elapsed) values will always\n correspond to real time and will not be affected by pause, time scaling or\n other tweaks.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn real_time_system(time: Res<Time<Real>>) {\n     println!(\"this will always be real time: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n If your system specifically needs to access fixed timestep clock, even when\n placed in `Update` schedule, you should use `Res<Time<Fixed>>`. The\n [`delta()`](Time::delta) and [`elapsed()`](Time::elapsed) values will\n correspond to the latest fixed timestep that has been run.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn fixed_time_system(time: Res<Time<Fixed>>) {\n     println!(\"this will always be the last executed fixed timestep: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n }\n ```\n\n Finally, if your system specifically needs to know the current virtual game\n time, even if placed inside [`FixedUpdate`](bevy_app::FixedUpdate), for\n example to know if the game is [`was_paused()`](Time::was_paused) or to use\n [`effective_speed()`](Time::effective_speed), you can use\n `Res<Time<Virtual>>`. However, if the system is placed in\n [`FixedUpdate`](bevy_app::FixedUpdate), extra care must be used because your\n system might be run multiple times with the same [`delta()`](Time::delta)\n and [`elapsed()`](Time::elapsed) values as the virtual game time has not\n changed between the iterations.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n fn fixed_time_system(time: Res<Time<Virtual>>) {\n     println!(\"this will be virtual time for this update: delta {:?}, elapsed {:?}\", time.delta(), time.elapsed());\n     println!(\"also the relative speed of the game is now {}\", time.effective_speed());\n }\n ```\n\n If you need to change the settings for any of the clocks, for example to\n [`pause()`](Time::pause) the game, you should use `ResMut<Time<Virtual>>`.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n #\n #[derive(Message)]\n struct Pause(bool);\n\n fn pause_system(mut time: ResMut<Time<Virtual>>, mut pause_reader: MessageReader<Pause>) {\n     for pause in pause_reader.read() {\n         if pause.0 {\n             time.pause();\n         } else {\n             time.unpause();\n         }\n     }\n }\n ```\n\n # Adding custom clocks\n\n New custom clocks can be created by creating your own struct as a context\n and passing it to [`new_with()`](Time::new_with). These clocks can be\n inserted as resources as normal and then accessed by systems. You can use\n the [`advance_by()`](Time::advance_by) or [`advance_to()`](Time::advance_to)\n methods to move the clock forwards based on your own logic.\n\n If you want to add methods for your time instance and they require access to\n both your context and the generic time part, it's probably simplest to add a\n custom trait for them and implement it for `Time<Custom>`.\n\n Your context struct will need to implement the [`Default`] trait because\n [`Time`] structures support reflection. It also makes initialization trivial\n by being able to call `app.init_resource::<Time<Custom>>()`.\n\n You can also replace the \"generic\" `Time` clock resource if the \"default\"\n time for your game should not be the default virtual time provided. You can\n get a \"generic\" snapshot of your clock by calling `as_generic()` and then\n overwrite the [`Time`] resource with it. The default systems added by\n [`TimePlugin`](crate::TimePlugin) will overwrite the [`Time`] clock during\n [`First`](bevy_app::First) and [`FixedUpdate`](bevy_app::FixedUpdate)\n schedules.\n\n ```\n # use bevy_ecs::prelude::*;\n # use bevy_time::prelude::*;\n # use bevy_platform::time::Instant;\n #\n #[derive(Debug)]\n struct Custom {\n     last_external_time: Instant,\n }\n\n impl Default for Custom {\n     fn default() -> Self {\n         Self {\n             last_external_time: Instant::now(),\n         }\n     }\n }\n\n trait CustomTime {\n     fn update_from_external(&mut self, instant: Instant);\n }\n\n impl CustomTime for Time<Custom> {\n     fn update_from_external(&mut self, instant: Instant) {\n          let delta = instant - self.context().last_external_time;\n          self.advance_by(delta);\n          self.context_mut().last_external_time = instant;\n     }\n }\n ```",
       "associated_functions": [
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::delta_secs_f64",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::delta",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::set_relative_speed",
         "bevy_time::time::Time<bevy_time::virt::Virtual>::is_paused",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::delta_secs_f64",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::set_max_delta",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::delta",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::delta_secs",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::set_relative_speed",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs_wrapped",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::pause",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::relative_speed",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::unpause",
+        "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs_f64",
         "bevy_time::time::Time<bevy_time::virt::Virtual>::max_delta",
         "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::set_max_delta",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs_f64",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::relative_speed",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs_wrapped",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::unpause",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::delta_secs",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed",
-        "bevy_time::time::Time<bevy_time::virt::Virtual>::pause",
         "bevy_time::time::Time<bevy_time::virt::Virtual>::new"
       ],
       "layout": {
@@ -7964,21 +7964,21 @@
       "path": "ReflectReference",
       "documentation": "A reference to a reflectable type",
       "associated_functions": [
-        "ReflectReference::functions",
-        "ReflectReference::iter",
-        "ReflectReference::push",
-        "ReflectReference::variant",
-        "ReflectReference::clear",
         "ReflectReference::len",
-        "ReflectReference::map_get",
-        "ReflectReference::eq",
-        "ReflectReference::clone",
-        "ReflectReference::debug",
-        "ReflectReference::insert",
         "ReflectReference::display",
-        "ReflectReference::remove",
-        "ReflectReference::variant_name",
+        "ReflectReference::functions",
         "ReflectReference::pop",
+        "ReflectReference::map_get",
+        "ReflectReference::variant",
+        "ReflectReference::variant_name",
+        "ReflectReference::iter",
+        "ReflectReference::eq",
+        "ReflectReference::clear",
+        "ReflectReference::insert",
+        "ReflectReference::push",
+        "ReflectReference::remove",
+        "ReflectReference::debug",
+        "ReflectReference::clone",
         "ReflectReference::new"
       ],
       "layout": null,
@@ -8013,10 +8013,10 @@
       "path": "StaticTypeRef",
       "documentation": "A type itself, used to reach its static members, i.e. `Vec3` in `Vec3.new{}`. Functions on it are shared by all types",
       "associated_functions": [
-        "StaticTypeRef::add_asset",
+        "StaticTypeRef::new",
         "StaticTypeRef::load",
         "StaticTypeRef::get_asset",
-        "StaticTypeRef::new"
+        "StaticTypeRef::add_asset"
       ],
       "layout": null,
       "generated": false,
@@ -10296,10 +10296,6 @@
       "layout": [
         {
           "kind": "Unit",
-          "name": "Rhai"
-        },
-        {
-          "kind": "Unit",
           "name": "Lua"
         },
         {
@@ -10346,10 +10342,10 @@
       "namespace": "bms",
       "documentation": " Represents a script loaded into memory as an asset",
       "associated_functions": [
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::add_asset",
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::new",
         "bevy_mod_scripting_asset::script_asset::ScriptAsset::load",
         "bevy_mod_scripting_asset::script_asset::ScriptAsset::get_asset",
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::new"
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::add_asset"
       ],
       "layout": null,
       "generated": false,
@@ -10887,10 +10883,10 @@
       "namespace": "render",
       "documentation": " A storage buffer that is prepared as a [`RenderAsset`] and uploaded to the GPU.\n\n This buffer primarily exists in order to be embedded into a material that\n implements the [`bevy_render_macros::AsBindGroup`] trait. Compared to\n embedding a raw [`Buffer`], [`ShaderBuffer`] has the advantage that the\n buffer can be resized without regenerating the materials that embed it.",
       "associated_functions": [
-        "bevy_render::storage::ShaderBuffer::add_asset",
+        "bevy_render::storage::ShaderBuffer::new",
         "bevy_render::storage::ShaderBuffer::load",
         "bevy_render::storage::ShaderBuffer::get_asset",
-        "bevy_render::storage::ShaderBuffer::new"
+        "bevy_render::storage::ShaderBuffer::add_asset"
       ],
       "layout": null,
       "generated": false,
@@ -11349,10 +11345,10 @@
       "namespace": "sprite",
       "documentation": " A [2d material](Material2d) that renders [2d meshes](crate::Mesh2d) with a texture tinted by a uniform color",
       "associated_functions": [
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::add_asset",
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::new",
         "bevy_sprite_render::mesh2d::color_material::ColorMaterial::load",
         "bevy_sprite_render::mesh2d::color_material::ColorMaterial::get_asset",
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::new"
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -11448,10 +11444,10 @@
       "path": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial",
       "namespace": "sprite",
       "associated_functions": [
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::add_asset",
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::new",
         "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::load",
         "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::get_asset",
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::new"
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -16416,7 +16412,7 @@
       "namespace": "bevy_platform",
       "generics": [
         {
-          "type_id": "TypeId(0xa4fd9a9976d36e6b90fe411f85a291a7)",
+          "type_id": "TypeId(0xbe7dac95b7a27411589eeef1caf59d47)",
           "name": "T"
         }
       ],
@@ -16632,7 +16628,7 @@
           "name": "T"
         },
         {
-          "type_id": "TypeId(0x1d4bbaa85e997371f418c97e47e772f3)",
+          "type_id": "TypeId(0x4ee5fc7c26dac803f8abc5b33940c653)",
           "name": "H"
         }
       ],
@@ -16656,7 +16652,7 @@
       "namespace": "petgraph",
       "generics": [
         {
-          "type_id": "TypeId(0x8a50372988ea40a0737db73ef1795692)",
+          "type_id": "TypeId(0xa08aa2200781b51d03be12958f4cf241)",
           "name": "N"
         },
         {
@@ -26508,7 +26504,7 @@
           "val": "bevy_color::color::Color"
         }
       },
-      "documentation": "A color from red, green and blue in the sRGB space, each from `0` to `1`, fully opaque.\n\n```multi-lang-example,lua\nlocal Color = import_namespace(\"color\").Color\nlocal red = Color.srgb(1.0, 0.0, 0.0)\nassert(red:to_srgba().red == 1.0)\n```\n\n```multi-lang-example,rhai\nlet Color = import_namespace.call(\"color\").Color;\nlet red = Color.srgb.call(1.0, 0.0, 0.0);\nassert(red.to_srgba.call().red == 1.0);\n```",
+      "documentation": "A color from red, green and blue in the sRGB space, each from `0` to `1`, fully opaque.\n\n```multi-lang-example,lua\nlocal Color = import_namespace(\"color\").Color\nlocal red = Color.srgb(1.0, 0.0, 0.0)\nassert(red:to_srgba().red == 1.0)\n```\n\n```multi-lang-example,rune\nlet Color = import_namespace(\"color\").Color;\nlet red = Color.srgb(1.0, 0.0, 0.0);\nassert!(red.to_srgba().red == 1.0);\n```",
       "metadata": {}
     },
     "bevy_color::color::Color::srgb_u8": {
@@ -27109,7 +27105,7 @@
           "val": "bevy_color::linear_rgba::LinearRgba"
         }
       },
-      "documentation": "A color from linear red, green, blue and alpha, each from `0` to `1`.\n\n```multi-lang-example,lua\nlocal LinearRgba = import_namespace(\"color\").LinearRgba\nlocal c = LinearRgba.new(1.0, 0.0, 0.0, 1.0)\nassert(c.red == 1.0)\n```\n\n```multi-lang-example,rhai\nlet LinearRgba = import_namespace.call(\"color\").LinearRgba;\nlet c = LinearRgba.new_.call(1.0, 0.0, 0.0, 1.0);\nassert(c.red == 1.0);\n```",
+      "documentation": "A color from linear red, green, blue and alpha, each from `0` to `1`.\n\n```multi-lang-example,lua\nlocal LinearRgba = import_namespace(\"color\").LinearRgba\nlocal c = LinearRgba.new(1.0, 0.0, 0.0, 1.0)\nassert(c.red == 1.0)\n```\n\n```multi-lang-example,rune\nlet LinearRgba = import_namespace(\"color\").LinearRgba;\nlet c = LinearRgba.new(1.0, 0.0, 0.0, 1.0);\nassert!(c.red == 1.0);\n```",
       "metadata": {}
     },
     "bevy_color::linear_rgba::LinearRgba::rgb": {
@@ -27450,7 +27446,7 @@
           "val": "bevy_color::srgba::Srgba"
         }
       },
-      "documentation": "A color from red, green, blue and alpha, each from `0` to `1`.\n\n```multi-lang-example,lua\nlocal Srgba = import_namespace(\"color\").Srgba\nlocal c = Srgba.new(1.0, 0.0, 0.0, 0.5)\nassert(c.alpha == 0.5)\n```\n\n```multi-lang-example,rhai\nlet Srgba = import_namespace.call(\"color\").Srgba;\nlet c = Srgba.new_.call(1.0, 0.0, 0.0, 0.5);\nassert(c.alpha == 0.5);\n```",
+      "documentation": "A color from red, green, blue and alpha, each from `0` to `1`.\n\n```multi-lang-example,lua\nlocal Srgba = import_namespace(\"color\").Srgba\nlocal c = Srgba.new(1.0, 0.0, 0.0, 0.5)\nassert(c.alpha == 0.5)\n```\n\n```multi-lang-example,rune\nlet Srgba = import_namespace(\"color\").Srgba;\nlet c = Srgba.new(1.0, 0.0, 0.0, 0.5);\nassert!(c.alpha == 0.5);\n```",
       "metadata": {}
     },
     "bevy_color::srgba::Srgba::rgb": {
@@ -29635,7 +29631,7 @@
           "val": "bevy_ecs::name::Name"
         }
       },
-      "documentation": "Creates a new [`Name`](bevy_ecs::name::Name) component, used to identify entities.\n\n```multi-lang-example,lua\nlocal Name = import_namespace(\"ecs\").Name\nlocal name = Name.new(\"player\")\nassert(name:as_str() == \"player\")\n```\n\n```multi-lang-example,rhai\nlet Name = import_namespace.call(\"ecs\").Name;\nlet name = Name.new_.call(\"player\");\nassert(name.as_str.call() == \"player\");\n```",
+      "documentation": "Creates a new [`Name`](bevy_ecs::name::Name) component, used to identify entities.\n\n```multi-lang-example,lua\nlocal Name = import_namespace(\"ecs\").Name\nlocal name = Name.new(\"player\")\nassert(name:as_str() == \"player\")\n```\n\n```multi-lang-example,rune\nlet Name = import_namespace(\"ecs\").Name;\nlet name = Name.new(\"player\");\nassert!(name.as_str() == \"player\");\n```",
       "metadata": {}
     },
     "bevy_ecs::name::Name::set": {
@@ -42277,40 +42273,6 @@
       "metadata": {},
       "receiver": true
     },
-    "bevy_mod_scripting_asset::language::Language::Rhai::new": {
-      "namespace": {
-        "type": "bevy_mod_scripting_asset::language::Language",
-        "variant": "Rhai"
-      },
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
-          },
-          "name": "variant"
-        },
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_asset::language::Language",
-              "variant": "Rhai"
-            }
-          },
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_asset::language::Language"
-          }
-        }
-      },
-      "metadata": {},
-      "receiver": true
-    },
     "bevy_mod_scripting_asset::language::Language::Rune::new": {
       "namespace": {
         "type": "bevy_mod_scripting_asset::language::Language",
@@ -49432,7 +49394,7 @@
           "val": "bevy_text::text::TextFont"
         }
       },
-      "documentation": "Creates a text font with the default font face and the given size in logical pixels.\n\n```multi-lang-example,lua\nlocal TextFont = import_namespace(\"text\").TextFont\nlocal font = TextFont.from_font_size(20.0)\nassert(font:with_font_size(30.0) ~= nil)\n```\n\n```multi-lang-example,rhai\nlet TextFont = import_namespace.call(\"text\").TextFont;\nlet font = TextFont.from_font_size.call(20.0);\nassert(font.with_font_size.call(30.0) != ());\n```",
+      "documentation": "Creates a text font with the default font face and the given size in logical pixels.\n\n```multi-lang-example,lua\nlocal TextFont = import_namespace(\"text\").TextFont\nlocal font = TextFont.from_font_size(20.0)\nassert(font:with_font_size(30.0) ~= nil)\n```\n\n```multi-lang-example,rune\nlet TextFont = import_namespace(\"text\").TextFont;\nlet font = TextFont.from_font_size(20.0);\nassert!(font.with_font_size(30.0) != ());\n```",
       "metadata": {}
     },
     "bevy_text::text::TextFont::new": {
@@ -50998,7 +50960,7 @@
           }
         }
       },
-      "documentation": "A timer which runs for `secs` seconds, in `mode`. Errors if `secs` is negative or not finite.\n\n```multi-lang-example,lua\nlocal Timer = import_namespace(\"time\").Timer\nlocal TimerMode = import_namespace(\"time\").TimerMode\nlocal timer = Timer.from_seconds(2, TimerMode.Repeating)\ntimer:tick(1)\nassert(not timer:finished())\ntimer:tick(1.5)\nassert(timer:finished())\n```\n\n```multi-lang-example,rhai\nlet Timer = import_namespace.call(\"time\").Timer;\nlet TimerMode = import_namespace.call(\"time\").TimerMode;\nlet timer = Timer.from_seconds.call(2.0, TimerMode.Repeating);\ntimer.tick.call(1.0);\nassert(!timer.finished.call());\ntimer.tick.call(1.5);\nassert(timer.finished.call());\n```",
+      "documentation": "A timer which runs for `secs` seconds, in `mode`. Errors if `secs` is negative or not finite.\n\n```multi-lang-example,lua\nlocal Timer = import_namespace(\"time\").Timer\nlocal TimerMode = import_namespace(\"time\").TimerMode\nlocal timer = Timer.from_seconds(2, TimerMode.Repeating)\ntimer:tick(1)\nassert(not timer:finished())\ntimer:tick(1.5)\nassert(timer:finished())\n```\n\n```multi-lang-example,rune\nlet Timer = import_namespace(\"time\").Timer;\nlet TimerMode = import_namespace(\"time\").TimerMode;\nlet timer = Timer.from_seconds(2.0, TimerMode.Repeating);\ntimer.tick(1.0);\nassert!(!timer.finished());\ntimer.tick(1.5);\nassert!(timer.finished());\n```",
       "metadata": {}
     },
     "bevy_time::timer::Timer::just_finished": {
@@ -52077,7 +52039,7 @@
           "val": "bevy_transform::components::transform::Transform"
         }
       },
-      "documentation": "A transform at the position `x`, `y`, `z`.\n\n```multi-lang-example,lua\nlocal Transform = import_namespace(\"transform\").Transform\nlocal t = Transform.from_xyz(1, 2, 3)\nassert(t.translation.x == 1)\n```\n\n```multi-lang-example,rhai\nlet Transform = import_namespace.call(\"transform\").Transform;\nlet t = Transform.from_xyz.call(1.0, 2.0, 3.0);\nassert(t.translation.x == 1.0);\n```",
+      "documentation": "A transform at the position `x`, `y`, `z`.\n\n```multi-lang-example,lua\nlocal Transform = import_namespace(\"transform\").Transform\nlocal t = Transform.from_xyz(1, 2, 3)\nassert(t.translation.x == 1)\n```\n\n```multi-lang-example,rune\nlet Transform = import_namespace(\"transform\").Transform;\nlet t = Transform.from_xyz(1.0, 2.0, 3.0);\nassert!(t.translation.x == 1.0);\n```",
       "metadata": {}
     },
     "bevy_transform::components::transform::Transform::identity": {
@@ -53543,7 +53505,7 @@
           "val": "bevy_ui::geometry::Val"
         }
       },
-      "documentation": "A length in logical pixels, such as `Val.px(100)` for 100 pixels.\n\n```multi-lang-example,lua\nlocal Node = import_namespace(\"ui\").Node\nlocal Val = import_namespace(\"ui\").Val\nlocal node = Node.new({ width = Val.px(100) })\nassert(node.width[1] == 100)\n```\n\n```multi-lang-example,rhai\nlet Node = import_namespace.call(\"ui\").Node;\nlet Val = import_namespace.call(\"ui\").Val;\nlet node = Node.new_.call(#{ width: Val.px.call(100.0) });\nassert(node.width[0] == 100.0);\n```",
+      "documentation": "A length in logical pixels, such as `Val.px(100)` for 100 pixels.\n\n```multi-lang-example,lua\nlocal Node = import_namespace(\"ui\").Node\nlocal Val = import_namespace(\"ui\").Val\nlocal node = Node.new({ width = Val.px(100) })\nassert(node.width[1] == 100)\n```\n\n```multi-lang-example,rune\nlet Node = import_namespace(\"ui\").Node;\nlet Val = import_namespace(\"ui\").Val;\nlet node = Node.new(#{ width: Val.px(100.0) });\nassert!(node.width[0] == 100.0);\n```",
       "metadata": {}
     },
     "bevy_ui::geometry::Val::vh": {
@@ -59454,7 +59416,7 @@
           "val": "bevy_ui::widget::text::Text"
         }
       },
-      "documentation": "Creates a new text component holding `text`.\n\n```multi-lang-example,lua\nlocal Text = import_namespace(\"text\").Text\nlocal text = Text.new(\"hi\")\nassert(text:as_str() == \"hi\")\n```\n\n```multi-lang-example,rhai\nlet Text = import_namespace.call(\"text\").Text;\nlet text = Text.new_.call(\"hi\");\nassert(text.as_str.call() == \"hi\");\n```",
+      "documentation": "Creates a new text component holding `text`.\n\n```multi-lang-example,lua\nlocal Text = import_namespace(\"text\").Text\nlocal text = Text.new(\"hi\")\nassert(text:as_str() == \"hi\")\n```\n\n```multi-lang-example,rune\nlet Text = import_namespace(\"text\").Text;\nlet text = Text.new(\"hi\");\nassert!(text.as_str() == \"hi\");\n```",
       "metadata": {}
     },
     "bevy_ui::widget::text::Text::set": {
@@ -61272,7 +61234,7 @@
           "val": "bevy_window::window::WindowResolution"
         }
       },
-      "documentation": "Creates a resolution from a size in physical pixels.\n\n```multi-lang-example,lua\nlocal WindowResolution = import_namespace(\"window\").WindowResolution\nlocal resolution = WindowResolution.new(800, 600)\nassert(resolution:width() == 800)\n```\n\n```multi-lang-example,rhai\nlet WindowResolution = import_namespace.call(\"window\").WindowResolution;\nlet resolution = WindowResolution.new_.call(800, 600);\nassert(resolution.width.call() == 800.0);\n```",
+      "documentation": "Creates a resolution from a size in physical pixels.\n\n```multi-lang-example,lua\nlocal WindowResolution = import_namespace(\"window\").WindowResolution\nlocal resolution = WindowResolution.new(800, 600)\nassert(resolution:width() == 800)\n```\n\n```multi-lang-example,rune\nlet WindowResolution = import_namespace(\"window\").WindowResolution;\nlet resolution = WindowResolution.new(800, 600);\nassert!(resolution.width() == 800.0);\n```",
       "metadata": {}
     },
     "bevy_window::window::WindowResolution::scale_factor": {
@@ -79195,7 +79157,7 @@
           "val": "glam::Vec2"
         }
       },
-      "documentation": "Creates a new vector.\n\n```multi-lang-example,lua\nlocal Vec2 = import_namespace(\"math\").Vec2\nlocal v = Vec2.new(3, 4)\nassert(v:length() == 5)\n```\n\n```multi-lang-example,rhai\nlet Vec2 = import_namespace.call(\"math\").Vec2;\nlet v = Vec2.new_.call(3.0, 4.0);\nassert(v.length.call() == 5.0);\n```",
+      "documentation": "Creates a new vector.\n\n```multi-lang-example,lua\nlocal Vec2 = import_namespace(\"math\").Vec2\nlocal v = Vec2.new(3, 4)\nassert(v:length() == 5)\n```\n\n```multi-lang-example,rune\nlet Vec2 = import_namespace(\"math\").Vec2;\nlet v = Vec2.new(3.0, 4.0);\nassert!(v.length() == 5.0);\n```",
       "metadata": {}
     },
     "glam::Vec2::normalize": {
@@ -80517,7 +80479,7 @@
           "val": "glam::Vec3"
         }
       },
-      "documentation": "Creates a new vector.\n\n```multi-lang-example,lua\nlocal Vec3 = import_namespace(\"math\").Vec3\nlocal v = Vec3.new(1, 2, 3)\nassert(v + v == Vec3.new(2, 4, 6))\n```\n\n```multi-lang-example,rhai\nlet Vec3 = import_namespace.call(\"math\").Vec3;\nlet v = Vec3.new_.call(1.0, 2.0, 3.0);\nassert(v + v == Vec3.new_.call(2.0, 4.0, 6.0));\n```",
+      "documentation": "Creates a new vector.\n\n```multi-lang-example,lua\nlocal Vec3 = import_namespace(\"math\").Vec3\nlocal v = Vec3.new(1, 2, 3)\nassert(v + v == Vec3.new(2, 4, 6))\n```\n\n```multi-lang-example,rune\nlet Vec3 = import_namespace(\"math\").Vec3;\nlet v = Vec3.new(1.0, 2.0, 3.0);\nassert!(v + v == Vec3.new(2.0, 4.0, 6.0));\n```",
       "metadata": {}
     },
     "glam::Vec3::normalize": {
@@ -82163,7 +82125,7 @@
           "val": "petgraph::graph::NodeIndex"
         }
       },
-      "documentation": "A node index from its number.\n\nScripts see this type as `NodeIndex`.\n\n```multi-lang-example,lua\nlocal NodeIndex = import_namespace(\"animation\").NodeIndex\nlocal node = NodeIndex.new(3)\nassert(node:index() == 3)\n```\n\n```multi-lang-example,rhai\nlet NodeIndex = import_namespace.call(\"animation\").NodeIndex;\nlet node = NodeIndex.new_.call(3);\nassert(node.index.call() == 3);\n```",
+      "documentation": "A node index from its number.\n\nScripts see this type as `NodeIndex`.\n\n```multi-lang-example,lua\nlocal NodeIndex = import_namespace(\"animation\").NodeIndex\nlocal node = NodeIndex.new(3)\nassert(node:index() == 3)\n```\n\n```multi-lang-example,rune\nlet NodeIndex = import_namespace(\"animation\").NodeIndex;\nlet node = NodeIndex.new(3);\nassert!(node.index() == 3);\n```",
       "metadata": {}
     },
     "smallvec::SmallVec<[bevy_ui::ui_node::GridTrack; 1]>::new": {

@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-c79c2edf.js";
+            window.path_to_searchindex_js = "../../searchindex-acf21d07.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-5cd6b6f5.js"></script>
+        <script src="../../toc-dc1f1982.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -200,58 +200,58 @@
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./vec3/distance_squared.html">distance_squared</a></td><td>The squared distance between two points.</td></tr>
-<tr><td><a href="./vec3/splat.html">splat</a></td><td>A vector with all components set to `v`.</td></tr>
-<tr><td><a href="./vec3/try_normalize.html">try_normalize</a></td><td>The vector scaled to a length of `1`, or nil if that’s not possible.</td></tr>
-<tr><td><a href="./vec3/as_ivec3.html">as_ivec3</a></td><td>Converts to an integer vector, rounding towards zero.</td></tr>
-<tr><td><a href="./vec3/sub.html">sub</a></td><td>Subtracts a vector or a number from every component.</td></tr>
-<tr><td><a href="./vec3/rem.html">rem</a></td><td>The component-wise remainder of dividing by a vector, or by a number.</td></tr>
-<tr><td><a href="./vec3/neg.html">neg</a></td><td>Negates every component.</td></tr>
+<tr><td><a href="./vec3/zero.html">zero</a></td><td>A vector with all components set to `0`.</td></tr>
+<tr><td><a href="./vec3/normalize_or_zero.html">normalize_or_zero</a></td><td>The vector scaled to a length of `1`, or zero if that’s not possible.</td></tr>
+<tr><td><a href="./vec3/eq.html">eq</a></td><td>Whether all components are equal.</td></tr>
+<tr><td><a href="./vec3/clamp_length_max.html">clamp_length_max</a></td><td>Scales the vector down so that its length is at most `max`.</td></tr>
 <tr><td><a href="./vec3/cross.html">cross</a></td><td>The cross product, perpendicular to both vectors.</td></tr>
-<tr><td><a href="./vec3/clamp_length.html">clamp_length</a></td><td>Scales the vector so that its length is between `min` and `max`.</td></tr>
-<tr><td><a href="./vec3/dot.html">dot</a></td><td>The dot product of two vectors.</td></tr>
+<tr><td><a href="./vec3/min.html">min</a></td><td>The smaller of each pair of components.</td></tr>
+<tr><td><a href="./vec3/reflect.html">reflect</a></td><td>Reflects this vector off a surface with the given `normal`, which must be of length `1`.</td></tr>
+<tr><td><a href="./vec3/unit_x.html">unit_x</a></td><td>The unit vector along the x axis.</td></tr>
+<tr><td><a href="./vec3/to_vec3a.html">to_vec3a</a></td><td>Converts to a [`Vec3A`](bevy_math::Vec3A), used by some bevy types such as bounding boxes.</td></tr>
+<tr><td><a href="./vec3/normalize.html">normalize</a></td><td>The vector scaled to a length of `1`. Errors if the vector is zero, or not finite.</td></tr>
 <tr><td><a href="./vec3/move_towards.html">move_towards</a></td><td>Moves towards `target` by at most `max_distance`, without overshooting.</td></tr>
+<tr><td><a href="./vec3/reject_from.html">reject_from</a></td><td>The part of this vector perpendicular to `other`.</td></tr>
+<tr><td><a href="./vec3/abs.html">abs</a></td><td>The absolute value of every component.</td></tr>
+<tr><td><a href="./vec3/dot.html">dot</a></td><td>The dot product of two vectors.</td></tr>
+<tr><td><a href="./vec3/round.html">round</a></td><td>Rounds every component to the nearest integer.</td></tr>
+<tr><td><a href="./vec3/splat.html">splat</a></td><td>A vector with all components set to `v`.</td></tr>
+<tr><td><a href="./vec3/clamp.html">clamp</a></td><td>Clamps every component between the components of `min` and `max`.</td></tr>
+<tr><td><a href="./vec3/unit_y.html">unit_y</a></td><td>The unit vector along the y axis, which is up in bevy.</td></tr>
 <tr><td><a href="./vec3/extend.html">extend</a></td><td>A [`Vec4`](bevy_math::Vec4) with the given `w`.</td></tr>
 <tr><td><a href="./vec3/any_orthogonal_vector.html">any_orthogonal_vector</a></td><td>Some vector perpendicular to this one.</td></tr>
-<tr><td><a href="./vec3/as_dvec3.html">as_dvec3</a></td><td>Converts to a double precision vector.</td></tr>
+<tr><td><a href="./vec3/min_element.html">min_element</a></td><td>The smallest component.</td></tr>
 <tr><td><a href="./vec3/floor.html">floor</a></td><td>Rounds every component down.</td></tr>
+<tr><td><a href="./vec3/signum.html">signum</a></td><td>The sign of every component: `1`, `-1`, or NaN.</td></tr>
+<tr><td><a href="./vec3/as_uvec3.html">as_uvec3</a></td><td>Converts to an unsigned integer vector, rounding towards zero, negative values become `0`.</td></tr>
+<tr><td><a href="./vec3/as_dvec3.html">as_dvec3</a></td><td>Converts to a double precision vector.</td></tr>
+<tr><td><a href="./vec3/try_normalize.html">try_normalize</a></td><td>The vector scaled to a length of `1`, or nil if that’s not possible.</td></tr>
+<tr><td><a href="./vec3/truncate.html">truncate</a></td><td>A [`Vec2`](bevy_math::Vec2) of the `x` and `y` components.</td></tr>
 <tr><td><a href="./vec3/length.html">length</a></td><td>The length of the vector.</td></tr>
-<tr><td><a href="./vec3/mul.html">mul</a></td><td>Multiplies component-wise by a vector, or scales by a number.</td></tr>
-<tr><td><a href="./vec3/round.html">round</a></td><td>Rounds every component to the nearest integer.</td></tr>
-<tr><td><a href="./vec3/add.html">add</a></td><td>Adds a vector or a number to every component.</td></tr>
-<tr><td><a href="./vec3/max_element.html">max_element</a></td><td>The largest component.</td></tr>
+<tr><td><a href="./vec3/ceil.html">ceil</a></td><td>Rounds every component up.</td></tr>
+<tr><td><a href="./vec3/div.html">div</a></td><td>Divides component-wise by a vector, or by a number.</td></tr>
+<tr><td><a href="./vec3/length_squared.html">length_squared</a></td><td>The squared length of the vector, faster than [`length`](Self::length) when comparing lengths.</td></tr>
+<tr><td><a href="./vec3/angle_between.html">angle_between</a></td><td>The angle in radians between two vectors, between `0` and `pi`.</td></tr>
+<tr><td><a href="./vec3/distance_squared.html">distance_squared</a></td><td>The squared distance between two points.</td></tr>
+<tr><td><a href="./vec3/new.html">new</a></td><td>Creates a new vector.  ```multi-lang-example,lua local Vec3 = import_namespace(“math”).Vec3 local v = Vec3.new(1, 2, 3) assert(v + v == Vec3.new(2, 4, 6)) ```  ```multi-lang-example,rune let Vec3 = import_...</td></tr>
 <tr><td><a href="./vec3/fract.html">fract</a></td><td>The fractional part of every component, i.e. `x - floor(x)`.</td></tr>
 <tr><td><a href="./vec3/to_array.html">to_array</a></td><td>The components as a list.</td></tr>
-<tr><td><a href="./vec3/unit_x.html">unit_x</a></td><td>The unit vector along the x axis.</td></tr>
-<tr><td><a href="./vec3/distance.html">distance</a></td><td>The distance between two points.</td></tr>
-<tr><td><a href="./vec3/min.html">min</a></td><td>The smaller of each pair of components.</td></tr>
-<tr><td><a href="./vec3/unit_y.html">unit_y</a></td><td>The unit vector along the y axis, which is up in bevy.</td></tr>
-<tr><td><a href="./vec3/div.html">div</a></td><td>Divides component-wise by a vector, or by a number.</td></tr>
-<tr><td><a href="./vec3/new.html">new</a></td><td>Creates a new vector.  ```multi-lang-example,lua local Vec3 = import_namespace(“math”).Vec3 local v = Vec3.new(1, 2, 3) assert(v + v == Vec3.new(2, 4, 6)) ```  ```multi-lang-example,rhai let Vec3 = import_...</td></tr>
-<tr><td><a href="./vec3/abs.html">abs</a></td><td>The absolute value of every component.</td></tr>
-<tr><td><a href="./vec3/unit_z.html">unit_z</a></td><td>The unit vector along the z axis.</td></tr>
-<tr><td><a href="./vec3/length_squared.html">length_squared</a></td><td>The squared length of the vector, faster than [`length`](Self::length) when comparing lengths.</td></tr>
-<tr><td><a href="./vec3/truncate.html">truncate</a></td><td>A [`Vec2`](bevy_math::Vec2) of the `x` and `y` components.</td></tr>
-<tr><td><a href="./vec3/normalize_or_zero.html">normalize_or_zero</a></td><td>The vector scaled to a length of `1`, or zero if that’s not possible.</td></tr>
-<tr><td><a href="./vec3/project_onto.html">project_onto</a></td><td>The projection of this vector onto `other`.</td></tr>
-<tr><td><a href="./vec3/rsub.html">rsub</a></td><td>Subtracts every component from a number, for `n - v`.</td></tr>
-<tr><td><a href="./vec3/signum.html">signum</a></td><td>The sign of every component: `1`, `-1`, or NaN.</td></tr>
-<tr><td><a href="./vec3/to_vec3a.html">to_vec3a</a></td><td>Converts to a [`Vec3A`](bevy_math::Vec3A), used by some bevy types such as bounding boxes.</td></tr>
-<tr><td><a href="./vec3/angle_between.html">angle_between</a></td><td>The angle in radians between two vectors, between `0` and `pi`.</td></tr>
-<tr><td><a href="./vec3/reject_from.html">reject_from</a></td><td>The part of this vector perpendicular to `other`.</td></tr>
-<tr><td><a href="./vec3/max.html">max</a></td><td>The larger of each pair of components.</td></tr>
-<tr><td><a href="./vec3/min_element.html">min_element</a></td><td>The smallest component.</td></tr>
-<tr><td><a href="./vec3/clamp_length_max.html">clamp_length_max</a></td><td>Scales the vector down so that its length is at most `max`.</td></tr>
-<tr><td><a href="./vec3/zero.html">zero</a></td><td>A vector with all components set to `0`.</td></tr>
-<tr><td><a href="./vec3/ceil.html">ceil</a></td><td>Rounds every component up.</td></tr>
-<tr><td><a href="./vec3/as_uvec3.html">as_uvec3</a></td><td>Converts to an unsigned integer vector, rounding towards zero, negative values become `0`.</td></tr>
-<tr><td><a href="./vec3/rdiv.html">rdiv</a></td><td>Divides a number by every component, for `n / v`.</td></tr>
-<tr><td><a href="./vec3/eq.html">eq</a></td><td>Whether all components are equal.</td></tr>
-<tr><td><a href="./vec3/clamp.html">clamp</a></td><td>Clamps every component between the components of `min` and `max`.</td></tr>
-<tr><td><a href="./vec3/reflect.html">reflect</a></td><td>Reflects this vector off a surface with the given `normal`, which must be of length `1`.</td></tr>
-<tr><td><a href="./vec3/normalize.html">normalize</a></td><td>The vector scaled to a length of `1`. Errors if the vector is zero, or not finite.</td></tr>
-<tr><td><a href="./vec3/lerp.html">lerp</a></td><td>Linearly interpolates towards `other`, `t = 0` gives this vector and `t = 1` gives `other`.</td></tr>
+<tr><td><a href="./vec3/max_element.html">max_element</a></td><td>The largest component.</td></tr>
+<tr><td><a href="./vec3/add.html">add</a></td><td>Adds a vector or a number to every component.</td></tr>
 <tr><td><a href="./vec3/one.html">one</a></td><td>A vector with all components set to `1`.</td></tr>
+<tr><td><a href="./vec3/neg.html">neg</a></td><td>Negates every component.</td></tr>
+<tr><td><a href="./vec3/as_ivec3.html">as_ivec3</a></td><td>Converts to an integer vector, rounding towards zero.</td></tr>
+<tr><td><a href="./vec3/rdiv.html">rdiv</a></td><td>Divides a number by every component, for `n / v`.</td></tr>
+<tr><td><a href="./vec3/mul.html">mul</a></td><td>Multiplies component-wise by a vector, or scales by a number.</td></tr>
+<tr><td><a href="./vec3/project_onto.html">project_onto</a></td><td>The projection of this vector onto `other`.</td></tr>
+<tr><td><a href="./vec3/rem.html">rem</a></td><td>The component-wise remainder of dividing by a vector, or by a number.</td></tr>
+<tr><td><a href="./vec3/max.html">max</a></td><td>The larger of each pair of components.</td></tr>
+<tr><td><a href="./vec3/unit_z.html">unit_z</a></td><td>The unit vector along the z axis.</td></tr>
+<tr><td><a href="./vec3/sub.html">sub</a></td><td>Subtracts a vector or a number from every component.</td></tr>
+<tr><td><a href="./vec3/distance.html">distance</a></td><td>The distance between two points.</td></tr>
+<tr><td><a href="./vec3/rsub.html">rsub</a></td><td>Subtracts every component from a number, for `n - v`.</td></tr>
+<tr><td><a href="./vec3/clamp_length.html">clamp_length</a></td><td>Scales the vector so that its length is between `min` and `max`.</td></tr>
+<tr><td><a href="./vec3/lerp.html">lerp</a></td><td>Linearly interpolates towards `other`, `t = 0` gives this vector and `t = 1` gives `other`.</td></tr>
 </tbody>
 </table>
 </div>
@@ -260,11 +260,11 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/vec2/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/vec2/normalize.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/vec3/distance_squared.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/vec3/zero.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -274,11 +274,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/vec2/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/vec2/normalize.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/vec3/distance_squared.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/vec3/zero.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -307,7 +307,7 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-5aaa0d2a.js"></script>
+        <script src="../../multi-code-block-2bf61ad4.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
         <script src="../../mermaid-init-ccf746f1.js"></script>
 

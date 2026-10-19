@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-c79c2edf.js";
+            window.path_to_searchindex_js = "../../searchindex-acf21d07.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-5cd6b6f5.js"></script>
+        <script src="../../toc-dc1f1982.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -201,31 +201,31 @@
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
+<tr><td><a href="./quat/xyz.html">xyz</a></td><td>The vector part of the quaternion, i.e. the x, y and z components.</td></tr>
+<tr><td><a href="./quat/from_mat3.html">from_mat3</a></td><td>The rotation described by a 3x3 rotation matrix.</td></tr>
+<tr><td><a href="./quat/length.html">length</a></td><td>The length of the quaternion, which is `1` for a rotation.</td></tr>
+<tr><td><a href="./quat/from_axis_angle.html">from_axis_angle</a></td><td>A rotation of `angle` radians around `axis`. Errors if the axis is zero or not finite.</td></tr>
+<tr><td><a href="./quat/from_rotation_z.html">from_rotation_z</a></td><td>A rotation of `angle` radians around the z axis.</td></tr>
+<tr><td><a href="./quat/eq.html">eq</a></td><td>Whether both rotations have exactly the same components.</td></tr>
+<tr><td><a href="./quat/to_euler.html">to_euler</a></td><td>The three angles in radians of this rotation, in the given [`EulerRot`](bevy_math::EulerRot) order.</td></tr>
+<tr><td><a href="./quat/identity.html">identity</a></td><td>The identity rotation, which leaves everything unchanged.</td></tr>
+<tr><td><a href="./quat/axis.html">axis</a></td><td>The axis this rotation turns around.</td></tr>
+<tr><td><a href="./quat/angle.html">angle</a></td><td>The angle in radians this rotation turns by around its [`axis`](Self::axis).</td></tr>
+<tr><td><a href="./quat/normalize.html">normalize</a></td><td>The rotation scaled to a length of `1`.</td></tr>
+<tr><td><a href="./quat/slerp.html">slerp</a></td><td>Spherically interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.</td></tr>
+<tr><td><a href="./quat/conjugate.html">conjugate</a></td><td>The rotation with the vector part negated, which is the inverse for unit quaternions.</td></tr>
+<tr><td><a href="./quat/mul_vec3.html">mul_vec3</a></td><td>Rotates a [`Vec3`](bevy_math::Vec3).</td></tr>
+<tr><td><a href="./quat/is_normalized.html">is_normalized</a></td><td>Whether the quaternion has a length of `1`.</td></tr>
 <tr><td><a href="./quat/inverse.html">inverse</a></td><td>The rotation that undoes this one.</td></tr>
-<tr><td><a href="./quat/dot.html">dot</a></td><td>The dot product of two rotations.</td></tr>
+<tr><td><a href="./quat/lerp.html">lerp</a></td><td>Linearly interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.</td></tr>
 <tr><td><a href="./quat/neg.html">neg</a></td><td>The opposite rotation, with every component negated.</td></tr>
 <tr><td><a href="./quat/from_rotation_x.html">from_rotation_x</a></td><td>A rotation of `angle` radians around the x axis.</td></tr>
-<tr><td><a href="./quat/is_normalized.html">is_normalized</a></td><td>Whether the quaternion has a length of `1`.</td></tr>
-<tr><td><a href="./quat/lerp.html">lerp</a></td><td>Linearly interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.</td></tr>
-<tr><td><a href="./quat/from_euler.html">from_euler</a></td><td>A rotation from three angles in radians, applied in the given [`EulerRot`](bevy_math::EulerRot) order, i.e. `EulerRot.YXZ`.</td></tr>
-<tr><td><a href="./quat/conjugate.html">conjugate</a></td><td>The rotation with the vector part negated, which is the inverse for unit quaternions.</td></tr>
-<tr><td><a href="./quat/slerp.html">slerp</a></td><td>Spherically interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.</td></tr>
-<tr><td><a href="./quat/angle.html">angle</a></td><td>The angle in radians this rotation turns by around its [`axis`](Self::axis).</td></tr>
-<tr><td><a href="./quat/to_euler.html">to_euler</a></td><td>The three angles in radians of this rotation, in the given [`EulerRot`](bevy_math::EulerRot) order.</td></tr>
-<tr><td><a href="./quat/from_rotation_y.html">from_rotation_y</a></td><td>A rotation of `angle` radians around the y axis.</td></tr>
-<tr><td><a href="./quat/from_rotation_z.html">from_rotation_z</a></td><td>A rotation of `angle` radians around the z axis.</td></tr>
+<tr><td><a href="./quat/dot.html">dot</a></td><td>The dot product of two rotations.</td></tr>
 <tr><td><a href="./quat/angle_between.html">angle_between</a></td><td>The angle in radians between two rotations.</td></tr>
-<tr><td><a href="./quat/from_mat3.html">from_mat3</a></td><td>The rotation described by a 3x3 rotation matrix.</td></tr>
-<tr><td><a href="./quat/xyz.html">xyz</a></td><td>The vector part of the quaternion, i.e. the x, y and z components.</td></tr>
-<tr><td><a href="./quat/length.html">length</a></td><td>The length of the quaternion, which is `1` for a rotation.</td></tr>
-<tr><td><a href="./quat/from_rotation_arc.html">from_rotation_arc</a></td><td>The rotation that turns the direction `from` onto the direction `to`. Errors if either vector is zer...</td></tr>
-<tr><td><a href="./quat/eq.html">eq</a></td><td>Whether both rotations have exactly the same components.</td></tr>
-<tr><td><a href="./quat/axis.html">axis</a></td><td>The axis this rotation turns around.</td></tr>
-<tr><td><a href="./quat/normalize.html">normalize</a></td><td>The rotation scaled to a length of `1`.</td></tr>
-<tr><td><a href="./quat/from_axis_angle.html">from_axis_angle</a></td><td>A rotation of `angle` radians around `axis`. Errors if the axis is zero or not finite.</td></tr>
+<tr><td><a href="./quat/from_rotation_y.html">from_rotation_y</a></td><td>A rotation of `angle` radians around the y axis.</td></tr>
 <tr><td><a href="./quat/mul.html">mul</a></td><td>Composes two rotations when given a rotation, or rotates a vector when given a [`Vec3`](bevy_math::Vec3).</td></tr>
-<tr><td><a href="./quat/identity.html">identity</a></td><td>The identity rotation, which leaves everything unchanged.</td></tr>
-<tr><td><a href="./quat/mul_vec3.html">mul_vec3</a></td><td>Rotates a [`Vec3`](bevy_math::Vec3).</td></tr>
+<tr><td><a href="./quat/from_rotation_arc.html">from_rotation_arc</a></td><td>The rotation that turns the direction `from` onto the direction `to`. Errors if either vector is zer...</td></tr>
+<tr><td><a href="./quat/from_euler.html">from_euler</a></td><td>A rotation from three angles in radians, applied in the given [`EulerRot`](bevy_math::EulerRot) order, i.e. `EulerRot.YXZ`.</td></tr>
 <tr><td><a href="./quat/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -239,7 +239,7 @@
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/quat/inverse.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/quat/xyz.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -253,7 +253,7 @@
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/quat/inverse.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/quat/xyz.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -282,7 +282,7 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-5aaa0d2a.js"></script>
+        <script src="../../multi-code-block-2bf61ad4.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
         <script src="../../mermaid-init-ccf746f1.js"></script>
 

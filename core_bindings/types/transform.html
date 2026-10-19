@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-c79c2edf.js";
+            window.path_to_searchindex_js = "../../searchindex-acf21d07.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-5cd6b6f5.js"></script>
+        <script src="../../toc-dc1f1982.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -222,45 +222,45 @@ before the [<code>GlobalTransform</code>] is updated.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./transform/rotate_local_x.html">rotate_local_x</a></td><td>Rotates this transform by `angle` radians around its local x axis.</td></tr>
-<tr><td><a href="./transform/rotate_y.html">rotate_y</a></td><td>Rotates this transform by `angle` radians around the y axis.</td></tr>
-<tr><td><a href="./transform/forward.html">forward</a></td><td>The direction the transform faces, `-z` in local space.</td></tr>
-<tr><td><a href="./transform/rotate_axis.html">rotate_axis</a></td><td>Rotates this transform by `angle` radians around `axis`. Errors if the axis is zero.</td></tr>
 <tr><td><a href="./transform/down.html">down</a></td><td>The local down direction, `-y`.</td></tr>
-<tr><td><a href="./transform/translate_around.html">translate_around</a></td><td>Moves this transform around `point` by `rotation`, without changing its rotation.</td></tr>
-<tr><td><a href="./transform/to_matrix.html">to_matrix</a></td><td>The matrix equivalent to this transform.</td></tr>
+<tr><td><a href="./transform/identity.html">identity</a></td><td>The transform with no translation, no rotation and a scale of `1`.</td></tr>
 <tr><td><a href="./transform/with_scale.html">with_scale</a></td><td>A copy of this transform with a new scale.</td></tr>
 <tr><td><a href="./transform/with_rotation.html">with_rotation</a></td><td>A copy of this transform with a new rotation.</td></tr>
-<tr><td><a href="./transform/right.html">right</a></td><td>The direction to the local right, `+x` in local space.</td></tr>
-<tr><td><a href="./transform/rotate_local_z.html">rotate_local_z</a></td><td>Rotates this transform by `angle` radians around its local z axis.</td></tr>
-<tr><td><a href="./transform/eq.html">eq</a></td><td>Whether both transforms have exactly the same components.</td></tr>
-<tr><td><a href="./transform/from_scale.html">from_scale</a></td><td>A transform with the given scale.</td></tr>
-<tr><td><a href="./transform/rotate_local.html">rotate_local</a></td><td>Rotates this transform by `rotation`, in its own local space.</td></tr>
-<tr><td><a href="./transform/mul_transform.html">mul_transform</a></td><td>Composes this transform with `other`, applying `other` first.</td></tr>
-<tr><td><a href="./transform/left.html">left</a></td><td>The direction to the local left, `-x` in local space.</td></tr>
-<tr><td><a href="./transform/looking_at.html">looking_at</a></td><td>A copy of this transform rotated to face `target`, with `up` as the up direction. Errors if `up` is ...</td></tr>
-<tr><td><a href="./transform/identity.html">identity</a></td><td>The transform with no translation, no rotation and a scale of `1`.</td></tr>
-<tr><td><a href="./transform/rotate.html">rotate</a></td><td>Rotates this transform by `rotation`, in the parent’s space.</td></tr>
-<tr><td><a href="./transform/look_at.html">look_at</a></td><td>Rotates this transform to face `target`, with `up` as the up direction. Errors if `up` is zero.</td></tr>
-<tr><td><a href="./transform/from_translation.html">from_translation</a></td><td>A transform at the given position.</td></tr>
-<tr><td><a href="./transform/from_rotation.html">from_rotation</a></td><td>A transform with the given rotation.</td></tr>
-<tr><td><a href="./transform/from_xyz.html">from_xyz</a></td><td>A transform at the position `x`, `y`, `z`.  ```multi-lang-example,lua local Transform = import_namespace(“transform”).Transform local t = Transform.from_xyz(1, 2, 3) assert(t.translation.x == 1) `...</td></tr>
-<tr><td><a href="./transform/rotate_x.html">rotate_x</a></td><td>Rotates this transform by `angle` radians around the x axis.</td></tr>
-<tr><td><a href="./transform/rotate_local_y.html">rotate_local_y</a></td><td>Rotates this transform by `angle` radians around its local y axis.</td></tr>
-<tr><td><a href="./transform/from_matrix.html">from_matrix</a></td><td>The transform described by a 4x4 matrix.</td></tr>
-<tr><td><a href="./transform/with_translation.html">with_translation</a></td><td>A copy of this transform with a new position.</td></tr>
-<tr><td><a href="./transform/rotate_around.html">rotate_around</a></td><td>Rotates this transform by `rotation` around `point`, moving it along the circle.</td></tr>
-<tr><td><a href="./transform/up.html">up</a></td><td>The local up direction, `+y`.</td></tr>
-<tr><td><a href="./transform/look_to.html">look_to</a></td><td>Rotates this transform to face along `direction`, with `up` as the up direction. Errors if either ve...</td></tr>
-<tr><td><a href="./transform/looking_to.html">looking_to</a></td><td>A copy of this transform rotated to face along `direction`, with `up` as the up direction. Errors if...</td></tr>
 <tr><td><a href="./transform/rotate_z.html">rotate_z</a></td><td>Rotates this transform by `angle` radians around the z axis.</td></tr>
+<tr><td><a href="./transform/eq.html">eq</a></td><td>Whether both transforms have exactly the same components.</td></tr>
+<tr><td><a href="./transform/looking_at.html">looking_at</a></td><td>A copy of this transform rotated to face `target`, with `up` as the up direction. Errors if `up` is ...</td></tr>
+<tr><td><a href="./transform/translate_around.html">translate_around</a></td><td>Moves this transform around `point` by `rotation`, without changing its rotation.</td></tr>
+<tr><td><a href="./transform/look_to.html">look_to</a></td><td>Rotates this transform to face along `direction`, with `up` as the up direction. Errors if either ve...</td></tr>
+<tr><td><a href="./transform/rotate_local_y.html">rotate_local_y</a></td><td>Rotates this transform by `angle` radians around its local y axis.</td></tr>
+<tr><td><a href="./transform/rotate_local_z.html">rotate_local_z</a></td><td>Rotates this transform by `angle` radians around its local z axis.</td></tr>
+<tr><td><a href="./transform/with_translation.html">with_translation</a></td><td>A copy of this transform with a new position.</td></tr>
+<tr><td><a href="./transform/from_scale.html">from_scale</a></td><td>A transform with the given scale.</td></tr>
 <tr><td><a href="./transform/back.html">back</a></td><td>The direction opposite to [`forward`](Self::forward), `+z` in local space.</td></tr>
-<tr><td><a href="./transform/local_x.html">local_x</a></td><td>The local x axis, as a direction.</td></tr>
-<tr><td><a href="./transform/local_z.html">local_z</a></td><td>The local z axis, as a direction.</td></tr>
-<tr><td><a href="./transform/is_finite.html">is_finite</a></td><td>Whether every component is a finite number.</td></tr>
-<tr><td><a href="./transform/mul.html">mul</a></td><td>Composes two transforms when given a transform, or transforms a point when given a [`Vec3`](bevy_math::Vec3).</td></tr>
-<tr><td><a href="./transform/transform_point.html">transform_point</a></td><td>Applies the transform to a point: scales, rotates, then translates it.</td></tr>
+<tr><td><a href="./transform/up.html">up</a></td><td>The local up direction, `+y`.</td></tr>
 <tr><td><a href="./transform/local_y.html">local_y</a></td><td>The local y axis, as a direction.</td></tr>
+<tr><td><a href="./transform/rotate_local.html">rotate_local</a></td><td>Rotates this transform by `rotation`, in its own local space.</td></tr>
+<tr><td><a href="./transform/rotate_y.html">rotate_y</a></td><td>Rotates this transform by `angle` radians around the y axis.</td></tr>
+<tr><td><a href="./transform/mul_transform.html">mul_transform</a></td><td>Composes this transform with `other`, applying `other` first.</td></tr>
+<tr><td><a href="./transform/right.html">right</a></td><td>The direction to the local right, `+x` in local space.</td></tr>
+<tr><td><a href="./transform/transform_point.html">transform_point</a></td><td>Applies the transform to a point: scales, rotates, then translates it.</td></tr>
+<tr><td><a href="./transform/local_z.html">local_z</a></td><td>The local z axis, as a direction.</td></tr>
+<tr><td><a href="./transform/looking_to.html">looking_to</a></td><td>A copy of this transform rotated to face along `direction`, with `up` as the up direction. Errors if...</td></tr>
+<tr><td><a href="./transform/from_matrix.html">from_matrix</a></td><td>The transform described by a 4x4 matrix.</td></tr>
+<tr><td><a href="./transform/look_at.html">look_at</a></td><td>Rotates this transform to face `target`, with `up` as the up direction. Errors if `up` is zero.</td></tr>
+<tr><td><a href="./transform/rotate_axis.html">rotate_axis</a></td><td>Rotates this transform by `angle` radians around `axis`. Errors if the axis is zero.</td></tr>
+<tr><td><a href="./transform/from_rotation.html">from_rotation</a></td><td>A transform with the given rotation.</td></tr>
+<tr><td><a href="./transform/is_finite.html">is_finite</a></td><td>Whether every component is a finite number.</td></tr>
+<tr><td><a href="./transform/local_x.html">local_x</a></td><td>The local x axis, as a direction.</td></tr>
+<tr><td><a href="./transform/mul.html">mul</a></td><td>Composes two transforms when given a transform, or transforms a point when given a [`Vec3`](bevy_math::Vec3).</td></tr>
+<tr><td><a href="./transform/from_translation.html">from_translation</a></td><td>A transform at the given position.</td></tr>
+<tr><td><a href="./transform/rotate.html">rotate</a></td><td>Rotates this transform by `rotation`, in the parent’s space.</td></tr>
+<tr><td><a href="./transform/rotate_x.html">rotate_x</a></td><td>Rotates this transform by `angle` radians around the x axis.</td></tr>
+<tr><td><a href="./transform/rotate_around.html">rotate_around</a></td><td>Rotates this transform by `rotation` around `point`, moving it along the circle.</td></tr>
+<tr><td><a href="./transform/left.html">left</a></td><td>The direction to the local left, `-x` in local space.</td></tr>
+<tr><td><a href="./transform/rotate_local_x.html">rotate_local_x</a></td><td>Rotates this transform by `angle` radians around its local x axis.</td></tr>
+<tr><td><a href="./transform/to_matrix.html">to_matrix</a></td><td>The matrix equivalent to this transform.</td></tr>
+<tr><td><a href="./transform/from_xyz.html">from_xyz</a></td><td>A transform at the position `x`, `y`, `z`.  ```multi-lang-example,lua local Transform = import_namespace(“transform”).Transform local t = Transform.from_xyz(1, 2, 3) assert(t.translation.x == 1) `...</td></tr>
+<tr><td><a href="./transform/forward.html">forward</a></td><td>The direction the transform faces, `-z` in local space.</td></tr>
 <tr><td><a href="./transform/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -274,7 +274,7 @@ before the [<code>GlobalTransform</code>] is updated.</p>
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/transform/rotate_local_x.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/transform/down.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -288,7 +288,7 @@ before the [<code>GlobalTransform</code>] is updated.</p>
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/transform/rotate_local_x.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/transform/down.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -317,7 +317,7 @@ before the [<code>GlobalTransform</code>] is updated.</p>
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-5aaa0d2a.js"></script>
+        <script src="../../multi-code-block-2bf61ad4.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
         <script src="../../mermaid-init-ccf746f1.js"></script>
 

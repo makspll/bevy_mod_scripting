@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-c79c2edf.js";
+            window.path_to_searchindex_js = "../searchindex-acf21d07.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5cd6b6f5.js"></script>
+        <script src="../toc-dc1f1982.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -204,14 +204,16 @@ local remaining_health = bms.run_script_callback("take_damage", enemy_script, 10
 -- runs `on_hit()` in every script once this callback is done
 bms.queue_script_callback("on_hit", Recipients.all_scripts())
 </code></pre>
-<pre><code class="language-rhai">let bms = import_namespace.call("bms");
-let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
-let Recipients = import_namespace.call("bms").Recipients;
-let enemy_script = ScriptAttachment.new_entity_script.call(enemy, bms.current_script.call());
+<pre><code class="language-rune">let bms = import_namespace("bms");
+let ScriptAttachment = bms.ScriptAttachment;
+let Recipients = bms.Recipients;
+let enemy_script = ScriptAttachment.new_entity_script(enemy, bms.current_script());
 
-let remaining_health = bms.run_script_callback.call("take_damage", enemy_script, 10, "fire");
+// runs `take_damage(10, "fire")` in the enemy's script right away
+let remaining_health = bms.run_script_callback("take_damage", enemy_script, 10, "fire");
 
-bms.queue_script_callback.call("on_hit", Recipients.all_scripts.call());
+// runs `on_hit()` in every script once this callback is done
+bms.queue_script_callback("on_hit", Recipients.all_scripts());
 </code></pre>
 <h2 id="targets"><a class="header" href="#targets">Targets</a></h2>
 <p>The target is either a single script:</p>
@@ -320,7 +322,7 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-5aaa0d2a.js"></script>
+        <script src="../multi-code-block-2bf61ad4.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
         <script src="../mermaid-init-ccf746f1.js"></script>
 

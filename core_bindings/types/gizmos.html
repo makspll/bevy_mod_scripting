@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-c79c2edf.js";
+            window.path_to_searchindex_js = "../../searchindex-acf21d07.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-5cd6b6f5.js"></script>
+        <script src="../../toc-dc1f1982.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -193,10 +193,10 @@ local Gizmos = import_namespace("gizmos").Gizmos
 local Vec3 = import_namespace("math").Vec3
 Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())
 </code></pre>
-<pre><code class="language-multi-lang-example rhai ignore">let Color = import_namespace.call("color").Color;
-let Gizmos = import_namespace.call("gizmos").Gizmos;
-let Vec3 = import_namespace.call("math").Vec3;
-Gizmos.line.call(Vec3.zero.call(), Vec3.new_.call(1.0, 0.0, 0.0), Color.white.call());
+<pre><code class="language-multi-lang-example rune ignore">let Color = import_namespace("color").Color;
+let Gizmos = import_namespace("gizmos").Gizmos;
+let Vec3 = import_namespace("math").Vec3;
+Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());
 </code></pre>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
@@ -207,22 +207,22 @@ Gizmos.line.call(Vec3.zero.call(), Vec3.new_.call(1.0, 0.0, 0.0), Color.white.ca
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./gizmos/line_2d.html">line_2d</a></td><td>Draws a line between two points in 2D.</td></tr>
-<tr><td><a href="./gizmos/ray.html">ray</a></td><td>Draws a line from the origin along the vector.</td></tr>
-<tr><td><a href="./gizmos/linestrip_2d.html">linestrip_2d</a></td><td>Draws connected lines through the points in 2D, in order.</td></tr>
 <tr><td><a href="./gizmos/ray_2d.html">ray_2d</a></td><td>Draws a line from the origin along the vector in 2D.</td></tr>
+<tr><td><a href="./gizmos/rect_2d.html">rect_2d</a></td><td>Draws a rectangle of the given size centred on the position in 2D.</td></tr>
+<tr><td><a href="./gizmos/arrow.html">arrow</a></td><td>Draws an arrow from the start to the end point.</td></tr>
+<tr><td><a href="./gizmos/circle_2d.html">circle_2d</a></td><td>Draws a circle around the position in 2D.</td></tr>
+<tr><td><a href="./gizmos/line_2d.html">line_2d</a></td><td>Draws a line between two points in 2D.</td></tr>
+<tr><td><a href="./gizmos/linestrip_2d.html">linestrip_2d</a></td><td>Draws connected lines through the points in 2D, in order.</td></tr>
+<tr><td><a href="./gizmos/arrow_2d.html">arrow_2d</a></td><td>Draws an arrow from the start to the end point in 2D.</td></tr>
+<tr><td><a href="./gizmos/cross.html">cross</a></td><td>Draws a cross of the given half size along the three axes, centred on the position.</td></tr>
+<tr><td><a href="./gizmos/rect.html">rect</a></td><td>Draws a rectangle of the given size centred on the position, lying in the XY plane.</td></tr>
+<tr><td><a href="./gizmos/cuboid.html">cuboid</a></td><td>Draws a unit cube, with the transform applied to it.</td></tr>
+<tr><td><a href="./gizmos/ray.html">ray</a></td><td>Draws a line from the origin along the vector.</td></tr>
+<tr><td><a href="./gizmos/axes.html">axes</a></td><td>Draws the red, green and blue axes of the transform, scaled by the length.</td></tr>
 <tr><td><a href="./gizmos/line.html">line</a></td><td>Draws a line between two points.</td></tr>
 <tr><td><a href="./gizmos/linestrip.html">linestrip</a></td><td>Draws connected lines through the points, in order.</td></tr>
 <tr><td><a href="./gizmos/circle.html">circle</a></td><td>Draws a circle around the position, lying in the XY plane so it faces +Z.</td></tr>
-<tr><td><a href="./gizmos/arrow_2d.html">arrow_2d</a></td><td>Draws an arrow from the start to the end point in 2D.</td></tr>
-<tr><td><a href="./gizmos/cross.html">cross</a></td><td>Draws a cross of the given half size along the three axes, centred on the position.</td></tr>
-<tr><td><a href="./gizmos/cuboid.html">cuboid</a></td><td>Draws a unit cube, with the transform applied to it.</td></tr>
-<tr><td><a href="./gizmos/rect_2d.html">rect_2d</a></td><td>Draws a rectangle of the given size centred on the position in 2D.</td></tr>
-<tr><td><a href="./gizmos/circle_2d.html">circle_2d</a></td><td>Draws a circle around the position in 2D.</td></tr>
 <tr><td><a href="./gizmos/sphere.html">sphere</a></td><td>Draws a wireframe sphere around the position.</td></tr>
-<tr><td><a href="./gizmos/arrow.html">arrow</a></td><td>Draws an arrow from the start to the end point.</td></tr>
-<tr><td><a href="./gizmos/rect.html">rect</a></td><td>Draws a rectangle of the given size centred on the position, lying in the XY plane.</td></tr>
-<tr><td><a href="./gizmos/axes.html">axes</a></td><td>Draws the red, green and blue axes of the transform, scaled by the length.</td></tr>
 <tr><td><a href="./gizmos/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -236,7 +236,7 @@ Gizmos.line.call(Vec3.zero.call(), Vec3.new_.call(1.0, 0.0, 0.0), Color.white.ca
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/gizmos/line_2d.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/gizmos/ray_2d.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -250,7 +250,7 @@ Gizmos.line.call(Vec3.zero.call(), Vec3.new_.call(1.0, 0.0, 0.0), Color.white.ca
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/gizmos/line_2d.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/gizmos/ray_2d.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -279,7 +279,7 @@ Gizmos.line.call(Vec3.zero.call(), Vec3.new_.call(1.0, 0.0, 0.0), Color.white.ca
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-5aaa0d2a.js"></script>
+        <script src="../../multi-code-block-2bf61ad4.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
         <script src="../../mermaid-init-ccf746f1.js"></script>
 

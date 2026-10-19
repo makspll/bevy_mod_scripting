@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-c79c2edf.js";
+            window.path_to_searchindex_js = "../searchindex-acf21d07.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5cd6b6f5.js"></script>
+        <script src="../toc-dc1f1982.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -228,10 +228,10 @@ local v = Vec3.new(1, 2, 3)
 assert(v.x == 1)
 ```
 
-```multi-lang-example,rhai
-let Vec3 = import_namespace.call("math").Vec3;
-let v = Vec3.new_.call(1.0, 2.0, 3.0);
-assert(v.x == 1.0);
+```multi-lang-example,rune
+let Vec3 = import_namespace("math").Vec3;
+let v = Vec3.new(1, 2, 3);
+assert!(v.x == 1.0);
 ```
 </code></pre>
 <p>which renders as a single block with a tab per language:</p>
@@ -239,21 +239,21 @@ assert(v.x == 1.0);
 local v = Vec3.new(1, 2, 3)
 assert(v.x == 1)
 </code></pre>
-<pre><code class="language-multi-lang-example rhai">let Vec3 = import_namespace.call("math").Vec3;
-let v = Vec3.new_.call(1.0, 2.0, 3.0);
-assert(v.x == 1.0);
+<pre><code class="language-multi-lang-example rune">let Vec3 = import_namespace("math").Vec3;
+let v = Vec3.new(1, 2, 3);
+assert!(v.x == 1.0);
 </code></pre>
 <p>Examples are tests: they must run as written and check their own results with <code>assert</code>.
 Every <code>multi-lang-example</code> block in the doc comments under <code>crates/</code> and in the book is run by the <code>doc_example_tests</code> test, with the scenario in <code>assets/doc_examples/default.bmsscenario</code> (the same app as the <a href="#tests">script tests</a>):</p>
-<pre><code class="language-bash">cargo test --test doc_example_tests --features lua54,rhai,bevy_math_bindings -- math
+<pre><code class="language-bash">cargo test --test doc_example_tests --features lua54,rune,bevy_math_bindings -- math
 </code></pre>
 <p>Examples of a bindings crate whose feature is disabled are ignored.
 If an example needs a different setup, i.e. a window, name a scenario with the <code>scenario</code> attribute, i.e. <code>multi-lang-example,lua,scenario=window</code>, which refers to <code>assets/doc_examples/window.bmsscenario</code>.
 Mark examples which can’t run in a test app with <code>ignore</code>, i.e. <code>multi-lang-example,lua,ignore</code>, and say what they need in the surrounding docs.</p>
 <h2 id="tests"><a class="header" href="#tests">Tests</a></h2>
-<p>Each bindings crate has its script tests under <code>assets/tests/bindings/&lt;category&gt;/</code>, with a Lua and a Rhai script per type or topic, i.e. <code>assets/tests/bindings/math/vec3.lua</code> and <code>assets/tests/bindings/math/vec3.rhai</code>.
+<p>Each bindings crate has its script tests under <code>assets/tests/bindings/&lt;category&gt;/</code>, with a script per language per type or topic, i.e. <code>assets/tests/bindings/math/vec.lua</code> and <code>assets/tests/bindings/math/vec.rn</code>.
 Run them with:</p>
-<pre><code class="language-bash">cargo test --test script_tests --features lua54,rhai -- bindings/math
+<pre><code class="language-bash">cargo test --test script_tests --features lua54,rune -- bindings/math
 </code></pre>
 
                     </main>
@@ -307,7 +307,7 @@ Run them with:</p>
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-5aaa0d2a.js"></script>
+        <script src="../multi-code-block-2bf61ad4.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
         <script src="../mermaid-init-ccf746f1.js"></script>
 
