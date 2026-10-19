@@ -1,0 +1,53 @@
+fn error_of(f) {
+    match catch(f) {
+        Err(message) => message,
+        Ok(_) => {
+            assert!(false, "expected an error");
+            ""
+        }
+    }
+}
+
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+
+    // namespaces must be passed, and be script namespaces
+    let err = error_of(|| world.register_new_component("game", "Enemy"));
+    assert!(err.contains("must start with `script.`"), "{}", err);
+    assert!(error_of(|| world.register_new_component("bevy_transform", "Enemy")).contains("script."));
+    assert!(error_of(|| world.register_new_event("game", "Hit")).contains("script."));
+
+    // the same name can be used in different namespaces
+    let ai_enemy = world.register_new_component("script.game.ai", "Enemy");
+    let ui_enemy = world.register_new_component("script.game.ui", "Enemy");
+    assert!(ai_enemy.namespace() == "script.game.ai");
+    assert!(ui_enemy.namespace() == "script.game.ui");
+
+    // but not twice in the same one, which the error says
+    let dup = error_of(|| world.register_new_component("script.game.ai", "Enemy"));
+    assert!(dup.contains("script.game.ai.Enemy") && dup.contains("allow_existing"), "{}", dup);
+
+    // they can be imported. Names which were registered by this very callback can only be reached with
+    // `ai["Enemy"]`, `ai.Enemy` needs the name to be known when the callback started
+    let ai = import_namespace("script.game.ai");
+    assert!(ai["Enemy"] != (), "registered components are importable");
+    let entity = world.spawn();
+    world.add_default_component(entity, ai["Enemy"]);
+    assert!(world.has_component(entity, ai_enemy));
+    assert!(!world.has_component(entity, ui_enemy));
+
+    // events are namespaced and importable too
+    world.register_new_event("script.game.ai", "Hit");
+    world.register_new_event("script.game.ui", "Hit");
+    assert!(import_namespace("script.game.ai")["Hit"] != (), "registered events are importable");
+
+    // a namespace with only events exists
+    world.register_new_event("script.game.events_only", "Tick");
+    assert!(import_namespace("script.game.events_only")["Tick"] != ());
+
+    // events, components and exports share paths, so they cannot collide
+    let clash = error_of(|| world.register_new_event("script.game.ai", "Enemy"));
+    assert!(clash.contains("already exists"), "{}", clash);
+    let clash2 = error_of(|| world.register_new_component("script.game.ai", "Hit"));
+    assert!(clash2.contains("already exists"), "{}", clash2);
+}

@@ -1,0 +1,5 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    assert!(world.get_type_by_name("TestComponent") == (), "Short names should not resolve");
+    assert!(world.get_type_by_name("test_utils::test_data::TestComponent") != (), "Full path should resolve");
+}

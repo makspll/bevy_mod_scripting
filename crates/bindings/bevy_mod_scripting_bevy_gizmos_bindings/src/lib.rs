@@ -29,11 +29,11 @@ use bevy_transform::components::Transform;
 /// Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())
 /// ```
 ///
-/// ```multi-lang-example,rhai,ignore
-/// let Color = import_namespace.call("color").Color;
-/// let Gizmos = import_namespace.call("gizmos").Gizmos;
-/// let Vec3 = import_namespace.call("math").Vec3;
-/// Gizmos.line.call(Vec3.zero.call(), Vec3.new_.call(1.0, 0.0, 0.0), Color.white.call());
+/// ```multi-lang-example,rune,ignore
+/// let Color = import_namespace("color").Color;
+/// let Gizmos = import_namespace("gizmos").Gizmos;
+/// let Vec3 = import_namespace("math").Vec3;
+/// Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());
 /// ```
 #[derive(Reflect, Default)]
 pub struct Gizmos;

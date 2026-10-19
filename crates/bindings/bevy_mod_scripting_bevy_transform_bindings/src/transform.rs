@@ -36,10 +36,10 @@ impl Transform {
     /// assert(t.translation.x == 1)
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Transform = import_namespace.call("transform").Transform;
-    /// let t = Transform.from_xyz.call(1.0, 2.0, 3.0);
-    /// assert(t.translation.x == 1.0);
+    /// ```multi-lang-example,rune
+    /// let Transform = import_namespace("transform").Transform;
+    /// let t = Transform.from_xyz(1.0, 2.0, 3.0);
+    /// assert!(t.translation.x == 1.0);
     /// ```
     fn from_xyz(x: f32, y: f32, z: f32) -> V<Transform> {
         V(Transform::from_xyz(x, y, z))

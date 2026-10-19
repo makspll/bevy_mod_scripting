@@ -1,0 +1,31 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let ScriptAsset = import_namespace("bms").ScriptAsset;
+    let TestAsset = import_namespace("test_utils").TestAsset;
+
+    // this script is loaded before it runs, so loading its own path gives back the loaded asset
+    let handle = ScriptAsset.load("tests/bindings/asset/typed_assets.rn");
+    assert!(world.is_loaded(handle), "the script asset of this test is loaded");
+
+    let script = ScriptAsset.get_asset(handle);
+    assert!(script != (), "get_asset returns the loaded script asset");
+
+    // assets which aren't loaded yet are nil
+    let missing = ScriptAsset.load("tests/bindings/asset/does_not_exist.rn");
+    assert!(ScriptAsset.get_asset(missing) == (), "get_asset returns nil for an asset which isn't loaded");
+
+    // added assets can be read and changed through their handle
+    let added = TestAsset.add_asset(TestAsset.new(#{ value: 7, name: "added" }));
+    let asset = TestAsset.get_asset(added);
+    assert!(asset.value == 7, "the added asset has its value, got: {}", asset.value);
+    assert!(asset.name == "added", "the added asset has its name");
+
+    asset.value = 8;
+    assert!(TestAsset.get_asset(added).value == 8, "changes to the returned asset change the asset");
+
+    // values must be of the asset type
+    match catch(|| TestAsset.add_asset(ScriptAsset.get_asset(handle))) {
+        Err(message) => assert!(message.contains("not of the asset type"), "expected a type error, got: {}", message),
+        Ok(_) => assert!(false, "expected a type error"),
+    }
+}

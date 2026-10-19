@@ -148,7 +148,6 @@ mod test {
                 "mdbook_lad_preprocessor".to_owned(),
                 "bevy_mod_scripting_core".to_owned(),
                 "bevy_math_bms_bindings".to_owned(),
-                "bevy_mod_scripting_rhai".to_owned(),
                 "bevy_reflect_bms_bindings".to_owned(),
                 "bevy_input_bms_bindings".to_owned(),
                 "bevy_color_bms_bindings".to_owned(),

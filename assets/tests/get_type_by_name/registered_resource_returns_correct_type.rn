@@ -1,0 +1,15 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let type = world.get_type_by_name("test_utils::test_data::TestResource");
+
+    assert!(type != (), "Type not found");
+    let type_name = type.type_name();
+    let short_name = type.short_name();
+    assert!(type_name == "test_utils::test_data::TestResource",
+        "type_name mismatch, expected: test_utils::test_data::TestResource, got: {}", type_name);
+    assert!(short_name == "TestResource", "short_name mismatch, expected: TestResource, got: {}", short_name);
+
+    // check contains ScriptResourceRegistration
+    let type_ref = type.display();
+    assert!(type_ref.contains("ScriptResourceRegistration"), "ScriptResourceRegistration not found in type_ref. got: {}", type_ref);
+}

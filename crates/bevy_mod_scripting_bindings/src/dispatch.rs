@@ -4,7 +4,7 @@
 //! and `__add` calls [`binary`] with [`ScriptOperatorNames::Addition`]. This keeps the lookup rules the same in every language.
 //!
 //! What stays with the language is how a method gets its receiver: [`index`] returns [`Member::Method`] for functions called on the value,
-//! which Lua passes with its colon syntax (`v:length()`), and Rhai binds with [`DynamicScriptFunction::curry`] (`v.length.call()`).
+//! which Lua passes with its colon syntax (`v:length()`).
 
 use std::{any::TypeId, borrow::Cow};
 

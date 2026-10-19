@@ -1,0 +1,37 @@
+fn visibility_of(world, visibility_type, value) {
+    let entity = world.spawn();
+    world.insert_component(entity, visibility_type, value);
+    world.get_component(entity, visibility_type)
+}
+
+pub fn main() {
+    let world = import_namespace("bms").world;
+
+    // toggles change the value stored on an entity, so store the visibility as a component first
+    let Vec3 = import_namespace("math").Vec3;
+    let Visibility = import_namespace("camera").Visibility;
+    let visibility_type = world.get_type_by_name("bevy_camera::visibility::Visibility");
+
+    // toggling inherited and visible keeps hidden entities hidden
+    let visibility = visibility_of(world, visibility_type, Visibility.Inherited);
+    visibility.toggle_inherited_visible();
+    assert!(visibility == Visibility.Visible, "inherited toggles to visible");
+    visibility.toggle_inherited_visible();
+    assert!(visibility == Visibility.Inherited, "visible toggles back to inherited");
+    let hidden = visibility_of(world, visibility_type, Visibility.Hidden);
+    hidden.toggle_inherited_visible();
+    assert!(hidden == Visibility.Hidden, "hidden stays hidden");
+
+    // toggling visible and hidden keeps inherited entities inherited
+    let shown = visibility_of(world, visibility_type, Visibility.Visible);
+    shown.toggle_visible_hidden();
+    assert!(shown == Visibility.Hidden, "visible toggles to hidden");
+    shown.toggle_visible_hidden();
+    assert!(shown == Visibility.Visible, "hidden toggles to visible");
+    let inherited = visibility_of(world, visibility_type, Visibility.Inherited);
+    inherited.toggle_visible_hidden();
+    assert!(inherited == Visibility.Inherited, "inherited stays inherited");
+
+    // values of the wrong type are an error, not a crash
+    assert!(catch(|| world.insert_component(world.spawn(), visibility_type, Vec3.zero())).is_err(), "wrong type errors");
+}

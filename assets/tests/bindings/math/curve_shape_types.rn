@@ -1,0 +1,6 @@
+pub fn main() {
+    // the types of the crates of the math bindings are all in the namespace, including the ones without functions
+    let math_namespace = import_namespace("math");
+    assert!(math_namespace.JumpAt != (), "the jump of the step easing function is in the namespace");
+    assert!(math_namespace.EaseFunction != (), "the easing function is in the namespace");
+}

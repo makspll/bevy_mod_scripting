@@ -19,15 +19,17 @@ local remaining_health = bms.run_script_callback("take_damage", enemy_script, 10
 bms.queue_script_callback("on_hit", Recipients.all_scripts())
 ```
 
-```rhai
-let bms = import_namespace.call("bms");
-let ScriptAttachment = import_namespace.call("bms").ScriptAttachment;
-let Recipients = import_namespace.call("bms").Recipients;
-let enemy_script = ScriptAttachment.new_entity_script.call(enemy, bms.current_script.call());
+```rune
+let bms = import_namespace("bms");
+let ScriptAttachment = bms.ScriptAttachment;
+let Recipients = bms.Recipients;
+let enemy_script = ScriptAttachment.new_entity_script(enemy, bms.current_script());
 
-let remaining_health = bms.run_script_callback.call("take_damage", enemy_script, 10, "fire");
+// runs `take_damage(10, "fire")` in the enemy's script right away
+let remaining_health = bms.run_script_callback("take_damage", enemy_script, 10, "fire");
 
-bms.queue_script_callback.call("on_hit", Recipients.all_scripts.call());
+// runs `on_hit()` in every script once this callback is done
+bms.queue_script_callback("on_hit", Recipients.all_scripts());
 ```
 
 ## Targets

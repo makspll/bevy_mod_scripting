@@ -5,13 +5,17 @@ edition = "2024"
 publish = false
 
 [features]
-default = ["lua", "rhai"]
+default = ["lua"]
 lua = [
     "bevy_mod_scripting_lua",
     "bevy_mod_scripting_functions/lua_bindings",
     "bevy_mod_scripting_lua/lua54",
 ]
-rhai = ["bevy_mod_scripting_rhai", "bevy_mod_scripting_functions/rhai_bindings"]
+rune = [
+    "bevy_mod_scripting_rune",
+    "bevy_mod_scripting_functions/rune_bindings",
+    "test_utils/rune",
+]
 
 [dependencies]
 bevy_asset = { workspace = true }
@@ -29,7 +33,7 @@ bevy_mod_scripting_display = { workspace = true }
 regex = { workspace = true }
 pretty_assertions = { workspace = true }
 bevy_mod_scripting_lua = { workspace = true, optional = true }
-bevy_mod_scripting_rhai = { workspace = true, optional = true }
+bevy_mod_scripting_rune = { workspace = true, optional = true }
 criterion = { workspace = true }
 rand = { workspace = true }
 rand_chacha = { workspace = true }

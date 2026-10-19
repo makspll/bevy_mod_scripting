@@ -1,0 +1,117 @@
+// the math helpers Lua gets from its standard library are the `math` module in Rune, which has no `PI` or trigonometry of its own
+fn approx(a, b) {
+    (a - b).abs() < 0.0001
+}
+
+fn approx_vec3(a, b) {
+    approx(a.x, b.x) && approx(a.y, b.y) && approx(a.z, b.z)
+}
+
+// `catch` is `pcall`, a function which errors is `catch(..).is_err()`
+fn errors(f) {
+    catch(f).is_err()
+}
+
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let Mat4 = import_namespace("math").Mat4;
+    let Quat = import_namespace("math").Quat;
+    let Transform = import_namespace("transform").Transform;
+    let Vec3 = import_namespace("math").Vec3;
+    let PI = math::PI;
+
+    // constructors
+    let t = Transform.identity();
+    assert!(approx_vec3(t.translation, Vec3.zero()), "identity translation");
+    assert!(t.rotation == Quat.identity(), "identity rotation");
+    assert!(approx_vec3(t.scale, Vec3.one()), "identity scale");
+    assert!(t == Transform.identity(), "identity is equal to identity");
+
+    let xyz = Transform.from_xyz(1, 2, 3);
+    assert!(approx_vec3(xyz.translation, Vec3.new(1, 2, 3)), "from_xyz");
+    assert!(approx_vec3(Transform.from_translation(Vec3.new(1, 2, 3)).translation, Vec3.new(1, 2, 3)), "from_translation");
+    assert!(Transform.from_rotation(Quat.from_rotation_y(PI / 2.0)).rotation == Quat.from_rotation_y(PI / 2.0), "from_rotation");
+    assert!(approx_vec3(Transform.from_scale(Vec3.new(2, 2, 2)).scale, Vec3.new(2, 2, 2)), "from_scale");
+    let from_matrix = Transform.from_matrix(Mat4.from_translation(Vec3.new(1, 2, 3)));
+    assert!(approx_vec3(from_matrix.translation, Vec3.new(1, 2, 3)), "from_matrix");
+
+    // builders return new transforms and leave the original alone
+    let moved = xyz.with_translation(Vec3.new(4, 5, 6));
+    assert!(approx_vec3(moved.translation, Vec3.new(4, 5, 6)), "with_translation");
+    assert!(approx_vec3(xyz.translation, Vec3.new(1, 2, 3)), "with_translation keeps the original");
+    let rotated = xyz.with_rotation(Quat.from_rotation_y(PI / 2.0));
+    assert!(approx_vec3(rotated.forward(), Vec3.new(-1, 0, 0)), "with_rotation");
+    assert!(approx_vec3(xyz.with_scale(Vec3.new(3, 3, 3)).scale, Vec3.new(3, 3, 3)), "with_scale");
+
+    let looking = Transform.from_xyz(0, 0, 0).looking_at(Vec3.new(0, 0, -5), Vec3.unit_y());
+    assert!(approx_vec3(looking.forward(), Vec3.new(0, 0, -1)), "looking_at");
+    let looking_to = Transform.from_xyz(0, 0, 0).looking_to(Vec3.new(1, 0, 0), Vec3.unit_y());
+    assert!(approx_vec3(looking_to.forward(), Vec3.new(1, 0, 0)), "looking_to");
+    assert!(errors(|| Transform.identity().looking_at(Vec3.new(0, 0, -5), Vec3.zero())), "looking_at errors on a zero up direction");
+    assert!(errors(|| Transform.identity().looking_to(Vec3.zero(), Vec3.unit_y())), "looking_to errors on a zero direction");
+
+    // in-place rotations
+    let r = Transform.identity();
+    r.rotate(Quat.from_rotation_y(PI / 2.0));
+    assert!(approx_vec3(r.forward(), Vec3.new(-1, 0, 0)), "rotate");
+
+    r = Transform.identity();
+    r.rotate_x(PI / 2.0);
+    assert!(approx_vec3(r.up(), Vec3.new(0, 0, 1)), "rotate_x");
+
+    r = Transform.identity();
+    r.rotate_axis(Vec3.unit_x(), PI / 2.0);
+    assert!(approx_vec3(r.forward(), Vec3.new(0, 1, 0)), "rotate_axis");
+    assert!(errors(|| r.rotate_axis(Vec3.zero(), 1.0)), "rotate_axis errors on a zero axis");
+
+    // local rotations apply after the current rotation, world rotations before it
+    r = Transform.from_rotation(Quat.from_rotation_y(PI / 2.0));
+    r.rotate_local_x(PI / 2.0);
+    assert!(approx_vec3(r.forward(), Vec3.new(0, 1, 0)), "rotate_local_x");
+
+    // rotations around a point move the translation
+    r = Transform.from_xyz(1, 0, 0);
+    r.rotate_around(Vec3.zero(), Quat.from_rotation_y(PI / 2.0));
+    assert!(approx_vec3(r.translation, Vec3.new(0, 0, -1)), "rotate_around moves the translation");
+    assert!(approx_vec3(r.forward(), Vec3.new(-1, 0, 0)), "rotate_around rotates");
+
+    // in-place looking
+    r = Transform.from_xyz(0, 0, 0);
+    r.look_at(Vec3.new(1, 0, 0), Vec3.unit_y());
+    assert!(approx_vec3(r.forward(), Vec3.new(1, 0, 0)), "look_at");
+    assert!(errors(|| r.look_at(Vec3.new(1, 0, 0), Vec3.zero())), "look_at errors on a zero up direction");
+
+    // directions of the identity transform
+    let id = Transform.identity();
+    assert!(approx_vec3(id.forward(), Vec3.new(0, 0, -1)), "forward");
+    assert!(approx_vec3(id.up(), Vec3.new(0, 1, 0)), "up");
+    assert!(approx_vec3(id.local_x(), Vec3.unit_x()), "local_x");
+
+    // points and composition, `*` is the multiplication protocol with the transform on the left, the other side is a function call
+    let a = Transform.from_translation(Vec3.new(1, 0, 0)).with_scale(Vec3.new(2, 2, 2));
+    assert!(approx_vec3(a.transform_point(Vec3.new(1, 0, 0)), Vec3.new(3, 0, 0)), "transform_point scales then translates");
+    assert!(approx_vec3(a * Vec3.new(1, 0, 0), Vec3.new(3, 0, 0)), "mul by a point transforms it");
+
+    let b = Transform.from_translation(Vec3.new(0, 2, 0));
+    assert!(approx_vec3((Transform.from_translation(Vec3.new(1, 0, 0)) * b).translation, Vec3.new(1, 2, 0)), "mul composes");
+
+    // equality and finiteness
+    assert!(Transform.from_xyz(0, 0, 0).eq(Transform.identity()), "eq");
+    assert!(!xyz.eq(Transform.identity()), "eq is false for different transforms");
+    assert!(Transform.identity().is_finite(), "is_finite");
+    assert!(!Transform.from_xyz(f64::NAN, 0, 0).is_finite(), "NaN is not finite");
+
+    // components referenced from the world: changes made through a reference persist
+    let transform_type = world.get_type_by_name("bevy_transform::components::transform::Transform");
+    let entity = world.spawn();
+    world.insert_component(entity, transform_type, Transform.from_xyz(1, 2, 3));
+
+    let reference = world.get_component(entity, transform_type);
+    reference.rotate_y(1.0);
+    reference.translation.x = 5.0;
+
+    let fetched = world.get_component(entity, transform_type);
+    assert!(approx(fetched.translation.x, 5.0), "a field change persists");
+    assert!(approx(fetched.translation.y, 2.0), "other fields are unchanged");
+    assert!(approx_vec3(fetched.forward(), Vec3.new(-math::sin(1.0), 0, -math::cos(1.0))), "a rotation persists");
+}

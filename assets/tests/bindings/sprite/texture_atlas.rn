@@ -1,0 +1,7 @@
+pub fn main() {
+    // a grid of 4 columns and 2 rows has 8 tiles
+    let TextureAtlasLayout = import_namespace("sprite").TextureAtlasLayout;
+    let UVec2 = import_namespace("math").UVec2;
+    let layout = TextureAtlasLayout.from_grid(UVec2.new(16, 16), 4, 2, (), ());
+    assert!(layout.len() == 8, "from_grid");
+}

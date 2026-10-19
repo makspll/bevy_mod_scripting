@@ -1,0 +1,15 @@
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+    let DynamicComponent = import_namespace("bms").DynamicComponent;
+    let NewComponent = world.register_new_component("script.test", "ScriptComponentA");
+
+    let new_entity = world.spawn();
+    world.insert_component(new_entity, NewComponent, DynamicComponent.new(#{ data: "Hello World" }));
+
+    let component_instance = world.get_component(new_entity, NewComponent);
+    assert!(component_instance.data == "Hello World", "unexpected value: {}", component_instance.data);
+
+    component_instance.data = #{ foo: "bar" };
+
+    assert!(component_instance.data.foo == "bar", "unexpected value: {}", component_instance.data.foo);
+}

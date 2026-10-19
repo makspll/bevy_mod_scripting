@@ -1,0 +1,14 @@
+pub fn on_test() {
+    let bms = import_namespace("bms");
+
+    // a tuple returned by a function is a tuple, where Lua returns many values. (`let (a, b) = ..` is a refutable pattern in Rune, which warns)
+    let unpacked = bms.unpack_args([1, 2]);
+    let unpacked_a = unpacked.0;
+    let unpacked_b = unpacked.1;
+
+    // variadic functions take any number of arguments (a raw function in Rune)
+    let packed = bms.pack_args(1, 2);
+
+    assert!(packed[0] == unpacked_a, "Expected packed[0] to be: {} Got: {}", unpacked_a, packed[0]);
+    assert!(packed[1] == unpacked_b, "Expected packed[1] to be: {} Got: {}", unpacked_b, packed[1]);
+}

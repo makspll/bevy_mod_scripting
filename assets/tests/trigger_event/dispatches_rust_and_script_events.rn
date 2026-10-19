@@ -1,0 +1,33 @@
+pub fn main() {
+    state()["calls"] = 0;
+}
+
+pub fn on_hit(payload) {
+    let calls = state()["calls"] + 1;
+    state()["calls"] = calls;
+    if calls == 1 {
+        state()["first_payload"] = payload;
+    }
+}
+
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+    // script events take any payload, or none
+    let Hit = world.register_new_event("script.test", "TriggerEventHit");
+    world.add_observer(Hit, "on_hit");
+    world.trigger_event(Hit, 5);
+    world.trigger_event(Hit);
+
+    // rust events need a value
+    let AddEvent = import_namespace("ecs").AddEvent;
+    match catch(|| world.trigger_event(AddEvent)) {
+        Err(message) => assert!(message.contains("needs an event value"), "{}", message),
+        Ok(_) => assert!(false, "expected an error"),
+    }
+}
+
+pub fn on_test_post_update() {
+    let calls = state()["calls"];
+    assert!(calls == 2, "both triggers should reach the observer, got {}", calls);
+    assert!(state()["first_payload"] == 5, "payload should arrive");
+}

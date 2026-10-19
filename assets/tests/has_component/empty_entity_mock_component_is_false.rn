@@ -1,0 +1,7 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let entity = world.spawn();
+    let type = world._get_mock_component_type();
+
+    assert!(world.has_component(entity, type) == false, "Entity should not have component");
+}

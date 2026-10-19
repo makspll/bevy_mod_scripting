@@ -61,8 +61,6 @@ The generated Lua language server files mark exactly these fields as optional, s
 A function with the same name registered on the type itself always takes priority, i.e. `Vec3.new(x, y, z)` is the `Vec3` constructor from the math bindings, not the shared one.
 For such types use [`bms.construct`](#bmsconstruct), which works for every type.
 
-In Rhai `new` is a reserved word, and is available as `new_`, as for all other functions named like a keyword.
-
 The name of the function is configurable via the `ConstructorsPlugin`:
 
 ```rust,ignore

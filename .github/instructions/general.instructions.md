@@ -15,7 +15,7 @@ applyTo: **
 
 ### Language Implementations
 - **bevy_mod_scripting_lua** - Lua language implementation
-- **bevy_mod_scripting_rhai** - Rhai language implementation
+- **bevy_mod_scripting_rune** - Rune language implementation
 
 ### Binding Crates
 - Multiple **bevy_*_bms_bindings** crates (e.g., transform, asset, pbr, etc.) that provide specific Bevy module bindings
@@ -32,7 +32,7 @@ applyTo: **
 2. **Flexible Bindings** - Attach bindings to any Reflect-implementing types
 3. **Dynamic Systems** - Create ECS systems from scripts that run in parallel
 4. **Component Creation** - Register and use components from scripts
-5. **Multiple Language Support** - Currently supports Lua and Rhai
+5. **Multiple Language Support** - Currently supports Lua
 
 
 ## Xtask Commands

@@ -1,0 +1,14 @@
+pub fn main() {
+    // anchors are offsets of a sprite's size from its center
+    let Anchor = import_namespace("sprite").Anchor;
+    let Vec2 = import_namespace("math").Vec2;
+    assert!(Anchor.center().as_vec() == Vec2.new(0, 0), "center");
+    assert!(Anchor.center_left().as_vec() == Vec2.new(-0.5, 0), "center_left");
+    assert!(Anchor.center_right().as_vec() == Vec2.new(0.5, 0), "center_right");
+    assert!(Anchor.bottom_left().as_vec() == Vec2.new(-0.5, -0.5), "bottom_left");
+    assert!(Anchor.bottom_center().as_vec() == Vec2.new(0, -0.5), "bottom_center");
+    assert!(Anchor.bottom_right().as_vec() == Vec2.new(0.5, -0.5), "bottom_right");
+    assert!(Anchor.top_left().as_vec() == Vec2.new(-0.5, 0.5), "top_left");
+    assert!(Anchor.top_center().as_vec() == Vec2.new(0, 0.5), "top_center");
+    assert!(Anchor.top_right().as_vec() == Vec2.new(0.5, 0.5), "top_right");
+}

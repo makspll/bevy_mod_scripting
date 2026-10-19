@@ -1,0 +1,5 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    assert!(world.get_schedule_by_name("Update") != (), "Schedule not found under short identifier");
+    assert!(world.get_schedule_by_name("bevy_app::main_schedule::Update") != (), "Schedule not found under long identifier");
+}

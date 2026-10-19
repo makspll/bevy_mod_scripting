@@ -51,10 +51,10 @@ local v = Vec3.new(1, 2, 3)
 assert(v.x == 1)
 ```
 
-```multi-lang-example,rhai
-let Vec3 = import_namespace.call("math").Vec3;
-let v = Vec3.new_.call(1.0, 2.0, 3.0);
-assert(v.x == 1.0);
+```multi-lang-example,rune
+let Vec3 = import_namespace("math").Vec3;
+let v = Vec3.new(1, 2, 3);
+assert!(v.x == 1.0);
 ```
 ````
 
@@ -66,17 +66,17 @@ local v = Vec3.new(1, 2, 3)
 assert(v.x == 1)
 ```
 
-```multi-lang-example,rhai
-let Vec3 = import_namespace.call("math").Vec3;
-let v = Vec3.new_.call(1.0, 2.0, 3.0);
-assert(v.x == 1.0);
+```multi-lang-example,rune
+let Vec3 = import_namespace("math").Vec3;
+let v = Vec3.new(1, 2, 3);
+assert!(v.x == 1.0);
 ```
 
 Examples are tests: they must run as written and check their own results with `assert`.
 Every `multi-lang-example` block in the doc comments under `crates/` and in the book is run by the `doc_example_tests` test, with the scenario in `assets/doc_examples/default.bmsscenario` (the same app as the [script tests](#tests)):
 
 ```bash
-cargo test --test doc_example_tests --features lua54,rhai,bevy_math_bindings -- math
+cargo test --test doc_example_tests --features lua54,rune,bevy_math_bindings -- math
 ```
 
 Examples of a bindings crate whose feature is disabled are ignored.
@@ -85,9 +85,9 @@ Mark examples which can't run in a test app with `ignore`, i.e. `multi-lang-exam
 
 ## Tests
 
-Each bindings crate has its script tests under `assets/tests/bindings/<category>/`, with a Lua and a Rhai script per type or topic, i.e. `assets/tests/bindings/math/vec3.lua` and `assets/tests/bindings/math/vec3.rhai`.
+Each bindings crate has its script tests under `assets/tests/bindings/<category>/`, with a script per language per type or topic, i.e. `assets/tests/bindings/math/vec.lua` and `assets/tests/bindings/math/vec.rn`.
 Run them with:
 
 ```bash
-cargo test --test script_tests --features lua54,rhai -- bindings/math
+cargo test --test script_tests --features lua54,rune -- bindings/math
 ```

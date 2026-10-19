@@ -1,0 +1,44 @@
+fn types(world) {
+    #{
+        world: world,
+        with_default: world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData"),
+        with_from_world: world.get_type_by_name("test_utils::test_data::CompWithFromWorldAndComponentData"),
+        tuple_struct: world.get_type_by_name("test_utils::test_data::SimpleTupleStruct"),
+        simple_enum: world.get_type_by_name("test_utils::test_data::SimpleEnum"),
+    }
+}
+
+// spawns 100 entities with random components, once
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let test_utils = import_namespace("test_utils");
+    let t = types(world);
+    let components = [t.with_default, t.with_from_world, t.tuple_struct, t.simple_enum];
+
+    test_utils.reseed();
+
+    for i in 0..100 {
+        let entity = world.spawn();
+        let left_to_pick = [0, 1, 2, 3];
+        for j in 0..3 {
+            let index = test_utils.random_int(1, left_to_pick.len()) - 1;
+            let component = components[left_to_pick.remove(index)];
+            world.add_default_component(entity, component);
+        }
+    }
+}
+
+pub fn pre_bench() {
+    let world = import_namespace("bms").world;
+    types(world)
+}
+
+pub fn bench(t) {
+    for result in t.world.query()
+        .component(t.with_from_world)
+        .component(t.tuple_struct)
+        .with(t.simple_enum)
+        .without(t.with_default)
+        .build() {
+    }
+}

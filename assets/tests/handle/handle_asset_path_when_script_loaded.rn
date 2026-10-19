@@ -1,0 +1,19 @@
+fn normalize_path(path) {
+    path.replace("\\", "/")
+}
+
+pub fn main() {
+    let bms = import_namespace("bms");
+    let expected_asset_path = "tests/handle/handle_asset_path_when_script_loaded.rn";
+    let normalized_gotten_asset_path = normalize_path(bms.current_script().asset_path());
+    assert!(normalized_gotten_asset_path == expected_asset_path,
+        "Expected script asset path to match, got: {}", normalized_gotten_asset_path);
+}
+
+pub fn on_test() {
+    let bms = import_namespace("bms");
+    let expected_asset_path = "tests/handle/handle_asset_path_when_script_loaded.rn";
+    let normalized_gotten_asset_path = normalize_path(bms.current_script().asset_path());
+    assert!(normalized_gotten_asset_path == expected_asset_path,
+        "Expected script asset path to match, got: {}", normalized_gotten_asset_path);
+}

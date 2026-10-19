@@ -1,0 +1,46 @@
+// `catch` takes the place of `pcall`: it runs the closure, returning `Ok(value)` or `Err(message)`.
+fn error_of(f) {
+    match catch(f) {
+        Err(message) => message,
+        Ok(_) => {
+            assert!(false, "expected an error");
+            ""
+        }
+    }
+}
+
+pub fn on_test() {
+    let transform = import_namespace("transform");
+    assert!(transform.Transform != (), "Transform should be in transform");
+    assert!(transform.Transform.namespace() == "transform");
+    // other categories' types are not in it. `catch` also turns a missing member into an error
+    assert!(catch(|| transform.Entity).is_err());
+
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    assert!(bms.ScriptAttachment != ());
+
+    // imported types are the same ones as looked up by name
+    assert!(transform.Transform.type_name() == world.get_type_by_name("bevy_transform::components::transform::Transform").type_name());
+
+    // imported types give access to their static functions and enum variants
+    assert!(transform.Transform.from_xyz(1, 2, 3).translation.y == 2.0);
+    let SimpleEnum = import_namespace("test_utils").SimpleEnum;
+    assert!(SimpleEnum.Unit != (), "variants are reachable");
+
+    // and work wherever a type is expected
+    let entity = world.spawn();
+    world.add_default_component(entity, transform.Transform);
+    assert!(world.has_component(entity, transform.Transform));
+
+    // missing namespaces say so, with hints
+    let typo = error_of(|| import_namespace("transfrom"));
+    assert!(typo.contains("namespace \"transfrom\" does not exist"), "{}", typo);
+    assert!(typo.contains("Did you mean") && typo.contains("transform"), "{}", typo);
+    assert!(typo.contains("registered in the type registry"), "{}", typo);
+
+    // script namespaces get their own hint
+    let script = error_of(|| import_namespace("script.game.ai"));
+    assert!(script.contains("namespace \"script.game.ai\" does not exist"), "{}", script);
+    assert!(script.contains("loaded script"), "{}", script);
+}

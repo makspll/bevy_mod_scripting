@@ -1,0 +1,19 @@
+// AnimationPlayer without any animations playing
+pub fn main() {
+    let AnimationPlayer = import_namespace("animation").AnimationPlayer;
+    let NodeIndex = import_namespace("animation").NodeIndex;
+    let player = AnimationPlayer.new(#{});
+    let node = NodeIndex.new(0);
+    assert!(!player.is_playing_animation(node), "nothing is playing in a new player");
+    assert!(player.all_finished(), "a player with no animations is finished");
+    assert!(player.all_paused(), "a player with no animations is paused");
+    assert!(player.animation_is_finished(node) == (), "a stopped animation has no finished state");
+    assert!(catch(|| player.set_speed(node, 2.0)).is_err(), "set_speed errors when not playing");
+    assert!(catch(|| player.seek_to(node, 1.0)).is_err(), "seek_to errors when not playing");
+    assert!(catch(|| player.set_repeat_forever(node)).is_err(), "set_repeat_forever errors when not playing");
+    player.stop(node);
+    player.stop_all();
+    player.pause_all();
+    player.resume_all();
+    assert!(!player.is_playing_animation(node), "still nothing is playing");
+}

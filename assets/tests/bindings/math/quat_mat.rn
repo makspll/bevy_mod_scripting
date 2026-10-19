@@ -1,0 +1,69 @@
+fn approx(a, b) {
+    (a - b).abs() < 0.0001
+}
+
+fn approx_vec3(a, b) {
+    approx(a.x, b.x) && approx(a.y, b.y) && approx(a.z, b.z)
+}
+
+pub fn main() {
+    let EulerRot = import_namespace("math").EulerRot;
+    let IVec2 = import_namespace("math").IVec2;
+    let Mat3 = import_namespace("math").Mat3;
+    let Mat4 = import_namespace("math").Mat4;
+    let Quat = import_namespace("math").Quat;
+    let UVec3 = import_namespace("math").UVec3;
+    let Vec2 = import_namespace("math").Vec2;
+    let Vec3 = import_namespace("math").Vec3;
+    let PI = math::PI;
+
+    // quaternions
+    let q = Quat.from_rotation_y(PI / 2.0);
+    assert!(approx_vec3(q * Vec3.unit_x(), Vec3.new(0, 0, -1)), "rotate a vector");
+    assert!(approx_vec3(q.mul_vec3(Vec3.unit_x()), Vec3.new(0, 0, -1)), "mul_vec3");
+    assert!(approx_vec3((q * q) * Vec3.unit_x(), Vec3.new(-1, 0, 0)), "compose rotations");
+    assert!(approx_vec3((q * q.inverse()) * Vec3.unit_x(), Vec3.unit_x()), "inverse");
+    assert!(Quat.identity() * Vec3.unit_x() == Vec3.unit_x(), "identity");
+    assert!(approx(q.angle(), PI / 2.0), "angle");
+    assert!(approx_vec3(q.axis(), Vec3.unit_y()), "axis");
+    assert!(approx(Quat.identity().angle_between(q), PI / 2.0), "angle_between");
+    assert!(approx_vec3(Quat.from_axis_angle(Vec3.new(0, 2, 0), PI / 2.0) * Vec3.unit_x(), Vec3.new(0, 0, -1)),
+        "from_axis_angle normalizes the axis");
+
+    // enum variants can be passed directly where a value is expected
+    let euler = Quat.from_euler(EulerRot.YXZ, PI / 2.0, 0, 0);
+    assert!(approx_vec3(euler * Vec3.unit_x(), Vec3.new(0, 0, -1)), "from_euler");
+    let angles = euler.to_euler(EulerRot.YXZ);
+    assert!(approx(angles[0], PI / 2.0), "to_euler");
+
+    let half = Quat.identity().slerp(q, 0.5);
+    assert!(approx(half.angle(), PI / 4.0), "slerp");
+
+    // matrices
+    let m = Mat3.from_cols(Vec3.new(1, 0, 0), Vec3.new(0, 2, 0), Vec3.new(0, 0, 3));
+    assert!(m * Vec3.one() == Vec3.new(1, 2, 3), "mat3 * vec3");
+    assert!(m.determinant() == 6.0, "determinant");
+    assert!(m.transpose() == m, "transpose");
+    assert!(m * m.inverse() == Mat3.identity(), "inverse");
+    assert!(m.col(1) == Vec3.new(0, 2, 0), "col");
+    assert!(m + m == m * 2, "mat3 + mat3");
+    assert!(m - m == m * 0, "mat3 - mat3");
+    assert!(m / 2 == m * 0.5, "mat3 / number");
+    assert!(Mat4.identity() / 2 == Mat4.identity() * 0.5, "mat4 / number");
+    // a matrix and a vector have different shapes, so adding them is an error rather than a guess
+    assert!(catch(|| m + Vec3.one()).is_err(), "mat3 + vec3 errors");
+
+    let t = Mat4.from_translation(Vec3.new(1, 2, 3));
+    assert!(t.transform_point3(Vec3.zero()) == Vec3.new(1, 2, 3), "transform_point3");
+    assert!(t.transform_vector3(Vec3.unit_x()) == Vec3.unit_x(), "transform_vector3 ignores translation");
+    let srt = Mat4.from_scale_rotation_translation(Vec3.one(), Quat.identity(), Vec3.new(1, 2, 3));
+    assert!(srt == t, "from_scale_rotation_translation");
+
+    // integer vectors
+    let i = IVec2.new(3, -4);
+    assert!(i + 1 == IVec2.new(4, -3), "ivec add");
+    assert!(i.abs() == IVec2.new(3, 4), "ivec abs");
+    assert!(i.as_vec2() == Vec2.new(3, -4), "ivec as_vec2");
+    assert!(catch(|| i / 0).is_err(), "division by zero errors");
+    assert!(UVec3.new(1, 2, 3).dot(UVec3.one()) == 6, "uvec dot");
+}

@@ -1,0 +1,15 @@
+pub fn main() {
+    // a camera without a render target has no viewport
+    let Camera = import_namespace("camera").Camera;
+    let OrthographicProjection = import_namespace("camera").OrthographicProjection;
+    let camera = Camera.new(#{});
+    assert!(camera.logical_viewport_size() == (), "logical size is nil without a target");
+    assert!(camera.logical_viewport_rect() == (), "logical rect is nil without a target");
+    assert!(camera.physical_viewport_size() == (), "physical size is nil without a target");
+
+    // projections
+    let projection_2d = OrthographicProjection.default_2d();
+    assert!(projection_2d.scale == 1.0, "2d projection scale");
+    let projection_3d = OrthographicProjection.default_3d();
+    assert!(projection_3d.scale == 1.0, "3d projection scale");
+}

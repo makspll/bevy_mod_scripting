@@ -1,0 +1,74 @@
+// the values are kept in the script's state, which is replace only
+fn push_state(key, value) {
+    let list = state()[key];
+    list.push(value);
+    state()[key] = list;
+}
+
+// add two systems, one before and one after the existing `on_test_post_update` callback, then assert all systems have run
+// in the `on_test_last` callback
+
+// runs on `Update`
+pub fn on_test() {
+    let bms = import_namespace("bms");
+    let ScriptAttachment = bms.ScriptAttachment;
+    let world = bms.world;
+    state()["runs"] = [];
+
+    let post_update_schedule = world.get_schedule_by_name("PostUpdate");
+
+    let test_system = post_update_schedule.get_system_by_name("on_test_post_update");
+    let script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script());
+
+    let system_after = world.add_system(
+        post_update_schedule,
+        bms.system_builder("custom_system_after", script_attachment).after(test_system)
+    );
+
+    let system_before = world.add_system(
+        post_update_schedule,
+        bms.system_builder("custom_system_before", script_attachment).before(test_system)
+    );
+
+    let script_system_between = world.add_system(
+        post_update_schedule,
+        bms.system_builder("custom_system_between", script_attachment).after(test_system).before(system_after)
+    );
+
+    world._assert_system_runs_before(post_update_schedule, "custom_system_before", "on_test_post_update");
+    world._assert_system_runs_before(post_update_schedule, "on_test_post_update", "custom_system_between");
+    world._assert_system_runs_before(post_update_schedule, "custom_system_between", "custom_system_after");
+    // ordering is transitive
+    world._assert_system_runs_before(post_update_schedule, "custom_system_before", "custom_system_after");
+}
+
+pub fn custom_system_before() {
+    println!("custom_system_before");
+    push_state("runs", "custom_system_before");
+}
+
+// runs on post_update
+pub fn on_test_post_update() {
+    println!("on_test_post_update");
+    push_state("runs", "on_test_post_update");
+}
+
+pub fn custom_system_after() {
+    println!("custom_system_after");
+    push_state("runs", "custom_system_after");
+}
+
+pub fn custom_system_between() {
+    println!("custom_system_between");
+    push_state("runs", "custom_system_between");
+}
+
+// runs in the `Last` bevy schedule
+pub fn on_test_last() {
+    let runs = state()["runs"];
+    assert!(runs.len() == 4, "Expected 4 runs, got: {}", runs.len());
+    assert!(runs[0] == "custom_system_before", "Expected custom_system_before to run first, got: {}", runs[0]);
+    assert!(runs[1] == "on_test_post_update", "Expected on_test_post_update to run second, got: {}", runs[1]);
+    assert!(runs[2] == "custom_system_between", "Expected custom_system_between to run third, got: {}", runs[2]);
+    assert!(runs[3] == "custom_system_after", "Expected custom_system_after to run fourth, got: {}", runs[3]);
+}

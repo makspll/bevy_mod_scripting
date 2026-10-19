@@ -1,0 +1,29 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let test_utils = import_namespace("test_utils");
+    assert!(world != (), "World was not found");
+    assert!(world.get_type_by_name("test_utils::test_data::TestComponent") != (), "Could not find TestComponent type");
+    let global_invocation = test_utils._entity_from_index(1);
+    state()["global_invocation"] = global_invocation;
+}
+
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+    let test_utils = import_namespace("test_utils");
+    assert!(world != (), "World was not found");
+    assert!(world.get_type_by_name("test_utils::test_data::TestComponent") != (), "Could not find TestComponent type");
+    test_utils._entity_from_index(1);
+
+    // assert global_invocation happened
+    assert!(state()["global_invocation"] != (), "Global invocation did not happen");
+
+    true
+}
+
+pub fn on_test_post_update() {
+    true
+}
+
+pub fn on_test_last() {
+    true
+}

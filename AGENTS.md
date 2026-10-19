@@ -1,6 +1,6 @@
 # bevy_mod_scripting (BMS)
 
-Multi-language scripting for Bevy (Lua, Rhai, Rune). Scripts are Bevy assets; they access the ECS through reflection.
+Multi-language scripting for Bevy (Lua, Rune). Scripts are Bevy assets; they access the ECS through reflection.
 
 ## Layout
 * `src/` — facade crate re-exporting the others behind feature flags (language, per-Bevy-crate bindings).
@@ -24,6 +24,7 @@ Multi-language scripting for Bevy (Lua, Rhai, Rune). Scripts are Bevy assets; th
 * Every type known to scripts lives in a namespace: the crate defining it, unless overridden with `ScriptNamespace` type data (`script_bindings(namespace = ...)`); BMS' own types are in `bms`. Scripts register components and events only into `script.*` namespaces. `import_namespace(path)` returns a namespace's types (and exported functions), from the shared, lazily rebuilt `AppScriptTypeCatalogue` (`bindings/src/globals/catalogue.rs`).
 * `export_namespace` exposes a callback of the calling script as a function in a `script.*` namespace; calls run through the callback runners in the exporting script. A script's exports and observers are removed when it unloads (`remove_script_registrations`).
 * Script observers (`world.add_observer`) run their callbacks from a command through `AppScriptCallbackRunners::run_or_queue`, never re-entering a busy context.
+* The Rune backend (`crates/languages/bevy_mod_scripting_rune`) differs from Lua in how members are reached (names are registered up front, the context is rebuilt when new ones appear), has no top level code (`pub fn main()` runs on load), no shared globals (`state()`), and catches errors with `catch(|| ..)`; see its crate docs. Rune scripts (`.rn`) have tests next to the Lua ones, run with the `rune` feature.
 * Feature flags select language and which Bevy crate bindings are compiled in; exactly one Lua variant must be chosen.
 
 ## Working here

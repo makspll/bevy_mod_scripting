@@ -84,13 +84,6 @@ impl AssetLoader for ScriptAssetLoader {
         //         "mlua"
         //     );
         // }
-        // if language == Language::Rhai && cfg!(not(feature = "rhai")) {
-        //     warn_once!(
-        //         "Script {:?} is a Rhai script but the {:?} feature is not enabled; the script will not be evaluated.",
-        //         load_context.path().display(),
-        //         "rhai"
-        //     );
-        // }
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
             language,

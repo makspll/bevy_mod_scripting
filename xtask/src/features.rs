@@ -58,10 +58,7 @@ pub enum Feature {
     MluaSerialize,
     MluaMacros,
     MluaAsync,
-    // Rhai,
-    Rhai,
-    // Rune
-    // Rune,
+    Rune,
 
     // Profiling
     ProfileWithTracy,
@@ -70,8 +67,7 @@ pub enum Feature {
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, strum::EnumIter)]
 pub enum FeatureGroup {
     LuaExclusive,
-    RhaiExclusive,
-    // RuneExclusive,
+    RuneExclusive,
     ForExternalCrate,
     BMSFeature,
     BMSFeatureNotInPowerset,
@@ -81,8 +77,7 @@ impl FeatureGroup {
     pub fn default_feature(self) -> Feature {
         match self {
             FeatureGroup::LuaExclusive => Feature::Lua54,
-            FeatureGroup::RhaiExclusive => Feature::Rhai,
-            // FeatureGroup::RuneExclusive => Feature::Rune,
+            FeatureGroup::RuneExclusive => Feature::Rune,
             _ => panic!("No default feature for non-exclusive group"),
         }
     }
@@ -90,7 +85,7 @@ impl FeatureGroup {
     pub fn is_exclusive(self) -> bool {
         matches!(
             self,
-            FeatureGroup::LuaExclusive | FeatureGroup::RhaiExclusive // | FeatureGroup::RuneExclusive
+            FeatureGroup::LuaExclusive | FeatureGroup::RuneExclusive
         )
     }
 }
@@ -109,8 +104,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::Luajit
             | Feature::Luajit52
             | Feature::Luau => FeatureGroup::LuaExclusive,
-            Feature::Rhai => FeatureGroup::RhaiExclusive,
-            // Feature::Rune => FeatureGroup::RuneExclusive,
+            Feature::Rune => FeatureGroup::RuneExclusive,
             Feature::MluaAsync
             | Feature::MluaMacros
             | Feature::MluaSerialize
@@ -147,7 +141,7 @@ impl Default for Features {
         // should be kept up to date with the default feature + lua54 on top of anything that is handy to run locally every time
         Features::new(vec![
             Feature::Lua54,
-            Feature::Rhai,
+            Feature::Rune,
             Feature::CoreFunctions,
             Feature::BevyEcsBindings,
             Feature::BevyInputBindings,

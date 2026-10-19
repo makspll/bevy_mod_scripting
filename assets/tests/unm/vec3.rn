@@ -1,0 +1,9 @@
+pub fn main() {
+    let Vec3 = import_namespace("math").Vec3;
+    let a = Vec3.new(2.0, -4.0, 6.0);
+
+    // Rune has no operator for negation of types, `neg` is the function it calls
+    assert!(a.neg().x == -2.0, "Negation did not work");
+    assert!(a.neg().y == 4.0, "Negation did not work");
+    assert!(a.neg().z == -6.0, "Negation did not work");
+}

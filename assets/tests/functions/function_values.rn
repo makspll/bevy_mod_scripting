@@ -1,0 +1,23 @@
+// functions which are values in scripts, are called like any function when their arguments are known
+pub fn main() {
+    let Vec3 = import_namespace("math").Vec3;
+    let v = Vec3.new(3, 4, 0);
+
+    // a method with its value bound
+    let length = v.length;
+    assert!(length() == 5.0, "bound method");
+    let dot = v.dot;
+    assert!(dot(v) == 25.0, "bound method with an argument");
+
+    // a function of a type
+    let new = Vec3.new;
+    assert!(new(1, 2, 3) == Vec3.new(1, 2, 3), "static function");
+
+    // they can be passed around
+    let apply = |f, x| f(x);
+    assert!(apply(Vec3.splat, 2) == Vec3.new(2, 2, 2), "passed to a function");
+
+    // functions which take any number of arguments are called with `.call(..)`
+    let pack = import_namespace("bms").pack_args;
+    assert!(pack.call(1, 2).len() == 2, "variadic function");
+}

@@ -1,0 +1,11 @@
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+    let startup_schedule = world.get_schedule_by_name("Startup");
+
+    let expected_systems = ["dummy_startup_system"];
+
+    for system in expected_systems {
+        let found_system = startup_schedule.get_system_by_name(system);
+        assert!(found_system != (), "Expected system not found: {}", system);
+    }
+}

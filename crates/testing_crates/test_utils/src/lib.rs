@@ -10,14 +10,14 @@ pub mod test_plugin;
 #[derive(Debug, Clone, Copy)]
 pub enum TestKind {
     Lua,
-    Rhai,
+    Rune,
 }
 
 impl std::fmt::Display for TestKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             TestKind::Lua => write!(f, "Lua"),
-            TestKind::Rhai => write!(f, "Rhai"),
+            TestKind::Rune => write!(f, "Rune"),
         }
     }
 }
@@ -84,7 +84,7 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
             .extension()
             .and_then(|e| match e.to_string_lossy().as_ref() {
                 "lua" => Some(TestKind::Lua),
-                "rhai" => Some(TestKind::Rhai),
+                "rn" if cfg!(feature = "rune") => Some(TestKind::Rune),
                 _ => None,
             })
         {

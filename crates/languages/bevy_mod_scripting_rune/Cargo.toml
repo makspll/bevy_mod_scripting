@@ -11,17 +11,26 @@ keywords.workspace = true
 categories.workspace = true
 readme.workspace = true
 
-
 [lib]
 name = "bevy_mod_scripting_rune"
 path = "src/lib.rs"
 
 [dependencies]
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+bevy_reflect = { workspace = true, default-features = false, features = [] }
 bevy_mod_scripting_core = { workspace = true }
-bevy = { workspace = true, default-features = false }
-rune = "0.13.1"
-rune-modules = "0.13.1"
-anyhow = "1.0.75"
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_bindings_domain = { workspace = true }
+bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
+bevy_mod_scripting_world = { workspace = true }
+rune = { workspace = true }
+profiling = { workspace = true }
 
 [lints]
 workspace = true

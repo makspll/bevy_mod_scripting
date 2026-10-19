@@ -1,0 +1,14 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let NewComponent = world.register_new_component("script.test", "ScriptComponentA");
+    assert!(NewComponent != (), "Failed to register new component");
+    assert!(NewComponent.short_name() == "DynamicComponent", "Unexpected component type");
+
+    let new_entity = world.spawn();
+
+    world.add_default_component(new_entity, NewComponent);
+
+    let component_intance = world.get_component(new_entity, NewComponent);
+
+    assert!(component_intance != (), "Failed to get component instance");
+}

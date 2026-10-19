@@ -1,0 +1,17 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let script_asset = world.get_type_by_name("bevy_mod_scripting_asset::script_asset::ScriptAsset");
+    assert!(script_asset != (), "ScriptAsset is registered");
+
+    // loading is asynchronous, so the handle is only checked for its path and state
+    let handle = world.load_asset("tests/bindings/asset/asset.rn", script_asset);
+    // the path is as the platform spells it
+    let path = world.asset_path(handle).replace("\\", "/");
+    assert!(path == "tests/bindings/asset/asset.rn", "asset_path: {}", path);
+
+    let state = world.load_state(handle);
+    assert!(state == "NotLoaded" || state == "Loading" || state == "Loaded", "load_state: {}", state);
+
+    let loaded = world.is_loaded(handle);
+    assert!(loaded == true || loaded == false, "is_loaded returns a boolean");
+}

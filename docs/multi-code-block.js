@@ -7,7 +7,7 @@
     const MARKER = "language-multi-lang-example";
     const STORAGE_KEY = "bms-multi-lang-example";
     // highlight.js languages to use for languages it doesn't know
-    const HIGHLIGHT_AS = { rhai: "rust" };
+    const HIGHLIGHT_AS = {};
 
     function languageOf(code) {
         for (const cls of code.classList) {

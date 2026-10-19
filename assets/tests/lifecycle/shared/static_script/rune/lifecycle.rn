@@ -1,0 +1,11 @@
+pub fn on_script_loaded() {
+    "loaded!"
+}
+
+pub fn on_script_unloaded() {
+    "unloaded!"
+}
+
+pub fn on_script_reloaded(val) {
+    format!("reloaded with: {}", val)
+}

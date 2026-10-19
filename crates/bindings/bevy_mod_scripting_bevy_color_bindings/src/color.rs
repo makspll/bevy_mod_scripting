@@ -171,10 +171,10 @@ impl Color {
     /// assert(red:to_srgba().red == 1.0)
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Color = import_namespace.call("color").Color;
-    /// let red = Color.srgb.call(1.0, 0.0, 0.0);
-    /// assert(red.to_srgba.call().red == 1.0);
+    /// ```multi-lang-example,rune
+    /// let Color = import_namespace("color").Color;
+    /// let red = Color.srgb(1.0, 0.0, 0.0);
+    /// assert!(red.to_srgba().red == 1.0);
     /// ```
     fn srgb(red: f32, green: f32, blue: f32) -> V<Color> {
         V(Color::srgb(red, green, blue))

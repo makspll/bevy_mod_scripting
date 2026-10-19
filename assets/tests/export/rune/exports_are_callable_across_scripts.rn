@@ -1,0 +1,55 @@
+fn error_of(f) {
+    match catch(f) {
+        Err(message) => message,
+        Ok(_) => {
+            assert!(false, "expected an error");
+            ""
+        }
+    }
+}
+
+pub fn main() {
+    register_callback("add_impl", |a, b| a + b);
+}
+
+pub fn exported_global(name) {
+    format!("hello {}", name)
+}
+
+// entity_a: exports functions
+pub fn on_test() {
+    export_namespace("script.exports", "add", "add_impl");
+    export_namespace("script.exports", "greet", "exported_global");
+
+    // the exporting script can't call into itself while it is running
+    let err = error_of(|| import_namespace("script.exports").add(1, 2));
+    assert!(err.contains("currently running"), "{}", err);
+
+    // exporting again from the same script replaces
+    export_namespace("script.exports", "add", "add_impl");
+
+    // invalid namespaces are rejected
+    assert!(error_of(|| export_namespace("exports", "add", "add_impl")).contains("script."));
+    "exported"
+}
+
+// entity_b: calls them from its own context
+pub fn on_test_post_update() {
+    let world = import_namespace("bms").world;
+    let exports = import_namespace("script.exports");
+    assert!(exports.add(40, 2) == 42, "exported function should return its result");
+    assert!(exports.greet("bms") == "hello bms");
+
+    // another script cannot take the same export
+    let err = error_of(|| export_namespace("script.exports", "add", "add_impl"));
+    assert!(err.contains("already exported by script"), "{}", err);
+
+    // exports are not types, and cannot share a path with components
+    let err2 = error_of(|| world.register_new_component("script.exports", "add"));
+    assert!(err2.contains("already exported"), "{}", err2);
+
+    // missing namespaces and the exports namespace get suggested
+    let err3 = error_of(|| import_namespace("script.export"));
+    assert!(err3.contains("script.exports"), "{}", err3);
+    "called"
+}

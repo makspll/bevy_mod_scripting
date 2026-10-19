@@ -1,0 +1,141 @@
+// Rune has no globals, so everything the functions need is looked up in them, and indexes are 0 based
+
+fn life_state_type(world) {
+    world.get_type_by_name("game_of_life::LifeState")
+}
+
+fn settings_type(world) {
+    world.get_type_by_name("game_of_life::Settings")
+}
+
+fn fetch_life_state(world) {
+    // find the first entity with life state
+    for result in world.query().component(life_state_type(world)).build() {
+        return result.components()[0];
+    }
+}
+
+pub fn main() {
+    import_namespace("bms").log_warn("Rune: The game_of_life.rn script just got loaded");
+}
+
+pub fn on_script_loaded() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    bms.log_warn("Rune: Hello! I am initiating the game of life simulation state with randomness!");
+    bms.log_warn("Rune: Click on the screen to set cells alive after running the `gol start` command");
+
+    let life_state = fetch_life_state(world);
+    let cells = life_state.cells;
+    let len = cells.len();
+    let game_of_life = import_namespace("game_of_life");
+
+    // set some cells alive
+    for _ in 0..1000 {
+        let index = (game_of_life.rand() * 1000000.0).to::<i64>() % len;
+        cells[index] = 255;
+    }
+}
+
+pub fn on_click(x, y) {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    bms.log_warn(format!("Rune: Clicked at x: {} y: {}", x, y));
+    let life_state = fetch_life_state(world);
+    let cells = life_state.cells;
+    let settings = world.get_resource(settings_type(world));
+    let dimensions = settings.physical_grid_dimensions;
+    let screen = settings.display_grid_dimensions;
+
+    let dimension_x = dimensions[0];
+    let dimension_y = dimensions[1];
+
+    let screen_x = screen[0];
+    let screen_y = screen[1];
+
+    // the cell the click is in, with integer division
+    let cell_x = x * dimension_x / screen_x;
+    let cell_y = y * dimension_y / screen_y;
+    println!("{} {}", x, y);
+    println!("{} {}", screen_x, screen_y);
+
+    let index = (cell_y * dimension_x) + cell_x;
+
+    // toggle a bunch of cells around if they exist
+    let cell_offsets = [
+        (0, 0),
+        (1, 0),
+        (0, 1),
+        (1, 1),
+        (-1, 0),
+        (0, -1),
+        (-1, -1),
+        (1, -1),
+        (-1, 1),
+    ];
+
+    for offset in cell_offsets {
+        let new_index = index + offset.0 + offset.1 * dimension_x;
+        if new_index >= 0 && new_index < dimension_x * dimension_y {
+            cells[new_index] = 255;
+        }
+    }
+}
+
+// the state of the cell at the index, which is 0 outside of the grid
+fn at(state, index) {
+    if index >= 0 && index < state.len() {
+        state[index]
+    } else {
+        0
+    }
+}
+
+pub fn on_update() {
+    let world = import_namespace("bms").world;
+    let cells = fetch_life_state(world).cells;
+    let settings = world.get_resource(settings_type(world));
+    let dimensions = settings.physical_grid_dimensions;
+    let dimension_x = dimensions[0];
+    let dimension_y = dimensions[1];
+    let size = dimension_x * dimension_y;
+
+    // primitives are passed by value to Rune, keep a hold of old state but turn 255's into 1's
+    let prev_state = [];
+    for v in cells {
+        prev_state.push(if v != 0 { 1 } else { 0 });
+    }
+
+    for i in 0..size {
+        // wrap around the north and south edges
+        let north = if i - dimension_x >= 0 { at(prev_state, i - dimension_x) } else { at(prev_state, i + dimension_x * (dimension_y - 1)) };
+        let south = if i + dimension_x < size { at(prev_state, i + dimension_x) } else { at(prev_state, i - dimension_x * (dimension_y - 1)) };
+        let east = at(prev_state, i + 1);
+        let west = at(prev_state, i - 1);
+        let northeast = at(prev_state, i - dimension_x + 1);
+        let southeast = at(prev_state, i + dimension_x + 1);
+        let northwest = at(prev_state, i - dimension_x - 1);
+        let southwest = at(prev_state, i + dimension_x - 1);
+
+        let neighbours = north + south + east + west + northeast + southeast + northwest + southwest;
+
+        if prev_state[i] == 0 && neighbours == 3 {
+            // was dead and got 3 neighbours now
+            cells[i] = 255;
+        } else if prev_state[i] == 1 && (neighbours < 2 || neighbours > 3) {
+            // was alive and should die now
+            cells[i] = 0;
+        }
+    }
+}
+
+pub fn on_script_unloaded() {
+    let bms = import_namespace("bms");
+    bms.log_warn("Rune: I am being unloaded, goodbye!");
+
+    // set state to 0's
+    let cells = fetch_life_state(bms.world).cells;
+    for i in 0..cells.len() {
+        cells[i] = 0;
+    }
+}

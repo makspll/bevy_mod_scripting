@@ -23,11 +23,11 @@ impl Val {
     /// assert(node.width[1] == 100)
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let Node = import_namespace.call("ui").Node;
-    /// let Val = import_namespace.call("ui").Val;
-    /// let node = Node.new_.call(#{ width: Val.px.call(100.0) });
-    /// assert(node.width[0] == 100.0);
+    /// ```multi-lang-example,rune
+    /// let Node = import_namespace("ui").Node;
+    /// let Val = import_namespace("ui").Val;
+    /// let node = Node.new(#{ width: Val.px(100.0) });
+    /// assert!(node.width[0] == 100.0);
     /// ```
     fn px(value: f32) -> V<Val> {
         V(Val::Px(value))

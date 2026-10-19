@@ -123,7 +123,7 @@ Assuming that hot-reloading is enabled for your app, any changes to script asset
 ## File Extensions
 Normally the set of supported extensions is pre-decided by each language plugin.
 
-I.e. Lua supports ".lua" extensions and Rhai supports ".rhai" extensions.
+I.e. Lua supports ".lua" extensions.
 
 Scripts are mapped to the corresponding language plugin based on these and so it is important to use them correctly.
 

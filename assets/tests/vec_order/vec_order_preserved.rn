@@ -1,0 +1,66 @@
+// regression test for https://github.com/makspll/bevy_mod_scripting/issues/430
+// lists passed into bindings as `Vec<T>` must keep their order
+
+fn assert_order(input, label) {
+    let test_utils = import_namespace("test_utils");
+    let out = test_utils.make_vec_i64(input);
+    assert!(out.len() == input.len(), "{}: length mismatch, expected {} got {}", label, input.len(), out.len());
+    for i in 0..input.len() {
+        assert!(out[i] == input[i], "{}: index {} expected {} got {}", label, i, input[i], out[i]);
+    }
+}
+
+pub fn main() {
+    let test_utils = import_namespace("test_utils");
+
+    // lists of every size, including even ones
+    for n in 1..13 {
+        let t = [];
+        for i in 1..(n + 1) {
+            t.push(i * 10);
+        }
+        assert_order(t, format!("constructed by index, n={}", n));
+    }
+
+    // literal constructors
+    assert_order([1], "literal 1");
+    assert_order([1, 2], "literal 2");
+    assert_order([1, 2, 3], "literal 3");
+    assert_order([1, 2, 3, 4], "literal 4");
+    assert_order([1, 2, 3, 4, 5, 6], "literal 6");
+
+    // filled in reverse
+    for n in 1..13 {
+        let t = [];
+        let i = n;
+        while i > 0 {
+            t.insert(0, i);
+            i -= 1;
+        }
+        assert_order(t, format!("reverse fill, n={}", n));
+    }
+
+    // elements removed from the front / back
+    let t = [1, 2, 3, 4, 5];
+    t.remove(0);
+    assert_order(t, "after remove front");
+    t.pop();
+    assert_order(t, "after remove back");
+
+    // strings
+    let strs = test_utils.make_vec_string(["a", "b", "c", "d"]);
+    assert!(strs[0] == "a" && strs[1] == "b" && strs[2] == "c" && strs[3] == "d", "string order should be preserved");
+
+    // empty
+    assert!(test_utils.make_vec_i64([]).len() == 0, "empty list should stay empty");
+
+    // lists returned from a binding (built on the rust side) must keep their order when passed back in
+    for n in 1..13 {
+        let input = [];
+        for i in 1..(n + 1) {
+            input.push(i * 10);
+        }
+        let returned = test_utils.make_vec_i64(input);
+        assert_order(test_utils.make_vec_i64(returned), format!("second round trip, n={}", n));
+    }
+}

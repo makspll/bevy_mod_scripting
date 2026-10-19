@@ -1,0 +1,15 @@
+pub fn main() {
+    // meshes from shapes
+    let Cuboid = import_namespace("math").Cuboid;
+    let Mesh = import_namespace("render").Mesh;
+    let Rectangle = import_namespace("math").Rectangle;
+    let Sphere = import_namespace("math").Sphere;
+    let Vec3 = import_namespace("math").Vec3;
+    let cuboid_mesh = Mesh.from_shape(Cuboid.new(1, 1, 1));
+    assert!(cuboid_mesh.count_vertices() > 0, "cuboid mesh has vertices");
+    assert!(Mesh.from_shape(Sphere.new(1)).count_vertices() > 0, "sphere mesh has vertices");
+    assert!(Mesh.from_shape(Rectangle.new(1, 1)).count_vertices() > 0, "2d shapes make meshes too");
+
+    // values that are not shapes are errors
+    assert!(catch(|| Mesh.from_shape(Vec3.new(1, 2, 3))).is_err(), "non shapes error");
+}

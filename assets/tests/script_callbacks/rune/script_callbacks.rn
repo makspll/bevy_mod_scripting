@@ -1,0 +1,78 @@
+fn attachment_of(e) {
+    let bms = import_namespace("bms");
+    bms.ScriptAttachment.new_entity_script(e, bms.current_script())
+}
+
+// the other entity running this script
+fn other_entity() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let script_component = world.get_type_by_name("bevy_mod_scripting_core::script::ScriptComponent");
+    for result in world.query().component(script_component).build() {
+        let e = result.entity();
+        if e.index() != bms.current_entity().index() {
+            return e;
+        }
+    }
+    assert!(false, "could not find the other entity");
+}
+
+pub fn double(x) {
+    x * 2
+}
+
+pub fn add(a, b) {
+    a + b
+}
+
+pub fn bounce(back_to) {
+    import_namespace("bms").run_script_callback("double", attachment_of(back_to), 1)
+}
+
+pub fn record(value) {
+    let bms = import_namespace("bms");
+    let TestComponent = import_namespace("test_utils").TestComponent;
+    bms.world.insert_component(
+        bms.current_entity(),
+        bms.world.get_type_by_name("test_utils::test_data::TestComponent"),
+        TestComponent.new(#{ strings: [value] })
+    );
+}
+
+pub fn on_test() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let Recipients = bms.Recipients;
+    let other = other_entity();
+
+    // immediate callbacks return what the callback returned
+    let doubled = bms.run_script_callback("double", attachment_of(other), 21);
+    assert!(doubled == 42, "Expected 42, got: {}", doubled);
+    let sum = bms.run_script_callback("add", attachment_of(other), 1, 2);
+    assert!(sum == 3, "Expected 3, got: {}", sum);
+
+    // recipients return a list with one value per script
+    let results = bms.run_script_callback("double", Recipients.entity_script(other, bms.current_script()), 5);
+    assert!(results.len() == 1, "Expected 1 result, got: {}", results.len());
+    assert!(results[0] == 10, "Expected 10, got: {}", results[0]);
+
+    // busy contexts error instead of deadlocking
+    assert_throws(|| {
+        bms.run_script_callback("double", attachment_of(bms.current_entity()), 1);
+    }, "it is the script currently running");
+    assert_throws(|| {
+        bms.run_script_callback("bounce", attachment_of(other), bms.current_entity());
+    }, "further up the current chain");
+
+    // queued callbacks can target this script, and only run once this callback finishes
+    bms.queue_script_callback("record", attachment_of(bms.current_entity()), "queued!");
+    // flushing the world must not run them early
+    world.spawn();
+    assert!(!world.has_component(bms.current_entity(), world.get_type_by_name("test_utils::test_data::TestComponent")), "Queued callback ran before the callback queueing it finished");
+    "ok"
+}
+
+pub fn on_test_post_update() {
+    let bms = import_namespace("bms");
+    bms.world.get_component(bms.current_entity(), bms.world.get_type_by_name("test_utils::test_data::TestComponent")).strings[0]
+}

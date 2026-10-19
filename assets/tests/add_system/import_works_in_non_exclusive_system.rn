@@ -1,0 +1,50 @@
+// the values are kept in the script's state, which is replace only
+fn push_state(key, value) {
+    let list = state()[key];
+    list.push(value);
+    state()[key] = list;
+}
+
+pub fn on_test() {
+    let bms = import_namespace("bms");
+    let ScriptAttachment = bms.ScriptAttachment;
+    let world = bms.world;
+    state()["runs"] = [];
+
+    let post_update_schedule = world.get_schedule_by_name("PostUpdate");
+    let script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script());
+
+    world.add_system(
+        post_update_schedule,
+        bms.system_builder("my_importing_system", script_attachment)
+    );
+
+    true
+}
+
+// a non-exclusive system can only access what it declared, `import_namespace` must not need anything else
+pub fn my_importing_system() {
+    push_state("runs", "my_importing_system");
+
+    let bevy_transform = import_namespace("transform");
+    assert!(bevy_transform.Transform != (), "Transform should be importable from a system");
+    assert!(import_namespace("bms").ScriptAttachment != ());
+
+    match catch(|| import_namespace("not_a_namespace")) {
+        Err(message) => assert!(message.contains("does not exist"), "{}", message),
+        Ok(_) => assert!(false, "expected an error"),
+    }
+
+    // errors inside systems are only logged, so record that we got to the end
+    push_state("runs", "finished");
+}
+
+pub fn on_test_post_update() {
+    true
+}
+
+pub fn on_test_last() {
+    let runs = state()["runs"];
+    assert!(runs.len() == 2 && runs[1] == "finished", "the system did not finish, runs: {:?}", runs);
+    true
+}

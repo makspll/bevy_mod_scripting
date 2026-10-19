@@ -1,0 +1,10 @@
+pub fn main() {
+    let SimpleEnum = import_namespace("test_utils").SimpleEnum;
+
+    let constructed = SimpleEnum.new(#{ variant: "Struct", foo: 123 });
+    assert!(constructed.variant_name() == "Struct", "expected variant Struct but got {}", constructed.variant_name());
+    assert!(constructed.foo == 123, "expected foo to be 123 but got {}", constructed.foo);
+
+    let unit = SimpleEnum.new(#{ variant: "Unit" });
+    assert!(unit.variant_name() == "Unit", "expected variant Unit but got {}", unit.variant_name());
+}

@@ -1,0 +1,23 @@
+pub fn on_test() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let CallbackLabel = bms.CallbackLabel;
+    let Recipients = bms.Recipients;
+    let ScriptCallbackMessage = bms.ScriptCallbackMessage;
+    let label = CallbackLabel.new(["callback_a"]);
+    let recipients = Recipients.AllScripts.new(#{});
+    let event_type = world.get_type_by_name("bevy_mod_scripting_core::event::ScriptCallbackMessage");
+    let event = ScriptCallbackMessage.new(#{
+        label: label,
+        recipients: recipients,
+        args: [],
+        trigger_response: true,
+    });
+
+    world.write_message(event_type, event);
+    "sent"
+}
+
+pub fn callback_a() {
+    "callback_a was triggered from a script"
+}

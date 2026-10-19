@@ -1,0 +1,7 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let Resource = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields");
+    let resource = world.get_resource(Resource);
+
+    assert!(resource.string_map.map_get("foo") == "bar", "Expected bar, got {}", resource.string_map.map_get("foo"));
+}

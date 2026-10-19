@@ -1,0 +1,6 @@
+pub fn main() {
+    let test_utils = import_namespace("test_utils");
+    let entity = test_utils._make_invalid_entity();
+    // does not throw
+    entity.eq(entity);
+}

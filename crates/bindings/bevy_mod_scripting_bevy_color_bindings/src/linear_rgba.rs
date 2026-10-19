@@ -22,10 +22,10 @@ impl LinearRgba {
     /// assert(c.red == 1.0)
     /// ```
     ///
-    /// ```multi-lang-example,rhai
-    /// let LinearRgba = import_namespace.call("color").LinearRgba;
-    /// let c = LinearRgba.new_.call(1.0, 0.0, 0.0, 1.0);
-    /// assert(c.red == 1.0);
+    /// ```multi-lang-example,rune
+    /// let LinearRgba = import_namespace("color").LinearRgba;
+    /// let c = LinearRgba.new(1.0, 0.0, 0.0, 1.0);
+    /// assert!(c.red == 1.0);
     /// ```
     fn new(red: f32, green: f32, blue: f32, alpha: f32) -> V<LinearRgba> {
         V(LinearRgba::new(red, green, blue, alpha))

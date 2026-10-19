@@ -1,0 +1,49 @@
+pub fn main() {
+    // UiRect sides, lengths are floats and the payload of a `Val` is its first field
+    let BorderColor = import_namespace("ui").BorderColor;
+    let BorderRadius = import_namespace("ui").BorderRadius;
+    let Color = import_namespace("color").Color;
+    let ComputedNode = import_namespace("ui").ComputedNode;
+    let Overflow = import_namespace("ui").Overflow;
+    let UiRect = import_namespace("ui").UiRect;
+    let Val = import_namespace("ui").Val;
+    let all = UiRect.all(Val.px(2));
+    assert!(all.left[0] == 2.0 && all.right[0] == 2.0 && all.top[0] == 2.0 && all.bottom[0] == 2.0, "all");
+    let sides = UiRect.px(1, 2, 3, 4);
+    assert!(sides.left[0] == 1.0 && sides.right[0] == 2.0 && sides.top[0] == 3.0 && sides.bottom[0] == 4.0, "px");
+    assert!(UiRect.percent(1, 2, 3, 4).bottom.variant_name() == "Percent", "percent");
+    let axes = UiRect.axes(Val.px(1), Val.px(2));
+    assert!(axes.left[0] == 1.0 && axes.right[0] == 1.0 && axes.top[0] == 2.0 && axes.bottom[0] == 2.0, "axes");
+    assert!(UiRect.horizontal(Val.px(3)).right[0] == 3.0 && UiRect.horizontal(Val.px(3)).top[0] == 0.0, "horizontal");
+    assert!(UiRect.vertical(Val.px(3)).bottom[0] == 3.0 && UiRect.vertical(Val.px(3)).left[0] == 0.0, "vertical");
+    let new = UiRect.new(Val.px(1), Val.px(2), Val.px(3), Val.px(4));
+    assert!(new.left[0] == 1.0 && new.right[0] == 2.0 && new.top[0] == 3.0 && new.bottom[0] == 4.0, "new");
+    assert!(UiRect.zero().left[0] == 0.0 && UiRect.zero().bottom[0] == 0.0, "zero");
+
+    // BorderRadius corners, each with its radius as `x`
+    let radius = BorderRadius.all(Val.px(3));
+    assert!(radius.top_left.x[0] == 3.0 && radius.bottom_right.x[0] == 3.0, "border radius all");
+    let corners = BorderRadius.px(1, 2, 3, 4);
+    assert!(corners.top_left.x[0] == 1.0 && corners.top_right.x[0] == 2.0, "border radius px top");
+    assert!(corners.bottom_right.x[0] == 3.0 && corners.bottom_left.x[0] == 4.0, "border radius px bottom");
+    assert!(BorderRadius.percent(1, 2, 3, 4).bottom_left.x.variant_name() == "Percent", "border radius percent");
+    assert!(BorderRadius.zero().top_left.x[0] == 0.0, "border radius zero");
+
+    // BorderColor sides
+    let border = BorderColor.all(Color.white());
+    assert!(border.top.eq(Color.white()) && border.left.eq(Color.white()), "border color all");
+
+    // Overflow on each axis
+    assert!(Overflow.visible().x.variant_name() == "Visible", "visible");
+    assert!(Overflow.clip().x.variant_name() == "Clip" && Overflow.clip().y.variant_name() == "Clip", "clip");
+    assert!(Overflow.clip_x().x.variant_name() == "Clip" && Overflow.clip_x().y.variant_name() == "Visible", "clip_x");
+    assert!(Overflow.clip_y().x.variant_name() == "Visible" && Overflow.clip_y().y.variant_name() == "Clip", "clip_y");
+    assert!(Overflow.hidden().x.variant_name() == "Hidden" && Overflow.hidden().y.variant_name() == "Hidden", "hidden");
+    assert!(Overflow.scroll().x.variant_name() == "Scroll" && Overflow.scroll().y.variant_name() == "Scroll", "scroll");
+
+    // ComputedNode of a node that has not been laid out
+    let computed = ComputedNode.new(#{});
+    assert!(computed.is_empty(), "a node with no size is empty");
+    assert!(computed.size().x == 0.0 && computed.size().y == 0.0, "size");
+    assert!(computed.content_size().x == 0.0, "content_size");
+}

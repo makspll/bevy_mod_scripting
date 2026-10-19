@@ -1,0 +1,12 @@
+pub fn main() {
+    let world = import_namespace("bms").world;
+    let entity = world.spawn();
+    let child = world.spawn();
+
+    world.push_children(entity, [child]);
+
+    let children = world.get_children(entity);
+
+    assert!(children.len() == 1, "Expected 1 child");
+    assert!(children[0].index() == child.index(), "Child is the wrong entity");
+}

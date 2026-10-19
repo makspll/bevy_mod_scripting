@@ -1,0 +1,44 @@
+// the test app may have no gizmo plugin: every function either draws, or fails with the same error
+fn draws(f) {
+    match catch(f) {
+        Ok(_) => true,
+        Err(message) => {
+            assert!(message.contains("gizmos are not available"), "unexpected error: {}", message);
+            false
+        }
+    }
+}
+
+pub fn main() {
+    let Color = import_namespace("color").Color;
+    let Gizmos = import_namespace("gizmos").Gizmos;
+    let Transform = import_namespace("transform").Transform;
+    let Vec2 = import_namespace("math").Vec2;
+    let Vec3 = import_namespace("math").Vec3;
+
+    assert!(Gizmos != (), "Gizmos exists");
+
+    let calls = [
+        ("line", || Gizmos.line(Vec3.zero(), Vec3.one(), Color.white())),
+        ("line_2d", || Gizmos.line_2d(Vec2.zero(), Vec2.one(), Color.white())),
+        ("ray", || Gizmos.ray(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())),
+        ("ray_2d", || Gizmos.ray_2d(Vec2.zero(), Vec2.new(1, 0), Color.white())),
+        ("arrow", || Gizmos.arrow(Vec3.zero(), Vec3.one(), Color.white())),
+        ("arrow_2d", || Gizmos.arrow_2d(Vec2.zero(), Vec2.one(), Color.white())),
+        ("circle", || Gizmos.circle(Vec3.zero(), 1.0, Color.white())),
+        ("circle_2d", || Gizmos.circle_2d(Vec2.zero(), 1.0, Color.white())),
+        ("sphere", || Gizmos.sphere(Vec3.zero(), 1.0, Color.white())),
+        ("rect", || Gizmos.rect(Vec3.zero(), Vec2.one(), Color.white())),
+        ("rect_2d", || Gizmos.rect_2d(Vec2.zero(), Vec2.one(), Color.white())),
+        ("cuboid", || Gizmos.cuboid(Transform.from_xyz(1, 2, 3), Color.white())),
+        ("axes", || Gizmos.axes(Transform.identity(), 1.0)),
+        ("cross", || Gizmos.cross(Vec3.zero(), 0.5, Color.white())),
+        ("linestrip", || Gizmos.linestrip([Vec3.zero(), Vec3.one(), Vec3.new(2, 0, 0)], Color.white())),
+        ("linestrip_2d", || Gizmos.linestrip_2d([Vec2.zero(), Vec2.one()], Color.white())),
+    ];
+
+    let available = draws(calls[0].1);
+    for (name, call) in calls {
+        assert!(draws(call) == available, "gizmos {} succeeds differently to gizmos line", name);
+    }
+}
