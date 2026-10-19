@@ -21,7 +21,9 @@ impl std::error::Error for RuneError {}
 pub fn describe_vm_error(error: &VmError, sources: &rune::Sources) -> InteropError {
     let mut writer = rune::termcolor::NoColor::new(Vec::<u8>::new());
     let message = match error.emit(&mut writer, sources) {
-        Ok(()) => String::from_utf8_lossy(&writer.into_inner()).trim().to_owned(),
+        Ok(()) => String::from_utf8_lossy(&writer.into_inner())
+            .trim()
+            .to_owned(),
         Err(_) => error.to_string(),
     };
     InteropError::external(RuneError(if message.is_empty() {

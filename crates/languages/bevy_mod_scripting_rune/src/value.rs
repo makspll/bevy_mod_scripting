@@ -183,11 +183,11 @@ pub fn rune_function_to_script(function: Value) -> Result<DynamicScriptFunction,
             )))
         })?;
     Ok(DynamicScriptFunction::from(
-        move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
-            match call_sync_function(&function, args, None) {
-                Ok(value) => value,
-                Err(error) => ScriptValue::Error(error),
-            }
+        move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| match call_sync_function(
+            &function, args, None,
+        ) {
+            Ok(value) => value,
+            Err(error) => ScriptValue::Error(error),
         },
     ))
 }
