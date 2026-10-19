@@ -138,20 +138,21 @@ pub struct Features(pub HashSet<Feature>);
 
 impl Default for Features {
     fn default() -> Self {
-        // should be kept up to date with the default feature + lua54 on top of anything that is handy to run locally every time
-        Features::new(vec![
-            Feature::Lua54,
-            Feature::Rune,
-            Feature::CoreFunctions,
-            Feature::BevyEcsBindings,
-            Feature::BevyInputBindings,
-            Feature::BevyMathBindings,
-            Feature::BevyTimeBindings,
-            Feature::BevyTransformBindings,
-            Feature::BevyColorBindings,
-            Feature::BevyWindowBindings,
-            Feature::LuaLanguageServerFiles,
-        ])
+        // the default languages, all the bindings, and anything that is handy to run locally every time
+        let bindings = <Feature as strum::VariantArray>::VARIANTS
+            .iter()
+            .filter(|f| f.to_feature_group() == FeatureGroup::BMSFeatureNotInPowerset)
+            .cloned();
+        Features::new(
+            [
+                Feature::Lua54,
+                Feature::Rune,
+                Feature::CoreFunctions,
+                Feature::LuaLanguageServerFiles,
+            ]
+            .into_iter()
+            .chain(bindings),
+        )
     }
 }
 
