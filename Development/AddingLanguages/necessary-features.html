@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-acf21d07.js";
+            window.path_to_searchindex_js = "../../searchindex-b0cbd304.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-dc1f1982.js"></script>
+        <script src="../../toc-7c21c810.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -218,7 +218,7 @@
 <p><code>index</code> returns functions which are called on the indexed value as <code>Member::Method</code>, without the value bound to them. Delivering the receiver is the language’s job:</p>
 <ul>
 <li>Lua passes it with its colon syntax, <code>v:length()</code>, so the function is returned as is.</li>
-<li>Rune has method syntax, but resolves <code>v.name</code> by a table fixed when its context is built, so every name which can follow a <code>.</code> is registered up front (and <code>v["name"]</code> always works), see <code>bevy_mod_scripting_rune::types</code>. The receiver is passed to the function as the first argument.</li>
+<li>Rune has method syntax, but resolves <code>v.name</code> by a table fixed when its context is built, so every identifier in the script is registered when it is compiled (and <code>v["name"]</code> always works), see <code>bevy_mod_scripting_rune::types</code>. The receiver is passed to the function as the first argument.</li>
 </ul>
 <h3 id="static-members"><a class="header" href="#static-members">Static members</a></h3>
 <p><code>Type.name</code> resolves, in order, to:</p>
