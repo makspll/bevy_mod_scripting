@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-cdd07cdc.js";
+            window.path_to_searchindex_js = "searchindex-fb953fd2.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-57256a8c.js"></script>
@@ -1514,7 +1514,7 @@ let reference = ReflectReference::new_allocated(value, &amp;mut world.allocator(
 let reference = ReflectReference::new_allocated(value);</code></pre>
 <code>new_allocated_boxed</code> and <code>new_allocated_boxed_parial_reflect</code> change the same way.</li>
 <li><code>ScriptLoadingPipeline::time_budget: Option&lt;Duration&gt;</code> is replaced by <code>tick_budget: Option&lt;usize&gt;</code>, the maximum amount of pipeline steps per frame, unlimited by default. <code>ActiveMachines::budget</code> and <code>RunProcessingPipelineOnce::new</code> take the same step count.</li>
-<li><code>ScriptAttachedMessage(a)</code> / <code>ScriptDetachedMessage(a)</code> are one message, <code>ScriptLifecycleMessage::Attached(a)</code> / <code>::Detached(a)</code>, so attachments and detachments are processed in the order they were written. <code>GetScriptHandle::get_script_handle</code> returns an <code>Option</code> (<code>None</code>: the event doesn’t wait for its script to load) and <code>LoadedWithHandles::get_loaded</code> yields <code>(event, Option&lt;(StrongScriptHandle, Language)&gt;)</code>.</li>
+<li><code>ScriptAttachedMessage(a)</code> / <code>ScriptDetachedMessage(a)</code> are one message, <code>ScriptLifecycleMessage::Attached(a)</code> / <code>::Detached(a)</code>, so attachments and detachments are processed in the order they were written. <code>GetScriptHandle::get_script_handle</code> returns an <code>Option</code> (<code>None</code>: the event doesn’t wait for its script to load) and <code>ScriptLifecycleQueue::get_ready</code>, formerly known as <code>LoadedWithHandles</code> yields <code>(event, Option&lt;(StrongScriptHandle, Language)&gt;)</code>.</li>
 <li>An attachment whose script is still loading holds back the attachments and detachments after it, and callbacks reach scripts in a deterministic order (attachment order, until scripts are removed), see <a href="#determinism">Determinism</a>. Lua’s <code>math.random</code> is seeded with <code>0</code> in new contexts.</li>
 <li><code>WorldAccessRange::External</code> holds the value’s owner (<code>AccessOwner</code>) instead of an id, and the access map keeps it alive until the claim is released. Build it from the value (<code>(&amp;allocation_id).into()</code>); <code>WorldAccessRange</code> is no longer <code>Copy</code>.</li>
 </ul>
