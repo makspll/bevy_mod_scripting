@@ -24,3 +24,5 @@ assets/scripts/tlconfig.lua
 
 node_modules
 *.vsix
+
+bindings*.d.lua

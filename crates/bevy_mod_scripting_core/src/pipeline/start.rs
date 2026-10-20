@@ -10,22 +10,6 @@ use bevy_mod_scripting_script::ScriptAttachment;
 #[derive(Clone, Debug)]
 pub struct StrongScriptHandle(Handle<ScriptAsset>);
 
-// impl GetScriptHandle for ScriptAssetModifiedMessage {
-//     fn get_script_handle(&self) -> Handle<ScriptAsset> {
-//         self.0.clone()
-//     }
-// }
-
-impl GetScriptHandle for ScriptLifecycleMessage {
-    /// Only attachments wait for their script to load, detachments just keep their place in the queue
-    fn get_script_handle(&self) -> Option<Handle<ScriptAsset>> {
-        match self {
-            ScriptLifecycleMessage::Attached(attachment) => Some(attachment.script()),
-            ScriptLifecycleMessage::Detached(_) => None,
-        }
-    }
-}
-
 impl StrongScriptHandle {
     /// Creates a new strong script handle, only if the given handle is strong itself.
     pub fn new(handle: Handle<ScriptAsset>) -> Option<Self> {
@@ -70,13 +54,13 @@ pub struct FilterAssetEventsSettings {
 pub fn filter_asset_events<P: IntoScriptPluginParams>(
     args: In<FilterAssetEventsSettings>,
     mut script_modified_events: MessageReader<AssetEvent<ScriptAsset>>,
-    mut script_attached_events: LoadedWithHandles<ScriptLifecycleMessage>,
+    mut script_lifecycle_events: ScriptLifecycleQueue,
     mut active_machines: ResMut<ActiveMachines<P>>,
 ) {
     if args.hot_loads {
         let batch = script_modified_events.read().filter_map(|e| {
             if let AssetEvent::Modified { id } = e
-                && let Some(asset) = script_attached_events.assets.get(*id)
+                && let Some(asset) = script_lifecycle_events.assets.get(*id)
                 && asset.language == P::LANGUAGE
             {
                 Some(ScriptPipelineEvent::ModifiedAsset(
@@ -93,8 +77,8 @@ pub fn filter_asset_events<P: IntoScriptPluginParams>(
         // detachments are queued with the attachments, so they never overtake an attachment whose script is still loading.
         // we can't actually filter those based on their existence in the script contexts, as processing an attachment might
         // create the script, so we want to do that in order
-        let batch = script_attached_events
-            .get_loaded()
+        let batch = script_lifecycle_events
+            .get_ready()
             .filter_map(|event| match event {
                 (ScriptLifecycleMessage::Attached(mut a), Some((b, l))) => {
                     (l == P::LANGUAGE).then(|| {

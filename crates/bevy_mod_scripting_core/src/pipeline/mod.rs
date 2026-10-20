@@ -5,7 +5,7 @@ use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc};
 use bevy_app::{App, Plugin, PreUpdate};
 use bevy_asset::{AssetServer, Assets, Handle, LoadState};
 use bevy_ecs::{
-    message::{Message, MessageReader},
+    message::MessageReader,
     observer::On,
     resource::Resource,
     schedule::{IntoScheduleConfigs, Schedule, ScheduleLabel, SystemSet},
@@ -137,67 +137,67 @@ impl<P: IntoScriptPluginParams> std::fmt::Debug for ScriptProcessingSchedule<P> 
     }
 }
 
-/// A trait describing things containing script handles
-pub trait GetScriptHandle {
-    /// Retrieve the contained script handle, if its asset needs to be loaded before the event is processed
-    fn get_script_handle(&self) -> Option<Handle<ScriptAsset>>;
-}
-
 #[derive(SystemParam)]
-/// A system param which operates over types implementing [`GetScriptHandle`].
-/// Captures incoming "handle" like types, and waits until their asset is in a final state before proceeding, if that final state
-/// is loaded, will also guarantee a strong handle, otherwise the whole thing is skipped.
-///
-/// Events without a handle don't wait for an asset, but stay in order with the rest, so they never overtake an event which is still loading.
-///
-/// Think of this as a proxy for "baby'ing" asset handles
-pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Message + Clone> {
+/// Proxy babying lifecycle asset events and releasing them in a predictable order blocking on asset loads when necessary
+pub struct ScriptLifecycleQueue<'w, 's> {
     /// The script assets resource. To allow systems needing both resources to access them in one place
     pub assets: ResMut<'w, Assets<ScriptAsset>>,
     asset_server: Res<'w, AssetServer>,
-    fresh_events: MessageReader<'w, 's, T>,
-    loaded_with_handles: Local<'s, VecDeque<(T, Option<(StrongScriptHandle, Language)>)>>,
-    loading: Local<'s, VecDeque<T>>,
+    fresh_events: MessageReader<'w, 's, ScriptLifecycleMessage>,
+    release_queue: Local<
+        's,
+        VecDeque<(
+            ScriptLifecycleMessage,
+            Option<(StrongScriptHandle, Language)>,
+        )>,
+    >,
+    waiting_queue: Local<'s, VecDeque<ScriptLifecycleMessage>>,
 }
 
-impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
-    /// Retrieves all of the events of type `T` which have finished loading, with a strong handle and the language of their script,
-    /// and the events without a handle, the rest will be discarded.
+impl ScriptLifecycleQueue<'_, '_> {
+    /// Retrieves all attach and detach events in a predictable order including handles for load side events
     ///
     /// Events are released strictly in the order they arrived, an event whose asset is still loading holds back all the events behind it.
     /// This way the order in which scripts enter the pipeline does not depend on asset IO timing.
     ///
     /// This uses a [`EventReader<T>`] underneath, meaning if you don't call this method once every frame (or every other frame).
     /// You may miss events.
-    pub fn get_loaded(
+    pub fn get_ready(
         &mut self,
-    ) -> impl Iterator<Item = (T, Option<(StrongScriptHandle, Language)>)> {
+    ) -> impl Iterator<
+        Item = (
+            ScriptLifecycleMessage,
+            Option<(StrongScriptHandle, Language)>,
+        ),
+    > {
         // first get all of the fresh_events
-        self.loading.extend(self.fresh_events.read().cloned());
+        self.waiting_queue.extend(self.fresh_events.read().cloned());
         // now process the loading queue in order, until we hit an event which is still loading
-        while let Some(front) = self.loading.front() {
-            let Some(handle) = front.get_script_handle() else {
-                if let Some(e) = self.loading.pop_front() {
-                    self.loaded_with_handles.push_back((e, None));
+        while let Some(front) = self.waiting_queue.front() {
+            // attachment events wait for a loaded handle, detached ones dont
+            let ScriptLifecycleMessage::Attached(attachment) = front else {
+                if let Some(e) = self.waiting_queue.pop_front() {
+                    self.release_queue.push_back((e, None));
                 }
                 continue;
             };
+            let handle = attachment.script();
+
             match self.asset_server.get_load_state(&handle) {
                 Some(LoadState::Loading) => break,
                 Some(LoadState::Loaded) | None => {
                     // none in case this is added in memory and not through asset server
-                    let Some(e) = self.loading.pop_front() else {
+                    let Some(e) = self.waiting_queue.pop_front() else {
                         break;
                     };
                     let strong = StrongScriptHandle::from_assets(handle, &mut self.assets);
                     if let Some(strong) = strong {
                         let lang = strong.get(&self.assets).language.clone();
-                        self.loaded_with_handles
-                            .push_back((e, Some((strong, lang))));
+                        self.release_queue.push_back((e, Some((strong, lang))));
                     }
                 }
                 state => {
-                    self.loading.pop_front();
+                    self.waiting_queue.pop_front();
                     debug!(
                         "discarding script lifecycle triggers with handle: {} due to asset load state: {state:?}",
                         handle.display()
@@ -207,7 +207,7 @@ impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
         }
 
         // now return loaded with handles elements by draining
-        self.loaded_with_handles.drain(..)
+        self.release_queue.drain(..)
     }
 }
 
@@ -447,12 +447,11 @@ mod test {
         app.finish();
 
         let world = app.world_mut();
-        let mut system_state =
-            SystemState::<LoadedWithHandles<ScriptLifecycleMessage>>::from_world(world);
+        let mut system_state = SystemState::<ScriptLifecycleQueue>::from_world(world);
         // start empty
         {
             let mut state = system_state.get_mut(world).unwrap();
-            let loaded = state.get_loaded().collect::<Vec<_>>();
+            let loaded = state.get_ready().collect::<Vec<_>>();
             assert!(loaded.is_empty())
         }
 
@@ -475,15 +474,15 @@ mod test {
         // expect one loading, holding back the invalid one behind it
         {
             let mut state = system_state.get_mut(world).unwrap();
-            let loaded = state.get_loaded().collect::<Vec<_>>();
+            let loaded = state.get_ready().collect::<Vec<_>>();
             assert!(loaded.is_empty());
-            assert_eq!(state.loading.len(), 2);
+            assert_eq!(state.waiting_queue.len(), 2);
         }
 
         // now on next call the old ones don't persist
         {
             let mut state = system_state.get_mut(world).unwrap();
-            let loaded = state.get_loaded().collect::<Vec<_>>();
+            let loaded = state.get_ready().collect::<Vec<_>>();
             assert!(loaded.is_empty())
         }
     }
@@ -542,10 +541,9 @@ mod test {
         world.write_message(ScriptLifecycleMessage::Detached(attachment.clone()));
         world.write_message(ScriptLifecycleMessage::Attached(attachment.clone()));
 
-        let mut system_state =
-            SystemState::<LoadedWithHandles<ScriptLifecycleMessage>>::from_world(world);
+        let mut system_state = SystemState::<ScriptLifecycleQueue>::from_world(world);
         let mut state = system_state.get_mut(world).unwrap();
-        let released = state.get_loaded().map(|(e, _)| e).collect::<Vec<_>>();
+        let released = state.get_ready().map(|(e, _)| e).collect::<Vec<_>>();
         assert_eq!(
             released,
             vec![
