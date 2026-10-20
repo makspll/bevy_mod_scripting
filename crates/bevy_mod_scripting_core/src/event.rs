@@ -27,15 +27,26 @@ impl ScriptErrorMessage {
     }
 }
 
-/// Emitted when a script is attached.
-#[derive(Message, Clone, Debug, Reflect)]
+/// Emitted when a script is attached or detached.
+///
+/// Both are one message type, so the pipeline processes them in the order they were written.
+#[derive(Message, Clone, Debug, PartialEq, Reflect)]
 #[reflect(Message)]
-pub struct ScriptAttachedMessage(pub ScriptAttachment);
+pub enum ScriptLifecycleMessage {
+    /// The script was attached.
+    Attached(ScriptAttachment),
+    /// The script was detached.
+    Detached(ScriptAttachment),
+}
 
-/// Emitted when a script is detached.
-#[derive(Message, Clone, Debug, Reflect)]
-#[reflect(Message)]
-pub struct ScriptDetachedMessage(pub ScriptAttachment);
+impl ScriptLifecycleMessage {
+    /// The attachment this message is about.
+    pub fn attachment(&self) -> &ScriptAttachment {
+        match self {
+            Self::Attached(attachment) | Self::Detached(attachment) => attachment,
+        }
+    }
+}
 
 /// Emitted when a script asset is modified and all its attachments require re-loading
 #[derive(Message, Clone, Debug, Reflect)]

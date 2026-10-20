@@ -16,15 +16,13 @@ pub struct StrongScriptHandle(Handle<ScriptAsset>);
 //     }
 // }
 
-impl GetScriptHandle for ScriptAttachedMessage {
-    fn get_script_handle(&self) -> Handle<ScriptAsset> {
-        self.0.script()
-    }
-}
-
-impl GetScriptHandle for ScriptDetachedMessage {
-    fn get_script_handle(&self) -> Handle<ScriptAsset> {
-        self.0.script()
+impl GetScriptHandle for ScriptLifecycleMessage {
+    /// Only attachments wait for their script to load, detachments just keep their place in the queue
+    fn get_script_handle(&self) -> Option<Handle<ScriptAsset>> {
+        match self {
+            ScriptLifecycleMessage::Attached(attachment) => Some(attachment.script()),
+            ScriptLifecycleMessage::Detached(_) => None,
+        }
     }
 }
 
@@ -72,7 +70,7 @@ pub struct FilterAssetEventsSettings {
 pub fn filter_asset_events<P: IntoScriptPluginParams>(
     args: In<FilterAssetEventsSettings>,
     mut script_modified_events: MessageReader<AssetEvent<ScriptAsset>>,
-    mut script_attached_events: LoadedWithHandles<ScriptAttachedMessage, ScriptDetachedMessage>,
+    mut script_attached_events: LoadedWithHandles<ScriptLifecycleMessage>,
     mut active_machines: ResMut<ActiveMachines<P>>,
 ) {
     if args.hot_loads {
@@ -98,15 +96,18 @@ pub fn filter_asset_events<P: IntoScriptPluginParams>(
         let batch = script_attached_events
             .get_loaded()
             .filter_map(|event| match event {
-                ReleasedEvent::Loaded(mut a, b, l) => (l == P::LANGUAGE).then(|| {
-                    trace!(
-                        "dispatching script attachment event for: {a:?}, language: {}",
-                        P::LANGUAGE
-                    );
-                    *a.0.script_mut() = b.0;
-                    ScriptPipelineEvent::Attached(a)
-                }),
-                ReleasedEvent::Passed(d) => Some(ScriptPipelineEvent::Detached(d)),
+                (ScriptLifecycleMessage::Attached(mut a), Some((b, l))) => {
+                    (l == P::LANGUAGE).then(|| {
+                        trace!(
+                            "dispatching script attachment event for: {a:?}, language: {}",
+                            P::LANGUAGE
+                        );
+                        *a.script_mut() = b.0;
+                        ScriptPipelineEvent::Attached(a)
+                    })
+                }
+                (ScriptLifecycleMessage::Detached(d), _) => Some(ScriptPipelineEvent::Detached(d)),
+                (ScriptLifecycleMessage::Attached(_), None) => None,
             });
 
         active_machines.queue_machines(batch);
@@ -115,24 +116,24 @@ pub fn filter_asset_events<P: IntoScriptPluginParams>(
 
 /// A discriminated union of all events that can trigger the script processing pipeline.
 pub enum ScriptPipelineEvent {
-    /// [`ScriptAttachedMessage`]
-    Attached(ScriptAttachedMessage),
-    /// [`ScriptDetachedMessage`]
-    Detached(ScriptDetachedMessage),
+    /// [`ScriptLifecycleMessage::Attached`]
+    Attached(ScriptAttachment),
+    /// [`ScriptLifecycleMessage::Detached`]
+    Detached(ScriptAttachment),
     /// [`ScriptAssetModifiedMessage`]
     ModifiedAsset(ScriptAssetModifiedMessage),
 }
 
 impl ScriptPipelineEvent {
     fn process_attachment<P: IntoScriptPluginParams>(
-        attachment_event: ScriptAttachedMessage,
+        attachment_event: ScriptAttachment,
         assets: &mut Assets<ScriptAsset>,
         contexts: &mut ScriptContexts<P>,
     ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {
         let mut out = VecDeque::default();
-        let attachment = attachment_event.0.clone();
+        let attachment = attachment_event.clone();
         debug!("received attachment event: {attachment_event:?}");
-        let id = attachment_event.0.script();
+        let id = attachment_event.script();
         let mut context = MachineContext {
             attachment: attachment.clone(),
         };
@@ -190,14 +191,14 @@ impl ScriptPipelineEvent {
     }
 
     fn process_detachment<P: IntoScriptPluginParams>(
-        attachment_event: ScriptDetachedMessage,
+        attachment_event: ScriptAttachment,
         contexts: &ScriptContexts<P>,
     ) -> VecDeque<(ScriptAttachment, Box<dyn MachineState<P>>)> {
         debug!("received detachment event: {attachment_event:?}");
-        let attachment = &attachment_event.0;
+        let attachment = &attachment_event;
         let mut contexts = contexts.write();
         contexts
-            .get_context(&attachment_event.0)
+            .get_context(attachment)
             .into_iter()
             .filter_map(|existing_context| {
                 // for the borrow checker

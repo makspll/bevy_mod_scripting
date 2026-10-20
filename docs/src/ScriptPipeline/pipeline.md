@@ -8,7 +8,7 @@ In versions prior to `16.0` the pipeline was represented by load unload commands
 - Allowing async steps in the process
 
 The new pipeline works like this:
-- A set of systems in `PreUpdate` "filter" incoming `ScriptAttachedMessage` and `ScriptDetachedMessage`'s as well as `ScriptAssetModifiedMessage`'s (some generated from asset events, others from component hooks). The filtered events are wrapped in `ForPlugin<P>(inner)` events based on the language of the underlying event's.
+- A set of systems in `PreUpdate` "filter" incoming `ScriptLifecycleMessage`'s (attachments and detachments, processed in the order they were written) as well as `ScriptAssetModifiedMessage`'s (some generated from asset events, others from component hooks). The filtered events are wrapped in `ForPlugin<P>(inner)` events based on the language of the underlying event's.
 - A set of other systems then converts those into active `ScriptMachine`'s
 - Then inside the `ScriptProcessingSchedule<P>`, which is only run in `PreUpdate` if there are active machines, we tick each machine until it either errors or reaches its final state.
 

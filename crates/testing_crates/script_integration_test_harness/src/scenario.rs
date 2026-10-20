@@ -22,8 +22,7 @@ use bevy_mod_scripting_core::{
     ConfigureScriptPlugin, IntoScriptPluginParams, callback_labels,
     event::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
-        Recipients, ScriptAttachedMessage, ScriptCallbackMessage, ScriptCallbackResponseMessage,
-        ScriptDetachedMessage,
+        Recipients, ScriptCallbackMessage, ScriptCallbackResponseMessage, ScriptLifecycleMessage,
     },
     handler::event_handler,
     script::{ContextPolicy, ScriptComponent, ScriptContexts},
@@ -392,8 +391,7 @@ pub struct ScenarioContext {
 pub struct InterestingEventWatcher {
     pub events: Vec<(String, usize)>,
     pub asset_event_cursor: MessageCursor<AssetEvent<ScriptAsset>>,
-    pub script_attached_events_cursor: MessageCursor<ScriptAttachedMessage>,
-    pub script_detached_events_cursor: MessageCursor<ScriptDetachedMessage>,
+    pub script_lifecycle_events_cursor: MessageCursor<ScriptLifecycleMessage>,
     pub script_response_cursor: MessageCursor<ScriptCallbackResponseMessage>,
     pub script_responses_queue: VecDeque<ScriptCallbackResponseMessage>,
 }
@@ -401,24 +399,17 @@ pub struct InterestingEventWatcher {
 impl InterestingEventWatcher {
     pub fn log_events(&mut self, step_no: usize, world: &World) {
         let asset_events = world.resource::<Messages<AssetEvent<ScriptAsset>>>();
-        let script_attached_events = world.resource::<Messages<ScriptAttachedMessage>>();
-        let script_detached_events = world.resource::<Messages<ScriptDetachedMessage>>();
+        let script_lifecycle_events = world.resource::<Messages<ScriptLifecycleMessage>>();
         let script_responses = world.resource::<Messages<ScriptCallbackResponseMessage>>();
         let mut tracked_with_id = Vec::default();
         for (event, id) in self.asset_event_cursor.read_with_id(asset_events) {
             tracked_with_id.push((id.id, format!("AssetEvent : {event:?}")));
         }
         for (event, id) in self
-            .script_attached_events_cursor
-            .read_with_id(script_attached_events)
+            .script_lifecycle_events_cursor
+            .read_with_id(script_lifecycle_events)
         {
-            tracked_with_id.push((id.id, format!("ScriptAttachedMessage: {event:?}")));
-        }
-        for (event, id) in self
-            .script_detached_events_cursor
-            .read_with_id(script_detached_events)
-        {
-            tracked_with_id.push((id.id, format!("ScriptDetachedMessage: {event:?}")));
+            tracked_with_id.push((id.id, format!("ScriptLifecycleMessage: {event:?}")));
         }
         let mut script_responses_by_id = Vec::default();
         for (event, id) in self.script_response_cursor.read_with_id(script_responses) {

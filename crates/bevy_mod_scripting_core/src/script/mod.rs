@@ -9,7 +9,7 @@ type IndexMap<K, V> = indexmap::IndexMap<K, V, FixedHasher>;
 /// Insertion ordered set, see [`IndexMap`].
 type IndexSet<K> = indexmap::IndexSet<K, FixedHasher>;
 
-use crate::event::{ScriptAttachedMessage, ScriptDetachedMessage};
+use crate::event::ScriptLifecycleMessage;
 
 use ::{
     bevy_asset::Handle,
@@ -84,7 +84,11 @@ impl ScriptComponent {
             cache.last_values.remove(&context.entity);
         }
 
-        world.write_message_batch(context_keys.into_iter().map(ScriptDetachedMessage));
+        world.write_message_batch(
+            context_keys
+                .into_iter()
+                .map(ScriptLifecycleMessage::Detached),
+        );
     }
 
     /// the lifecycle hook called when a script component is added to an entity, emits an appropriate event so we can handle
@@ -100,7 +104,11 @@ impl ScriptComponent {
             );
         }
 
-        world.write_message_batch(context_keys.into_iter().map(ScriptAttachedMessage));
+        world.write_message_batch(
+            context_keys
+                .into_iter()
+                .map(ScriptLifecycleMessage::Attached),
+        );
     }
 }
 
@@ -119,8 +127,7 @@ pub struct ScriptComponentsChangeCache {
 pub fn script_component_changed_handler(
     mut cache: ResMut<ScriptComponentsChangeCache>,
     changed: Query<(Entity, Ref<ScriptComponent>), Changed<ScriptComponent>>,
-    mut attachment_messages: MessageWriter<ScriptAttachedMessage>,
-    mut detachment_messages: MessageWriter<ScriptDetachedMessage>,
+    mut lifecycle_messages: MessageWriter<ScriptLifecycleMessage>,
 ) {
     for (entity, current_value) in changed {
         if let Some(last_value) = cache.last_values.get_mut(&entity) {
@@ -130,7 +137,7 @@ pub fn script_component_changed_handler(
             for old in last_value.iter() {
                 if !current_value.0.contains(old) {
                     any_change = true;
-                    detachment_messages.write(ScriptDetachedMessage(
+                    lifecycle_messages.write(ScriptLifecycleMessage::Detached(
                         ScriptAttachment::EntityScript(entity, old.clone()),
                     ));
                 }
@@ -140,7 +147,7 @@ pub fn script_component_changed_handler(
             for new in current_value.0.iter() {
                 if !last_value.contains(new) {
                     any_change = true;
-                    attachment_messages.write(ScriptAttachedMessage(
+                    lifecycle_messages.write(ScriptLifecycleMessage::Attached(
                         ScriptAttachment::EntityScript(entity, new.clone()),
                     ));
                 }
@@ -163,15 +170,18 @@ mod tests {
     #[test]
     fn test_component_add() {
         let mut world = World::new();
-        world.init_resource::<Messages<ScriptAttachedMessage>>();
+        world.init_resource::<Messages<ScriptLifecycleMessage>>();
         // spawn new script component
         let entity = world.spawn(ScriptComponent::new([Handle::default()])).id();
 
         // check that the event was sent
-        let mut events = world.resource_mut::<Messages<ScriptAttachedMessage>>();
+        let mut events = world.resource_mut::<Messages<ScriptLifecycleMessage>>();
         assert_eq!(
-            ScriptAttachment::EntityScript(entity, Handle::default()),
-            events.drain().next().unwrap().0
+            ScriptLifecycleMessage::Attached(ScriptAttachment::EntityScript(
+                entity,
+                Handle::default()
+            )),
+            events.drain().next().unwrap()
         );
     }
 }

@@ -22,8 +22,8 @@ use crate::{
     context::ScriptingLoader,
     error::ScriptError,
     event::{
-        GetRecipients, Recipients, ScriptAssetModifiedMessage, ScriptAttachedMessage,
-        ScriptDetachedMessage, ScriptErrorMessage,
+        GetRecipients, Recipients, ScriptAssetModifiedMessage, ScriptErrorMessage,
+        ScriptLifecycleMessage,
     },
     pipeline::hooks::{
         clear_machine_data, on_script_unloaded_for_reload_pipeline_handler,
@@ -139,84 +139,61 @@ impl<P: IntoScriptPluginParams> std::fmt::Debug for ScriptProcessingSchedule<P> 
 
 /// A trait describing things containing script handles
 pub trait GetScriptHandle {
-    /// Retrieve the contained script handle
-    fn get_script_handle(&self) -> Handle<ScriptAsset>;
-}
-
-/// An event queued in [`LoadedWithHandles`].
-#[derive(Clone)]
-pub enum HeldEvent<T, D> {
-    /// Waits for its script asset to finish loading.
-    Load(T),
-    /// Released as soon as all the events before it are released.
-    Pass(D),
-}
-
-/// An event released by [`LoadedWithHandles`].
-pub enum ReleasedEvent<T, D> {
-    /// An event whose script asset finished loading, with a strong handle to it and its language.
-    Loaded(T, StrongScriptHandle, Language),
-    /// An event which waited for the events before it.
-    Passed(D),
+    /// Retrieve the contained script handle, if its asset needs to be loaded before the event is processed
+    fn get_script_handle(&self) -> Option<Handle<ScriptAsset>>;
 }
 
 #[derive(SystemParam)]
 /// A system param which operates over types implementing [`GetScriptHandle`].
-/// Captures incoming "handle" like types `T`, and waits until their asset is in a final state before proceeding, if that final state
+/// Captures incoming "handle" like types, and waits until their asset is in a final state before proceeding, if that final state
 /// is loaded, will also guarantee a strong handle, otherwise the whole thing is skipped.
 ///
-/// Events of type `D` don't need their asset, but are queued with the `T` events, so they never overtake one which is still loading.
+/// Events without a handle don't wait for an asset, but stay in order with the rest, so they never overtake an event which is still loading.
 ///
 /// Think of this as a proxy for "baby'ing" asset handles
-pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Message + Clone, D: Message + Clone> {
+pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Message + Clone> {
     /// The script assets resource. To allow systems needing both resources to access them in one place
     pub assets: ResMut<'w, Assets<ScriptAsset>>,
     asset_server: Res<'w, AssetServer>,
     fresh_events: MessageReader<'w, 's, T>,
-    fresh_pass_events: MessageReader<'w, 's, D>,
-    loaded_with_handles: Local<'s, VecDeque<ReleasedEvent<T, D>>>,
-    loading: Local<'s, VecDeque<HeldEvent<T, D>>>,
+    loaded_with_handles: Local<'s, VecDeque<(T, Option<(StrongScriptHandle, Language)>)>>,
+    loading: Local<'s, VecDeque<T>>,
 }
 
-impl<T: GetScriptHandle + Message + Clone, D: Message + Clone> LoadedWithHandles<'_, '_, T, D> {
-    /// Retrieves all of the events of type `T`, which have finished loading and have a strong handle,
-    /// the rest will be discarded, together with the `D` events queued between them.
+impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
+    /// Retrieves all of the events of type `T` which have finished loading, with a strong handle and the language of their script,
+    /// and the events without a handle, the rest will be discarded.
     ///
     /// Events are released strictly in the order they arrived, an event whose asset is still loading holds back all the events behind it.
     /// This way the order in which scripts enter the pipeline does not depend on asset IO timing.
-    /// Within a frame, the `T` events are queued before the `D` events.
     ///
     /// This uses a [`EventReader<T>`] underneath, meaning if you don't call this method once every frame (or every other frame).
     /// You may miss events.
-    pub fn get_loaded(&mut self) -> impl Iterator<Item = ReleasedEvent<T, D>> {
+    pub fn get_loaded(
+        &mut self,
+    ) -> impl Iterator<Item = (T, Option<(StrongScriptHandle, Language)>)> {
         // first get all of the fresh_events
-        self.loading
-            .extend(self.fresh_events.read().cloned().map(HeldEvent::Load));
-        self.loading
-            .extend(self.fresh_pass_events.read().cloned().map(HeldEvent::Pass));
+        self.loading.extend(self.fresh_events.read().cloned());
         // now process the loading queue in order, until we hit an event which is still loading
         while let Some(front) = self.loading.front() {
-            let handle = match front {
-                HeldEvent::Load(e) => e.get_script_handle(),
-                HeldEvent::Pass(_) => {
-                    if let Some(HeldEvent::Pass(e)) = self.loading.pop_front() {
-                        self.loaded_with_handles.push_back(ReleasedEvent::Passed(e));
-                    }
-                    continue;
+            let Some(handle) = front.get_script_handle() else {
+                if let Some(e) = self.loading.pop_front() {
+                    self.loaded_with_handles.push_back((e, None));
                 }
+                continue;
             };
             match self.asset_server.get_load_state(&handle) {
                 Some(LoadState::Loading) => break,
                 Some(LoadState::Loaded) | None => {
                     // none in case this is added in memory and not through asset server
-                    let Some(HeldEvent::Load(e)) = self.loading.pop_front() else {
+                    let Some(e) = self.loading.pop_front() else {
                         break;
                     };
                     let strong = StrongScriptHandle::from_assets(handle, &mut self.assets);
                     if let Some(strong) = strong {
                         let lang = strong.get(&self.assets).language.clone();
                         self.loaded_with_handles
-                            .push_back(ReleasedEvent::Loaded(e, strong, lang));
+                            .push_back((e, Some((strong, lang))));
                     }
                 }
                 state => {
@@ -236,8 +213,7 @@ impl<T: GetScriptHandle + Message + Clone, D: Message + Clone> LoadedWithHandles
 
 impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
     fn build(&self, app: &mut App) {
-        app.add_message::<ScriptAttachedMessage>()
-            .add_message::<ScriptDetachedMessage>()
+        app.add_message::<ScriptLifecycleMessage>()
             .add_message::<ScriptAssetModifiedMessage>();
 
         app.init_resource::<ActiveMachinesData>();
@@ -465,16 +441,14 @@ mod test {
     #[test]
     fn test_system_params() {
         let mut app = App::default();
-        app.add_message::<ScriptAttachedMessage>()
-            .add_message::<ScriptDetachedMessage>();
+        app.add_message::<ScriptLifecycleMessage>();
         app.add_plugins(AssetPlugin::default());
         app.init_asset::<ScriptAsset>();
         app.finish();
 
         let world = app.world_mut();
-        let mut system_state = SystemState::<
-            LoadedWithHandles<ScriptAttachedMessage, ScriptDetachedMessage>,
-        >::from_world(world);
+        let mut system_state =
+            SystemState::<LoadedWithHandles<ScriptLifecycleMessage>>::from_world(world);
         // start empty
         {
             let mut state = system_state.get_mut(world).unwrap();
@@ -491,12 +465,12 @@ mod test {
         };
         let handle = asset_server.add(asset);
         let handle_invalid = Handle::default();
-        world.write_message(ScriptAttachedMessage(ScriptAttachment::StaticScript(
-            handle,
-        )));
-        world.write_message(ScriptAttachedMessage(ScriptAttachment::StaticScript(
-            handle_invalid,
-        )));
+        world.write_message(ScriptLifecycleMessage::Attached(
+            ScriptAttachment::StaticScript(handle),
+        ));
+        world.write_message(ScriptLifecycleMessage::Attached(
+            ScriptAttachment::StaticScript(handle_invalid),
+        ));
 
         // expect one loading, holding back the invalid one behind it
         {
@@ -519,8 +493,7 @@ mod test {
     #[test]
     fn test_detachment_waits_for_loading_attachment() {
         let mut app = App::default();
-        app.add_message::<ScriptAttachedMessage>()
-            .add_message::<ScriptDetachedMessage>();
+        app.add_message::<ScriptLifecycleMessage>();
         app.add_plugins(AssetPlugin::default());
         app.init_asset::<ScriptAsset>();
         app.init_resource::<ActiveMachines<TestPlugin>>();
@@ -533,8 +506,8 @@ mod test {
             language: Language::Lua,
         });
         let attachment = ScriptAttachment::StaticScript(handle);
-        world.write_message(ScriptAttachedMessage(attachment.clone()));
-        world.write_message(ScriptDetachedMessage(attachment));
+        world.write_message(ScriptLifecycleMessage::Attached(attachment.clone()));
+        world.write_message(ScriptLifecycleMessage::Detached(attachment));
 
         let system = world.register_system(filter_asset_events::<TestPlugin>);
         let settings = FilterAssetEventsSettings {
@@ -549,9 +522,43 @@ mod test {
     }
 
     #[test]
+    fn test_detach_then_attach_keep_their_order() {
+        let mut app = App::default();
+        app.add_message::<ScriptLifecycleMessage>();
+        app.add_plugins(AssetPlugin::default());
+        app.init_asset::<ScriptAsset>();
+        app.finish();
+
+        let world = app.world_mut();
+        // added directly, so it's loaded already
+        let handle = world
+            .resource_mut::<Assets<ScriptAsset>>()
+            .add(ScriptAsset {
+                content: "asd".to_string().into_boxed_str().into_boxed_bytes(),
+                language: Language::Lua,
+            });
+        let attachment = ScriptAttachment::EntityScript(Entity::from_raw_u32(1).unwrap(), handle);
+        // i.e. a script component removed and inserted again in the same frame
+        world.write_message(ScriptLifecycleMessage::Detached(attachment.clone()));
+        world.write_message(ScriptLifecycleMessage::Attached(attachment.clone()));
+
+        let mut system_state =
+            SystemState::<LoadedWithHandles<ScriptLifecycleMessage>>::from_world(world);
+        let mut state = system_state.get_mut(world).unwrap();
+        let released = state.get_loaded().map(|(e, _)| e).collect::<Vec<_>>();
+        assert_eq!(
+            released,
+            vec![
+                ScriptLifecycleMessage::Detached(attachment.clone()),
+                ScriptLifecycleMessage::Attached(attachment),
+            ]
+        );
+    }
+
+    #[test]
     fn test_run_override_is_undid() {
         let mut app = App::default();
-        app.add_message::<ScriptAttachedMessage>();
+        app.add_message::<ScriptLifecycleMessage>();
 
         app.add_plugins((AssetPlugin::default(), TestPlugin::default()));
         app.init_asset::<ScriptAsset>();

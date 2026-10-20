@@ -6,9 +6,7 @@ use crate::{
     IntoScriptPluginParams, ScriptContexts,
     callbacks::ScriptCallbacks,
     error::ScriptError,
-    event::{
-        CallbackLabel, ScriptAttachedMessage, ScriptCallbackResponseMessage, ScriptDetachedMessage,
-    },
+    event::{CallbackLabel, ScriptCallbackResponseMessage, ScriptLifecycleMessage},
     handler::{ScriptingHandler, send_callback_response, send_script_errors},
     pipeline::RunProcessingPipelineOnce,
     script::Context,
@@ -229,25 +227,31 @@ impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
     type Out = Result<ScriptValue, BevyError>;
 }
 
-/// Command which emits a [`ScriptAttachedMessage`] and then runs the processing pipeline to immediately process it.
+/// Command which emits a [`ScriptLifecycleMessage::Attached`] and then runs the processing pipeline to immediately process it.
 /// The end result is equivalent to attaching a script component or adding a static script and waiting for the normal pipeline to process it.
-pub struct AttachScript<P: IntoScriptPluginParams>(ScriptAttachedMessage, PhantomData<fn(P)>);
+pub struct AttachScript<P: IntoScriptPluginParams>(ScriptLifecycleMessage, PhantomData<fn(P)>);
 
 impl<P: IntoScriptPluginParams> AttachScript<P> {
     /// Creates a new [`AttachScript`] command, which will create the given attachment, run expected callbacks, and
     pub fn new(attachment: ScriptAttachment) -> Self {
-        Self(ScriptAttachedMessage(attachment), Default::default())
+        Self(
+            ScriptLifecycleMessage::Attached(attachment),
+            Default::default(),
+        )
     }
 }
 
-/// Command which emits a [`ScriptDetachedMessage`] and then runs the processing pipeline to immediately process it.
+/// Command which emits a [`ScriptLifecycleMessage::Detached`] and then runs the processing pipeline to immediately process it.
 /// The end result is equivalent to detaching a script component or removing a static script and waiting for the normal pipeline to process it.
-pub struct DetachScript<P: IntoScriptPluginParams>(ScriptDetachedMessage, PhantomData<fn(P)>);
+pub struct DetachScript<P: IntoScriptPluginParams>(ScriptLifecycleMessage, PhantomData<fn(P)>);
 
 impl<P: IntoScriptPluginParams> DetachScript<P> {
     /// Creates a new [`DetachScript`] command, which will create the given attachment, run all expected callbacks, and delete contexts if necessary.
     pub fn new(attachment: ScriptAttachment) -> Self {
-        Self(ScriptDetachedMessage(attachment), Default::default())
+        Self(
+            ScriptLifecycleMessage::Detached(attachment),
+            Default::default(),
+        )
     }
 }
 

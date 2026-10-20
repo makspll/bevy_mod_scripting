@@ -431,8 +431,7 @@ fn register_types(app: &mut App) {
     app.register_type::<event::CallbackLabel>();
     app.register_type::<event::Recipients>();
     app.register_type::<event::ScriptCallbackMessage>();
-    app.register_type::<event::ScriptAttachedMessage>();
-    app.register_type::<event::ScriptDetachedMessage>();
+    app.register_type::<event::ScriptLifecycleMessage>();
     app.register_type::<event::ScriptAssetModifiedMessage>();
 }
 
@@ -466,8 +465,7 @@ mod test {
     #[test]
     fn test_own_messages_can_be_written_via_reflection() {
         use crate::event::{
-            ScriptAssetModifiedMessage, ScriptAttachedMessage, ScriptCallbackMessage,
-            ScriptDetachedMessage,
+            ScriptAssetModifiedMessage, ScriptCallbackMessage, ScriptLifecycleMessage,
         };
         use bevy_ecs::{
             message::{MessageCursor, Messages},
@@ -485,8 +483,7 @@ mod test {
 
         for id in [
             std::any::TypeId::of::<ScriptCallbackMessage>(),
-            std::any::TypeId::of::<ScriptAttachedMessage>(),
-            std::any::TypeId::of::<ScriptDetachedMessage>(),
+            std::any::TypeId::of::<ScriptLifecycleMessage>(),
             std::any::TypeId::of::<ScriptAssetModifiedMessage>(),
         ] {
             assert!(

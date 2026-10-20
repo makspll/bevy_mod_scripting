@@ -94,6 +94,6 @@ world.trigger_event(Damaged, { amount = 5 })
 The following BMS messages are reflected and can be written from scripts:
 
 * `ScriptCallbackMessage`: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer `bms.queue_script_callback` to run callbacks from scripts.
-* `ScriptAttachedMessage`, `ScriptDetachedMessage`, `ScriptAssetModifiedMessage`: drive the script loading pipeline
+* `ScriptLifecycleMessage` (`Attached` / `Detached`), `ScriptAssetModifiedMessage`: drive the script loading pipeline
 
 The internal loading pipeline state events (`LoadingCompleted`, `ContextAssigned`, ...) are intentionally not reflected.
