@@ -62,13 +62,13 @@ pub enum ScenarioStepSerialized {
         context_policy: Option<ContextMode>,
         /// sets the emit_responses flag for core callbacks
         emit_responses: Option<bool>,
-        /// the amount of nanoseconds to set the loading budget to
-        nanoseconds_budget: Option<u64>,
+        /// the maximum amount of pipeline ticks per frame
+        tick_budget: Option<usize>,
     },
     /// Sets the pipeline processing budget
-    SetNanosecondsBudget {
-        /// the amount of nanoseconds to set the loading budget to
-        nanoseconds_budget: Option<u64>,
+    SetTickBudget {
+        /// the maximum amount of pipeline ticks per frame
+        tick_budget: Option<usize>,
     },
     /// Called after the app config is set up, but before we run anything
     FinalizeApp,

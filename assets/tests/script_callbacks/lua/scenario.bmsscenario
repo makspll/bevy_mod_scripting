@@ -1,7 +1,7 @@
 // #main_script script_callbacks.lua
 // the same script is attached to two entities, by default each attachment gets its own context
 SetCurrentLanguage language="@this_script_language"
-InstallPlugin nanoseconds_budget=999999999
+InstallPlugin
 SetupHandler OnTest=null, Update=null
 SetupHandler OnTestPostUpdate=null, PostUpdate=null
 FinalizeApp

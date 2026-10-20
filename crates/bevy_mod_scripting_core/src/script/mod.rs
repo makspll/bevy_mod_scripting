@@ -1,9 +1,13 @@
 //! Script related types, functions and components
 
-use std::{
-    collections::{HashMap, HashSet},
-    ops::Deref,
-};
+use std::ops::Deref;
+
+use bevy_platform::hash::FixedHasher;
+
+/// Insertion ordered map, script state is kept in these so iteration order is deterministic.
+type IndexMap<K, V> = indexmap::IndexMap<K, V, FixedHasher>;
+/// Insertion ordered set, see [`IndexMap`].
+type IndexSet<K> = indexmap::IndexSet<K, FixedHasher>;
 
 use crate::event::{ScriptAttachedMessage, ScriptDetachedMessage};
 
@@ -106,7 +110,7 @@ impl ScriptComponent {
 /// Any handles in this cache are removed immediately when they are removed via the component
 #[derive(Resource, Default)]
 pub struct ScriptComponentsChangeCache {
-    last_values: EntityHashMap<HashSet<Handle<ScriptAsset>>>,
+    last_values: EntityHashMap<IndexSet<Handle<ScriptAsset>>>,
 }
 
 /// A system that handles pure modifications to a [`ScriptComponent`].

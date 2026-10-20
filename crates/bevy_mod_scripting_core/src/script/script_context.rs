@@ -187,7 +187,7 @@ impl ContextKeySelector for ContextPolicy {
 
 #[derive(Default)]
 struct ContextEntry<P: IntoScriptPluginParams> {
-    residents: HashSet<ScriptAttachment>,
+    residents: IndexSet<ScriptAttachment>,
     context: Context<P>,
 }
 
@@ -305,7 +305,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptContexts<P> {
 /// Inner data carried by the Arc proxy in ScriptContext
 pub struct ScriptContextInner<P: IntoScriptPluginParams> {
     /// script contexts and the counts of how many scripts are associated with them.
-    map: HashMap<ContextKey, ContextEntry<P>>,
+    map: IndexMap<ContextKey, ContextEntry<P>>,
     /// The policy used to determine the context key.
     pub policy: ContextPolicy,
 }
@@ -314,7 +314,7 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
     /// Construct a new ScriptContext with the given policy.
     pub fn new(policy: ContextPolicy) -> Self {
         Self {
-            map: HashMap::default(),
+            map: IndexMap::default(),
             policy,
         }
     }
@@ -382,7 +382,7 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
                     .entry(key.clone())
                     .and_modify(|c| c.context = context.clone())
                     .or_insert_with(|| ContextEntry {
-                        residents: HashSet::from_iter([context_key.clone()]),
+                        residents: IndexSet::from_iter([context_key.clone()]),
                         context,
                     });
 
@@ -428,7 +428,7 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
     /// This needs to be called when a script is deleted.
     pub fn remove_resident(&mut self, context_key: &ScriptAttachment) {
         if let Some(entry) = self.get_entry_mut(context_key) {
-            entry.residents.remove(context_key);
+            entry.residents.swap_remove(context_key);
         }
     }
 
@@ -500,7 +500,7 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
     pub fn remove(&mut self, context_key: &ScriptAttachment) -> Option<Context<P>> {
         self.policy
             .select(context_key)
-            .and_then(|key| self.map.remove(&key).map(|entry| entry.context))
+            .and_then(|key| self.map.swap_remove(&key).map(|entry| entry.context))
     }
 }
 
@@ -509,7 +509,7 @@ impl<P: IntoScriptPluginParams> ScriptContextInner<P> {
 impl<P: IntoScriptPluginParams> Default for ScriptContextInner<P> {
     fn default() -> Self {
         Self {
-            map: HashMap::default(),
+            map: IndexMap::default(),
             policy: ContextPolicy::default(),
         }
     }

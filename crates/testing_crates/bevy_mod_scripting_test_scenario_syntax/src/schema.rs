@@ -79,9 +79,9 @@ fn get_schema() -> ScenarioSchema {
                             "sets the emit_responses flag for core callbacks",
                         ),
                         num_field(
-                            "nanoseconds_budget",
+                            "tick_budget",
                             true,
-                            "the amount of nanoseconds to set the loading budget to",
+                            "the maximum amount of pipeline ticks per frame",
                         ),
                     ]
                     .into_iter()
@@ -89,12 +89,12 @@ fn get_schema() -> ScenarioSchema {
                 },
             ),
             (
-                "SetNanosecondsBudget".into(),
+                "SetTickBudget".into(),
                 StepSchema {
                     fields: vec![num_field(
-                        "nanoseconds_budget",
+                        "tick_budget",
                         true,
-                        "the amount of nanoseconds to set the loading budget to",
+                        "the maximum amount of pipeline ticks per frame",
                     )]
                     .into_iter()
                     .collect(),

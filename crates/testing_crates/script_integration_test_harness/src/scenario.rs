@@ -2,7 +2,7 @@ use std::{
     borrow::Cow,
     collections::{HashMap, VecDeque},
     path::{Path, PathBuf},
-    time::{Duration, Instant},
+    time::Instant,
 };
 
 use ::{
@@ -210,8 +210,8 @@ impl Scenario {
                     state,
                 }
             }
-            ScenarioStepSerialized::SetNanosecondsBudget { nanoseconds_budget } => {
-                ScenarioStep::SetNanosecondsBudget { nanoseconds_budget }
+            ScenarioStepSerialized::SetTickBudget { tick_budget } => {
+                ScenarioStep::SetTickBudget { tick_budget }
             }
             ScenarioStepSerialized::FinalizeApp => ScenarioStep::FinalizeApp,
             ScenarioStepSerialized::AssertContextResidents {
@@ -239,11 +239,11 @@ impl Scenario {
             ScenarioStepSerialized::InstallPlugin {
                 context_policy,
                 emit_responses,
-                nanoseconds_budget,
+                tick_budget,
             } => ScenarioStep::InstallPlugin {
                 context_policy: Self::resolve_context_policy(context_policy),
                 emit_responses: emit_responses.unwrap_or(false),
-                nanoseconds_budget,
+                tick_budget,
             },
             ScenarioStepSerialized::DropScriptAsset { script } => ScenarioStep::DropScriptAsset {
                 script: self.context.get_script_handle(&script)?,
@@ -496,7 +496,7 @@ pub enum ScenarioStep {
     InstallPlugin {
         context_policy: ContextPolicy,
         emit_responses: bool,
-        nanoseconds_budget: Option<u64>,
+        tick_budget: Option<usize>,
     },
     /// Finalizes the app, cleaning up resources and preparing for the next steps.
     FinalizeApp,
@@ -587,8 +587,8 @@ pub enum ScenarioStep {
         attachment: ScriptAttachment,
         state: ScenarioContextState,
     },
-    SetNanosecondsBudget {
-        nanoseconds_budget: Option<u64>,
+    SetTickBudget {
+        tick_budget: Option<usize>,
     },
     AddScriptToEntity {
         script: Handle<ScriptAsset>,
@@ -693,7 +693,7 @@ impl ScenarioStep {
             ScenarioStep::InstallPlugin {
                 context_policy,
                 emit_responses,
-                nanoseconds_budget,
+                tick_budget,
             } => {
                 if !context.initialized_app {
                     *app = setup_integration_test(|_, _| {});
@@ -704,10 +704,9 @@ impl ScenarioStep {
                     #[cfg(feature = "lua")]
                     Some(Language::Lua) => {
                         use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
-                        use std::time::Duration;
                         let mut pipeline = ScriptLoadingPipeline::default();
-                        if let Some(budget) = nanoseconds_budget {
-                            pipeline.time_budget = Some(Duration::from_nanos(budget));
+                        if let Some(budget) = tick_budget {
+                            pipeline.tick_budget = Some(budget);
                         }
                         let plugin = crate::make_test_lua_plugin();
                         let plugin = plugin
@@ -719,10 +718,9 @@ impl ScenarioStep {
                     #[cfg(feature = "rune")]
                     Some(Language::Rune) => {
                         use bevy_mod_scripting_core::pipeline::ScriptLoadingPipeline;
-                        use std::time::Duration;
                         let mut pipeline = ScriptLoadingPipeline::default();
-                        if let Some(budget) = nanoseconds_budget {
-                            pipeline.time_budget = Some(Duration::from_nanos(budget));
+                        if let Some(budget) = tick_budget {
+                            pipeline.tick_budget = Some(budget);
                         }
                         let plugin = crate::make_test_rune_plugin();
                         let plugin = plugin
@@ -1105,33 +1103,30 @@ impl ScenarioStep {
                     info!("Script attachment: {script} context has state {state:?} as expected",);
                 }
             }
-            ScenarioStep::SetNanosecondsBudget { nanoseconds_budget } => {
-                let nanoseconds_budget = nanoseconds_budget.map(Duration::from_nanos);
-                match context.current_script_language {
-                    #[cfg(feature = "lua")]
-                    Some(Language::Lua) => {
-                        let mut machines = app
-                            .world_mut()
-                            .get_resource_mut::<ActiveMachines<LuaScriptingPlugin>>()
-                            .unwrap();
-                        machines.budget = nanoseconds_budget;
-                    }
-                    #[cfg(feature = "rune")]
-                    Some(Language::Rune) => {
-                        let mut machines = app
-                            .world_mut()
-                            .get_resource_mut::<ActiveMachines<RuneScriptingPlugin>>()
-                            .unwrap();
-                        machines.budget = nanoseconds_budget;
-                    }
-                    _ => {
-                        return Err(anyhow!(
-                            "Scenario step SetNanosecondsBudget is not supported for the current plugin type: '{:?}'",
-                            context.current_script_language
-                        ));
-                    }
+            ScenarioStep::SetTickBudget { tick_budget } => match context.current_script_language {
+                #[cfg(feature = "lua")]
+                Some(Language::Lua) => {
+                    let mut machines = app
+                        .world_mut()
+                        .get_resource_mut::<ActiveMachines<LuaScriptingPlugin>>()
+                        .unwrap();
+                    machines.budget = tick_budget;
                 }
-            }
+                #[cfg(feature = "rune")]
+                Some(Language::Rune) => {
+                    let mut machines = app
+                        .world_mut()
+                        .get_resource_mut::<ActiveMachines<RuneScriptingPlugin>>()
+                        .unwrap();
+                    machines.budget = tick_budget;
+                }
+                _ => {
+                    return Err(anyhow!(
+                        "Scenario step SetTickBudget is not supported for the current plugin type: '{:?}'",
+                        context.current_script_language
+                    ));
+                }
+            },
             ScenarioStep::AddScriptToEntity { script, name } => {
                 let world = app.world_mut();
                 world

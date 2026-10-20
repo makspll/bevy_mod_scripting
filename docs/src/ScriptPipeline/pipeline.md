@@ -4,7 +4,7 @@ Processing script atachments and detachments is all done by the script pipeline.
 
 In versions prior to `16.0` the pipeline was represented by load unload commands, which atomically processed scripts. Since then the pipeline has been maassively overhauled to allow:
 - Customizing callbacks during the process
-- Budgeting frame time for the pipeline
+- Budgeting the work done by the pipeline each frame
 - Allowing async steps in the process
 
 The new pipeline works like this:
@@ -53,17 +53,24 @@ fn main(&mut app: App) {
 
 ## Timing & Order
 
-The machine ticking by default is limited to 16ms per run (i.e. 60fps assuming it has the entirety of the frame to run). This is not entirely effective as some operations are not currently very fine grained, for example if a callback takes more than 16ms it will easilly hog the frame time. 
-
-This is however effective when a lot of scripts are loaded in at once, as loading will be spread out over multiple frames.
+By default all machines are ticked to completion in the frame they start. Setting `ScriptLoadingPipeline::tick_budget` limits the amount of machine ticks (steps in the state machine above) per frame, spreading the loading of many scripts over multiple frames. The budget counts steps, not time, so a step running a slow callback can still take up the frame.
 
 You can override this and many other settings (including disabling the core callbacks) by changing the `ScriptLoadingPipeline<P>` settings via your scripting plugin's `set_pipeline_settings`.
 
 The script loading/unloading order will look as follows:
 - the order in which components are attached/detached, will determing what order scripts will be processed
+- an attachment whose script asset is still loading holds back the attachments after it, until it finishes loading
 - scripts are processed one-by-one, i.e. each machine is ticked to completion before the next one is started
     - meaning for example if two scripts are loaded, their `on_script_loaded` hooks will not run at the same "lockstep".
 - loading/unloading might happen over multiple frames, depending on the pipeline's settings.
+
+## Determinism
+
+Given the same inputs (the same order of attachments, detachments and app updates), scripts load in the same order and callbacks reach scripts in the same order, on every run and machine: script contexts are kept in insertion ordered maps, and the pipeline budget counts steps rather than time.
+
+What BMS cannot control:
+- which frame a script asset finishes loading in, as asset IO is asynchronous. Wait for scripts to load (see below) before relying on frame timing.
+- language internals, for example Lua iterates tables with string keys (`pairs`) in a different order on each run. BMS seeds Lua's `math.random` with `0` when creating a context, call `math.randomseed` to change it.
 
 ## Waiting for scripts to load
 

@@ -220,6 +220,14 @@ pub fn lua_context_load(
     });
     context.set_app_data(bindings::script_value::LuaFunctionCache::default());
 
+    // some Lua versions seed `math.random` randomly per state, use a fixed seed so scripts are deterministic by default
+    context
+        .globals()
+        .get::<mlua::Table>("math")
+        .and_then(|math| math.get::<mlua::Function>("randomseed"))
+        .and_then(|randomseed| randomseed.call::<()>(0))
+        .map_err(IntoInteropError::to_bms_error)?;
+
     load_lua_content_into_context(&mut context, context_key, content, world_id)?;
     Ok(context)
 }
@@ -370,6 +378,27 @@ mod test {
         let globals = lua.globals();
         assert!(globals.get::<Value>("hello_world_from_first_load").is_ok());
         assert!(globals.get::<Value>("hello_world_from_second_load").is_ok());
+    }
+
+    #[test]
+    fn math_random_is_seeded_the_same_in_every_context() {
+        let context_key = ScriptAttachment::StaticScript(Handle::default());
+        let world_id = WorldId::new().unwrap();
+        LuaScriptingPlugin::set_world_local_config(
+            world_id,
+            ScriptingPluginConfiguration {
+                pre_handling_callbacks: &[],
+                context_initialization_callbacks: &[],
+                emit_responses: false,
+                runtime: &(),
+                language_extensions: Box::leak(Box::new(LanguageExtensions::default())),
+            },
+        );
+        let first_random = || {
+            let context = lua_context_load(&context_key, b"", world_id).unwrap();
+            context.load("return math.random()").eval::<f64>().unwrap()
+        };
+        assert_eq!(first_random(), first_random());
     }
 
     /// Values allocated for scripts are freed with their last reference, which can be a userdata collected by Lua,

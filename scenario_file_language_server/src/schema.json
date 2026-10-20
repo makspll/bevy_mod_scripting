@@ -198,10 +198,10 @@
           "optional": true,
           "doc": "sets the emit_responses flag for core callbacks"
         },
-        "nanoseconds_budget": {
+        "tick_budget": {
           "ty": "Number",
           "optional": true,
-          "doc": "the amount of nanoseconds to set the loading budget to"
+          "doc": "the maximum amount of pipeline ticks per frame"
         }
       }
     },
@@ -259,12 +259,12 @@
         }
       }
     },
-    "SetNanosecondsBudget": {
+    "SetTickBudget": {
       "fields": {
-        "nanoseconds_budget": {
+        "tick_budget": {
           "ty": "Number",
           "optional": true,
-          "doc": "the amount of nanoseconds to set the loading budget to"
+          "doc": "the maximum amount of pipeline ticks per frame"
         }
       }
     },

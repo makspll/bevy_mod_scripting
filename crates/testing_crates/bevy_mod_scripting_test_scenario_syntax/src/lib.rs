@@ -4,7 +4,7 @@
 //!
 //! ```bmsscenario
 //!     SetCurrentLanguage language="@this_script_language"
-//!     InstallPlugin nanoseconds_budget=999999999
+//!     InstallPlugin
 //!     SetupHandler OnTest=null, Update=null
 //!     SetupHandler OnTestPostUpdate=null, PostUpdate=null
 //!     SetupHandler Last=null, OnTestLast=null

@@ -2,7 +2,6 @@ use std::{
     future::ready,
     pin::Pin,
     task::{Poll, Waker},
-    time::Duration,
 };
 
 use bevy_ecs::{event::Event, world::Mut};
@@ -12,7 +11,7 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
-use bevy_platform::{collections::HashMap, time::Instant};
+use bevy_platform::collections::HashMap;
 
 use super::*;
 
@@ -34,8 +33,8 @@ pub struct ActiveMachines<P: IntoScriptPluginParams> {
     active_machine: Option<ScriptMachine<P>>,
     initialized_machines: VecDeque<(MachineContext, Box<dyn MachineState<P>>)>,
     uninitialized_machines: VecDeque<ScriptPipelineEvent>,
-    /// The current time budget per frame
-    pub budget: Option<Duration>,
+    /// The maximum amount of machine ticks per frame, unlimited if `None`
+    pub budget: Option<usize>,
 }
 
 impl<P: IntoScriptPluginParams> Default for ActiveMachines<P> {
@@ -60,17 +59,15 @@ impl<P: IntoScriptPluginParams> ActiveMachines<P> {
     /// - All the machines are finished
     ///
     /// If no budget is provided machines will be ticked ad infinitum or until they all complete.
+    ///
+    /// The budget counts ticks rather than wall clock time, so the work done each frame is deterministic.
     pub fn tick_machines(&mut self, world: &mut World) {
-        let start = Instant::now();
-        let end = start + self.budget.unwrap_or(Duration::from_secs(99999));
-
-        let left = end - Instant::now();
-        while (self.queued_machines() > 0 || self.active_machine.is_some())
-            && left > Duration::default()
-        {
-            bevy_log::trace!("Ticking machines for up to {:?}", left);
+        let mut left = self.budget.unwrap_or(usize::MAX);
+        while (self.queued_machines() > 0 || self.active_machine.is_some()) && left > 0 {
+            bevy_log::trace!("Ticking machines for up to {left} ticks");
 
             if self.active_machine.is_some() {
+                left -= 1;
                 let final_state = match &mut self.active_machine {
                     Some(next) => next.tick(world),
                     None => continue, // pick up the next machine, should be unreachable

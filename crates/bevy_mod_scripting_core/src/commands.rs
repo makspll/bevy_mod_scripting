@@ -1,6 +1,6 @@
 //! Commands for creating, updating and deleting scripts
 
-use std::{marker::PhantomData, sync::Arc, time::Duration};
+use std::{marker::PhantomData, sync::Arc};
 
 use crate::{
     IntoScriptPluginParams, ScriptContexts,
@@ -254,7 +254,7 @@ impl<P: IntoScriptPluginParams> DetachScript<P> {
 impl<P: IntoScriptPluginParams> Command for AttachScript<P> {
     fn apply(self, world: &mut World) {
         world.write_message(self.0);
-        RunProcessingPipelineOnce::<P>::new(Some(Duration::from_secs(9999))).apply(world)
+        RunProcessingPipelineOnce::<P>::new(Some(usize::MAX)).apply(world)
     }
     type Out = ();
 }
@@ -262,7 +262,7 @@ impl<P: IntoScriptPluginParams> Command for AttachScript<P> {
 impl<P: IntoScriptPluginParams> Command for DetachScript<P> {
     fn apply(self, world: &mut World) {
         world.write_message(self.0);
-        RunProcessingPipelineOnce::<P>::new(Some(Duration::from_secs(9999))).apply(world)
+        RunProcessingPipelineOnce::<P>::new(Some(usize::MAX)).apply(world)
     }
     type Out = ();
 }

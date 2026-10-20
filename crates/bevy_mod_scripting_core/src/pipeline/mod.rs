@@ -1,6 +1,6 @@
 //! Everything to do with the script lifetime management pipeline
 
-use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc, time::Duration};
+use std::{any::Any, collections::VecDeque, marker::PhantomData, sync::Arc};
 
 use bevy_app::{App, Plugin, PreUpdate};
 use bevy_asset::{AssetServer, Assets, Handle, LoadState};
@@ -63,10 +63,11 @@ pub struct ScriptLoadingPipeline<P: IntoScriptPluginParams> {
     pub on_script_unloaded_callback: bool,
     _ph: PhantomData<fn(P)>,
 
-    /// The budget in wall clock time, for loading scripts each frame, if not set, will default to one 60FPS frametime.
-    /// The executor will try its best to keep loading time up within this budget. This cannot be guaranteed as not all operations are
-    /// granular enough (for example script execution)
-    pub time_budget: Option<Duration>,
+    /// The maximum amount of state machine ticks (loading steps) run each frame, unlimited if not set (the default).
+    /// A tick can run script code (i.e. top level code or lifecycle callbacks), so this bounds the amount of steps, not their duration.
+    ///
+    /// This counts ticks rather than wall clock time so that the frame in which a script loads is deterministic.
+    pub tick_budget: Option<usize>,
 }
 
 impl<P: IntoScriptPluginParams> Clone for ScriptLoadingPipeline<P> {
@@ -78,7 +79,7 @@ impl<P: IntoScriptPluginParams> Clone for ScriptLoadingPipeline<P> {
             on_script_reloaded_callback: self.on_script_reloaded_callback,
             on_script_unloaded_callback: self.on_script_unloaded_callback,
             _ph: self._ph,
-            time_budget: self.time_budget,
+            tick_budget: self.tick_budget,
         }
     }
 }
@@ -92,7 +93,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptLoadingPipeline<P> {
             on_script_loaded_callback: true,
             on_script_reloaded_callback: true,
             on_script_unloaded_callback: true,
-            time_budget: Some(Duration::from_millis(16)),
+            tick_budget: None,
         }
     }
 }
@@ -161,34 +162,38 @@ impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
     /// Retrieves all of the events of type `T`, which have finished loading and have a strong handle,
     /// the rest will be discarded.
     ///
+    /// Events are released strictly in the order they arrived, an event whose asset is still loading holds back all the events behind it.
+    /// This way the order in which scripts enter the pipeline does not depend on asset IO timing.
+    ///
     /// This uses a [`EventReader<T>`] underneath, meaning if you don't call this method once every frame (or every other frame).
     /// You may miss events.
     pub fn get_loaded(&mut self) -> impl Iterator<Item = (T, StrongScriptHandle, Language)> {
         // first get all of the fresh_events
         self.loading.extend(self.fresh_events.read().cloned());
-        // now process the loading queue
-        self.loading.retain(|e| {
-            let handle = e.get_script_handle();
+        // now process the loading queue in order, until we hit an event which is still loading
+        while let Some(handle) = self.loading.front().map(|e| e.get_script_handle()) {
             match self.asset_server.get_load_state(&handle) {
-                Some(LoadState::Loaded) | None => { // none in case this is added in memory and not through asset server
+                Some(LoadState::Loading) => break,
+                Some(LoadState::Loaded) | None => {
+                    // none in case this is added in memory and not through asset server
+                    let Some(e) = self.loading.pop_front() else {
+                        break;
+                    };
                     let strong = StrongScriptHandle::from_assets(handle, &mut self.assets);
                     if let Some(strong) = strong {
                         let lang = strong.get(&self.assets).language.clone();
-                        self.loaded_with_handles.push_front((e.clone(), strong, lang));
+                        self.loaded_with_handles.push_back((e, strong, lang));
                     }
-                    false
                 }
-                Some(LoadState::Loading) => true,
                 state => {
-
+                    self.loading.pop_front();
                     debug!(
                         "discarding script lifecycle triggers with handle: {} due to asset load state: {state:?}",
                         handle.display()
                     );
-                    false
                 }
             }
-        });
+        }
 
         // now return loaded with handles elements by draining
         self.loaded_with_handles.drain(..)
@@ -249,7 +254,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
 
         let mut active_machines = app.world_mut().get_resource_or_init::<ActiveMachines<P>>();
 
-        active_machines.budget = self.time_budget;
+        active_machines.budget = self.tick_budget;
 
         app.configure_sets(
             PreUpdate,
@@ -293,14 +298,14 @@ pub fn machine_ticker<P: IntoScriptPluginParams>(world: &mut World) {
 /// A command which triggers the script processing pipeline to run once,
 /// causing outstanding attachment events to be processed
 pub struct RunProcessingPipelineOnce<P> {
-    override_budget: Option<Duration>,
+    override_budget: Option<usize>,
     _ph: PhantomData<fn(P)>,
 }
 
 impl<P> RunProcessingPipelineOnce<P> {
     /// Creates a new [`RunProcessingPipelineOnce`] command for the given plugin.
     /// The budget override can be used to make sure all scripts in the pipeline get fully processed in one go
-    pub fn new(override_budget: Option<Duration>) -> Self {
+    pub fn new(override_budget: Option<usize>) -> Self {
         Self {
             override_budget,
             _ph: PhantomData,
@@ -457,12 +462,12 @@ mod test {
             handle_invalid,
         )));
 
-        // expect one loading, one invalid
+        // expect one loading, holding back the invalid one behind it
         {
             let mut state = system_state.get_mut(world).unwrap();
             let loaded = state.get_loaded().collect::<Vec<_>>();
             assert!(loaded.is_empty());
-            assert_eq!(state.loading.len(), 1);
+            assert_eq!(state.loading.len(), 2);
         }
 
         // now on next call the old ones don't persist
@@ -488,7 +493,7 @@ mod test {
         app.finish();
 
         let world = app.world_mut();
-        RunProcessingPipelineOnce::<TestPlugin>::new(Some(Duration::from_secs(1))).apply(world);
+        RunProcessingPipelineOnce::<TestPlugin>::new(Some(1)).apply(world);
 
         let machines = world.get_resource::<ActiveMachines<TestPlugin>>().unwrap();
         assert_eq!(machines.budget, None);

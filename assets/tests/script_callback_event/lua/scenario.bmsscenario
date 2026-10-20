@@ -1,6 +1,6 @@
 // #main_script script_callback_event.lua
 SetCurrentLanguage language="@this_script_language"
-InstallPlugin nanoseconds_budget=999999999
+InstallPlugin
 SetupHandler OnTest=null, Update=null
 SetupHandler CallbackA=null, PostUpdate=null
 FinalizeApp
