@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-b0cbd304.js";
+            window.path_to_searchindex_js = "../searchindex-cdd07cdc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-7c21c810.js"></script>
+        <script src="../toc-57256a8c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -267,7 +267,7 @@ world.trigger_event(Damaged, { amount = 5 })
 <p>The following BMS messages are reflected and can be written from scripts:</p>
 <ul>
 <li><code>ScriptCallbackMessage</code>: runs a callback on other scripts, processed later in the frame by the handler systems set up for its callback label. Labels without a handler system are never processed, prefer <code>bms.queue_script_callback</code> to run callbacks from scripts.</li>
-<li><code>ScriptAttachedMessage</code>, <code>ScriptDetachedMessage</code>, <code>ScriptAssetModifiedMessage</code>: drive the script loading pipeline</li>
+<li><code>ScriptLifecycleMessage</code> (<code>Attached</code> / <code>Detached</code>), <code>ScriptAssetModifiedMessage</code>: drive the script loading pipeline</li>
 </ul>
 <p>The internal loading pipeline state events (<code>LoadingCompleted</code>, <code>ContextAssigned</code>, …) are intentionally not reflected.</p>
 

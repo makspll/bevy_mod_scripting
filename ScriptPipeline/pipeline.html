@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-b0cbd304.js";
+            window.path_to_searchindex_js = "../searchindex-cdd07cdc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-7c21c810.js"></script>
+        <script src="../toc-57256a8c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -186,12 +186,12 @@
 <p>In versions prior to <code>16.0</code> the pipeline was represented by load unload commands, which atomically processed scripts. Since then the pipeline has been maassively overhauled to allow:</p>
 <ul>
 <li>Customizing callbacks during the process</li>
-<li>Budgeting frame time for the pipeline</li>
+<li>Budgeting the work done by the pipeline each frame</li>
 <li>Allowing async steps in the process</li>
 </ul>
 <p>The new pipeline works like this:</p>
 <ul>
-<li>A set of systems in <code>PreUpdate</code> “filter” incoming <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code>’s as well as <code>ScriptAssetModifiedMessage</code>’s (some generated from asset events, others from component hooks). The filtered events are wrapped in <code>ForPlugin&lt;P&gt;(inner)</code> events based on the language of the underlying event’s.</li>
+<li>A set of systems in <code>PreUpdate</code> “filter” incoming <code>ScriptLifecycleMessage</code>’s (attachments and detachments, processed in the order they were written) as well as <code>ScriptAssetModifiedMessage</code>’s (some generated from asset events, others from component hooks). The filtered events are wrapped in <code>ForPlugin&lt;P&gt;(inner)</code> events based on the language of the underlying event’s.</li>
 <li>A set of other systems then converts those into active <code>ScriptMachine</code>’s</li>
 <li>Then inside the <code>ScriptProcessingSchedule&lt;P&gt;</code>, which is only run in <code>PreUpdate</code> if there are active machines, we tick each machine until it either errors or reaches its final state.</li>
 </ul>
@@ -228,18 +228,25 @@ Enter: OnUnloaded callback]
     let machines = app.add_observer(|On&lt;LoadingCompleted&lt;LuaScriptingPlugin&gt;&gt;| todo!("do stuff"));
 }</code></pre>
 <h2 id="timing--order"><a class="header" href="#timing--order">Timing &amp; Order</a></h2>
-<p>The machine ticking by default is limited to 16ms per run (i.e. 60fps assuming it has the entirety of the frame to run). This is not entirely effective as some operations are not currently very fine grained, for example if a callback takes more than 16ms it will easilly hog the frame time.</p>
-<p>This is however effective when a lot of scripts are loaded in at once, as loading will be spread out over multiple frames.</p>
+<p>By default all machines are ticked to completion in the frame they start. Setting <code>ScriptLoadingPipeline::tick_budget</code> limits the amount of machine ticks (steps in the state machine above) per frame, spreading the loading of many scripts over multiple frames. The budget counts steps, not time, so a step running a slow callback can still take up the frame.</p>
 <p>You can override this and many other settings (including disabling the core callbacks) by changing the <code>ScriptLoadingPipeline&lt;P&gt;</code> settings via your scripting plugin’s <code>set_pipeline_settings</code>.</p>
 <p>The script loading/unloading order will look as follows:</p>
 <ul>
 <li>the order in which components are attached/detached, will determing what order scripts will be processed</li>
+<li>an attachment whose script asset is still loading holds back the attachments and detachments after it, until it finishes loading</li>
 <li>scripts are processed one-by-one, i.e. each machine is ticked to completion before the next one is started
 <ul>
 <li>meaning for example if two scripts are loaded, their <code>on_script_loaded</code> hooks will not run at the same “lockstep”.</li>
 </ul>
 </li>
 <li>loading/unloading might happen over multiple frames, depending on the pipeline’s settings.</li>
+</ul>
+<h2 id="determinism"><a class="header" href="#determinism">Determinism</a></h2>
+<p>Given the same inputs (the same order of attachments, detachments and app updates), scripts load in the same order and callbacks reach scripts in the same order, on every run and machine: script contexts are kept in insertion ordered maps, and the pipeline budget counts steps rather than time.</p>
+<p>What BMS cannot control:</p>
+<ul>
+<li>which frame a script asset finishes loading in, as asset IO is asynchronous. Wait for scripts to load (see below) before relying on frame timing.</li>
+<li>language internals, for example Lua iterates tables with string keys (<code>pairs</code>) in a different order on each run. BMS seeds Lua’s <code>math.random</code> with <code>0</code> when creating a context, call <code>math.randomseed</code> to change it.</li>
 </ul>
 <h2 id="waiting-for-scripts-to-load"><a class="header" href="#waiting-for-scripts-to-load">Waiting for scripts to load</a></h2>
 <p>In order to check on the pipeline and figure out when everything is ready, you can use the <code>ScriptPipelineState&lt;P&gt;</code> system parameter in a system as shown in the <code>script_loading</code> <a href="https://github.com/makspll/bevy_mod_scripting/blob/main/examples/script_loading.rs">example</a>.</p>

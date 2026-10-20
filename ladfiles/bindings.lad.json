@@ -57,14 +57,13 @@
         "ReflectableScheduleLabel": "bevy_system_reflection::ReflectableScheduleLabel",
         "ScriptAsset": "bevy_mod_scripting_asset::script_asset::ScriptAsset",
         "ScriptAssetModifiedMessage": "bevy_mod_scripting_core::event::ScriptAssetModifiedMessage",
-        "ScriptAttachedMessage": "bevy_mod_scripting_core::event::ScriptAttachedMessage",
         "ScriptAttachment": "bevy_mod_scripting_script::ScriptAttachment",
         "ScriptBundleRegistration": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration",
         "ScriptCallbackMessage": "bevy_mod_scripting_core::event::ScriptCallbackMessage",
         "ScriptComponent": "bevy_mod_scripting_core::script::ScriptComponent",
         "ScriptComponentRegistration": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration",
-        "ScriptDetachedMessage": "bevy_mod_scripting_core::event::ScriptDetachedMessage",
         "ScriptEventRegistration": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration",
+        "ScriptLifecycleMessage": "bevy_mod_scripting_core::event::ScriptLifecycleMessage",
         "ScriptQueryBuilder": "bevy_mod_scripting_bindings::query::ScriptQueryBuilder",
         "ScriptQueryResult": "bevy_mod_scripting_bindings::query::ScriptQueryResult",
         "ScriptResourceRegistration": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration",
@@ -414,8 +413,8 @@
         "World::real_time",
         "World::find_entity_by_name",
         "World::insert_component",
-        "World::query",
         "World::spawn_bundle",
+        "World::query",
         "World::virtual_time",
         "World::load_state",
         "World::despawn_descendants",
@@ -427,8 +426,8 @@
         "World::get_resource",
         "World::insert_children",
         "World::trigger_event",
-        "World::insert_bundle",
         "World::get_children",
+        "World::insert_bundle",
         "World::has_component",
         "World::has_asset",
         "World::add_default_component",
@@ -2002,10 +2001,10 @@
         "bevy_image::image::Image::size_f32",
         "bevy_image::image::Image::width",
         "bevy_image::image::Image::height",
-        "bevy_image::image::Image::new",
-        "bevy_image::image::Image::get_asset",
         "bevy_image::image::Image::add_asset",
-        "bevy_image::image::Image::load"
+        "bevy_image::image::Image::load",
+        "bevy_image::image::Image::get_asset",
+        "bevy_image::image::Image::new"
       ],
       "layout": null,
       "generated": false,
@@ -2027,10 +2026,10 @@
       "associated_functions": [
         "bevy_image::texture_atlas::TextureAtlasLayout::from_grid",
         "bevy_image::texture_atlas::TextureAtlasLayout::len",
-        "bevy_image::texture_atlas::TextureAtlasLayout::new",
-        "bevy_image::texture_atlas::TextureAtlasLayout::get_asset",
         "bevy_image::texture_atlas::TextureAtlasLayout::add_asset",
-        "bevy_image::texture_atlas::TextureAtlasLayout::load"
+        "bevy_image::texture_atlas::TextureAtlasLayout::load",
+        "bevy_image::texture_atlas::TextureAtlasLayout::get_asset",
+        "bevy_image::texture_atlas::TextureAtlasLayout::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -3249,10 +3248,10 @@
       "associated_functions": [
         "bevy_mesh::mesh::Mesh::count_vertices",
         "bevy_mesh::mesh::Mesh::from_shape",
-        "bevy_mesh::mesh::Mesh::new",
-        "bevy_mesh::mesh::Mesh::get_asset",
         "bevy_mesh::mesh::Mesh::add_asset",
-        "bevy_mesh::mesh::Mesh::load"
+        "bevy_mesh::mesh::Mesh::load",
+        "bevy_mesh::mesh::Mesh::get_asset",
+        "bevy_mesh::mesh::Mesh::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -3343,21 +3342,21 @@
       "documentation": " Immediate mode debug drawing: lines and shapes drawn this frame.\n\n Every function draws straight away, the shapes are shown for the current frame only.\n Needs the gizmo plugin, without it the functions fail with an error.\n\n ```multi-lang-example,lua,ignore\n local Color = import_namespace(\"color\").Color\n local Gizmos = import_namespace(\"gizmos\").Gizmos\n local Vec3 = import_namespace(\"math\").Vec3\n Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())\n ```\n\n ```multi-lang-example,rune,ignore\n let Color = import_namespace(\"color\").Color;\n let Gizmos = import_namespace(\"gizmos\").Gizmos;\n let Vec3 = import_namespace(\"math\").Vec3;\n Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());\n ```",
       "associated_functions": [
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::axes",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cross",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::axes",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cuboid",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::sphere",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cuboid",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::new"
       ],
       "layout": {
@@ -3380,9 +3379,9 @@
       "namespace": "bms",
       "documentation": " A reference to a variant of an enum, independent of any value of that enum.\n\n This is what scripts see when accessing `MyEnum.Variant`, it can be compared to\n the result of `value:variant()` and used to construct values of the variant.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::variant_name",
+        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq",
         "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::new",
-        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq"
+        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::variant_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -3419,9 +3418,9 @@
       "namespace": "bms",
       "documentation": " A reference to a bundle type's reflection registration, i.e. a type with `ReflectBundle` type data.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::new"
       ],
       "layout": null,
@@ -3441,9 +3440,9 @@
       "namespace": "bms",
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::new"
       ],
       "layout": {
@@ -3495,10 +3494,10 @@
       "namespace": "bms",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::new"
       ],
       "layout": null,
@@ -3518,8 +3517,8 @@
       "namespace": "bms",
       "documentation": " A result from a query.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryResult::entity",
         "bevy_mod_scripting_bindings::query::ScriptQueryResult::components",
+        "bevy_mod_scripting_bindings::query::ScriptQueryResult::entity",
         "bevy_mod_scripting_bindings::query::ScriptQueryResult::new"
       ],
       "layout": null,
@@ -3539,9 +3538,9 @@
       "namespace": "bms",
       "documentation": " A reference to a resource type's reflection registration.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::new"
       ],
       "layout": {
@@ -3578,9 +3577,9 @@
       "namespace": "bms",
       "documentation": " A reference to a type which is not a `Resource` or `Component`.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace",
+        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::new"
       ],
       "layout": null,
@@ -3621,11 +3620,11 @@
       "namespace": "bms",
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::new"
       ],
       "layout": null,
@@ -3645,10 +3644,10 @@
       "namespace": "bms",
       "documentation": " Describes the designated recipients of a script event",
       "associated_functions": [
-        "bevy_mod_scripting_script::Recipients::entity_script",
         "bevy_mod_scripting_script::Recipients::static_script",
-        "bevy_mod_scripting_script::Recipients::all_scripts",
         "bevy_mod_scripting_script::Recipients::all_contexts",
+        "bevy_mod_scripting_script::Recipients::all_scripts",
+        "bevy_mod_scripting_script::Recipients::entity_script",
         "bevy_mod_scripting_script::Recipients::new"
       ],
       "layout": [
@@ -3704,8 +3703,8 @@
       "namespace": "bms",
       "documentation": " Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]'s depending on the context policy used.",
       "associated_functions": [
-        "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
         "bevy_mod_scripting_script::ScriptAttachment::new_entity_script",
+        "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
         "bevy_mod_scripting_script::ScriptAttachment::new"
       ],
       "layout": [
@@ -4533,16 +4532,16 @@
       "namespace": "sprite",
       "documentation": " Normalized (relative to its size) offset of a 2d renderable entity from its [`Transform`].",
       "associated_functions": [
-        "bevy_sprite::sprite::Anchor::as_vec",
-        "bevy_sprite::sprite::Anchor::bottom_center",
-        "bevy_sprite::sprite::Anchor::top_center",
-        "bevy_sprite::sprite::Anchor::top_left",
         "bevy_sprite::sprite::Anchor::center",
-        "bevy_sprite::sprite::Anchor::center_right",
+        "bevy_sprite::sprite::Anchor::bottom_center",
+        "bevy_sprite::sprite::Anchor::as_vec",
+        "bevy_sprite::sprite::Anchor::top_left",
         "bevy_sprite::sprite::Anchor::center_left",
-        "bevy_sprite::sprite::Anchor::bottom_left",
         "bevy_sprite::sprite::Anchor::bottom_right",
         "bevy_sprite::sprite::Anchor::top_right",
+        "bevy_sprite::sprite::Anchor::top_center",
+        "bevy_sprite::sprite::Anchor::center_right",
+        "bevy_sprite::sprite::Anchor::bottom_left",
         "bevy_sprite::sprite::Anchor::new"
       ],
       "layout": {
@@ -4574,9 +4573,9 @@
       "namespace": "sprite",
       "documentation": " Describes a sprite to be rendered to a 2D camera",
       "associated_functions": [
-        "bevy_sprite::sprite::Sprite::from_image",
         "bevy_sprite::sprite::Sprite::sized",
         "bevy_sprite::sprite::Sprite::from_atlas_image",
+        "bevy_sprite::sprite::Sprite::from_image",
         "bevy_sprite::sprite::Sprite::from_color",
         "bevy_sprite::sprite::Sprite::new"
       ],
@@ -4669,8 +4668,8 @@
       "documentation": " The top-level 2D text component.\n\n Adding `Text2d` to an entity will pull in required components for setting up 2d text.\n [Example usage.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/text2d.rs)\n\n The string in this component is the first 'text span' in a hierarchy of text spans that are collected into\n a [`ComputedTextBlock`]. See `TextSpan` for the component used by children of entities with [`Text2d`].\n\n With `Text2d` the `justify` field of [`TextLayout`] only affects the internal alignment of a block of text and not its\n relative position, which is controlled by the [`Anchor`] component.\n This means that for a block of text consisting of only one line that doesn't wrap, the `justify` field will have no effect.\n\n\n ```\n # use bevy_asset::Handle;\n # use bevy_color::Color;\n # use bevy_color::palettes::basic::BLUE;\n # use bevy_ecs::world::World;\n # use bevy_text::{Font, FontSize, Justify, TextLayout, TextFont, TextColor, TextSpan};\n # use bevy_sprite::Text2d;\n #\n # let font_handle: Handle<Font> = Default::default();\n # let mut world = World::default();\n #\n // Basic usage.\n world.spawn(Text2d::new(\"hello world!\"));\n\n // With non-default style.\n world.spawn((\n     Text2d::new(\"hello world!\"),\n     TextFont {\n         font: font_handle.clone().into(),\n         font_size: FontSize::Px(60.0),\n         ..Default::default()\n     },\n     TextColor(BLUE.into()),\n ));\n\n // With text justification.\n world.spawn((\n     Text2d::new(\"hello world\\nand bevy!\"),\n     TextLayout::justify(Justify::Center)\n ));\n\n // With spans\n world.spawn(Text2d::new(\"hello \")).with_children(|parent| {\n     parent.spawn(TextSpan::new(\"world\"));\n     parent.spawn((TextSpan::new(\"!\"), TextColor(BLUE.into())));\n });\n ```\n\n Viewport-based `FontSize` variants for `Text2d` are resolved based on the primary window’s logical size.",
       "associated_functions": [
         "bevy_sprite::text2d::Text2d::as_str",
-        "bevy_sprite::text2d::Text2d::new",
-        "bevy_sprite::text2d::Text2d::set"
+        "bevy_sprite::text2d::Text2d::set",
+        "bevy_sprite::text2d::Text2d::new"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -4702,8 +4701,8 @@
       "documentation": " A reflectable schedule.",
       "associated_functions": [
         "bevy_system_reflection::ReflectSchedule::get_system_by_name",
-        "bevy_system_reflection::ReflectSchedule::systems",
         "bevy_system_reflection::ReflectSchedule::render_dot",
+        "bevy_system_reflection::ReflectSchedule::systems",
         "bevy_system_reflection::ReflectSchedule::new"
       ],
       "layout": {
@@ -4740,8 +4739,8 @@
       "namespace": "bms",
       "documentation": " A reflectable system.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSystem::identifier",
         "bevy_system_reflection::ReflectSystem::path",
+        "bevy_system_reflection::ReflectSystem::identifier",
         "bevy_system_reflection::ReflectSystem::new"
       ],
       "layout": null,
@@ -4761,9 +4760,9 @@
       "namespace": "text",
       "documentation": " `TextFont` determines the style of a text span within a [`ComputedTextBlock`], specifically\n the font face, the font size, the line height, and the antialiasing method.",
       "associated_functions": [
+        "bevy_text::text::TextFont::from_font_size",
         "bevy_text::text::TextFont::with_font_size",
         "bevy_text::text::TextFont::with_font",
-        "bevy_text::text::TextFont::from_font_size",
         "bevy_text::text::TextFont::new"
       ],
       "layout": {
@@ -4838,8 +4837,8 @@
       "namespace": "text",
       "documentation": " Component with text format settings for a block of text.\n\n A block of text is composed of text spans, which each have a separate string value and [`TextFont`]. Text\n spans associated with a text block are collected into [`ComputedTextBlock`] for layout, and then inserted\n to [`TextLayoutInfo`] for rendering.\n\n See `Text2d` in `bevy_sprite` for the core component of 2d text, and `Text` in `bevy_ui` for UI text.",
       "associated_functions": [
-        "bevy_text::text::TextLayout::new_with_no_wrap",
         "bevy_text::text::TextLayout::new_with_justify",
+        "bevy_text::text::TextLayout::new_with_no_wrap",
         "bevy_text::text::TextLayout::new"
       ],
       "layout": {
@@ -4878,9 +4877,9 @@
       "namespace": "text",
       "documentation": " A span of text in a tree of spans.\n\n A `TextSpan` is only valid when it exists as a child of a parent that has either `Text` or\n `Text2d`. The parent's `Text` / `Text2d` component contains the base text content. Any children\n with `TextSpan` extend this text by appending their content to the parent's text in sequence to\n form a [`ComputedTextBlock`]. The parent's [`TextLayout`] determines the layout of the block\n but each node has its own [`TextFont`] and [`TextColor`].",
       "associated_functions": [
-        "bevy_text::text::TextSpan::as_str",
+        "bevy_text::text::TextSpan::set",
         "bevy_text::text::TextSpan::new",
-        "bevy_text::text::TextSpan::set"
+        "bevy_text::text::TextSpan::as_str"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -5172,14 +5171,14 @@
       "namespace": "ui",
       "documentation": " A type which is commonly used to define margins, paddings and borders.\n\n # Examples\n\n ## Margin\n\n A margin is used to create space around UI elements, outside of any defined borders.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let margin = UiRect::all(Val::Auto); // Centers the UI element\n ```\n\n ## Padding\n\n A padding is used to create space around UI elements, inside of any defined borders.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let padding = UiRect {\n     left: Val::Px(10.0),\n     right: Val::Px(20.0),\n     top: Val::Px(30.0),\n     bottom: Val::Px(40.0),\n };\n ```\n\n ## Borders\n\n A border is used to define the width of the border of a UI element.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let border = UiRect {\n     left: Val::Px(10.0),\n     right: Val::Px(20.0),\n     top: Val::Px(30.0),\n     bottom: Val::Px(40.0),\n };\n ```",
       "associated_functions": [
-        "bevy_ui::geometry::UiRect::axes",
-        "bevy_ui::geometry::UiRect::all",
         "bevy_ui::geometry::UiRect::px",
+        "bevy_ui::geometry::UiRect::new",
+        "bevy_ui::geometry::UiRect::zero",
+        "bevy_ui::geometry::UiRect::horizontal",
         "bevy_ui::geometry::UiRect::vertical",
         "bevy_ui::geometry::UiRect::percent",
-        "bevy_ui::geometry::UiRect::horizontal",
-        "bevy_ui::geometry::UiRect::zero",
-        "bevy_ui::geometry::UiRect::new"
+        "bevy_ui::geometry::UiRect::axes",
+        "bevy_ui::geometry::UiRect::all"
       ],
       "layout": {
         "kind": "Struct",
@@ -5232,13 +5231,13 @@
       "namespace": "ui",
       "documentation": " Represents the possible value types for layout properties.\n\n This enum allows specifying values for various [`Node`](crate::Node) properties in different units,\n such as logical pixels, percentages, or automatically determined values.\n\n `Val` also implements [`core::str::FromStr`] to allow parsing values from strings in the format `#.#px`. Whitespaces between the value and unit is allowed. The following units are supported:\n * `px`: logical pixels\n * `%`: percentage\n * `vw`: percentage of the viewport width\n * `vh`: percentage of the viewport height\n * `vmin`: percentage of the viewport's smaller dimension\n * `vmax`: percentage of the viewport's larger dimension\n\n Additionally, `auto` will be parsed as [`Val::Auto`].",
       "associated_functions": [
-        "bevy_ui::geometry::Val::auto",
-        "bevy_ui::geometry::Val::percent",
+        "bevy_ui::geometry::Val::vh",
         "bevy_ui::geometry::Val::vw",
         "bevy_ui::geometry::Val::px",
-        "bevy_ui::geometry::Val::vh",
+        "bevy_ui::geometry::Val::auto",
         "bevy_ui::geometry::Val::vmax",
         "bevy_ui::geometry::Val::vmin",
+        "bevy_ui::geometry::Val::percent",
         "bevy_ui::geometry::Val::new"
       ],
       "layout": [
@@ -5416,11 +5415,11 @@
       "namespace": "ui",
       "documentation": " Used to add rounded corners to a UI node. You can set a UI node to have uniformly\n rounded corners, elliptical corners, or specify a different radius for each corner. If a given\n radius exceeds half the length of the node's height or width, the radius will be calculated\n as half the height or width.\n\n Percentage horizontal and vertical values are based on the node's width and height, respectively.\n\n # Example\n ```rust\n # use bevy_ecs::prelude::*;\n # use bevy_ui::prelude::*;\n # use bevy_color::palettes::basic::{BLUE};\n fn setup_ui(mut commands: Commands) {\n     commands.spawn((\n         Node {\n             width: Val::Px(100.),\n             height: Val::Px(100.),\n             border: UiRect::all(Val::Px(2.)),\n             border_radius: BorderRadius {\n                 // rounded corners, x and y radii equal\n                 top_left: CornerRadius::circular(px(10.)),\n                 top_right: percent(20.).into(),\n                 // elliptical corner\n                 bottom_right: CornerRadius::new(px(30.), px(20.)),\n                 bottom_left: CornerRadius { x: px(10.), y: px(40.) },\n             },\n             ..Default::default()\n         },\n         BackgroundColor(BLUE.into()),\n     ));\n }\n ```\n\n <https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius>",
       "associated_functions": [
-        "bevy_ui::ui_node::BorderRadius::all",
         "bevy_ui::ui_node::BorderRadius::percent",
-        "bevy_ui::ui_node::BorderRadius::zero",
         "bevy_ui::ui_node::BorderRadius::px",
+        "bevy_ui::ui_node::BorderRadius::all",
         "bevy_ui::ui_node::BorderRadius::max",
+        "bevy_ui::ui_node::BorderRadius::zero",
         "bevy_ui::ui_node::BorderRadius::new"
       ],
       "layout": {
@@ -5474,10 +5473,10 @@
       "namespace": "ui",
       "documentation": " Provides the computed size and layout properties of a UI [`Node`].\n\n All of the fields are automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`)\n during `PostUpdate` in the [`UiSystems::Layout`](super::UiSystems) set.\n\n The fields are measured in physical pixels.\n You can multiply by the `inverse_scale_factor` field to convert back to logical pixels.\n\n Fields in this struct are public but should only rarely be directly modified.\n For example, in a scrollbar you may want to derive the handle's size from the proportion of\n scrollable content in-view. You can directly modify `ComputedNode` after layout to set the\n handle size without a frame delay.",
       "associated_functions": [
+        "bevy_ui::ui_node::ComputedNode::size",
         "bevy_ui::ui_node::ComputedNode::inverse_scale_factor",
         "bevy_ui::ui_node::ComputedNode::content_size",
         "bevy_ui::ui_node::ComputedNode::is_empty",
-        "bevy_ui::ui_node::ComputedNode::size",
         "bevy_ui::ui_node::ComputedNode::new"
       ],
       "layout": {
@@ -5593,12 +5592,12 @@
       "namespace": "ui",
       "documentation": " Whether to show or hide overflowing items",
       "associated_functions": [
+        "bevy_ui::ui_node::Overflow::clip_x",
+        "bevy_ui::ui_node::Overflow::clip",
+        "bevy_ui::ui_node::Overflow::scroll",
+        "bevy_ui::ui_node::Overflow::visible",
         "bevy_ui::ui_node::Overflow::clip_y",
         "bevy_ui::ui_node::Overflow::hidden",
-        "bevy_ui::ui_node::Overflow::scroll",
-        "bevy_ui::ui_node::Overflow::clip",
-        "bevy_ui::ui_node::Overflow::visible",
-        "bevy_ui::ui_node::Overflow::clip_x",
         "bevy_ui::ui_node::Overflow::new"
       ],
       "layout": {
@@ -5638,8 +5637,8 @@
       "namespace": "ui",
       "documentation": " A UI Node that renders an image.",
       "associated_functions": [
-        "bevy_ui::widget::image::ImageNode::new",
-        "bevy_ui::widget::image::ImageNode::with_color"
+        "bevy_ui::widget::image::ImageNode::with_color",
+        "bevy_ui::widget::image::ImageNode::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -7964,21 +7963,21 @@
       "path": "ReflectReference",
       "documentation": "A reference to a reflectable type",
       "associated_functions": [
-        "ReflectReference::variant",
-        "ReflectReference::iter",
+        "ReflectReference::push",
+        "ReflectReference::display",
         "ReflectReference::variant_name",
         "ReflectReference::debug",
-        "ReflectReference::clone",
-        "ReflectReference::len",
-        "ReflectReference::push",
-        "ReflectReference::insert",
-        "ReflectReference::remove",
-        "ReflectReference::eq",
         "ReflectReference::clear",
-        "ReflectReference::display",
-        "ReflectReference::pop",
+        "ReflectReference::iter",
         "ReflectReference::map_get",
+        "ReflectReference::len",
+        "ReflectReference::remove",
+        "ReflectReference::variant",
         "ReflectReference::functions",
+        "ReflectReference::pop",
+        "ReflectReference::insert",
+        "ReflectReference::clone",
+        "ReflectReference::eq",
         "ReflectReference::new"
       ],
       "layout": null,
@@ -8013,10 +8012,10 @@
       "path": "StaticTypeRef",
       "documentation": "A type itself, used to reach its static members, i.e. `Vec3` in `Vec3.new{}`. Functions on it are shared by all types",
       "associated_functions": [
-        "StaticTypeRef::new",
-        "StaticTypeRef::get_asset",
         "StaticTypeRef::add_asset",
-        "StaticTypeRef::load"
+        "StaticTypeRef::load",
+        "StaticTypeRef::get_asset",
+        "StaticTypeRef::new"
       ],
       "layout": null,
       "generated": false,
@@ -10342,10 +10341,10 @@
       "namespace": "bms",
       "documentation": " Represents a script loaded into memory as an asset",
       "associated_functions": [
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::new",
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::get_asset",
         "bevy_mod_scripting_asset::script_asset::ScriptAsset::add_asset",
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::load"
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::load",
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::get_asset",
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::new"
       ],
       "layout": null,
       "generated": false,
@@ -10658,35 +10657,6 @@
         "mapped_to_primitive_kind": null
       }
     },
-    "bevy_mod_scripting_core::event::ScriptAttachedMessage": {
-      "identifier": "ScriptAttachedMessage",
-      "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::event::ScriptAttachedMessage",
-      "namespace": "bms",
-      "documentation": " Emitted when a script is attached.",
-      "associated_functions": [
-        "bevy_mod_scripting_core::event::ScriptAttachedMessage::new"
-      ],
-      "layout": {
-        "kind": "TupleStruct",
-        "name": "ScriptAttachedMessage",
-        "fields": [
-          {
-            "type": {
-              "val": "bevy_mod_scripting_script::ScriptAttachment"
-            }
-          }
-        ]
-      },
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null
-      }
-    },
     "bevy_mod_scripting_core::event::ScriptCallbackMessage": {
       "identifier": "ScriptCallbackMessage",
       "crate": "bevy_mod_scripting_core",
@@ -10754,26 +10724,39 @@
         "mapped_to_primitive_kind": null
       }
     },
-    "bevy_mod_scripting_core::event::ScriptDetachedMessage": {
-      "identifier": "ScriptDetachedMessage",
+    "bevy_mod_scripting_core::event::ScriptLifecycleMessage": {
+      "identifier": "ScriptLifecycleMessage",
       "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::event::ScriptDetachedMessage",
+      "path": "bevy_mod_scripting_core::event::ScriptLifecycleMessage",
       "namespace": "bms",
-      "documentation": " Emitted when a script is detached.",
+      "documentation": " Emitted when a script is attached or detached.\n\n Both are one message type, so the pipeline processes them in the order they were written.",
       "associated_functions": [
-        "bevy_mod_scripting_core::event::ScriptDetachedMessage::new"
+        "bevy_mod_scripting_core::event::ScriptLifecycleMessage::new"
       ],
-      "layout": {
-        "kind": "TupleStruct",
-        "name": "ScriptDetachedMessage",
-        "fields": [
-          {
-            "type": {
-              "val": "bevy_mod_scripting_script::ScriptAttachment"
+      "layout": [
+        {
+          "kind": "TupleStruct",
+          "name": "Attached",
+          "fields": [
+            {
+              "type": {
+                "val": "bevy_mod_scripting_script::ScriptAttachment"
+              }
             }
-          }
-        ]
-      },
+          ]
+        },
+        {
+          "kind": "TupleStruct",
+          "name": "Detached",
+          "fields": [
+            {
+              "type": {
+                "val": "bevy_mod_scripting_script::ScriptAttachment"
+              }
+            }
+          ]
+        }
+      ],
       "generated": false,
       "insignificance": 1000,
       "metadata": {
@@ -10883,10 +10866,10 @@
       "namespace": "render",
       "documentation": " A storage buffer that is prepared as a [`RenderAsset`] and uploaded to the GPU.\n\n This buffer primarily exists in order to be embedded into a material that\n implements the [`bevy_render_macros::AsBindGroup`] trait. Compared to\n embedding a raw [`Buffer`], [`ShaderBuffer`] has the advantage that the\n buffer can be resized without regenerating the materials that embed it.",
       "associated_functions": [
-        "bevy_render::storage::ShaderBuffer::new",
-        "bevy_render::storage::ShaderBuffer::get_asset",
         "bevy_render::storage::ShaderBuffer::add_asset",
-        "bevy_render::storage::ShaderBuffer::load"
+        "bevy_render::storage::ShaderBuffer::load",
+        "bevy_render::storage::ShaderBuffer::get_asset",
+        "bevy_render::storage::ShaderBuffer::new"
       ],
       "layout": null,
       "generated": false,
@@ -11345,10 +11328,10 @@
       "namespace": "sprite",
       "documentation": " A [2d material](Material2d) that renders [2d meshes](crate::Mesh2d) with a texture tinted by a uniform color",
       "associated_functions": [
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::new",
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::get_asset",
         "bevy_sprite_render::mesh2d::color_material::ColorMaterial::add_asset",
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::load"
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::load",
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::get_asset",
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -11444,10 +11427,10 @@
       "path": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial",
       "namespace": "sprite",
       "associated_functions": [
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::new",
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::get_asset",
         "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::add_asset",
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::load"
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::load",
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::get_asset",
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -44163,33 +44146,6 @@
       "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
       "metadata": {}
     },
-    "bevy_mod_scripting_core::event::ScriptAttachedMessage::new": {
-      "namespace": "bevy_mod_scripting_core::event::ScriptAttachedMessage",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_core::event::ScriptAttachedMessage"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_core::event::ScriptAttachedMessage"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
     "bevy_mod_scripting_core::event::ScriptCallbackMessage::new": {
       "namespace": "bevy_mod_scripting_core::event::ScriptCallbackMessage",
       "identifier": "new",
@@ -44217,15 +44173,83 @@
       "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
       "metadata": {}
     },
-    "bevy_mod_scripting_core::event::ScriptDetachedMessage::new": {
-      "namespace": "bevy_mod_scripting_core::event::ScriptDetachedMessage",
+    "bevy_mod_scripting_core::event::ScriptLifecycleMessage::Attached::new": {
+      "namespace": {
+        "type": "bevy_mod_scripting_core::event::ScriptLifecycleMessage",
+        "variant": "Attached"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_mod_scripting_core::event::ScriptLifecycleMessage",
+              "variant": "Attached"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_mod_scripting_core::event::ScriptLifecycleMessage"
+          }
+        }
+      },
+      "metadata": {},
+      "receiver": true
+    },
+    "bevy_mod_scripting_core::event::ScriptLifecycleMessage::Detached::new": {
+      "namespace": {
+        "type": "bevy_mod_scripting_core::event::ScriptLifecycleMessage",
+        "variant": "Detached"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_mod_scripting_core::event::ScriptLifecycleMessage",
+              "variant": "Detached"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_mod_scripting_core::event::ScriptLifecycleMessage"
+          }
+        }
+      },
+      "metadata": {},
+      "receiver": true
+    },
+    "bevy_mod_scripting_core::event::ScriptLifecycleMessage::new": {
+      "namespace": "bevy_mod_scripting_core::event::ScriptLifecycleMessage",
       "identifier": "new",
       "overload_index": null,
       "arguments": [
         {
           "kind": {
             "fields": {
-              "type": "bevy_mod_scripting_core::event::ScriptDetachedMessage"
+              "type": "bevy_mod_scripting_core::event::ScriptLifecycleMessage"
             }
           },
           "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
@@ -44235,7 +44259,7 @@
       "return_type": {
         "kind": {
           "interopResult": {
-            "val": "bevy_mod_scripting_core::event::ScriptDetachedMessage"
+            "val": "bevy_mod_scripting_core::event::ScriptLifecycleMessage"
           }
         },
         "documentation": "The constructed value.",
