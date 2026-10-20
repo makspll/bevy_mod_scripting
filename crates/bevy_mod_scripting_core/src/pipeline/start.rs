@@ -72,8 +72,7 @@ pub struct FilterAssetEventsSettings {
 pub fn filter_asset_events<P: IntoScriptPluginParams>(
     args: In<FilterAssetEventsSettings>,
     mut script_modified_events: MessageReader<AssetEvent<ScriptAsset>>,
-    mut script_attached_events: LoadedWithHandles<ScriptAttachedMessage>,
-    mut script_detached_events: MessageReader<ScriptDetachedMessage>,
+    mut script_attached_events: LoadedWithHandles<ScriptAttachedMessage, ScriptDetachedMessage>,
     mut active_machines: ResMut<ActiveMachines<P>>,
 ) {
     if args.hot_loads {
@@ -93,26 +92,22 @@ pub fn filter_asset_events<P: IntoScriptPluginParams>(
     }
 
     if args.sync_components {
-        let batch = script_attached_events
-            .get_loaded()
-            .filter(|(_, _, l)| *l == P::LANGUAGE)
-            .map(|(mut a, b, _)| {
-                trace!(
-                    "dispatching script attachment event for: {a:?}, language: {}",
-                    P::LANGUAGE
-                );
-                *a.0.script_mut() = b.0;
-                ScriptPipelineEvent::Attached(a)
-            });
-
-        active_machines.queue_machines(batch);
-
+        // detachments are queued with the attachments, so they never overtake an attachment whose script is still loading.
         // we can't actually filter those based on their existence in the script contexts, as processing an attachment might
         // create the script, so we want to do that in order
-        let batch = script_detached_events
-            .read()
-            .cloned()
-            .map(ScriptPipelineEvent::Detached);
+        let batch = script_attached_events
+            .get_loaded()
+            .filter_map(|event| match event {
+                ReleasedEvent::Loaded(mut a, b, l) => (l == P::LANGUAGE).then(|| {
+                    trace!(
+                        "dispatching script attachment event for: {a:?}, language: {}",
+                        P::LANGUAGE
+                    );
+                    *a.0.script_mut() = b.0;
+                    ScriptPipelineEvent::Attached(a)
+                }),
+                ReleasedEvent::Passed(d) => Some(ScriptPipelineEvent::Detached(d)),
+            });
 
         active_machines.queue_machines(batch);
     }

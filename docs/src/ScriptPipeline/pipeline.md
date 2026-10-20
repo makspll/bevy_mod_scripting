@@ -59,7 +59,7 @@ You can override this and many other settings (including disabling the core call
 
 The script loading/unloading order will look as follows:
 - the order in which components are attached/detached, will determing what order scripts will be processed
-- an attachment whose script asset is still loading holds back the attachments after it, until it finishes loading
+- an attachment whose script asset is still loading holds back the attachments and detachments after it, until it finishes loading
 - scripts are processed one-by-one, i.e. each machine is ticked to completion before the next one is started
     - meaning for example if two scripts are loaded, their `on_script_loaded` hooks will not run at the same "lockstep".
 - loading/unloading might happen over multiple frames, depending on the pipeline's settings.

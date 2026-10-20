@@ -143,46 +143,80 @@ pub trait GetScriptHandle {
     fn get_script_handle(&self) -> Handle<ScriptAsset>;
 }
 
+/// An event queued in [`LoadedWithHandles`].
+#[derive(Clone)]
+pub enum HeldEvent<T, D> {
+    /// Waits for its script asset to finish loading.
+    Load(T),
+    /// Released as soon as all the events before it are released.
+    Pass(D),
+}
+
+/// An event released by [`LoadedWithHandles`].
+pub enum ReleasedEvent<T, D> {
+    /// An event whose script asset finished loading, with a strong handle to it and its language.
+    Loaded(T, StrongScriptHandle, Language),
+    /// An event which waited for the events before it.
+    Passed(D),
+}
+
 #[derive(SystemParam)]
 /// A system param which operates over types implementing [`GetScriptHandle`].
-/// Captures incoming "handle" like types, and waits until their asset is in a final state before proceeding, if that final state
+/// Captures incoming "handle" like types `T`, and waits until their asset is in a final state before proceeding, if that final state
 /// is loaded, will also guarantee a strong handle, otherwise the whole thing is skipped.
 ///
+/// Events of type `D` don't need their asset, but are queued with the `T` events, so they never overtake one which is still loading.
+///
 /// Think of this as a proxy for "baby'ing" asset handles
-pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Message + Clone> {
+pub struct LoadedWithHandles<'w, 's, T: GetScriptHandle + Message + Clone, D: Message + Clone> {
     /// The script assets resource. To allow systems needing both resources to access them in one place
     pub assets: ResMut<'w, Assets<ScriptAsset>>,
     asset_server: Res<'w, AssetServer>,
     fresh_events: MessageReader<'w, 's, T>,
-    loaded_with_handles: Local<'s, VecDeque<(T, StrongScriptHandle, Language)>>,
-    loading: Local<'s, VecDeque<T>>,
+    fresh_pass_events: MessageReader<'w, 's, D>,
+    loaded_with_handles: Local<'s, VecDeque<ReleasedEvent<T, D>>>,
+    loading: Local<'s, VecDeque<HeldEvent<T, D>>>,
 }
 
-impl<T: GetScriptHandle + Message + Clone> LoadedWithHandles<'_, '_, T> {
+impl<T: GetScriptHandle + Message + Clone, D: Message + Clone> LoadedWithHandles<'_, '_, T, D> {
     /// Retrieves all of the events of type `T`, which have finished loading and have a strong handle,
-    /// the rest will be discarded.
+    /// the rest will be discarded, together with the `D` events queued between them.
     ///
     /// Events are released strictly in the order they arrived, an event whose asset is still loading holds back all the events behind it.
     /// This way the order in which scripts enter the pipeline does not depend on asset IO timing.
+    /// Within a frame, the `T` events are queued before the `D` events.
     ///
     /// This uses a [`EventReader<T>`] underneath, meaning if you don't call this method once every frame (or every other frame).
     /// You may miss events.
-    pub fn get_loaded(&mut self) -> impl Iterator<Item = (T, StrongScriptHandle, Language)> {
+    pub fn get_loaded(&mut self) -> impl Iterator<Item = ReleasedEvent<T, D>> {
         // first get all of the fresh_events
-        self.loading.extend(self.fresh_events.read().cloned());
+        self.loading
+            .extend(self.fresh_events.read().cloned().map(HeldEvent::Load));
+        self.loading
+            .extend(self.fresh_pass_events.read().cloned().map(HeldEvent::Pass));
         // now process the loading queue in order, until we hit an event which is still loading
-        while let Some(handle) = self.loading.front().map(|e| e.get_script_handle()) {
+        while let Some(front) = self.loading.front() {
+            let handle = match front {
+                HeldEvent::Load(e) => e.get_script_handle(),
+                HeldEvent::Pass(_) => {
+                    if let Some(HeldEvent::Pass(e)) = self.loading.pop_front() {
+                        self.loaded_with_handles.push_back(ReleasedEvent::Passed(e));
+                    }
+                    continue;
+                }
+            };
             match self.asset_server.get_load_state(&handle) {
                 Some(LoadState::Loading) => break,
                 Some(LoadState::Loaded) | None => {
                     // none in case this is added in memory and not through asset server
-                    let Some(e) = self.loading.pop_front() else {
+                    let Some(HeldEvent::Load(e)) = self.loading.pop_front() else {
                         break;
                     };
                     let strong = StrongScriptHandle::from_assets(handle, &mut self.assets);
                     if let Some(strong) = strong {
                         let lang = strong.get(&self.assets).language.clone();
-                        self.loaded_with_handles.push_back((e, strong, lang));
+                        self.loaded_with_handles
+                            .push_back(ReleasedEvent::Loaded(e, strong, lang));
                     }
                 }
                 state => {
@@ -431,14 +465,16 @@ mod test {
     #[test]
     fn test_system_params() {
         let mut app = App::default();
-        app.add_message::<ScriptAttachedMessage>();
+        app.add_message::<ScriptAttachedMessage>()
+            .add_message::<ScriptDetachedMessage>();
         app.add_plugins(AssetPlugin::default());
         app.init_asset::<ScriptAsset>();
         app.finish();
 
         let world = app.world_mut();
-        let mut system_state =
-            SystemState::<LoadedWithHandles<ScriptAttachedMessage>>::from_world(world);
+        let mut system_state = SystemState::<
+            LoadedWithHandles<ScriptAttachedMessage, ScriptDetachedMessage>,
+        >::from_world(world);
         // start empty
         {
             let mut state = system_state.get_mut(world).unwrap();
@@ -479,6 +515,38 @@ mod test {
     }
 
     make_test_plugin!(crate);
+
+    #[test]
+    fn test_detachment_waits_for_loading_attachment() {
+        let mut app = App::default();
+        app.add_message::<ScriptAttachedMessage>()
+            .add_message::<ScriptDetachedMessage>();
+        app.add_plugins(AssetPlugin::default());
+        app.init_asset::<ScriptAsset>();
+        app.init_resource::<ActiveMachines<TestPlugin>>();
+        app.finish();
+
+        let world = app.world_mut();
+        // stays loading until the asset systems run
+        let handle = world.resource::<AssetServer>().add(ScriptAsset {
+            content: "asd".to_string().into_boxed_str().into_boxed_bytes(),
+            language: Language::Lua,
+        });
+        let attachment = ScriptAttachment::StaticScript(handle);
+        world.write_message(ScriptAttachedMessage(attachment.clone()));
+        world.write_message(ScriptDetachedMessage(attachment));
+
+        let system = world.register_system(filter_asset_events::<TestPlugin>);
+        let settings = FilterAssetEventsSettings {
+            sync_components: true,
+            hot_loads: false,
+        };
+        world.run_system_with(system, settings).unwrap();
+
+        // the detachment must not overtake the attachment which is still loading
+        let machines = world.resource::<ActiveMachines<TestPlugin>>();
+        assert_eq!(machines.queued_machines(), 0);
+    }
 
     #[test]
     fn test_run_override_is_undid() {
