@@ -369,14 +369,6 @@ impl MobileTarget {
         }
     }
 
-    /// The languages other than lua54 and rune the script tests run with on the device, kept small as device runs are slow
-    fn device_test_languages(self) -> &'static [Feature] {
-        match self {
-            MobileTarget::Android => &[Feature::Luajit, Feature::Luau],
-            MobileTarget::Ios => &[Feature::Luau],
-        }
-    }
-
     /// The rust target of the binaries running on the emulator or simulator, which matches the CI host's architecture
     fn test_triple(self) -> &'static str {
         match self {
@@ -1600,13 +1592,8 @@ impl Xtasks {
                     },
                 };
 
-                // all features includes lua54 and rune
+                // the test harness is built with lua54, so other lua variants can't be tested
                 output.push(test(default_args.features.clone()));
-                for language in mobile.device_test_languages() {
-                    let mut features = default_args.features.clone().without(Feature::Lua54);
-                    features.0.insert(*language);
-                    output.push(test(features));
-                }
             }
         }
 
@@ -1898,7 +1885,8 @@ fn android_ndk_toolchain() -> Option<PathBuf> {
 
 /// cc-rs can't find a compiler for android targets by itself, this points it (and the linker) at the clang shipped with the NDK.
 fn android_ndk_env(target: &str) -> Vec<(String, PathBuf)> {
-    const API_LEVEL: u32 = 24;
+    // 26 is the first with `libaaudio`, which bevy's audio links
+    const API_LEVEL: u32 = 26;
 
     let Some(bin) = android_ndk_toolchain().map(|t| t.join("bin")) else {
         warn!("No Android NDK found (ANDROID_NDK_HOME), relying on the compilers being in PATH");
@@ -2114,14 +2102,13 @@ mod tests {
 
         assert!(device_rows(None).is_empty());
         let rows = device_rows(Some("--device-tests"));
-        // all features + luajit + luau on android, all features + luau on ios
-        assert_eq!(rows.len(), 5);
-        // only the android ones need the emulator
+        // one per platform, and only the android one needs the emulator
+        assert_eq!(rows.len(), 2);
         assert_eq!(
             rows.iter()
                 .filter(|r| r["requires_android_emulator"] == true)
                 .count(),
-            3
+            1
         );
         assert_eq!(device_rows(Some("--full")).len(), rows.len());
     }
