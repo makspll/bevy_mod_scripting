@@ -883,7 +883,7 @@ impl Xtasks {
                          bin=\"$1\"; shift\n\
                          adb push \"$bin\" {remote}/ > /dev/null\n\
                          adb shell \"cd {remote} && chmod +x ./$(basename \"$bin\") && \
-                         LD_LIBRARY_PATH={remote} RUST_BACKTRACE=1 \
+                         timeout 1200 env LD_LIBRARY_PATH={remote} RUST_BACKTRACE=1 \
                          CARGO_MANIFEST_DIR={remote}/bevy_mod_scripting \
                          ./$(basename \"$bin\") $(printf '%q ' \"$@\")\"\n"
                     ),

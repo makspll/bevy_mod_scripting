@@ -106,6 +106,7 @@ jobs:
       checks: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
+    timeout-minutes: 50
     strategy:
       fail-fast: false
       matrix:
