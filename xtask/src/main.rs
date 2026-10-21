@@ -134,6 +134,12 @@ impl App {
                 }
                 cmd.arg("--kind").arg(kind.as_ref());
             }
+            Xtasks::CheckAndroid => {
+                cmd.arg("check-android");
+            }
+            Xtasks::CheckIos => {
+                cmd.arg("check-ios");
+            }
             Xtasks::Docs {
                 open,
                 no_rust_docs,
@@ -239,6 +245,9 @@ impl App {
                 os,
                 if self.global_args.features == Features::all_features() {
                     "all features".to_owned()
+                } else if self.subcmd.mobile_os().is_some() {
+                    // these only enable the language to check
+                    self.global_args.features.to_string()
                 } else {
                     self.global_args.features.display_no_default()
                 }
@@ -379,6 +388,10 @@ enum Xtasks {
         )]
         kind: CheckKind,
     },
+    /// Type-check the `bevy_mod_scripting` crate for Android (`aarch64-linux-android`), needs the Android NDK
+    CheckAndroid,
+    /// Type-check the `bevy_mod_scripting` crate for iOS (`aarch64-apple-ios`), needs macOS with Xcode
+    CheckIos,
     /// Run the example with the given name
     Example {
         /// The example to run
@@ -504,10 +517,21 @@ impl Xtasks {
         )
     }
 
+    /// The OS which provides the toolchain needed to build for the mobile target checked by this xtask, if it is one
+    fn mobile_os(&self) -> Option<CiOs> {
+        match self {
+            Xtasks::CheckAndroid => Some(CiOs::Ubuntu),
+            Xtasks::CheckIos => Some(CiOs::Macos),
+            _ => None,
+        }
+    }
+
     fn run(self, app_settings: GlobalArgs) -> Result<String> {
         match self {
             Xtasks::Build { timings } => Self::build(timings, app_settings),
             Xtasks::Check { ide_mode, kind } => Self::check(app_settings, ide_mode, kind),
+            Xtasks::CheckAndroid => Self::check_mobile(app_settings, "aarch64-linux-android"),
+            Xtasks::CheckIos => Self::check_mobile(app_settings, "aarch64-apple-ios"),
             Xtasks::Docs {
                 open,
                 no_rust_docs,
@@ -541,6 +565,15 @@ impl Xtasks {
                 let mut rows = Vec::default();
                 for os in <CiOs as strum::VariantArray>::VARIANTS {
                     for row in output.iter() {
+                        // mobile checks need the target's toolchain, so they run on the OS providing it
+                        // regardless of the matrix size
+                        if let Some(mobile_os) = row.subcmd.mobile_os() {
+                            if *os == mobile_os {
+                                rows.push(row.clone().into_ci_row(*os));
+                            }
+                            continue;
+                        }
+
                         // these only need to run on one OS, the others are covered by the OS specific
                         // checks and tests. Benchmarks are the exception, each OS publishes to its own
                         // bencher testbed on main
@@ -647,6 +680,52 @@ impl Xtasks {
             // the main workspace is the only one left
             CheckKind::All | CheckKind::Main => Self::check_main_workspace(app_settings, ide_mode),
         }
+    }
+
+    /// Type-checks the `bevy_mod_scripting` crate with the given features for the given mobile target
+    fn check_mobile(app_settings: GlobalArgs, target: &str) -> Result<()> {
+        run_system_command(
+            &app_settings,
+            "rustup",
+            "Failed to add the rust target",
+            ["target", "add", target],
+            None,
+            false,
+        )?;
+
+        let mut args = vec![
+            "check",
+            "--package",
+            "bevy_mod_scripting",
+            "--target",
+            target,
+        ]
+        .into_iter()
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+        args.extend(app_settings.features.to_cargo_args());
+
+        let android = target.contains("android");
+        if android {
+            // bevy's android glue needs an activity implementation, apps normally pick one through their `bevy` dependency
+            args.extend([
+                "--features".to_owned(),
+                "bevy/android-native-activity".to_owned(),
+            ]);
+        }
+
+        let mut cmd = make_system_command(&app_settings, "cargo", args, None, false)?;
+        if android {
+            cmd.envs(android_ndk_env(target));
+        }
+
+        let status = cmd.status().context("Failed to check for mobile target")?;
+        ensure!(
+            status.success(),
+            "Checking for {target} failed with features: {}",
+            app_settings.features
+        );
+        Ok(())
     }
 
     fn docs(
@@ -1217,6 +1296,27 @@ impl Xtasks {
             },
         });
 
+        // check every scripting language on its own for the mobile targets, to make sure the C toolchains
+        // of the target platforms can build the language runtimes
+        for language in [
+            Feature::Lua51,
+            Feature::Lua52,
+            Feature::Lua53,
+            Feature::Lua54,
+            Feature::Luajit,
+            Feature::Luajit52,
+            Feature::Luau,
+            Feature::Rune,
+        ] {
+            let features = Features::new([language]);
+            for subcmd in [Xtasks::CheckAndroid, Xtasks::CheckIos] {
+                output.push(App {
+                    global_args: default_args.clone().with_features(features.clone()),
+                    subcmd,
+                });
+            }
+        }
+
         // then run docs
         output.push(App {
             global_args: default_args.clone(),
@@ -1256,6 +1356,11 @@ impl Xtasks {
     fn cicd(app_settings: GlobalArgs) -> Result<()> {
         // get the ci matrix
         let matrix = Self::ci_matrix(app_settings.clone(), true)?;
+        // the mobile checks need toolchains which are not generally available
+        let matrix = matrix
+            .into_iter()
+            .filter(|app| app.subcmd.mobile_os().is_none())
+            .collect::<Vec<_>>();
         let length = matrix.len();
         for (i, app) in matrix.into_iter().enumerate() {
             info!("Running CI job {}/{}. {:?}", i + 1, length, app.subcmd);
@@ -1478,6 +1583,42 @@ fn docs_features() -> Features {
     Features::all_features()
 }
 
+/// cc-rs can't find a compiler for android targets by itself, this points it at the clang shipped with the NDK.
+fn android_ndk_env(target: &str) -> Vec<(String, PathBuf)> {
+    const API_LEVEL: u32 = 24;
+
+    let ndk = [
+        "ANDROID_NDK_HOME",
+        "ANDROID_NDK_LATEST_HOME",
+        "ANDROID_NDK_ROOT",
+    ]
+    .into_iter()
+    .find_map(std::env::var_os);
+    // the toolchain directory is named after the host, i.e. `linux-x86_64`
+    let bin = ndk.and_then(|ndk| {
+        let prebuilt = PathBuf::from(ndk).join("toolchains/llvm/prebuilt");
+        let host = std::fs::read_dir(prebuilt).ok()?.find_map(|e| e.ok())?;
+        Some(host.path().join("bin"))
+    });
+    let Some(bin) = bin else {
+        warn!("No Android NDK found (ANDROID_NDK_HOME), relying on the compilers being in PATH");
+        return vec![];
+    };
+
+    let target_env = target.replace('-', "_");
+    vec![
+        (
+            format!("CC_{target_env}"),
+            bin.join(format!("{target}{API_LEVEL}-clang")),
+        ),
+        (
+            format!("CXX_{target_env}"),
+            bin.join(format!("{target}{API_LEVEL}-clang++")),
+        ),
+        (format!("AR_{target_env}"), bin.join("llvm-ar")),
+    ]
+}
+
 /// Because we are likely already runnnig in the context of a cargo invocation,
 /// some environment variables may be set that we don't want to inherit.
 /// Set them to MAIN_CARGO_<VARIABLE> so that we can reference them but so they dont get inherited by further cargo commands
@@ -1620,5 +1761,32 @@ mod tests {
     #[test]
     fn docgen_is_part_of_docs() {
         assert!(App::try_parse_from(["xtask", "docgen"]).is_err());
+    }
+
+    #[test]
+    fn mobile_checks_run_on_every_matrix_size() {
+        for full in [false, true] {
+            let args = ["xtask", "ci-matrix"]
+                .into_iter()
+                .chain(full.then_some("--full"));
+            let app = App::try_parse_from(args).unwrap();
+            let json = app.subcmd.run(app.global_args).unwrap();
+            let rows = serde_json::from_str::<Vec<serde_json::Value>>(&json).unwrap();
+
+            for (check, os) in [
+                ("check-android", "ubuntu-latest"),
+                ("check-ios", "macos-latest"),
+            ] {
+                let on_other_os = |row: &&serde_json::Value| {
+                    row["command"].as_str().is_some_and(|c| c.contains(check)) && row["os"] != os
+                };
+                assert!(rows.iter().filter(on_other_os).next().is_none());
+                assert!(
+                    rows.iter()
+                        .any(|r| r["command"].as_str().is_some_and(|c| c.contains(check))),
+                    "no {check} job in the matrix (full: {full})"
+                );
+            }
+        }
     }
 }
