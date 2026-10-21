@@ -36,6 +36,20 @@ Each language supported by BMS can be switched-on via feature flag as below:
 | Luau | luau |
 | Rune | rune |
 
+### Mobile
+
+CI type-checks `bevy_mod_scripting` for `aarch64-linux-android` and `aarch64-apple-ios`; nothing is run on a device. Both need the target's C toolchain (Android NDK, Xcode) as the Lua runtimes are built from source, and Android needs a `bevy` activity feature in your app (e.g. `bevy/android-native-activity`).
+
+| Language | Android | iOS |
+| ---- | ---- | ---- |
+| Lua51, Lua52, Lua53 | yes | no: the Lua sources call `system`, which the iOS SDK marks unavailable (fixed upstream in Lua 5.4) |
+| Lua54 | yes | yes |
+| Luajit, Luajit52 | yes | no: `luajit-src` can't build for iOS, which also forbids JIT |
+| Luau | yes | yes |
+| Rune | yes | yes |
+
+`unsafe_lua_modules` loads native libraries at runtime, which iOS restricts.
+
 ## Extra Features
 
 In order to fit as many use cases as possible, BMS allows you to disable a lot of its functionality. 

@@ -78,6 +78,8 @@ BMS generates code based on each bevy release, which is why we pin the patch ver
 | Windows  | yes |
 | Linux    | yes |
 | MacOS    | yes |
+| Android  | yes, builds are checked in CI, see [the book](https://makspll.github.io/bevy_mod_scripting/Summary/installation.html#mobile) for supported languages |
+| iOS      | yes, builds are checked in CI, only Lua 5.4, Luau and Rune, see [the book](https://makspll.github.io/bevy_mod_scripting/Summary/installation.html#mobile) |
 | WASM     | no, see [this issue](https://github.com/makspll/bevy_mod_scripting/issues/166) |
 
 
