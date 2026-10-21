@@ -51,7 +51,10 @@ impl TestExecutor for Test {
 fn main() {
     // Parse command line arguments
     let mut args = Arguments::from_args();
-    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    // looked up at runtime so the tests can run on a device, where the assets are somewhere else than where it was built
+    let manifest_dir = std::env::var_os("CARGO_MANIFEST_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")));
     args.test_threads = Some(1); // force single-threaded to avoid issues with thread-local storage
 
     let tests = discover_all_tests(manifest_dir, |p| p.script_asset_path.starts_with("tests"))
