@@ -87,12 +87,9 @@ pub struct AccessBitField(u8);
 impl AccessBitField {
     const KIND_MASK: u8 = 0b0000_0001;
     const FORBIDDEN_MASK: u8 = 0b0000_0010;
-    const WRITE_FORBIDDEN_MASK: u8 = 0b0000_0100;
-    /// The permissions, which are kept when accesses are claimed and released
-    const PERMISSION_MASK: u8 = Self::FORBIDDEN_MASK | Self::WRITE_FORBIDDEN_MASK;
-    const COUNT_MASK: u8 = 0b1111_1000;
-    const COUNT_SHIFT: u8 = 3;
-    const MAX_COUNT: u8 = 0b0001_1111; // 31
+    const COUNT_MASK: u8 = 0b1111_1100;
+    const COUNT_SHIFT: u8 = 2;
+    const MAX_COUNT: u8 = 0b0011_1111; // 63
 
     /// Claims the given access and returns an adjusted state
     pub fn claim_if_free(self, write: bool) -> (bool, Self) {
@@ -104,14 +101,12 @@ impl AccessBitField {
         let conflicting_exclusive = one_is_exclusive && count != 0;
         let aliasing_exclusive_access = (kind_requested == 1) && (count != 0);
         let access_is_forbidden = self.is_forbidden();
-        let write_is_forbidden = (kind_requested == 1) && self.is_write_forbidden();
         // another claim would wrap the count to 0, letting a write alias the existing reads
         let count_is_full = count == Self::MAX_COUNT;
 
         let allowed = !(conflicting_exclusive
             || aliasing_exclusive_access
             || access_is_forbidden
-            || write_is_forbidden
             || count_is_full);
         let allowed_u8 = allowed as u8;
 
@@ -126,7 +121,7 @@ impl AccessBitField {
         let new_kind_bits = (kind & !kind_mask) | (kind_requested & kind_mask);
 
         // Rebuild bitfield
-        let forbidden_bits = self.0 & Self::PERMISSION_MASK;
+        let forbidden_bits = self.0 & Self::FORBIDDEN_MASK;
         let new_count_bits = (new_count << Self::COUNT_SHIFT) & Self::COUNT_MASK;
 
         let new_bits = (new_kind_bits & Self::KIND_MASK) | forbidden_bits | new_count_bits;
@@ -144,19 +139,6 @@ impl AccessBitField {
     /// Returns true if the access is forbidden
     pub fn is_forbidden(self) -> bool {
         (self.0 & Self::FORBIDDEN_MASK) != 0
-    }
-
-    #[inline]
-    /// Returns true if only read accesses may be claimed
-    pub fn is_write_forbidden(self) -> bool {
-        (self.0 & Self::WRITE_FORBIDDEN_MASK) != 0
-    }
-
-    #[inline]
-    /// Returns a new state with adjusted write forbidden flag
-    pub fn with_write_forbidden(self, forbidden: bool) -> Self {
-        let bit = (forbidden as u8) << 2;
-        Self((self.0 & !Self::WRITE_FORBIDDEN_MASK) | bit)
     }
 
     #[inline]
@@ -209,7 +191,7 @@ impl AccessBitField {
         // Preserve kind only if new != 0, otherwise zero it
         let kind = self.kind() & nonzero_mask;
 
-        let forbidden = self.0 & Self::PERMISSION_MASK;
+        let forbidden = self.0 & Self::FORBIDDEN_MASK;
 
         let new_bits =
             (kind & Self::KIND_MASK) | forbidden | ((new << Self::COUNT_SHIFT) & Self::COUNT_MASK);
@@ -217,9 +199,9 @@ impl AccessBitField {
     }
 
     #[inline]
-    /// Returns a new state with everything but the permissions cleared
+    /// Returns a new state with everything but the forbidden mask cleared
     pub fn clear_accesses(self) -> Self {
-        Self(self.0 & Self::PERMISSION_MASK)
+        Self(self.0 & Self::FORBIDDEN_MASK)
     }
 }
 
@@ -229,6 +211,9 @@ impl AccessBitField {
 pub struct AccessByteSet {
     new_capacity_forbidden: bool,
     data: Vec<AccessBitField>,
+    /// Bitset of accesses which can only be read, empty unless the set is a subset with read only accesses.
+    /// Kept outside of the [`AccessBitField`]s so that only write claims pay for checking it.
+    read_only: Vec<u64>,
 }
 
 #[profiling::all_functions]
@@ -239,6 +224,7 @@ impl AccessByteSet {
         Self {
             data: Vec::new(),
             new_capacity_forbidden: false,
+            read_only: Vec::new(),
         }
     }
 
@@ -254,18 +240,27 @@ impl AccessByteSet {
         let mut new = Self::new();
         new.new_capacity_forbidden = true;
         new.ensure_capacity(*max_index);
-        for i in read_only {
-            new.data[*i] = new.data[*i]
-                .with_forbidden(false)
-                .with_write_forbidden(true)
+        for i in read_only.iter().filter(|i| !read_write.contains(i)) {
+            new.data[*i] = new.data[*i].with_forbidden(false);
+            let (word, bit) = (i / 64, i % 64);
+            if word >= new.read_only.len() {
+                new.read_only.resize(word + 1, 0);
+            }
+            new.read_only[word] |= 1 << bit;
         }
         for i in read_write {
-            new.data[*i] = new.data[*i]
-                .with_forbidden(false)
-                .with_write_forbidden(false)
+            new.data[*i] = new.data[*i].with_forbidden(false)
         }
 
         new
+    }
+
+    #[inline]
+    /// Returns true if the access can only be read
+    pub fn is_read_only(&self, index: usize) -> bool {
+        self.read_only
+            .get(index / 64)
+            .is_some_and(|word| word & (1 << (index % 64)) != 0)
     }
 
     fn ensure_capacity(&mut self, index: usize) {
@@ -444,6 +439,9 @@ impl AccessMapInner {
 
     pub fn claim_component_if_free(&mut self, id: ComponentId, write: bool) -> bool {
         let idx = id.index();
+        if write && self.component_access.is_read_only(idx) {
+            return false;
+        }
         let elem = self.component_access.entry_mut(idx);
         let (free, new) = elem.claim_if_free(write);
         *elem = new;
@@ -1119,7 +1117,7 @@ mod test {
             claimed += 1;
             assert!(claimed < 1000, "claims never fail");
         }
-        assert_eq!(claimed, 31);
+        assert_eq!(claimed, 63);
         // all reads are still counted, so writes stay blocked
         assert!(!access_map.claim_write_access(TestAccess(0)));
     }
