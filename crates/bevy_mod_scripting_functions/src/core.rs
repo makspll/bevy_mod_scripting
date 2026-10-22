@@ -9,12 +9,13 @@ use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_bindings::{
-    AnyTypeRegistrationV, DynamicScriptFunctionMut, EnumVariantRef, FunctionInfo, InteropError,
-    NamespaceMembers, PartialReflectExt, QueuedScriptCallback, ReflectReference,
-    ScriptBundleRegistration, ScriptComponentRegistration, ScriptEventRegistration,
-    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration,
-    Union, VariadicTuple, WorldExtensions,
+    AnyTypeRegistrationV, AppScriptNamespaceMembers, DynamicScriptFunctionMut, EnumVariantRef,
+    FunctionInfo, InteropError, NamespaceMembers, NamespaceValue, PartialReflectExt,
+    QueuedScriptCallback, ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration,
+    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
+    ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
+    docgen::typed_through::ThroughTypeInfo,
     function::{
         bound::BoundFields,
         from::{R, V},
@@ -24,9 +25,10 @@ use bevy_mod_scripting_bindings::{
     },
     script_value::ScriptValue,
 };
+use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
 use bevy_mod_scripting_core::{
     event::CallbackLabel,
-    script_system::{ManageScriptSystems, ScriptSystemBuilder},
+    script_system::{ManageScriptSystems, ScriptRunCondition, ScriptSystemBuilder},
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
@@ -1711,6 +1713,110 @@ impl ScriptSystemBuilder {
         builder.before_system(system.into_inner());
         V(builder)
     }
+
+    /// Specifies the system is to run *before* the script system with the given callback label of the given script.
+    /// That system must have been added before this one.
+    ///
+    /// Arguments:
+    /// * `builder`: The system builder to add the dependency to.
+    /// * `label`: The callback label of the other script system.
+    /// * `attachment`: The script the other script system belongs to.
+    /// Returns:
+    /// * `builder`: The system builder with the dependency added.
+    fn before_script_system(
+        builder: V<ScriptSystemBuilder>,
+        label: String,
+        attachment: V<ScriptAttachment>,
+    ) -> V<ScriptSystemBuilder> {
+        profiling::function_scope!("before_script_system");
+        let mut builder = builder.into_inner();
+        builder.before_script_system(label.into(), attachment.into_inner());
+        V(builder)
+    }
+
+    /// Specifies the system is to run *after* the script system with the given callback label of the given script.
+    /// That system must have been added before this one.
+    ///
+    /// Arguments:
+    /// * `builder`: The system builder to add the dependency to.
+    /// * `label`: The callback label of the other script system.
+    /// * `attachment`: The script the other script system belongs to.
+    /// Returns:
+    /// * `builder`: The system builder with the dependency added.
+    fn after_script_system(
+        builder: V<ScriptSystemBuilder>,
+        label: String,
+        attachment: V<ScriptAttachment>,
+    ) -> V<ScriptSystemBuilder> {
+        profiling::function_scope!("after_script_system");
+        let mut builder = builder.into_inner();
+        builder.after_script_system(label.into(), attachment.into_inner());
+        V(builder)
+    }
+
+    /// Specifies the system is to run *before* the given set.
+    /// The name refers to a set the game registered, or otherwise to a set shared by scripts using the same name.
+    ///
+    /// Arguments:
+    /// * `builder`: The system builder to add the dependency to.
+    /// * `set`: The name of the set.
+    /// Returns:
+    /// * `builder`: The system builder with the dependency added.
+    fn before_set(builder: V<ScriptSystemBuilder>, set: String) -> V<ScriptSystemBuilder> {
+        profiling::function_scope!("before_set");
+        let mut builder = builder.into_inner();
+        builder.before_set(set);
+        V(builder)
+    }
+
+    /// Specifies the system is to run *after* the given set.
+    /// The name refers to a set the game registered, or otherwise to a set shared by scripts using the same name.
+    ///
+    /// Arguments:
+    /// * `builder`: The system builder to add the dependency to.
+    /// * `set`: The name of the set.
+    /// Returns:
+    /// * `builder`: The system builder with the dependency added.
+    fn after_set(builder: V<ScriptSystemBuilder>, set: String) -> V<ScriptSystemBuilder> {
+        profiling::function_scope!("after_set");
+        let mut builder = builder.into_inner();
+        builder.after_set(set);
+        V(builder)
+    }
+
+    /// Puts the system in the given set, ordering the set orders the system.
+    /// The name refers to a set the game registered, or otherwise to a set shared by scripts using the same name.
+    ///
+    /// Arguments:
+    /// * `builder`: The system builder to put in the set.
+    /// * `set`: The name of the set.
+    /// Returns:
+    /// * `builder`: The system builder in the set.
+    fn in_set(builder: V<ScriptSystemBuilder>, set: String) -> V<ScriptSystemBuilder> {
+        profiling::function_scope!("in_set");
+        let mut builder = builder.into_inner();
+        builder.in_set(set);
+        V(builder)
+    }
+
+    /// Only runs the system if the condition holds, see `bms.conditions`. All conditions must hold for the system to run.
+    ///
+    /// Conditions are evaluated without calling into the script.
+    ///
+    /// Arguments:
+    /// * `builder`: The system builder to add the condition to.
+    /// * `condition`: The condition.
+    /// Returns:
+    /// * `builder`: The system builder with the condition added.
+    fn run_if(
+        builder: V<ScriptSystemBuilder>,
+        condition: V<ScriptRunCondition>,
+    ) -> V<ScriptSystemBuilder> {
+        profiling::function_scope!("run_if");
+        let mut builder = builder.into_inner();
+        builder.run_if(condition.into_inner());
+        V(builder)
+    }
 }
 
 #[script_bindings(
@@ -2070,6 +2176,114 @@ impl NamespaceMembers {
     }
 }
 
+/// Run conditions for script systems, `bms.conditions` in scripts, see `run_if` on the system builder.
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "script_run_condition_functions",
+    core,
+    namespace = "bms"
+)]
+impl ScriptRunCondition {
+    /// Holds if the resource exists.
+    ///
+    /// Arguments:
+    /// * `resource`: The resource.
+    /// Returns:
+    /// * `condition`: The condition.
+    fn resource_exists(resource: V<ScriptResourceRegistration>) -> V<ScriptRunCondition> {
+        V(ScriptRunCondition::ResourceExists(resource.into_inner()))
+    }
+
+    /// Holds if the resource changed since the system last ran, doesn't hold if it doesn't exist.
+    ///
+    /// Arguments:
+    /// * `resource`: The resource.
+    /// Returns:
+    /// * `condition`: The condition.
+    fn resource_changed(resource: V<ScriptResourceRegistration>) -> V<ScriptRunCondition> {
+        V(ScriptRunCondition::ResourceChanged(resource.into_inner()))
+    }
+
+    /// Holds if the resource was added since the system last ran.
+    ///
+    /// Arguments:
+    /// * `resource`: The resource.
+    /// Returns:
+    /// * `condition`: The condition.
+    fn resource_added(resource: V<ScriptResourceRegistration>) -> V<ScriptRunCondition> {
+        V(ScriptRunCondition::ResourceAdded(resource.into_inner()))
+    }
+
+    /// Holds if any entity has the component.
+    ///
+    /// Arguments:
+    /// * `component`: The component.
+    /// Returns:
+    /// * `condition`: The condition.
+    fn any_with_component(component: V<ScriptComponentRegistration>) -> V<ScriptRunCondition> {
+        V(ScriptRunCondition::AnyWithComponent(component.into_inner()))
+    }
+
+    /// Holds once every given amount of seconds, measured with `Time`.
+    ///
+    /// Arguments:
+    /// * `seconds`: The interval in seconds.
+    /// Returns:
+    /// * `condition`: The condition.
+    fn on_timer(seconds: f64) -> Result<V<ScriptRunCondition>, InteropError> {
+        let duration = std::time::Duration::try_from_secs_f64(seconds)
+            .map_err(|e| InteropError::string(format!("invalid timer interval {seconds}: {e}")))?;
+        Ok(V(ScriptRunCondition::OnTimer(duration)))
+    }
+
+    /// Holds the first time it is evaluated only.
+    ///
+    /// Returns:
+    /// * `condition`: The condition.
+    fn run_once() -> V<ScriptRunCondition> {
+        V(ScriptRunCondition::RunOnce)
+    }
+
+    /// Holds if the condition doesn't hold. Named `not_` as `not` is a keyword in Lua.
+    ///
+    /// Arguments:
+    /// * `condition`: The condition.
+    /// Returns:
+    /// * `condition`: The negated condition.
+    fn not_(condition: V<ScriptRunCondition>) -> V<ScriptRunCondition> {
+        V(ScriptRunCondition::Not(Box::new(condition.into_inner())))
+    }
+
+    /// Holds if both conditions hold, the second one is only evaluated if the first one holds.
+    ///
+    /// Arguments:
+    /// * `a`: The first condition.
+    /// * `b`: The second condition.
+    /// Returns:
+    /// * `condition`: The combined condition.
+    fn and_(a: V<ScriptRunCondition>, b: V<ScriptRunCondition>) -> V<ScriptRunCondition> {
+        V(ScriptRunCondition::And(
+            Box::new(a.into_inner()),
+            Box::new(b.into_inner()),
+        ))
+    }
+
+    /// Holds if either condition holds, the second one is only evaluated if the first one doesn't hold.
+    ///
+    /// Arguments:
+    /// * `a`: The first condition.
+    /// * `b`: The second condition.
+    /// Returns:
+    /// * `condition`: The combined condition.
+    fn or_(a: V<ScriptRunCondition>, b: V<ScriptRunCondition>) -> V<ScriptRunCondition> {
+        V(ScriptRunCondition::Or(
+            Box::new(a.into_inner()),
+            Box::new(b.into_inner()),
+        ))
+    }
+}
+
 pub fn register_core_functions(app: &mut App) {
     let world = app.world_mut();
     // we don't exclude from compilation here,
@@ -2095,6 +2309,27 @@ pub fn register_core_functions(app: &mut App) {
         register_reflect_schedule_functions(world);
         register_reflect_system_functions(world);
         register_script_system_builder_functions(world);
+        register_script_run_condition_functions(world);
+        // the conditions are static functions of the condition type, i.e. `bms.conditions.run_once()`
+        world
+            .get_resource_or_init::<AppScriptNamespaceMembers>()
+            .clone()
+            .write()
+            .register_value(
+                "bms",
+                "conditions",
+                NamespaceValue {
+                    maker: std::sync::Arc::new(|_| {
+                        Ok(ScriptValue::Type(
+                            std::any::TypeId::of::<ScriptRunCondition>(),
+                        ))
+                    }),
+                    type_information: ThroughTypeInfo::Primitive(
+                        ReflectionPrimitiveKind::StaticTypeRef,
+                    ),
+                    documentation: Some("Run conditions for script systems.".into()),
+                },
+            );
 
         register_script_attachment_functions(world);
         register_recipients_functions(world);

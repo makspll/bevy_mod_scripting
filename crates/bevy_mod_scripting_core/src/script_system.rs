@@ -14,7 +14,7 @@ use ::{
     bevy_ecs::{
         component::ComponentId,
         entity::Entity,
-        query::{FilteredAccessSet, QueryState},
+        query::{FilteredAccessSet, QueryBuilder, QueryState},
         reflect::AppTypeRegistry,
         schedule::SystemSet,
         system::{System, SystemParamValidationError},
@@ -31,15 +31,17 @@ use bevy_ecs::{
         InternedScheduleLabel, InternedSystemSet, IntoScheduleConfigs, Schedule,
         ScheduleCleanupPolicy, ScheduleConfigs, ScheduleError, Schedules,
     },
-    system::{RunSystemError, ScheduleSystem, SystemAccess, SystemIn, SystemStateFlags},
+    system::{
+        ReadOnlySystem, RunSystemError, ScheduleSystem, SystemAccess, SystemIn, SystemStateFlags,
+    },
     world::{DeferredWorld, WorldId},
 };
 use bevy_log::{debug, warn, warn_once};
 use bevy_mod_scripting_bindings::{
     AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, AppScriptTypeCatalogue, CurrentScriptAttachment, InteropError,
-    IntoScript, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptResourceRegistration, V, WorldExtensions,
+    IntoScript, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
+    ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -47,7 +49,9 @@ use bevy_mod_scripting_world::{AccessByteSet, ArchetypeFilter, WorldAccessGuard,
 use bevy_platform::collections::HashMap;
 use bevy_reflect::TypeRegistryArc;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
+use bevy_time::{Time, Timer, TimerMode};
 use bevy_utils::prelude::DebugName;
+use core::time::Duration;
 use parking_lot::Mutex;
 use std::{
     any::TypeId,
@@ -104,6 +108,12 @@ pub struct ScriptSystemBuilder {
     pub(crate) attachment: ScriptAttachment,
     before: Vec<ReflectSystem>,
     after: Vec<ReflectSystem>,
+    before_script_systems: Vec<(CallbackLabel, ScriptAttachment)>,
+    after_script_systems: Vec<(CallbackLabel, ScriptAttachment)>,
+    before_sets: Vec<String>,
+    after_sets: Vec<String>,
+    in_sets: Vec<String>,
+    run_conditions: Vec<ScriptRunCondition>,
     system_params: Vec<ScriptSystemParamDescriptor>,
     is_exclusive: bool,
 }
@@ -115,11 +125,61 @@ impl ScriptSystemBuilder {
         Self {
             before: vec![],
             after: vec![],
+            before_script_systems: vec![],
+            after_script_systems: vec![],
+            before_sets: vec![],
+            after_sets: vec![],
+            in_sets: vec![],
+            run_conditions: vec![],
             name,
             attachment,
             system_params: vec![],
             is_exclusive: false,
         }
+    }
+
+    /// Runs the system before the script system of the given script, which must have been added already
+    pub fn before_script_system(
+        &mut self,
+        label: CallbackLabel,
+        attachment: ScriptAttachment,
+    ) -> &mut Self {
+        self.before_script_systems.push((label, attachment));
+        self
+    }
+
+    /// Runs the system after the script system of the given script, which must have been added already
+    pub fn after_script_system(
+        &mut self,
+        label: CallbackLabel,
+        attachment: ScriptAttachment,
+    ) -> &mut Self {
+        self.after_script_systems.push((label, attachment));
+        self
+    }
+
+    /// Runs the system before the given set, see [`ScriptSystemSetRegistry`] for how names are resolved
+    pub fn before_set(&mut self, name: impl Into<String>) -> &mut Self {
+        self.before_sets.push(name.into());
+        self
+    }
+
+    /// Runs the system after the given set, see [`ScriptSystemSetRegistry`] for how names are resolved
+    pub fn after_set(&mut self, name: impl Into<String>) -> &mut Self {
+        self.after_sets.push(name.into());
+        self
+    }
+
+    /// Puts the system in the given set, see [`ScriptSystemSetRegistry`] for how names are resolved
+    pub fn in_set(&mut self, name: impl Into<String>) -> &mut Self {
+        self.in_sets.push(name.into());
+        self
+    }
+
+    /// Only runs the system if the condition holds, all conditions must hold for the system to run
+    pub fn run_if(&mut self, condition: ScriptRunCondition) -> &mut Self {
+        self.run_conditions.push(condition);
+        self
     }
 
     /// Adds a component access to the system
@@ -181,8 +241,46 @@ impl ScriptSystemBuilder {
             let alive = Arc::new(AtomicBool::new(true));
             let mut changes = Vec::with_capacity(2);
 
+            let named_set = |name: &String| {
+                world
+                    .get_resource::<ScriptSystemSetRegistry>()
+                    .and_then(|registry| registry.get(name))
+                    .unwrap_or_else(|| ScriptNamedSet(name.clone()).intern())
+            };
+            let mut ordering = ScriptSystemOrdering {
+                before: self
+                    .before
+                    .iter()
+                    .flat_map(|system| system.default_system_sets().iter().copied())
+                    .chain(self.before_sets.iter().map(named_set))
+                    .collect(),
+                after: self
+                    .after
+                    .iter()
+                    .flat_map(|system| system.default_system_sets().iter().copied())
+                    .chain(self.after_sets.iter().map(named_set))
+                    .collect(),
+                in_sets: self.in_sets.iter().map(named_set).collect(),
+            };
+
             let set = {
                 let mut inner = systems.0.lock();
+                for (script_systems, sets) in [
+                    (&self.before_script_systems, &mut ordering.before),
+                    (&self.after_script_systems, &mut ordering.after),
+                ] {
+                    for (label, attachment) in script_systems {
+                        let entry = inner
+                            .systems
+                            .get(&(attachment.clone(), label.clone()))
+                            .ok_or_else(|| {
+                                InteropError::string(format!(
+                                    "Script system `{label}` of script {attachment} does not exist, script systems can only be ordered against systems added before them"
+                                ))
+                            })?;
+                        sets.push(entry.set.intern());
+                    }
+                }
                 let key = (self.attachment.clone(), self.name.clone());
                 let set = match inner.systems.get(&key) {
                     Some(old) => {
@@ -211,11 +309,11 @@ impl ScriptSystemBuilder {
                         set,
                         schedule: label,
                         alive: alive.clone(),
-                        orders_against: self
+                        orders_against: ordering
                             .before
                             .iter()
-                            .chain(&self.after)
-                            .flat_map(|system| system.default_system_sets().iter().copied())
+                            .chain(&ordering.after)
+                            .copied()
                             .collect(),
                     },
                 );
@@ -228,9 +326,10 @@ impl ScriptSystemBuilder {
             changes.push(PendingScheduleChange::new(
                 label,
                 ScheduleChange::Add {
-                    builder: self.clone(),
+                    builder: Box::new(self.clone()),
                     set,
                     alive,
+                    ordering,
                     // schedule configs are not `Send`, so the system is created once it is added
                     into_configs: script_system_configs::<P>,
                 },
@@ -261,6 +360,258 @@ impl ScriptSystemBuilder {
             };
             found?.ok_or_else(|| InteropError::invariant("After adding the system, it was not found in the schedule, could not return a reference to it"))
         })?
+    }
+}
+
+/// A run condition of a script system, evaluated in Rust without calling into the script, see [`ScriptSystemBuilder::run_if`].
+#[derive(Clone, Reflect)]
+#[reflect(opaque)]
+pub enum ScriptRunCondition {
+    /// The resource exists
+    ResourceExists(ScriptResourceRegistration),
+    /// The resource was changed since the system last ran, false if it doesn't exist
+    ResourceChanged(ScriptResourceRegistration),
+    /// The resource was added since the system last ran
+    ResourceAdded(ScriptResourceRegistration),
+    /// Any entity has the component
+    AnyWithComponent(ScriptComponentRegistration),
+    /// The given time passed since the condition last held, measured with [`Time`]
+    OnTimer(Duration),
+    /// Only the first time the condition is evaluated
+    RunOnce,
+    /// The condition doesn't hold
+    Not(Box<ScriptRunCondition>),
+    /// Both conditions hold, the second is not evaluated if the first doesn't hold
+    And(Box<ScriptRunCondition>, Box<ScriptRunCondition>),
+    /// Either condition holds, the second is not evaluated if the first holds
+    Or(Box<ScriptRunCondition>, Box<ScriptRunCondition>),
+}
+
+/// A [`ScriptRunCondition`] ready to be evaluated, with its state
+enum CompiledRunCondition {
+    ResourceExists(ComponentId),
+    ResourceChanged(ComponentId),
+    ResourceAdded(ComponentId),
+    AnyWithComponent(Box<QueryState<Entity>>),
+    OnTimer(Timer, ComponentId),
+    RunOnce(bool),
+    Not(Box<CompiledRunCondition>),
+    And(Box<CompiledRunCondition>, Box<CompiledRunCondition>),
+    Or(Box<CompiledRunCondition>, Box<CompiledRunCondition>),
+}
+
+impl CompiledRunCondition {
+    /// Compiles the condition, declaring the accesses needed to evaluate it
+    fn compile(
+        condition: &ScriptRunCondition,
+        world: &mut World,
+        access: &mut FilteredAccessSet,
+    ) -> Self {
+        match condition {
+            ScriptRunCondition::ResourceExists(resource) => {
+                access.add_resource_read(resource.resource_id);
+                Self::ResourceExists(resource.resource_id)
+            }
+            ScriptRunCondition::ResourceChanged(resource) => {
+                access.add_resource_read(resource.resource_id);
+                Self::ResourceChanged(resource.resource_id)
+            }
+            ScriptRunCondition::ResourceAdded(resource) => {
+                access.add_resource_read(resource.resource_id);
+                Self::ResourceAdded(resource.resource_id)
+            }
+            ScriptRunCondition::AnyWithComponent(component) => {
+                let query = QueryBuilder::<Entity>::new(world)
+                    .with_id(component.component_id)
+                    .build();
+                access.add(query.component_access().clone());
+                Self::AnyWithComponent(Box::new(query))
+            }
+            ScriptRunCondition::OnTimer(duration) => {
+                // resources are components, registering keeps the id valid if `Time` is inserted later
+                let time = world.register_component::<Time>();
+                access.add_resource_read(time);
+                Self::OnTimer(Timer::new(*duration, TimerMode::Repeating), time)
+            }
+            ScriptRunCondition::RunOnce => Self::RunOnce(false),
+            ScriptRunCondition::Not(condition) => {
+                Self::Not(Box::new(Self::compile(condition, world, access)))
+            }
+            ScriptRunCondition::And(a, b) => Self::And(
+                Box::new(Self::compile(a, world, access)),
+                Box::new(Self::compile(b, world, access)),
+            ),
+            ScriptRunCondition::Or(a, b) => Self::Or(
+                Box::new(Self::compile(a, world, access)),
+                Box::new(Self::compile(b, world, access)),
+            ),
+        }
+    }
+
+    /// # Safety
+    /// The world must allow the accesses declared in [`Self::compile`]
+    unsafe fn evaluate(&mut self, world: UnsafeWorldCell, last_run: Tick, this_run: Tick) -> bool {
+        // Safety: the resources are declared as read
+        let resource_ticks = |id: ComponentId| {
+            let entity = unsafe { world.resource_entities() }.get(id)?;
+            unsafe { world.get_entity(entity).ok()?.get_change_ticks_by_id(id) }
+        };
+        match self {
+            Self::ResourceExists(id) => unsafe { world.resource_entities() }.get(*id).is_some(),
+            Self::ResourceChanged(id) => {
+                resource_ticks(*id).is_some_and(|ticks| ticks.is_changed(last_run, this_run))
+            }
+            Self::ResourceAdded(id) => {
+                resource_ticks(*id).is_some_and(|ticks| ticks.is_added(last_run, this_run))
+            }
+            // Safety: the query's access is declared
+            Self::AnyWithComponent(query) => {
+                unsafe { query.iter_unchecked(world) }.next().is_some()
+            }
+            Self::OnTimer(timer, time) => {
+                // Safety: `Time` is declared as read
+                let Some(time) = (unsafe { world.get_resource_by_id(*time) }) else {
+                    return false;
+                };
+                // Safety: the id is the id of `Time`
+                timer.tick(unsafe { time.deref::<Time>() }.delta());
+                timer.just_finished()
+            }
+            Self::RunOnce(has_run) => !std::mem::replace(has_run, true),
+            Self::Not(condition) => !unsafe { condition.evaluate(world, last_run, this_run) },
+            Self::And(a, b) => unsafe {
+                a.evaluate(world, last_run, this_run) && b.evaluate(world, last_run, this_run)
+            },
+            Self::Or(a, b) => unsafe {
+                a.evaluate(world, last_run, this_run) || b.evaluate(world, last_run, this_run)
+            },
+        }
+    }
+}
+
+/// Evaluates the run conditions of a script system, all must hold for the system to run
+struct ScriptConditionSystem {
+    conditions: Vec<ScriptRunCondition>,
+    compiled: Vec<CompiledRunCondition>,
+    last_run: Tick,
+}
+
+impl ScriptConditionSystem {
+    fn new(conditions: Vec<ScriptRunCondition>) -> Self {
+        Self {
+            conditions,
+            compiled: Vec::new(),
+            last_run: Tick::default(),
+        }
+    }
+}
+
+impl System for ScriptConditionSystem {
+    type In = ();
+    type Out = bool;
+
+    fn name(&self) -> DebugName {
+        "script_run_conditions".into()
+    }
+
+    fn flags(&self) -> SystemStateFlags {
+        SystemStateFlags::empty()
+    }
+
+    unsafe fn run_unsafe(
+        &mut self,
+        _input: SystemIn<'_, Self>,
+        world: UnsafeWorldCell,
+    ) -> Result<Self::Out, RunSystemError> {
+        let this_run = world.increment_change_tick();
+        let last_run = self.last_run;
+        // every condition is evaluated, so stateful ones (timers) advance even if an earlier one doesn't hold
+        let mut holds = true;
+        for condition in &mut self.compiled {
+            // Safety: the accesses are declared in `initialize`
+            holds &= unsafe { condition.evaluate(world, last_run, this_run) };
+        }
+        self.last_run = this_run;
+        Ok(holds)
+    }
+
+    fn apply_deferred(&mut self, _world: &mut World) {}
+
+    fn queue_deferred(&mut self, _world: DeferredWorld) {}
+
+    fn initialize(&mut self, world: &mut World) -> SystemAccess {
+        let mut access = FilteredAccessSet::new();
+        self.compiled = self
+            .conditions
+            .iter()
+            .map(|condition| CompiledRunCondition::compile(condition, world, &mut access))
+            .collect();
+        SystemAccess::Shared(access)
+    }
+
+    fn check_change_tick(&mut self, change_tick: CheckChangeTicks) {
+        self.last_run.check_tick(change_tick);
+    }
+
+    fn get_last_run(&self) -> Tick {
+        self.last_run
+    }
+
+    fn set_last_run(&mut self, last_run: Tick) {
+        self.last_run = last_run;
+    }
+}
+
+// Safety: conditions only read the world
+unsafe impl ReadOnlySystem for ScriptConditionSystem {}
+
+/// A system set scripts create by naming it, i.e. `builder:in_set("ai")`, see [`ScriptSystemSetRegistry`].
+///
+/// Interned once per distinct name.
+#[derive(SystemSet, Clone, Hash, PartialEq, Eq, Debug)]
+pub struct ScriptNamedSet(pub String);
+
+/// The Rust system sets scripts can order their systems against or put them in, by name.
+///
+/// Names used by scripts resolve to the set registered with that name, otherwise to a [`ScriptNamedSet`],
+/// which scripts share to group and order their systems.
+#[derive(Resource, Default)]
+pub struct ScriptSystemSetRegistry {
+    sets: HashMap<String, InternedSystemSet>,
+}
+
+impl ScriptSystemSetRegistry {
+    /// Registers the set with the given name, replacing a set registered with the same name
+    pub fn register(&mut self, name: impl Into<String>, set: impl SystemSet) {
+        self.sets.insert(name.into(), set.intern());
+    }
+
+    /// Returns the set registered with the given name
+    pub fn get(&self, name: &str) -> Option<InternedSystemSet> {
+        self.sets.get(name).copied()
+    }
+}
+
+/// Registers Rust system sets for scripts, see [`ScriptSystemSetRegistry`].
+pub trait ScriptSystemSetAppExt {
+    /// Lets scripts order their systems against the set, and put them in it, by the given name
+    fn register_script_system_set(
+        &mut self,
+        name: impl Into<String>,
+        set: impl SystemSet,
+    ) -> &mut Self;
+}
+
+impl ScriptSystemSetAppExt for bevy_app::App {
+    fn register_script_system_set(
+        &mut self,
+        name: impl Into<String>,
+        set: impl SystemSet,
+    ) -> &mut Self {
+        self.world_mut()
+            .get_resource_or_init::<ScriptSystemSetRegistry>()
+            .register(name, set);
+        self
     }
 }
 
@@ -310,40 +661,52 @@ struct PendingScheduleChange {
     attempts: u8,
 }
 
+/// The sets a script system is ordered against and is part of, resolved when the system is built
+struct ScriptSystemOrdering {
+    before: Vec<InternedSystemSet>,
+    after: Vec<InternedSystemSet>,
+    in_sets: Vec<InternedSystemSet>,
+}
+
 type IntoScriptSystemConfigs = fn(
     ScriptSystemBuilder,
     ScriptSystemSet,
     Arc<AtomicBool>,
     ScriptSystems,
+    ScriptSystemOrdering,
 ) -> ScheduleConfigs<ScheduleSystem>;
 
-/// Creates the system with its ordering
+/// Creates the system with its ordering and run conditions
 fn script_system_configs<P: IntoScriptPluginParams>(
     builder: ScriptSystemBuilder,
     set: ScriptSystemSet,
     alive: Arc<AtomicBool>,
     systems: ScriptSystems,
+    ordering: ScriptSystemOrdering,
 ) -> ScheduleConfigs<ScheduleSystem> {
-    let (before, after) = (builder.before.clone(), builder.after.clone());
+    let conditions = builder.run_conditions.clone();
     let mut config = DynamicScriptSystem::<P>::new(builder, set, alive, systems).into_configs();
-    for other in before {
-        for default_set in other.default_system_sets() {
-            config = config.before(*default_set);
-        }
+    for other in ordering.before {
+        config = config.before(other);
     }
-    for other in after {
-        for default_set in other.default_system_sets() {
-            config = config.after(*default_set);
-        }
+    for other in ordering.after {
+        config = config.after(other);
+    }
+    for other in ordering.in_sets {
+        config = config.in_set(other);
+    }
+    if !conditions.is_empty() {
+        config = config.run_if(ScriptConditionSystem::new(conditions));
     }
     config
 }
 
 enum ScheduleChange {
     Add {
-        builder: ScriptSystemBuilder,
+        builder: Box<ScriptSystemBuilder>,
         set: ScriptSystemSet,
         alive: Arc<AtomicBool>,
+        ordering: ScriptSystemOrdering,
         into_configs: IntoScriptSystemConfigs,
     },
     /// Removes the systems in the set, and frees its slot afterwards if `free_slot` is set
@@ -423,9 +786,10 @@ impl ScriptSystems {
                 builder,
                 set,
                 alive,
+                ordering,
                 into_configs,
             }) => {
-                schedule.add_systems(into_configs(builder, set, alive, self.clone()));
+                schedule.add_systems(into_configs(*builder, set, alive, self.clone(), ordering));
                 Ok(())
             }
             Some(ScheduleChange::Remove { set, free_slot }) => {
@@ -1382,5 +1746,73 @@ mod test {
         assert!(a.is_compatible(&b), "readers should run in parallel");
         assert!(!a.is_compatible(&access_of(&mut world, resource_writer)));
         assert!(!a.is_compatible(&access_of(&mut world, component_writer)));
+    }
+
+    #[test]
+    fn run_conditions_track_changes_and_time() {
+        let mut world = World::new();
+        world.init_resource::<AccessTestResource>();
+        world.insert_resource(Time::<()>::default());
+        let resource = ScriptResourceRegistration::new(
+            ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
+                AccessTestResource,
+            >())),
+            world.register_component::<AccessTestResource>(),
+        );
+
+        let mut changed =
+            ScriptConditionSystem::new(vec![ScriptRunCondition::ResourceChanged(resource.clone())]);
+        changed.initialize(&mut world);
+        assert!(
+            changed.run((), &mut world).unwrap(),
+            "added counts as changed"
+        );
+        assert!(!changed.run((), &mut world).unwrap());
+        bevy_ecs::change_detection::DetectChangesMut::set_changed(
+            &mut world.resource_mut::<AccessTestResource>(),
+        );
+        assert!(changed.run((), &mut world).unwrap());
+
+        let mut timer =
+            ScriptConditionSystem::new(vec![ScriptRunCondition::OnTimer(Duration::from_secs(1))]);
+        timer.initialize(&mut world);
+        assert!(!timer.run((), &mut world).unwrap());
+        world
+            .resource_mut::<Time>()
+            .advance_by(Duration::from_millis(1500));
+        assert!(timer.run((), &mut world).unwrap());
+    }
+
+    #[derive(bevy_ecs::schedule::SystemSet, Clone, Hash, PartialEq, Eq, Debug)]
+    struct RustTestSet;
+
+    fn rust_system_in_set() {}
+
+    #[test]
+    fn script_systems_order_against_registered_sets() {
+        let mut app = systems_test_app();
+        app.register_script_system_set("rust_test_set", RustTestSet);
+        app.add_systems(SystemsTestSchedule, rust_system_in_set.in_set(RustTestSet));
+
+        let world = app.world_mut();
+        let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
+        let mut builder = ScriptSystemBuilder::new("test".to_owned().into(), attachment());
+        builder.after_set("rust_test_set");
+        builder
+            .build::<TestPlugin>(
+                WorldAccessGuard::new_exclusive(world, cache),
+                &ReflectSchedule::from_label(SystemsTestSchedule),
+            )
+            .unwrap();
+
+        let schedules = app.world().resource::<Schedules>();
+        let graph = bevy_system_reflection::schedule_to_reflect_graph(
+            schedules.get(SystemsTestSchedule).unwrap(),
+        );
+        assert!(
+            graph
+                .system_runs_before("rust_system_in_set", "test")
+                .unwrap()
+        );
     }
 }

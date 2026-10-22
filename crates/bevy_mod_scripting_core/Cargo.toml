@@ -34,6 +34,7 @@ bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_asset = { workspace = true, default-features = false, features = [] }
 bevy_diagnostic = { workspace = true, default-features = false, features = [] }
 bevy_platform = { workspace = true, default-features = false, features = [] }
+bevy_time = { workspace = true, default-features = false, features = [] }
 indexmap = { workspace = true }
 bevy_utils = { workspace = true }
 
