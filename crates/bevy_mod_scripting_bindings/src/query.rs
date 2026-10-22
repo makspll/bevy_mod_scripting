@@ -14,11 +14,12 @@ use crate::{
 };
 use ::{
     bevy_ecs::{
+        change_detection::Tick,
         component::ComponentId,
         entity::Entity,
         query::{QueryData, QueryState},
         reflect::{ReflectBundle, ReflectComponent, ReflectFromWorld},
-        world::World,
+        world::{World, unsafe_world_cell::UnsafeEntityCell},
     },
     bevy_reflect::{
         PartialReflect, Reflect, ReflectFromReflect, TypeRegistration, std_traits::ReflectDefault,
@@ -433,10 +434,16 @@ pub struct ScriptQueryBuilder {
     pub components: Vec<ScriptComponentRegistration>,
     /// Whether each of the components is written, components without an entry are written.
     writes: Vec<bool>,
+    /// Whether each of the components is optional, components without an entry are required.
+    optionals: Vec<bool>,
     /// Components that must be present.
     pub with: Vec<ScriptComponentRegistration>,
     /// Components that must not be present.
     pub without: Vec<ScriptComponentRegistration>,
+    /// Components that must have been added since the last run (of the system, or of the app's update outside systems).
+    pub added: Vec<ScriptComponentRegistration>,
+    /// Components that must have been changed since the last run (of the system, or of the app's update outside systems).
+    pub changed: Vec<ScriptComponentRegistration>,
 }
 
 #[profiling::all_functions]
@@ -455,27 +462,125 @@ impl ScriptQueryBuilder {
     }
     /// Adds a component to the query, which can be read and written.
     pub fn component(&mut self, component: ScriptComponentRegistration) -> &mut Self {
-        self.push_component(component, true)
+        self.push_component(component, true, false)
     }
 
     /// Adds a component to the query, which can only be read.
     ///
     /// Systems reading a component can run in parallel with each other.
     pub fn component_read(&mut self, component: ScriptComponentRegistration) -> &mut Self {
-        self.push_component(component, false)
+        self.push_component(component, false, false)
     }
 
-    fn push_component(&mut self, component: ScriptComponentRegistration, write: bool) -> &mut Self {
-        // components pushed to the public field directly are written
+    /// Adds a component to the query which entities don't need to have, which can be read and written.
+    pub fn optional(&mut self, component: ScriptComponentRegistration) -> &mut Self {
+        self.push_component(component, true, true)
+    }
+
+    /// Adds a component to the query which entities don't need to have, which can only be read.
+    pub fn optional_read(&mut self, component: ScriptComponentRegistration) -> &mut Self {
+        self.push_component(component, false, true)
+    }
+
+    fn push_component(
+        &mut self,
+        component: ScriptComponentRegistration,
+        write: bool,
+        optional: bool,
+    ) -> &mut Self {
+        // components pushed to the public field directly are written and required
         self.writes.resize(self.components.len(), true);
+        self.optionals.resize(self.components.len(), false);
         self.components.push(component);
         self.writes.push(write);
+        self.optionals.push(optional);
         self
     }
 
     /// Returns true if the component at the given index of [`Self::components`] is written
     pub fn is_written(&self, index: usize) -> bool {
         self.writes.get(index).copied().unwrap_or(true)
+    }
+
+    /// Returns true if the component at the given index of [`Self::components`] is optional
+    pub fn is_optional(&self, index: usize) -> bool {
+        self.optionals.get(index).copied().unwrap_or(false)
+    }
+
+    /// Only matches entities whose component was added since the last run, see [`Self::added`]
+    pub fn added_component(&mut self, component: ScriptComponentRegistration) -> &mut Self {
+        self.added.push(component);
+        self
+    }
+
+    /// Only matches entities whose component was changed since the last run, see [`Self::changed`]
+    pub fn changed_component(&mut self, component: ScriptComponentRegistration) -> &mut Self {
+        self.changed.push(component);
+        self
+    }
+
+    /// The components the query accesses, and whether it writes them:
+    /// the retrieved ones, and the ones whose changes it checks (read)
+    pub fn accessed_components(&self) -> impl Iterator<Item = (ComponentId, bool)> + '_ {
+        self.components
+            .iter()
+            .enumerate()
+            .map(|(index, c)| (c.component_id(), self.is_written(index)))
+            .chain(
+                self.added
+                    .iter()
+                    .chain(&self.changed)
+                    .map(|c| (c.component_id(), false)),
+            )
+    }
+
+    /// Builds the result for an entity matched by the query state from [`Self::as_query_state`],
+    /// or returns `None` if it doesn't pass the [`Self::added`] and [`Self::changed`] filters, which query states can't express.
+    ///
+    /// Absent optional components are `None`.
+    ///
+    /// # Safety
+    /// The caller must be allowed to read the change ticks of the components in the [`Self::added`] and [`Self::changed`] filters
+    pub unsafe fn result_for(
+        &self,
+        entity: UnsafeEntityCell,
+        last_run: Tick,
+        this_run: Tick,
+    ) -> Option<ScriptQueryResult> {
+        // Safety: the caller can read the ticks
+        let ticks = |c: &ScriptComponentRegistration| unsafe {
+            entity.get_change_ticks_by_id(c.component_id())
+        };
+        let passes = self
+            .added
+            .iter()
+            .all(|c| ticks(c).is_some_and(|t| t.is_added(last_run, this_run)))
+            && self
+                .changed
+                .iter()
+                .all(|c| ticks(c).is_some_and(|t| t.is_changed(last_run, this_run)));
+        if !passes {
+            return None;
+        }
+
+        let components = self
+            .components
+            .iter()
+            .enumerate()
+            .map(|(index, c)| {
+                (!self.is_optional(index) || entity.contains_id(c.component_id())).then(|| {
+                    ReflectReference::new_component_ref_by_id(
+                        entity.id(),
+                        c.component_id(),
+                        c.type_registration().type_id(),
+                    )
+                })
+            })
+            .collect();
+        Some(ScriptQueryResult {
+            entity: entity.id(),
+            components,
+        })
     }
 
     /// Adds components to the query that must be present.
@@ -515,10 +620,34 @@ impl ScriptQueryBuilder {
         // we don't actually want to fetch the data for components now, only figure out
         // which entities match the query, and declare the access
         for (index, c) in self.components.iter().enumerate() {
-            if declare_writes && self.is_written(index) {
-                dynamic_query.mut_id(c.component_id());
+            let write = declare_writes && self.is_written(index);
+            let id = c.component_id();
+            if self.is_optional(index) {
+                dynamic_query.optional(|optional| {
+                    if write {
+                        optional.mut_id(id);
+                    } else {
+                        optional.ref_id(id);
+                    }
+                });
+            } else if write {
+                dynamic_query.mut_id(id);
             } else {
-                dynamic_query.ref_id(c.component_id());
+                dynamic_query.ref_id(id);
+            }
+        }
+
+        // change filters read the components' ticks, and imply the components are present
+        for c in self.added.iter().chain(&self.changed) {
+            let id = c.component_id();
+            dynamic_query.with_id(id);
+            let retrieved = self
+                .components
+                .iter()
+                .enumerate()
+                .any(|(index, other)| other.component_id() == id && !self.is_optional(index));
+            if !retrieved {
+                dynamic_query.ref_id(id);
             }
         }
 
@@ -540,6 +669,6 @@ impl ScriptQueryBuilder {
 pub struct ScriptQueryResult {
     /// The entity that matched the query.
     pub entity: Entity,
-    /// The components that matched the query.
-    pub components: Vec<ReflectReference>,
+    /// The components that matched the query, `None` for absent optional components.
+    pub components: Vec<Option<ReflectReference>>,
 }

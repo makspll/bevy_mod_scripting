@@ -39,7 +39,7 @@ use bevy_ecs::{
     observer::{Observer, On},
     resource::Resource,
     system::Commands,
-    world::{CommandQueue, DeferredWorld, EntityRef, Mut},
+    world::{CommandQueue, DeferredWorld, Mut},
 };
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
@@ -509,26 +509,17 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         query: crate::ScriptQueryBuilder,
     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
         self.with_world_mut(|world| {
-            let mut built_query = query.as_query_state::<EntityRef>(world, false);
-            let query_result = built_query.iter(world);
-
-            Ok(query_result
-                .map(|r| {
-                    let references: Vec<_> = query
-                        .components
-                        .iter()
-                        .map(|c| ReflectReference {
-                            base: super::ReflectBaseType {
-                                type_id: c.type_registration().type_id(),
-                                base_id: super::ReflectBase::Component(r.id(), c.component_id()),
-                            },
-                            reflect_path: Default::default(),
-                        })
-                        .collect();
-                    ScriptQueryResult {
-                        entity: r.id(),
-                        components: references,
-                    }
+            let mut built_query = query.as_query_state::<Entity>(world, false);
+            // outside of systems, changes are relative to the last update, like `World::query`
+            let (last_run, this_run) = (world.last_change_tick(), world.read_change_tick());
+            let world = world.as_unsafe_world_cell_readonly();
+            // Safety: we have exclusive access to the world, and only read it
+            let entities = unsafe { built_query.iter_unchecked(world) };
+            Ok(entities
+                .filter_map(|entity| {
+                    let entity = world.get_entity(entity).ok()?;
+                    // Safety: we have exclusive access to the world
+                    unsafe { query.result_for(entity, last_run, this_run) }
                 })
                 .collect())
         })?

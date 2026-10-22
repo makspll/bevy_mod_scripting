@@ -114,6 +114,17 @@ bms.system_builder("my_system", attachment)
     :resource_read(Time)
 ```
 
+Queries can also retrieve components entities don't need to have (`optional`, `optional_read`, nil for entities without them), and only match entities whose components were added or changed since the system last ran (`added`, `changed`, filters like `with`). Outside of systems, `added` and `changed` are relative to the last app update:
+
+```lua
+world.query()
+    :component(Transform)
+    :optional_read(Velocity)
+    :changed(Health)
+```
+
+Queries of a system may access the same components if they can't match the same entities, i.e. `component(A):with(B)` and `component(A):without(B)`, otherwise the system reports an error and doesn't run.
+
 ## Exclusive systems
 
 An exclusive system can be created using the `exclusive` function call on the system builder.

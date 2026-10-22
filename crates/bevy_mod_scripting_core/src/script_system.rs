@@ -41,7 +41,7 @@ use bevy_mod_scripting_bindings::{
     AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, AppScriptTypeCatalogue, CurrentScriptAttachment, InteropError,
     IntoScript, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
+    ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -987,8 +987,8 @@ pub enum ScriptSystemParam {
     EntityQuery {
         /// The internal state of the query
         query: Box<QueryState<Entity, ()>>,
-        /// the components in correct order describing the necessary references
-        components: Vec<(ComponentId, TypeId)>,
+        /// The query, which builds the results for the matched entities
+        builder: Box<ScriptQueryBuilder>,
     },
 }
 
@@ -1044,12 +1044,14 @@ impl<P: IntoScriptPluginParams> DynamicScriptSystem<P> {
 fn build_archetype_filter(params: &[ScriptSystemParam]) -> ArchetypeFilter {
     let mut filter = ArchetypeFilter::default();
     for param in params {
-        if let ScriptSystemParam::EntityQuery { query, components } = param {
-            // only components the query reads or writes, components used just as filters (`with`) are not accessible
-            for (component_id, _) in components {
-                filter.restrict(*component_id);
+        if let ScriptSystemParam::EntityQuery { query, builder } = param {
+            // only components the query reads or writes, components used just as filters (`with`) are not accessible.
+            // Writes are restricted to the archetypes of queries writing the component, as another query of the
+            // system may only read it on other archetypes
+            for (component_id, write) in builder.accessed_components() {
+                filter.restrict(component_id);
                 for archetype_id in query.matched_archetypes() {
-                    filter.allow(*component_id, archetype_id);
+                    filter.allow(component_id, archetype_id, write);
                 }
             }
         }
@@ -1085,7 +1087,8 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             return Ok(());
         }
 
-        let _change_tick = world.increment_change_tick();
+        let this_run = world.increment_change_tick();
+        let last_run = self.last_run;
 
         let Some(state) = &mut self.state else {
             return Err(RunSystemError::Skipped(
@@ -1176,25 +1179,13 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     let res_ref = ReflectReference::new_resource_ref_by_id(*component_id, *type_id);
                     payload.push(res_ref.into_script_inline_error(guard.clone()));
                 }
-                ScriptSystemParam::EntityQuery { query, components } => {
-                    // TODO: is this the right way to use this world cell for queries?
-                    let entities = unsafe { query.iter_unchecked(world) }.collect::<Vec<_>>();
-                    let results = entities
-                        .into_iter()
-                        .map(|entity| {
-                            V(ScriptQueryResult {
-                                entity,
-                                components: components
-                                    .iter()
-                                    .map(|(component_id, type_id)| {
-                                        ReflectReference::new_component_ref_by_id(
-                                            entity,
-                                            *component_id,
-                                            *type_id,
-                                        )
-                                    })
-                                    .collect(),
-                            })
+                ScriptSystemParam::EntityQuery { query, builder } => {
+                    // Safety: the query's access is declared in `initialize`
+                    let results = unsafe { query.iter_unchecked(world) }
+                        .filter_map(|entity| {
+                            let entity = world.get_entity(entity).ok()?;
+                            // Safety: the components with change filters are declared as read
+                            unsafe { builder.result_for(entity, last_run, this_run) }.map(V)
                         })
                         .collect::<Vec<_>>();
 
@@ -1214,6 +1205,8 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         if let Err(err) = result {
             self.report(err);
         }
+        // change filters are relative to the last time the callback ran
+        self.last_run = this_run;
 
         Ok(())
     }
@@ -1259,13 +1252,18 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     }
                     subset.insert(component_id);
                 }
-                ScriptSystemParamDescriptor::EntityQuery(query) => {
-                    let components: Vec<_> = query
-                        .components
-                        .iter()
-                        .map(|c| (c.component_id, c.type_registration().type_id()))
-                        .collect();
-                    let query = query.as_query_state::<Entity>(world, true);
+                ScriptSystemParamDescriptor::EntityQuery(builder) => {
+                    let query = builder.as_query_state::<Entity>(world, true);
+
+                    // queries may access the same components if bevy considers them disjoint, i.e. `With<A>` vs `Without<A>`
+                    if !component_access_set
+                        .get_conflicts_single(query.component_access())
+                        .is_empty()
+                    {
+                        initialization_errors.push(
+                            "A query conflicts with another parameter of the system, i.e. two queries write the same component on the same entities.".to_owned(),
+                        );
+                    }
 
                     // The access carries the query filters, so bevy runs this system in parallel with systems accessing
                     // the same components on other archetypes (i.e. `With<A>` vs `Without<A>`).
@@ -1280,18 +1278,12 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                             .filter(|(_, write)| *write)
                             .map(|(id, _)| *id),
                     );
-                    let new_raids = accesses.into_iter().map(|(a, _)| a).collect::<HashSet<_>>();
-
-                    if !subset.is_disjoint(&new_raids) {
-                        initialization_errors
-                            .push("Non-disjoint query in dynamic system parameters.".to_owned());
-                    }
+                    subset.extend(accesses.into_iter().map(|(a, _)| a));
 
                     system_params.push(ScriptSystemParam::EntityQuery {
                         query: query.into(),
-                        components,
+                        builder: Box::new(builder.clone()),
                     });
-                    subset.extend(new_raids);
                 }
             }
         }
@@ -1813,6 +1805,59 @@ mod test {
             graph
                 .system_runs_before("rust_system_in_set", "test")
                 .unwrap()
+        );
+    }
+
+    #[derive(bevy_ecs::component::Component, Reflect)]
+    struct OtherTestComponent;
+
+    #[test]
+    fn query_change_filters_and_optional_components() {
+        let mut world = World::new();
+        let component = |_: &mut World, registration, id| {
+            ScriptComponentRegistration::new(
+                ScriptTypeRegistration::new(Arc::new(registration)),
+                id,
+            )
+        };
+        let id = world.register_component::<AccessTestComponent>();
+        let test_component = component(
+            &mut world,
+            bevy_reflect::TypeRegistration::of::<AccessTestComponent>(),
+            id,
+        );
+        let id = world.register_component::<OtherTestComponent>();
+        let other_component = component(
+            &mut world,
+            bevy_reflect::TypeRegistration::of::<OtherTestComponent>(),
+            id,
+        );
+
+        let unchanged = world.spawn(AccessTestComponent).id();
+        let changed = world.spawn((AccessTestComponent, OtherTestComponent)).id();
+        world.clear_trackers();
+        bevy_ecs::change_detection::DetectChangesMut::set_changed(
+            &mut world.get_mut::<AccessTestComponent>(changed).unwrap(),
+        );
+
+        let mut query = ScriptQueryBuilder::new();
+        query
+            .optional_read(other_component.clone())
+            .changed_component(test_component.clone());
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+        let results = guard.query(query).unwrap();
+        assert_eq!(results.len(), 1, "only the changed entity matches");
+        assert_eq!(results[0].entity, changed);
+        assert!(results[0].components[0].is_some());
+
+        let mut query = ScriptQueryBuilder::new();
+        query.optional_read(other_component);
+        let mut results = guard.query(query).unwrap();
+        results.retain(|result| result.entity == unchanged);
+        assert!(
+            results[0].components[0].is_none(),
+            "absent optionals are none"
         );
     }
 }

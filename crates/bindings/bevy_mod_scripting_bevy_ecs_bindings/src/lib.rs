@@ -167,7 +167,7 @@ impl World {
         let mut query = ScriptQueryBuilder::new();
         query.component(component);
         for result in world.query(query)? {
-            let Some(name_reference) = result.components.first() else {
+            let Some(Some(name_reference)) = result.components.first() else {
                 continue;
             };
             let matches = name_reference.with_reflect(world.clone(), |value| {

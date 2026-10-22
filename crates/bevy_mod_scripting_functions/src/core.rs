@@ -1422,6 +1422,76 @@ impl ScriptQueryBuilder {
         V(builder)
     }
 
+    /// Adds a component to be retrieved by the query, which entities don't need to have, it is nil for those which don't.
+    ///
+    /// Arguments:
+    /// * `query`: The query to add the component to
+    /// * `component`: The component to add
+    /// Returns:
+    /// * `query`: The query with the component added
+    fn optional(
+        query: V<ScriptQueryBuilder>,
+        component: V<ScriptComponentRegistration>,
+    ) -> V<ScriptQueryBuilder> {
+        profiling::function_scope!("optional");
+        let mut builder = query.into_inner();
+        builder.optional(component.into_inner());
+        V(builder)
+    }
+
+    /// Like `optional`, but the component can only be read.
+    ///
+    /// Arguments:
+    /// * `query`: The query to add the component to
+    /// * `component`: The component to add
+    /// Returns:
+    /// * `query`: The query with the component added
+    fn optional_read(
+        query: V<ScriptQueryBuilder>,
+        component: V<ScriptComponentRegistration>,
+    ) -> V<ScriptQueryBuilder> {
+        profiling::function_scope!("optional_read");
+        let mut builder = query.into_inner();
+        builder.optional_read(component.into_inner());
+        V(builder)
+    }
+
+    /// Only matches entities whose component was added since the system last ran (outside of systems: since the last update).
+    /// This component will NOT be retrieved.
+    ///
+    /// Arguments:
+    /// * `query`: The query to add the filter to
+    /// * `component`: The component to filter by
+    /// Returns:
+    /// * `query`: The query with the filter added
+    fn added(
+        query: V<ScriptQueryBuilder>,
+        component: V<ScriptComponentRegistration>,
+    ) -> V<ScriptQueryBuilder> {
+        profiling::function_scope!("added");
+        let mut builder = query.into_inner();
+        builder.added_component(component.into_inner());
+        V(builder)
+    }
+
+    /// Only matches entities whose component was changed since the system last ran (outside of systems: since the last update).
+    /// This component will NOT be retrieved.
+    ///
+    /// Arguments:
+    /// * `query`: The query to add the filter to
+    /// * `component`: The component to filter by
+    /// Returns:
+    /// * `query`: The query with the filter added
+    fn changed(
+        query: V<ScriptQueryBuilder>,
+        component: V<ScriptComponentRegistration>,
+    ) -> V<ScriptQueryBuilder> {
+        profiling::function_scope!("changed");
+        let mut builder = query.into_inner();
+        builder.changed_component(component.into_inner());
+        V(builder)
+    }
+
     /// Adds a component to filter the query by. This component will NOT be retrieved.
     ///
     /// Arguments:
@@ -1497,13 +1567,13 @@ impl ScriptQueryResult {
 
     /// Retrieves the components from the query result.
     ///
-    /// These are ordered by the order they were added to the query.
+    /// These are ordered by the order they were added to the query, absent optional components are nil.
     ///
     /// Arguments:
     /// * `query`: The query result to retrieve the components from.
     /// Returns:
     /// * `components`: The components from the query result.
-    fn components(query: R<ScriptQueryResult>) -> Vec<ReflectReference> {
+    fn components(query: R<ScriptQueryResult>) -> Vec<Option<ReflectReference>> {
         profiling::function_scope!("components");
         query.components.to_vec()
     }
