@@ -16,8 +16,9 @@ use crate::{
     },
     pipeline::ScriptLoadingPipeline,
     script::{ScriptComponentsChangeCache, script_component_changed_handler},
+    script_system::{ScriptSystems, apply_script_system_changes},
 };
-use bevy_app::{App, Last, Plugin, PostUpdate, PreUpdate};
+use bevy_app::{App, First, Last, Plugin, PostUpdate, PreUpdate};
 use bevy_asset::{AssetApp, Handle};
 use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_ecs::{
@@ -391,6 +392,15 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             Last,
             run_queued_callbacks_system.in_set(ScriptingSystemSet::RunQueuedCallbacks),
         );
+
+        // changes to script systems in running schedules are applied in between schedules, twice so that
+        // changes to `Last` itself are applied too
+        app.init_resource::<ScriptSystems>()
+            .add_systems(First, apply_script_system_changes)
+            .add_systems(
+                Last,
+                apply_script_system_changes.after(ScriptingSystemSet::RunQueuedCallbacks),
+            );
 
         if !self.dont_log_script_event_errors {
             app.add_systems(PostUpdate, script_error_logger);

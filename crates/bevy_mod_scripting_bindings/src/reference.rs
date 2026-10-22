@@ -484,6 +484,10 @@ impl ReflectReference {
             .get_type_data(self.base.type_id)
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
+        if let ReflectBase::Component(entity, component_id) = &self.base.base_id {
+            world.check_archetype_access(*entity, *component_id)?;
+        }
+
         let ptr = unsafe {
             self.base
                 .base_id
@@ -555,6 +559,10 @@ impl ReflectReference {
         let from_ptr_data: &ReflectFromPtr = type_registry
             .get_type_data(self.base.type_id)
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
+
+        if let ReflectBase::Component(entity, component_id) = &self.base.base_id {
+            world.check_archetype_access(*entity, *component_id)?;
+        }
 
         let ptr = unsafe {
             self.base

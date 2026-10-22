@@ -9,6 +9,7 @@ use bevy_mod_scripting_script::ScriptAttachment;
 use crate::{
     commands::RunScriptCallback,
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded},
+    script_system::remove_script_systems,
 };
 
 use super::*;
@@ -92,6 +93,16 @@ pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>
 /// Once the unload callback ran, removes what the script registered which only makes sense while it runs, i.e. its exports and observers.
 fn remove_registrations_when_unloaded(commands: &mut Commands, attachment: ScriptAttachment) {
     commands.queue(move |world: &mut World| remove_script_registrations(world, &attachment));
+}
+
+/// Removes the script systems of a script which is unloaded, or reloaded (it adds them again once loaded).
+///
+/// Runs whether or not the unload callback is enabled, systems of unloaded scripts must not stay in the schedules.
+pub(crate) fn remove_script_systems_when_unloaded(
+    attachment: In<ScriptAttachment>,
+    mut commands: Commands,
+) {
+    commands.queue(move |world: &mut World| remove_script_systems(world, &attachment.0));
 }
 // todo unify the two, they just need a context extractor trait
 pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>(

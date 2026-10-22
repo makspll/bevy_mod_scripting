@@ -28,7 +28,7 @@ use crate::{
     pipeline::hooks::{
         clear_machine_data, on_script_unloaded_for_reload_pipeline_handler,
         on_script_unloaded_for_unload_pipeline_handler, process_machine_failure,
-        queue_on_script_loaded, queue_on_script_reloaded,
+        queue_on_script_loaded, queue_on_script_reloaded, remove_script_systems_when_unloaded,
     },
     script::ScriptContexts,
 };
@@ -245,6 +245,15 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
             app.add_observer(on_script_unloaded_for_unload_pipeline_handler::<P>);
             app.add_observer(on_script_unloaded_for_reload_pipeline_handler::<P>);
         }
+
+        app.add_observer(
+            (|trigger: On<UnloadingInitialized<P>>| trigger.attachment.clone())
+                .pipe(remove_script_systems_when_unloaded),
+        );
+        app.add_observer(
+            (|trigger: On<ReloadingInitialized<P>>| trigger.attachment.clone())
+                .pipe(remove_script_systems_when_unloaded),
+        );
 
         // clear hanging machine data
         app.add_observer(

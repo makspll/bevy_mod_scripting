@@ -49,9 +49,11 @@ function my_parameterised_system(resourceA, query, resourceB)
         assert(#components == 2, "Expected 2 components, got " .. #components)
         local componentA = components[1]
         local componentB = components[2]
-        assert(componentA._1 == "Default", "Expected 'Default', got: " .. componentA._1)
-        assert(componentB._1 == "Default", "Expected 'Default', got: " .. componentA._1)
+        assert(componentA[1] == "Default", "Expected 'Default', got: " .. componentA[1])
+        assert(componentB[1] == "Default", "Expected 'Default', got: " .. componentB[1])
     end
+    -- errors inside systems are only logged, so record that we got to the end
+    runs[#runs + 1] = "finished"
 end
 
 function on_test_post_update()
@@ -59,6 +61,6 @@ function on_test_post_update()
 end
 
 function on_test_last()
-    assert(#runs == 1, "Expected 1 runs, got: " .. #runs)
+    assert(#runs == 2 and runs[2] == "finished", "the system did not finish, runs: " .. table.concat(runs, ","))
     return true
 end

@@ -58,6 +58,18 @@ impl ReflectSystem {
         }
     }
 
+    /// Creates a reflect system from a system which is not in a schedule yet, so it has no node id
+    pub fn from_unscheduled_system<In: SystemInput + 'static, Out: 'static>(
+        system: &dyn System<In = In, Out = Out>,
+    ) -> Self {
+        ReflectSystem {
+            name: system.name().into(),
+            type_id: system.system_type(),
+            node_id: ReflectNodeId(NodeId::System(SystemKey::default())),
+            default_system_sets: system.default_system_sets(),
+        }
+    }
+
     /// gets the short identifier of the system, i.e. just the function name
     pub fn identifier(&self) -> &str {
         // if it contains generics it might contain more than
