@@ -75,6 +75,14 @@ will create a system which calls the specified callback `my_system` with 2 argum
     - With `components` access to ComponentA and ComponentB
 - The `ReflectReference` to `ResourceA`
 
+`resource` and `component` give read and write access. Use `resource_read` and `component_read` for read only access, systems reading the same resources and components can run in parallel, while systems writing them cannot:
+
+```lua
+bms.system_builder("my_system", attachment)
+    :query(world.query():component_read(ComponentA):component(ComponentB))
+    :resource_read(Time)
+```
+
 ## Exclusive systems
 
 An exclusive system can be created using the `exclusive` function call on the system builder.

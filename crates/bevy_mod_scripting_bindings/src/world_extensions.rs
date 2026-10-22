@@ -509,7 +509,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         query: crate::ScriptQueryBuilder,
     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
         self.with_world_mut(|world| {
-            let mut built_query = query.as_query_state::<EntityRef>(world);
+            let mut built_query = query.as_query_state::<EntityRef>(world, false);
             let query_result = built_query.iter(world);
 
             Ok(query_result

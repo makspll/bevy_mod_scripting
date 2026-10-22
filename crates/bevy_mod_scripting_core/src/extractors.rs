@@ -143,12 +143,12 @@ pub(crate) fn get_all_access_ids(access: &Access) -> Vec<(ComponentId, bool)> {
     let mut access_all_write = Access::default();
     access_all_write.write_all();
 
-    // read conflicts with each set to figure out the necessary locks
+    // read conflicts with each set to figure out the necessary locks:
+    // only writes conflict with reading everything, reads and writes conflict with writing everything
+    let written = individual_conflicts(access.get_conflicts(&access_all_read));
+    let mut read = individual_conflicts(access.get_conflicts(&access_all_write));
 
-    let mut read = individual_conflicts(access.get_conflicts(&access_all_read));
-    let written = individual_conflicts(access.get_conflicts(&access_all_write));
-
-    // remove reads from writes
+    // remove writes from reads
     read.difference_with(&written);
 
     let mut result = Vec::new();

@@ -1401,6 +1401,25 @@ impl ScriptQueryBuilder {
         V(builder)
     }
 
+    /// Adds a component to be retrieved by the query, which can only be read.
+    ///
+    /// Script systems reading a component can run in parallel with each other, unlike ones writing it.
+    ///
+    /// Arguments:
+    /// * `query`: The query to add the component to
+    /// * `component`: The component to add
+    /// Returns:
+    /// * `query`: The query with the component added
+    fn component_read(
+        query: V<ScriptQueryBuilder>,
+        component: V<ScriptComponentRegistration>,
+    ) -> V<ScriptQueryBuilder> {
+        profiling::function_scope!("component_read");
+        let mut builder = query.into_inner();
+        builder.component_read(component.into_inner());
+        V(builder)
+    }
+
     /// Adds a component to filter the query by. This component will NOT be retrieved.
     ///
     /// Arguments:
@@ -1627,6 +1646,25 @@ impl ScriptSystemBuilder {
         profiling::function_scope!("resource");
         let mut builder = builder.into_inner();
         builder.resource(resource.into_inner());
+        builder.into()
+    }
+
+    /// Requests the system have read only access to the given resource. The resource will be added to the
+    /// list of arguments of the callback in the order they're provided.
+    ///
+    /// Script systems reading a resource can run in parallel with each other, unlike ones writing it.
+    /// Arguments:
+    /// * `builder`: The system builder to add the resource to.
+    /// * `resource`: The resource to add.
+    /// Returns:
+    /// * `builder`: The system builder with the resource added.
+    fn resource_read(
+        builder: V<ScriptSystemBuilder>,
+        resource: V<ScriptResourceRegistration>,
+    ) -> V<ScriptSystemBuilder> {
+        profiling::function_scope!("resource_read");
+        let mut builder = builder.into_inner();
+        builder.resource_read(resource.into_inner());
         builder.into()
     }
 
