@@ -161,13 +161,20 @@ impl App {
                     cmd.arg("--test-bindings");
                 }
             }
-            Xtasks::Test { name, package } => {
+            Xtasks::Test {
+                name,
+                package,
+                mobile,
+            } => {
                 cmd.arg("test");
                 if let Some(name) = name {
                     cmd.arg("--name").arg(name);
                 }
                 if let Some(package) = package {
                     cmd.arg("--package").arg(package);
+                }
+                if let Some(mobile) = mobile {
+                    cmd.arg("--mobile").arg(mobile.as_ref());
                 }
             }
             Xtasks::BlessLad => {
@@ -176,10 +183,13 @@ impl App {
             Xtasks::CiCheck => {
                 cmd.arg("ci-check");
             }
-            Xtasks::CiMatrix { full } => {
+            Xtasks::CiMatrix { full, device_tests } => {
                 cmd.arg("ci-matrix");
                 if full {
                     cmd.arg("--full");
+                }
+                if device_tests {
+                    cmd.arg("--device-tests");
                 }
             }
             Xtasks::Example { example } => {
@@ -238,10 +248,7 @@ impl App {
     }
 
     pub(crate) fn into_ci_row(self, os: CiOs) -> CiMatrixRow {
-        let mobile = match &self.subcmd {
-            Xtasks::Check { mobile, .. } => *mobile,
-            _ => None,
-        };
+        let mobile = self.subcmd.mobile();
         // mobile builds don't share their cache with the desktop ones
         let target = mobile
             .map(|m| format!("-{}", m.as_ref()))
@@ -267,6 +274,13 @@ impl App {
             cache_key: format!("{}{target}-{os}", self.subcmd.as_ref().to_lowercase()),
             run_on_forks: !matches!(self.subcmd, Xtasks::Bencher { .. } | Xtasks::Bench { .. }),
             requires_gpu: matches!(self.subcmd, Xtasks::Docs { .. }),
+            requires_android_emulator: matches!(
+                self.subcmd,
+                Xtasks::Test {
+                    mobile: Some(MobileTarget::Android),
+                    ..
+                }
+            ),
         }
     }
 }
@@ -352,6 +366,14 @@ impl MobileTarget {
                 Feature::Luajit52,
                 Feature::Luau,
             ],
+        }
+    }
+
+    /// The rust target of the binaries running on the emulator or simulator, which matches the CI host's architecture
+    fn test_triple(self) -> &'static str {
+        match self {
+            MobileTarget::Android => "x86_64-linux-android",
+            MobileTarget::Ios => "aarch64-apple-ios-sim",
         }
     }
 
@@ -495,6 +517,13 @@ enum Xtasks {
         /// Run tests in the given package only
         #[clap(long)]
         package: Option<String>,
+
+        #[clap(
+            long,
+            value_enum,
+            help = "Run the script tests on an Android emulator or iOS simulator instead, the emulator has to be running (`adb`)"
+        )]
+        mobile: Option<MobileTarget>,
     },
     /// Rewrites the expected outputs of the LAD tests: the LAD file, then the Lua declarations and mdbook pages generated from it,
     /// and checks them. Needs `mdbook` on the PATH (`cargo xtask init`).
@@ -516,6 +545,10 @@ enum Xtasks {
         /// one used for pull requests
         #[clap(long)]
         full: bool,
+
+        /// Include the tests running on an Android emulator and iOS simulator, which the full matrix includes already
+        #[clap(long)]
+        device_tests: bool,
     },
     /// Runs bencher in dry mode by default if not on the main branch
     /// To publish main branch defaults set publish mode to true
@@ -554,6 +587,8 @@ struct CiMatrixRow {
     cache_key: String,
     /// If this step requires a gpu
     requires_gpu: bool,
+    /// If this step runs on an Android emulator, which the CI has to start
+    requires_android_emulator: bool,
     /// if it should run on fork PR's
     run_on_forks: bool,
 }
@@ -575,12 +610,17 @@ impl Xtasks {
         )
     }
 
-    /// The OS which provides the toolchain needed to build for the mobile target checked by this xtask, if it is one
-    fn mobile_os(&self) -> Option<CiOs> {
+    /// The mobile target this xtask builds for, if it is a mobile one
+    fn mobile(&self) -> Option<MobileTarget> {
         match self {
-            Xtasks::Check { mobile, .. } => mobile.map(MobileTarget::os),
+            Xtasks::Check { mobile, .. } | Xtasks::Test { mobile, .. } => *mobile,
             _ => None,
         }
+    }
+
+    /// The OS which provides the toolchain needed to build for the mobile target of this xtask, if it is a mobile one
+    fn mobile_os(&self) -> Option<CiOs> {
+        self.mobile().map(MobileTarget::os)
     }
 
     fn run(self, app_settings: GlobalArgs) -> Result<String> {
@@ -603,7 +643,16 @@ impl Xtasks {
                 exclude_generated_bindings,
                 test_bindings,
             ),
-            Xtasks::Test { name, package } => Self::test(app_settings, package, name),
+            Xtasks::Test {
+                name,
+                mobile: Some(mobile),
+                ..
+            } => Self::test_mobile(app_settings, mobile, name),
+            Xtasks::Test {
+                name,
+                package,
+                mobile: None,
+            } => Self::test(app_settings, package, name),
             Xtasks::BlessLad => Self::bless_lad(app_settings),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init {
@@ -618,8 +667,8 @@ impl Xtasks {
                     Self::test(settings, Some("script_test".to_owned()), None)
                 }
             },
-            Xtasks::CiMatrix { full } => {
-                let mut output = Self::ci_matrix(app_settings, full)?;
+            Xtasks::CiMatrix { full, device_tests } => {
+                let mut output = Self::ci_matrix(app_settings, full, device_tests)?;
                 output.sort_by(|e1, e2| e1.subcmd.cmp(&e2.subcmd));
                 let mut rows = Vec::default();
                 for os in <CiOs as strum::VariantArray>::VARIANTS {
@@ -752,9 +801,165 @@ impl Xtasks {
 
     /// Type-checks the `bevy_mod_scripting` crate with the given features for the given mobile target
     fn check_mobile(app_settings: GlobalArgs, mobile: MobileTarget) -> Result<()> {
-        let target = mobile.triple();
-        run_system_command(
+        let mut cmd = Self::mobile_cargo_command(
             &app_settings,
+            mobile,
+            mobile.triple(),
+            &["check", "--package", "bevy_mod_scripting"],
+        )?;
+
+        let status = cmd.status().context("Failed to check for mobile target")?;
+        ensure!(
+            status.success(),
+            "Checking for {} failed with features: {}",
+            mobile.triple(),
+            app_settings.features
+        );
+        Ok(())
+    }
+
+    /// Runs the script tests on an Android emulator (needs a running one reachable with `adb`) or an iOS simulator.
+    ///
+    /// The test binary is built for the device and run through a cargo runner. The device needs the `assets`,
+    /// which the tests find through `CARGO_MANIFEST_DIR`.
+    fn test_mobile(
+        app_settings: GlobalArgs,
+        mobile: MobileTarget,
+        name: Option<String>,
+    ) -> Result<()> {
+        let target = mobile.test_triple();
+        let mut cmd = Self::mobile_cargo_command(
+            &app_settings,
+            mobile,
+            target,
+            &[
+                "test",
+                "--package",
+                "bevy_mod_scripting",
+                "--test",
+                "script_tests",
+            ],
+        )?;
+
+        let runner_env = format!(
+            "CARGO_TARGET_{}_RUNNER",
+            target.to_uppercase().replace('-', "_")
+        );
+        let workspace = workspace_dir(&app_settings)?;
+        match mobile {
+            MobileTarget::Android => {
+                let remote = "/data/local/tmp";
+                let adb = |args: &[&str]| {
+                    run_system_command(&app_settings, "adb", "Failed to run adb", args, None, false)
+                };
+                adb(&["wait-for-device"])?;
+                adb(&[
+                    "shell",
+                    "mkdir",
+                    "-p",
+                    &format!("{remote}/bevy_mod_scripting"),
+                ])?;
+                adb(&[
+                    "push",
+                    &workspace.join("assets").to_string_lossy(),
+                    &format!("{remote}/bevy_mod_scripting/"),
+                ])?;
+
+                // the C++ runtime of luau
+                if let Some(toolchain) = android_ndk_toolchain() {
+                    let libcxx = toolchain
+                        .join("sysroot/usr/lib")
+                        .join(target)
+                        .join("libc++_shared.so");
+                    adb(&["push", &libcxx.to_string_lossy(), &format!("{remote}/")])?;
+                }
+
+                let runner = std::env::temp_dir().join("bms_android_test_runner.sh");
+                std::fs::write(
+                    &runner,
+                    format!(
+                        "#!/bin/bash\n\
+                         set -e\n\
+                         bin=\"$1\"; shift\n\
+                         adb push \"$bin\" {remote}/ > /dev/null\n\
+                         adb shell \"cd {remote} && chmod +x ./$(basename \"$bin\") && \
+                         timeout 1200 env LD_LIBRARY_PATH={remote} RUST_BACKTRACE=1 \
+                         CARGO_MANIFEST_DIR={remote}/bevy_mod_scripting \
+                         ./$(basename \"$bin\") $(printf '%q ' \"$@\")\"\n"
+                    ),
+                )?;
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    std::fs::set_permissions(&runner, std::fs::Permissions::from_mode(0o755))?;
+                }
+                cmd.env(runner_env, runner);
+            }
+            MobileTarget::Ios => {
+                let udid = Self::boot_ios_simulator(&app_settings)?;
+                cmd.env(runner_env, format!("xcrun simctl spawn {udid}"));
+                // the simulator shares the host's file system, `simctl` forwards the variables with this prefix
+                cmd.env("SIMCTL_CHILD_CARGO_MANIFEST_DIR", &workspace);
+                cmd.env("SIMCTL_CHILD_RUST_BACKTRACE", "1");
+            }
+        }
+
+        if let Some(name) = name {
+            cmd.args(["--", &name]);
+        }
+
+        let status = cmd.status().context("Failed to run tests on the device")?;
+        ensure!(
+            status.success(),
+            "Tests on {target} failed with features: {}",
+            app_settings.features
+        );
+        Ok(())
+    }
+
+    /// Boots an iPhone simulator if none is, and returns its id
+    fn boot_ios_simulator(app_settings: &GlobalArgs) -> Result<String> {
+        let output = run_system_command(
+            app_settings,
+            "xcrun",
+            "Failed to list simulators",
+            ["simctl", "list", "devices", "available", "-j"],
+            None,
+            true,
+        )?;
+        let devices: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+        let udid = devices["devices"]
+            .as_object()
+            .into_iter()
+            .flatten()
+            .filter(|(runtime, _)| runtime.contains("SimRuntime.iOS"))
+            .flat_map(|(_, devices)| devices.as_array().into_iter().flatten())
+            .find(|d| d["name"].as_str().is_some_and(|n| n.starts_with("iPhone")))
+            .and_then(|d| d["udid"].as_str())
+            .context("No iPhone simulator available")?
+            .to_owned();
+
+        // boots the simulator if needed and waits for it
+        run_system_command(
+            app_settings,
+            "xcrun",
+            "Failed to boot the simulator",
+            ["simctl", "bootstatus", &udid, "-b"],
+            None,
+            false,
+        )?;
+        Ok(udid)
+    }
+
+    /// A cargo command running `args` for the given mobile target with the features of `app_settings`
+    fn mobile_cargo_command(
+        app_settings: &GlobalArgs,
+        mobile: MobileTarget,
+        target: &str,
+        args: &[&str],
+    ) -> Result<Command> {
+        run_system_command(
+            app_settings,
             "rustup",
             "Failed to add the rust target",
             ["target", "add", target],
@@ -762,16 +967,8 @@ impl Xtasks {
             false,
         )?;
 
-        let mut args = vec![
-            "check",
-            "--package",
-            "bevy_mod_scripting",
-            "--target",
-            target,
-        ]
-        .into_iter()
-        .map(str::to_owned)
-        .collect::<Vec<_>>();
+        let mut args = args.iter().map(|a| a.to_string()).collect::<Vec<_>>();
+        args.extend(["--target".to_owned(), target.to_owned()]);
         args.extend(app_settings.features.to_cargo_args());
 
         let android = mobile == MobileTarget::Android;
@@ -783,18 +980,11 @@ impl Xtasks {
             ]);
         }
 
-        let mut cmd = make_system_command(&app_settings, "cargo", args, None, false)?;
+        let mut cmd = make_system_command(app_settings, "cargo", args, None, false)?;
         if android {
             cmd.envs(android_ndk_env(target));
         }
-
-        let status = cmd.status().context("Failed to check for mobile target")?;
-        ensure!(
-            status.success(),
-            "Checking for {target} failed with features: {}",
-            app_settings.features
-        );
-        Ok(())
+        Ok(cmd)
     }
 
     fn docs(
@@ -1286,7 +1476,7 @@ impl Xtasks {
         Ok(())
     }
 
-    fn ci_matrix(app_settings: GlobalArgs, full: bool) -> Result<Vec<App>> {
+    fn ci_matrix(app_settings: GlobalArgs, full: bool, device_tests: bool) -> Result<Vec<App>> {
         // split up the tests we want to run into different jobs
         // everything that can be parallelised should be
         // each row in the output will correspond to a separate job in the matrix.
@@ -1389,6 +1579,24 @@ impl Xtasks {
             }
         }
 
+        // the script tests run on emulators and simulators, which is slow, so they only run on main
+        // (or when asked for)
+        if full || device_tests {
+            for mobile in [MobileTarget::Android, MobileTarget::Ios] {
+                let test = |features: Features| App {
+                    global_args: default_args.clone().with_features(features),
+                    subcmd: Xtasks::Test {
+                        name: None,
+                        package: None,
+                        mobile: Some(mobile),
+                    },
+                };
+
+                // the test harness is built with lua54, so other lua variants can't be tested
+                output.push(test(default_args.features.clone()));
+            }
+        }
+
         // then run docs
         output.push(App {
             global_args: default_args.clone(),
@@ -1419,6 +1627,7 @@ impl Xtasks {
             subcmd: Xtasks::Test {
                 name: None,
                 package: None,
+                mobile: None,
             },
         });
 
@@ -1427,7 +1636,7 @@ impl Xtasks {
 
     fn cicd(app_settings: GlobalArgs) -> Result<()> {
         // get the ci matrix
-        let matrix = Self::ci_matrix(app_settings.clone(), true)?;
+        let matrix = Self::ci_matrix(app_settings.clone(), true, true)?;
         // the mobile checks need toolchains which are not generally available
         let matrix = matrix
             .into_iter()
@@ -1655,39 +1864,48 @@ fn docs_features() -> Features {
     Features::all_features()
 }
 
-/// cc-rs can't find a compiler for android targets by itself, this points it at the clang shipped with the NDK.
-fn android_ndk_env(target: &str) -> Vec<(String, PathBuf)> {
-    const API_LEVEL: u32 = 24;
-
+/// The directory of the NDK's LLVM toolchain, which is named after the host (i.e. `linux-x86_64`)
+fn android_ndk_toolchain() -> Option<PathBuf> {
     let ndk = [
         "ANDROID_NDK_HOME",
         "ANDROID_NDK_LATEST_HOME",
         "ANDROID_NDK_ROOT",
     ]
     .into_iter()
-    .find_map(std::env::var_os);
-    // the toolchain directory is named after the host, i.e. `linux-x86_64`
-    let bin = ndk.and_then(|ndk| {
-        let prebuilt = PathBuf::from(ndk).join("toolchains/llvm/prebuilt");
-        let host = std::fs::read_dir(prebuilt).ok()?.find_map(|e| e.ok())?;
-        Some(host.path().join("bin"))
-    });
-    let Some(bin) = bin else {
+    .find_map(std::env::var_os)?;
+
+    let prebuilt = PathBuf::from(ndk).join("toolchains/llvm/prebuilt");
+    Some(
+        std::fs::read_dir(prebuilt)
+            .ok()?
+            .find_map(|e| e.ok())?
+            .path(),
+    )
+}
+
+/// cc-rs can't find a compiler for android targets by itself, this points it (and the linker) at the clang shipped with the NDK.
+fn android_ndk_env(target: &str) -> Vec<(String, PathBuf)> {
+    // 26 is the first with `libaaudio`, which bevy's audio links
+    const API_LEVEL: u32 = 26;
+
+    let Some(bin) = android_ndk_toolchain().map(|t| t.join("bin")) else {
         warn!("No Android NDK found (ANDROID_NDK_HOME), relying on the compilers being in PATH");
         return vec![];
     };
 
     let target_env = target.replace('-', "_");
+    let clang = bin.join(format!("{target}{API_LEVEL}-clang"));
     vec![
-        (
-            format!("CC_{target_env}"),
-            bin.join(format!("{target}{API_LEVEL}-clang")),
-        ),
+        (format!("CC_{target_env}"), clang.clone()),
         (
             format!("CXX_{target_env}"),
             bin.join(format!("{target}{API_LEVEL}-clang++")),
         ),
         (format!("AR_{target_env}"), bin.join("llvm-ar")),
+        (
+            format!("CARGO_TARGET_{}_LINKER", target_env.to_uppercase()),
+            clang,
+        ),
     ]
 }
 
@@ -1864,6 +2082,35 @@ mod tests {
 
         // and the full matrix adds the individual languages
         assert!(mobile_rows(true).len() > pr_rows.len());
+    }
+
+    #[test]
+    fn device_tests_only_run_when_asked_for() {
+        let device_rows = |flag: Option<&str>| {
+            let args = ["xtask", "ci-matrix"].into_iter().chain(flag);
+            let app = App::try_parse_from(args).unwrap();
+            let json = app.subcmd.run(app.global_args).unwrap();
+            let rows = serde_json::from_str::<Vec<serde_json::Value>>(&json).unwrap();
+            rows.into_iter()
+                .filter(|r| {
+                    r["command"]
+                        .as_str()
+                        .is_some_and(|c| c.contains(" test --mobile"))
+                })
+                .collect::<Vec<_>>()
+        };
+
+        assert!(device_rows(None).is_empty());
+        let rows = device_rows(Some("--device-tests"));
+        // one per platform, and only the android one needs the emulator
+        assert_eq!(rows.len(), 2);
+        assert_eq!(
+            rows.iter()
+                .filter(|r| r["requires_android_emulator"] == true)
+                .count(),
+            1
+        );
+        assert_eq!(device_rows(Some("--full")).len(), rows.len());
     }
 
     #[test]
