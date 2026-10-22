@@ -2,7 +2,6 @@
 
 use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
-use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_display::OrFakeId;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::PartialReflect;
@@ -113,7 +112,6 @@ fn into_script_erased(r: &dyn PartialReflect, world: WorldGuard) -> Result<Erase
             tr : PathBuf => return value(downcast_into_value!(r, PathBuf).clone().into_script(world)),
             ts : OsString=> return value(downcast_into_value!(r, OsString).clone().into_script(world)),
             tsv: ScriptValue=> return Ok(Erased::Value(downcast_into_value!(r, ScriptValue).clone())),
-            tent: Entity => return Ok(Erased::Value(ScriptValue::Entity(downcast_into_value!(r, Entity)))),
             tn : ()      => return Ok(Erased::Value(ScriptValue::Unit))
         }
     );

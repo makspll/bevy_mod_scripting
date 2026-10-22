@@ -15,7 +15,7 @@ use mlua::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, MultiValue, Value};
 
 use crate::{IntoMluaError, LuaContextAppData};
 
-use super::reference::{LuaEntity, LuaReflectReference, LuaTypeRef};
+use super::reference::{LuaReflectReference, LuaTypeRef, LuaValue};
 
 /// A wrapper around many [`ScriptValue`]'s, used where the potential to return/receive many values separately arises.
 pub struct MultiLuaScriptValue(pub VecDeque<ScriptValue>);
@@ -168,8 +168,8 @@ impl FromLua for LuaScriptValue {
                 if let Ok(type_ref) = ud.borrow::<LuaTypeRef>() {
                     return Ok(LuaScriptValue(ScriptValue::Type(type_ref.0)));
                 }
-                if let Ok(entity) = ud.borrow::<LuaEntity>() {
-                    return Ok(LuaScriptValue(ScriptValue::Entity(entity.0)));
+                if let Ok(value) = ud.borrow::<LuaValue>() {
+                    return Ok(LuaScriptValue(value.to_script_value()));
                 }
                 let ud = ud.borrow::<LuaReflectReference>().map_err(|e| {
                     mlua::Error::FromLuaConversionError {
@@ -278,7 +278,7 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
             ScriptValue::Type(type_id) => LuaTypeRef(type_id).into_lua(lua)?,
-            ScriptValue::Entity(entity) => LuaEntity(entity).into_lua(lua)?,
+            ScriptValue::Value(value) => LuaValue::Inline(value).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => lua
                 .create_function(move |lua, args: MultiLuaScriptValue| {

@@ -13,8 +13,9 @@ use bevy_mod_scripting_display::OrFakeId;
 use bevy_mod_scripting_world::WorldGuard;
 
 use crate::{
-    DynamicScriptFunction, EnumVariantRef, FunctionCallContext, FunctionScope, InteropError,
-    ReflectReference, ScriptValue, WorldExtensions, world_extensions::FunctionLookups,
+    DynamicScriptFunction, EnumVariantRef, FunctionCallContext, FunctionScope, InlineValue,
+    InteropError, ReflectReference, ScriptValue, ThroughTypeInfo, WorldExtensions,
+    world_extensions::FunctionLookups,
 };
 
 /// What indexing a value by a name found.
@@ -133,9 +134,38 @@ pub fn static_index(
     ))
 }
 
+/// What indexing an inline value by a name found, see [`index_value`].
+pub enum ValueMember {
+    /// A function of the value's type which doesn't mutate it, called with a copy of the value, i.e. `v:length()` in Lua.
+    Method(DynamicScriptFunction),
+    /// Anything else needs the value to have a place: the language promotes it in place with
+    /// [`crate::InlineValue::into_reference`] and indexes the reference with [`index`].
+    NeedsPlace,
+}
+
+/// Indexes an inline value, see [`crate::InlineValue`] for why only some members can be reached without a place.
+pub fn index_value(world: WorldGuard, value: &InlineValue, name: &str) -> ValueMember {
+    profiling::function_scope!("dispatch::index_value");
+    match world.lookup_static_member(value.type_id(), name) {
+        Ok(ScriptValue::Function(func)) => {
+            let mutates = func
+                .info
+                .arg_info
+                .first()
+                .is_some_and(|arg| matches!(arg.type_info, Some(ThroughTypeInfo::Mut(_))));
+            if mutates {
+                ValueMember::NeedsPlace
+            } else {
+                ValueMember::Method(func)
+            }
+        }
+        _ => ValueMember::NeedsPlace,
+    }
+}
+
 /// Applies a binary operator, i.e. `v * 2`.
 ///
-/// The operator's function is called on the operand which is a reference.
+/// The operator's function is called on the operand which is a reference or an inline value.
 /// When that is the right one, the operator's reflected function is called instead, see [`ScriptOperatorNames::reflected_script_function_name`].
 pub fn binary(
     world: WorldGuard,
@@ -145,50 +175,51 @@ pub fn binary(
     ctx: FunctionCallContext,
 ) -> Result<ScriptValue, InteropError> {
     profiling::function_scope!("dispatch::binary");
-    let (receiver, other, name) = match (lhs, rhs) {
-        (ScriptValue::Reference(receiver), other) => {
-            (receiver, other, operator.script_function_name())
-        }
-        (other, ScriptValue::Reference(receiver)) => {
-            match operator.reflected_script_function_name() {
-                Some(name) => (receiver, other, name),
-                None => {
-                    return Err(InteropError::str(
-                        "the right operand of this operator can't be a value",
-                    ));
-                }
-            }
-        }
-        _ => {
-            return Err(InteropError::str(
-                "neither operand of this operator is a value",
-            ));
-        }
+    let receiver_type = |world: &WorldGuard, receiver: &ScriptValue| match receiver {
+        ScriptValue::Reference(r) => r.tail_type_id(world.clone()).map(|t| Some(t.or_fake_id())),
+        ScriptValue::Value(v) => Ok(Some(v.type_id())),
+        _ => Ok(None),
     };
-    let type_id = receiver.tail_type_id(world.clone())?.or_fake_id();
-    world.call_operator(
-        type_id,
-        name,
-        vec![ScriptValue::Reference(receiver), other],
-        ctx,
-    )
+    let (receiver, other, name, type_id) = match receiver_type(&world, &lhs)? {
+        Some(type_id) => (lhs, rhs, operator.script_function_name(), type_id),
+        None => match (
+            receiver_type(&world, &rhs)?,
+            operator.reflected_script_function_name(),
+        ) {
+            (Some(type_id), Some(name)) => (rhs, lhs, name, type_id),
+            (Some(_), None) => {
+                return Err(InteropError::str(
+                    "the right operand of this operator can't be a value",
+                ));
+            }
+            (None, _) => {
+                return Err(InteropError::str(
+                    "neither operand of this operator is a value",
+                ));
+            }
+        },
+    };
+    world.call_operator(type_id, name, vec![receiver, other], ctx)
 }
 
-/// Applies a unary operator to a reference, i.e. `-v`.
+/// Applies a unary operator to a reference or an inline value, i.e. `-v`.
 pub fn unary(
     world: WorldGuard,
     operator: ScriptOperatorNames,
-    value: ReflectReference,
+    value: ScriptValue,
     ctx: FunctionCallContext,
 ) -> Result<ScriptValue, InteropError> {
     profiling::function_scope!("dispatch::unary");
-    let type_id = value.tail_type_id(world.clone())?.or_fake_id();
-    world.call_operator(
-        type_id,
-        operator.script_function_name(),
-        vec![ScriptValue::Reference(value)],
-        ctx,
-    )
+    let type_id = match &value {
+        ScriptValue::Reference(r) => r.tail_type_id(world.clone())?.or_fake_id(),
+        ScriptValue::Value(v) => v.type_id(),
+        _ => {
+            return Err(InteropError::str(
+                "the operand of this operator is not a value",
+            ));
+        }
+    };
+    world.call_operator(type_id, operator.script_function_name(), vec![value], ctx)
 }
 
 /// The length of a value, i.e. `#v` in Lua.
@@ -203,8 +234,8 @@ pub fn len(
     profiling::function_scope!("dispatch::len");
     match value {
         ScriptValue::List(list) => Ok(ScriptValue::Integer(list.len() as i64)),
-        ScriptValue::Reference(reference) => {
-            unary(world, ScriptOperatorNames::Length, reference, ctx)
+        value @ (ScriptValue::Reference(_) | ScriptValue::Value(_)) => {
+            unary(world, ScriptOperatorNames::Length, value, ctx)
         }
         _ => Ok(ScriptValue::Unit),
     }

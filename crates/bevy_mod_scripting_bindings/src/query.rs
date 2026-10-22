@@ -680,7 +680,7 @@ pub struct ScriptQueryResult {
 impl IntoScript for ScriptQueryResult {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         let mut values = VecDeque::with_capacity(self.components.len() + 1);
-        values.push_back(ScriptValue::Entity(self.entity));
+        values.push_back(V(self.entity).into_script(_world)?);
         values.extend(
             self.components
                 .into_iter()
