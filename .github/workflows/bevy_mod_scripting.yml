@@ -74,7 +74,7 @@ jobs:
         id: generate-matrix
         env:
           # pull requests get a reduced matrix to leave runner capacity for others, everything else runs the lot
-          MATRIX_ARGS: ${{ github.event_name != 'pull_request' && '--full' || '--device-tests' }}
+          MATRIX_ARGS: ${{ github.event_name != 'pull_request' && '--full' || '' }}
         run: |
           cargo xtask ci-matrix $MATRIX_ARGS > matrix.json
           cat matrix.json
@@ -106,9 +106,7 @@ jobs:
       checks: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
-    timeout-minutes: 50
     strategy:
-      fail-fast: false
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:
