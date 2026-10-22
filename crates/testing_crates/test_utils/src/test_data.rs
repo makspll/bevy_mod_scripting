@@ -444,6 +444,16 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
     let log_level =
         std::env::var("RUST_LOG").unwrap_or_else(|_| "bevy_mod_scripting_core=debug".to_string());
 
+    // the default asset source on android reads the apk's assets, which only exist in a bevy app, the tests
+    // read them from the file system like everywhere else
+    #[cfg(target_os = "android")]
+    app.register_asset_source(
+        bevy_asset::io::AssetSourceId::Default,
+        bevy_asset::io::AssetSourceBuilder::new(|| {
+            Box::new(bevy_asset::io::file::FileAssetReader::new("assets"))
+        }),
+    );
+
     app.add_plugins((
         TaskPoolPlugin::default(),
         FrameCountPlugin,
