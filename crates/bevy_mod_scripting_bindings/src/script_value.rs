@@ -1,6 +1,7 @@
 //! This module contains the `ScriptValue` enum which is used to pass values between scripting languages and Rust.
 
 use crate::error::InteropError;
+use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{DisplayWithTypeInfo, ReflectDisplayWithTypeInfo, WithTypeInfo};
 use bevy_mod_scripting_world::WorldGuard;
@@ -43,6 +44,8 @@ pub enum ScriptValue {
     ///
     /// Unlike a reference, a type carries no data, so it never allocates.
     Type(TypeId),
+    /// Represents an entity, passed by value so it never allocates, scripts call the functions of `Entity` on it.
+    Entity(Entity),
     /// A dynamic script function possibly storing state. Preffer using the [`ScriptValue::Function`] variant instead if possible.
     FunctionMut(DynamicScriptFunctionMut),
     /// A stateless dynamic script function
@@ -111,6 +114,7 @@ impl DisplayWithTypeInfo for ScriptValue {
             }
             ScriptValue::Reference(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Type(v) => v.display_with_type_info(f, type_info_provider),
+            ScriptValue::Entity(v) => write!(f, "{v}"),
             ScriptValue::FunctionMut(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Function(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Error(e) => e.display_with_type_info(f, type_info_provider),
@@ -130,6 +134,7 @@ impl PartialEq for ScriptValue {
             (Self::Map(l0), Self::Map(r0)) => l0 == r0,
             (Self::Reference(l0), Self::Reference(r0)) => l0 == r0,
             (Self::Type(l0), Self::Type(r0)) => l0 == r0,
+            (Self::Entity(l0), Self::Entity(r0)) => l0 == r0,
             // explicitly don't compare functions and errors
             _ => false,
         }
@@ -158,6 +163,7 @@ impl ScriptValue {
             ScriptValue::Tuple(_) => "Tuple".to_owned(),
             ScriptValue::Reference(_) => "Reference".to_owned(),
             ScriptValue::Type(_) => "Type".to_owned(),
+            ScriptValue::Entity(_) => "Entity".to_owned(),
             ScriptValue::FunctionMut(_) => "FunctionMut".to_owned(),
             ScriptValue::Function(_) => "Function".to_owned(),
             ScriptValue::Error(_) => "Error".to_owned(),

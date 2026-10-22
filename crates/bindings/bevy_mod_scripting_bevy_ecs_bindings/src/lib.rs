@@ -53,19 +53,19 @@ impl Plugin for BevyEcsBindingsPlugin {
 )]
 impl Entity {
     /// The index of the entity. Indices of despawned entities are reused, so compare whole entities to tell them apart.
-    fn index(_self: R<Entity>) -> u32 {
+    fn index(_self: V<Entity>) -> u32 {
         _self.index_u32()
     }
 
     /// How many times the index of this entity has been reused.
-    fn generation(_self: R<Entity>) -> u32 {
+    fn generation(_self: V<Entity>) -> u32 {
         _self.generation().to_bits()
     }
 
     /// The entity as a single number, which can be turned back into the entity with [`from_bits`](Self::from_bits).
     ///
     /// Only meaningful while the app is running, don't save it.
-    fn to_bits(_self: R<Entity>) -> u64 {
+    fn to_bits(_self: V<Entity>) -> u64 {
         _self.to_bits()
     }
 
@@ -75,7 +75,7 @@ impl Entity {
     }
 
     /// Whether two entities are the same.
-    fn eq(_self: R<Entity>, other: R<Entity>) -> bool {
+    fn eq(_self: V<Entity>, other: V<Entity>) -> bool {
         *_self == *other
     }
 }

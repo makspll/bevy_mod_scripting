@@ -1,6 +1,9 @@
 use std::{any::TypeId, borrow::Cow};
 
-use bevy_mod_scripting_bindings::{ReflectReference, WorldGuard, dispatch, error::InteropError};
+use bevy_ecs::entity::Entity;
+use bevy_mod_scripting_bindings::{
+    ReflectReference, ScriptValue, WorldGuard, dispatch, error::InteropError,
+};
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
 use mlua::{FromLua, IntoLua, MetaMethod, UserData, UserDataMethods};
@@ -175,5 +178,39 @@ impl UserData for LuaTypeRef {
                 .map(LuaScriptValue)
             },
         );
+    }
+}
+
+/// An entity, i.e. what [`bevy_mod_scripting_bindings::ScriptValue::Entity`] is in Lua. Passed by value, its methods are the functions of `Entity`, i.e. `entity:index()`.
+#[derive(Debug, Clone, Copy, PartialEq, mlua::FromLua)]
+pub struct LuaEntity(pub Entity);
+
+impl UserData for LuaEntity {
+    fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
+        m.add_meta_function(
+            MetaMethod::Index,
+            |lua, (_, key): (LuaEntity, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Index");
+                let member = with_world(|world| {
+                    dispatch::static_index(
+                        world,
+                        TypeId::of::<Entity>(),
+                        key.into(),
+                        LUA_CALLER_CONTEXT,
+                    )
+                })?;
+                match member {
+                    // `entity:method()` passes the entity as the first argument
+                    ScriptValue::Function(function) => registered_function_into_lua(lua, function),
+                    other => LuaScriptValue(other).into_lua(lua),
+                }
+            },
+        );
+        m.add_meta_function(MetaMethod::Eq, |_, (a, b): (LuaEntity, LuaEntity)| {
+            Ok(a.0 == b.0)
+        });
+        m.add_meta_function(MetaMethod::ToString, |_, self_: LuaEntity| {
+            Ok(self_.0.to_string())
+        });
     }
 }

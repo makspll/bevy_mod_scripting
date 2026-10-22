@@ -6,6 +6,7 @@ use crate::{
     EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
     error::InteropError, script_value::VariadicTuple,
 };
+use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{FromReflect, Reflect};
@@ -276,10 +277,27 @@ impl<T: FromReflect> FromScript for V<T> {
                     },
                 }
             }
+            ScriptValue::Entity(entity) if TypeId::of::<T>() == TypeId::of::<Entity>() => {
+                T::from_reflect(&entity).map(V).ok_or_else(|| {
+                    InteropError::failed_from_reflect(Some(TypeId::of::<T>()), "entity".to_owned())
+                })
+            }
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<T>(),
                 value,
             )),
+        }
+    }
+}
+
+#[profiling::all_functions]
+impl FromScript for Entity {
+    type This<'w> = Self;
+    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+        match value {
+            ScriptValue::Entity(entity) => Ok(entity),
+            // i.e. an entity field of a component
+            value => V::<Entity>::from_script(value, world).map(|v| v.0),
         }
     }
 }

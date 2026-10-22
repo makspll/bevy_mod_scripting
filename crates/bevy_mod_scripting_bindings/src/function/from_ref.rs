@@ -4,6 +4,7 @@ use crate::{
     FromScript, ScriptValue, error::InteropError, match_by_type,
     reflection_extensions::TypeInfoExtensions,
 };
+use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{
     PartialReflect, ReflectKind,
@@ -61,6 +62,7 @@ impl FromScriptErased for Box<dyn PartialReflect> {
                 tr : PathBuf => return <PathBuf>::from_script(value, world).map(|a| Box::new(a) as _),
                 ts : OsString=> return <OsString>::from_script(value, world).map(|a| Box::new(a) as _),
                 tsv: ScriptValue => return <ScriptValue>::from_script(value, world).map(|a| Box::new(a) as _),
+                tent: Entity => return <Entity>::from_script(value, world).map(|a| Box::new(a) as _),
                 tn : ()      => return <()>::from_script(value, world).map(|a| Box::new(a) as _)
             }
         );

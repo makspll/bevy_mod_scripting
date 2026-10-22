@@ -5,7 +5,8 @@ use bevy_mod_scripting_world::WorldGuard;
 
 use super::{DynamicComponent, ReflectReference};
 use crate::{
-    PartialReflectExt, ScriptValue, WorldExtensions,
+    GetTypeDependencies, IntoScript, PartialReflectExt, ScriptValue, ThroughTypeInfo, TypedThrough,
+    WorldExtensions,
     error::InteropError,
     function::{
         from::{Union, V},
@@ -25,7 +26,7 @@ use ::{
         PartialReflect, Reflect, ReflectFromReflect, TypeRegistration, std_traits::ReflectDefault,
     },
 };
-use std::{any::TypeId, sync::Arc};
+use std::{any::TypeId, collections::VecDeque, sync::Arc};
 
 /// A reference to a type which is not a `Resource` or `Component`.
 ///
@@ -666,9 +667,39 @@ impl ScriptQueryBuilder {
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
 /// A result from a query.
+///
+/// Scripts receive it as a plain list, the entity followed by the components in the order they were added to the query,
+/// i.e. `{entity, a, b}` in Lua, with nil for absent optional components. Nothing is allocated for the result itself.
 pub struct ScriptQueryResult {
     /// The entity that matched the query.
     pub entity: Entity,
     /// The components that matched the query, `None` for absent optional components.
     pub components: Vec<Option<ReflectReference>>,
+}
+
+impl IntoScript for ScriptQueryResult {
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        let mut values = VecDeque::with_capacity(self.components.len() + 1);
+        values.push_back(ScriptValue::Entity(self.entity));
+        values.extend(
+            self.components
+                .into_iter()
+                .map(|c| c.map_or(ScriptValue::Unit, ScriptValue::Reference)),
+        );
+        Ok(ScriptValue::List(values))
+    }
+}
+
+impl TypedThrough for ScriptQueryResult {
+    fn through_type_info() -> ThroughTypeInfo {
+        // the entity followed by the components
+        <Vec<ScriptValue> as TypedThrough>::through_type_info()
+    }
+}
+
+impl GetTypeDependencies for ScriptQueryResult {
+    type Underlying = Self;
+    fn register_type_dependencies(registry: &mut bevy_reflect::TypeRegistry) {
+        registry.register::<ScriptQueryResult>();
+    }
 }

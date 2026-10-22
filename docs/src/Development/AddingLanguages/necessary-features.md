@@ -4,9 +4,10 @@ In order for a language to be called "implemented" in BMS, it needs to support t
 
 ## Values
 
-Every `ScriptValue` variant needs a counterpart in the language, in both directions. Two of them are handles rather than data:
+Every `ScriptValue` variant needs a counterpart in the language, in both directions. Three of them are handles rather than data:
 - `ScriptValue::Reference`: a reference to a reflected value, usually a userdata/custom type wrapping `ReflectReference`.
 - `ScriptValue::Type`: a type itself, i.e. what scripts use to reach a type's static members. It carries only a `TypeId` and never allocates.
+- `ScriptValue::Entity`: an entity, passed by value so it never allocates. Its methods are the functions of `Entity`, found with `dispatch::static_index(world, TypeId::of::<Entity>(), ..)` and called with the entity as the first argument, and two entities are equal if they are the same entity.
 
 Every context gets the builtins as globals, nothing else: `bevy_mod_scripting_bindings::builtins::builtins()` (`import_namespace`, `export_namespace`) plus the language's own `register_callback`:
 

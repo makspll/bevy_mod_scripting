@@ -2,10 +2,11 @@
 
 use super::{DynamicScriptFunction, DynamicScriptFunctionMut, Union, V};
 use crate::{ReflectReference, ScriptValue, VariadicTuple, error::InteropError};
+use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
-use std::{borrow::Cow, collections::VecDeque, ffi::OsString, path::PathBuf};
+use std::{any::Any, borrow::Cow, collections::VecDeque, ffi::OsString, path::PathBuf};
 
 /// Converts a value into a [`ScriptValue`].
 pub trait IntoScript {
@@ -114,10 +115,21 @@ impl IntoScript for ReflectReference {
 #[profiling::all_functions]
 impl<T: Reflect> IntoScript for V<T> {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        // entities are passed by value, the check is resolved at compile time
+        if let Some(entity) = (&self.0 as &dyn Any).downcast_ref::<Entity>() {
+            return Ok(ScriptValue::Entity(*entity));
+        }
         // one heap allocation, holding the value and its reference counts
         Ok(ScriptValue::Reference(ReflectReference::new_allocated(
             self.0,
         )))
+    }
+}
+
+#[profiling::all_functions]
+impl IntoScript for Entity {
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(ScriptValue::Entity(self))
     }
 }
 

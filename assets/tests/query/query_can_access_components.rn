@@ -15,12 +15,12 @@ pub fn main() {
 
     assert!(query_result.len() == 1, "Expected 1 result, got {}", query_result.len());
     for result in query_result {
-        assert!(result.entity().index() == entity_a.index(), "Expected entity_a, got {}", result.entity().index());
-        let components = result.components();
-        assert!(components.len() == 3, "Expected 3 components, got {}", components.len());
-        let A = components[0];
-        let B = components[1];
-        let C = components[2];
+        // the entity, then the components
+        assert!(result[0].index() == entity_a.index(), "Expected entity_a, got {}", result[0].index());
+        assert!(result.len() == 4, "Expected the entity and 3 components, got {}", result.len());
+        let A = result[1];
+        let B = result[2];
+        let C = result[3];
         assert!(A[0] == "Default", "Expected 'Default', got: {}", A[0]);
         assert!(B[0] == "Default", "Expected 'Default', got: {}", B[0]);
         assert!(C.strings[0] == "asd", "Expected 'asd', got: {}", C.strings[0]);

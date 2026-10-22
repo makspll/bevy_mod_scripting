@@ -6,6 +6,7 @@
 //! the index protocol, which gets the name as a value.
 use std::{any::TypeId, borrow::Cow, cmp::Ordering, collections::BTreeSet, sync::Arc};
 
+use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_bindings::{
     InteropError, ReflectReference, ScriptValue, WorldGuard,
     dispatch::{self, Member},
@@ -53,6 +54,11 @@ pub struct RuneRef(pub ReflectReference);
 #[derive(Any, Clone, Copy)]
 #[rune(item = ::bms, name = Type)]
 pub struct RuneType(pub TypeId);
+
+/// An entity, passed by value, its methods are the functions of `Entity`, i.e. `entity.index()`, see [`ScriptValue::Entity`].
+#[derive(Any, Clone, Copy)]
+#[rune(item = ::bms, name = Entity)]
+pub struct RuneEntity(pub Entity);
 
 /// The values of a namespace, as returned by `import_namespace`, whose functions can be called with the method syntax.
 #[derive(Any, Clone)]
@@ -182,6 +188,18 @@ fn call_member_inner(
             RUNE_CALLER_CONTEXT,
         )?;
         call_value(member, args)?
+    } else if let Ok(this) = receiver.borrow_ref::<RuneEntity>() {
+        let member = dispatch::static_index(
+            world()?,
+            TypeId::of::<Entity>(),
+            ScriptValue::String(name.to_owned().into()),
+            RUNE_CALLER_CONTEXT,
+        )?;
+        // the entity is the first argument of its methods
+        let mut with_receiver = Vec::with_capacity(args.len() + 1);
+        with_receiver.push(ScriptValue::Entity(this.0));
+        with_receiver.extend(args);
+        call_value(member, with_receiver)?
     } else if let Ok(this) = receiver.borrow_ref::<RuneNamespace>() {
         let member = this.0.get(name).cloned().ok_or_else(|| {
             InteropError::external(crate::error::RuneError(format!(
@@ -360,6 +378,7 @@ pub fn register_types(
 ) -> Result<(), ContextError> {
     module.ty::<RuneRef>()?;
     module.ty::<RuneType>()?;
+    module.ty::<RuneEntity>()?;
     module.ty::<RuneNamespace>()?;
     module.ty::<RuneFunction>()?;
     module.ty::<RuneIter>()?;
@@ -419,6 +438,20 @@ pub fn register_types(
             .map(|other| other.0 == this.0)
             .unwrap_or(false)
     })?;
+    module.associated_function(&Protocol::PARTIAL_EQ, |this: &RuneEntity, other: Value| {
+        other
+            .borrow_ref::<RuneEntity>()
+            .map(|other| other.0 == this.0)
+            .unwrap_or(false)
+    })?;
+    module.associated_function(
+        &Protocol::DISPLAY_FMT,
+        |this: &RuneEntity, f: &mut Formatter| rune::vm_write!(f, "{}", this.0),
+    )?;
+    module.associated_function(
+        &Protocol::DEBUG_FMT,
+        |this: &RuneEntity, f: &mut Formatter| rune::vm_write!(f, "{:?}", this.0),
+    )?;
     module.associated_function(
         &Protocol::PARTIAL_CMP,
         |this: &RuneRef, other: Value| -> VmResult<Option<Ordering>> {
@@ -515,7 +548,12 @@ pub fn register_types(
     for &name in names {
         // `v.name(..)`
         let convert = converter(name);
-        for container in [Container::Ref, Container::Type, Container::Namespace] {
+        for container in [
+            Container::Ref,
+            Container::Type,
+            Container::Entity,
+            Container::Namespace,
+        ] {
             let builder = module.raw_function(
                 name,
                 call_raw(move |values: &[Value]| call_member_inner(name, convert, values)),
@@ -523,6 +561,7 @@ pub fn register_types(
             match container {
                 Container::Ref => builder.build_associated::<RuneRef>()?,
                 Container::Type => builder.build_associated::<RuneType>()?,
+                Container::Entity => builder.build_associated::<RuneEntity>()?,
                 Container::Namespace => builder.build_associated::<RuneNamespace>()?,
             };
         }
@@ -567,5 +606,6 @@ pub fn register_types(
 enum Container {
     Ref,
     Type,
+    Entity,
     Namespace,
 }

@@ -45,10 +45,10 @@ function my_parameterised_system(resourceA, query, resourceB)
     assert(resourceB.string == "Initial Value", "Expected 'Initial Value', got: " .. resourceB.string)
     assert(#query == 2, "Expected 3 results, got: " .. #query)
     for i, result in pairs(query) do
-        components = result:components()
-        assert(#components == 2, "Expected 2 components, got " .. #components)
-        local componentA = components[1]
-        local componentB = components[2]
+        -- the entity, then the components
+        assert(#result == 3, "Expected the entity and 2 components, got " .. #result)
+        local componentA = result[2]
+        local componentB = result[3]
         assert(componentA[1] == "Default", "Expected 'Default', got: " .. componentA[1])
         assert(componentB[1] == "Default", "Expected 'Default', got: " .. componentB[1])
     end
