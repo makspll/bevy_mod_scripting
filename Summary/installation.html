@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-fb953fd2.js";
+            window.path_to_searchindex_js = "../searchindex-417f0a7d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-57256a8c.js"></script>
+        <script src="../toc-c23ad9d7.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -210,6 +210,23 @@
 </tbody>
 </table>
 </div>
+<h3 id="mobile"><a class="header" href="#mobile">Mobile</a></h3>
+<p>CI type-checks <code>bevy_mod_scripting</code> for <code>aarch64-linux-android</code> and <code>aarch64-apple-ios</code>; nothing is run on a device. Both need the target’s C toolchain (Android NDK, Xcode) as the Lua runtimes are built from source, and Android needs a <code>bevy</code> activity feature in your app (e.g. <code>bevy/android-native-activity</code>).</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Language</th><th>Android</th><th>iOS</th></tr>
+</thead>
+<tbody>
+<tr><td>Lua51, Lua52, Lua53</td><td>yes</td><td>no: the Lua sources call <code>system</code>, which the iOS SDK marks unavailable (fixed upstream in Lua 5.4)</td></tr>
+<tr><td>Lua54</td><td>yes</td><td>yes</td></tr>
+<tr><td>Luajit, Luajit52</td><td>yes</td><td>no: <code>luajit-src</code> can’t build for iOS, which also forbids JIT</td></tr>
+<tr><td>Luau</td><td>yes</td><td>yes</td></tr>
+<tr><td>Rune</td><td>yes</td><td>yes</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>unsafe_lua_modules</code> loads native libraries at runtime, which iOS restricts.</p>
 <h2 id="extra-features"><a class="header" href="#extra-features">Extra Features</a></h2>
 <p>In order to fit as many use cases as possible, BMS allows you to disable a lot of its functionality.</p>
 <p>By default all of the useful features are enabled, but you may disable them if you wish if you are only needing BMS for script lifecycle management, and want to populate the bindings yourself.</p>

@@ -412,10 +412,10 @@
         "World::write_message",
         "World::real_time",
         "World::find_entity_by_name",
-        "World::insert_component",
         "World::spawn_bundle",
         "World::query",
         "World::virtual_time",
+        "World::insert_component",
         "World::load_state",
         "World::despawn_descendants",
         "World::remove_component",
@@ -430,8 +430,8 @@
         "World::insert_bundle",
         "World::has_component",
         "World::has_asset",
-        "World::add_default_component",
         "World::is_loaded",
+        "World::add_default_component",
         "World::get_state",
         "World::asset_path",
         "World::get_parent",
@@ -3441,8 +3441,8 @@
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.",
       "associated_functions": [
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::new"
       ],
       "layout": {
@@ -3623,8 +3623,8 @@
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::new"
       ],
       "layout": null,
@@ -4532,16 +4532,16 @@
       "namespace": "sprite",
       "documentation": " Normalized (relative to its size) offset of a 2d renderable entity from its [`Transform`].",
       "associated_functions": [
-        "bevy_sprite::sprite::Anchor::center",
-        "bevy_sprite::sprite::Anchor::bottom_center",
-        "bevy_sprite::sprite::Anchor::as_vec",
-        "bevy_sprite::sprite::Anchor::top_left",
         "bevy_sprite::sprite::Anchor::center_left",
+        "bevy_sprite::sprite::Anchor::as_vec",
+        "bevy_sprite::sprite::Anchor::bottom_center",
         "bevy_sprite::sprite::Anchor::bottom_right",
-        "bevy_sprite::sprite::Anchor::top_right",
-        "bevy_sprite::sprite::Anchor::top_center",
         "bevy_sprite::sprite::Anchor::center_right",
         "bevy_sprite::sprite::Anchor::bottom_left",
+        "bevy_sprite::sprite::Anchor::top_left",
+        "bevy_sprite::sprite::Anchor::top_right",
+        "bevy_sprite::sprite::Anchor::top_center",
+        "bevy_sprite::sprite::Anchor::center",
         "bevy_sprite::sprite::Anchor::new"
       ],
       "layout": {
@@ -4573,10 +4573,10 @@
       "namespace": "sprite",
       "documentation": " Describes a sprite to be rendered to a 2D camera",
       "associated_functions": [
-        "bevy_sprite::sprite::Sprite::sized",
-        "bevy_sprite::sprite::Sprite::from_atlas_image",
-        "bevy_sprite::sprite::Sprite::from_image",
         "bevy_sprite::sprite::Sprite::from_color",
+        "bevy_sprite::sprite::Sprite::from_image",
+        "bevy_sprite::sprite::Sprite::from_atlas_image",
+        "bevy_sprite::sprite::Sprite::sized",
         "bevy_sprite::sprite::Sprite::new"
       ],
       "layout": {
@@ -4877,8 +4877,8 @@
       "namespace": "text",
       "documentation": " A span of text in a tree of spans.\n\n A `TextSpan` is only valid when it exists as a child of a parent that has either `Text` or\n `Text2d`. The parent's `Text` / `Text2d` component contains the base text content. Any children\n with `TextSpan` extend this text by appending their content to the parent's text in sequence to\n form a [`ComputedTextBlock`]. The parent's [`TextLayout`] determines the layout of the block\n but each node has its own [`TextFont`] and [`TextColor`].",
       "associated_functions": [
-        "bevy_text::text::TextSpan::set",
         "bevy_text::text::TextSpan::new",
+        "bevy_text::text::TextSpan::set",
         "bevy_text::text::TextSpan::as_str"
       ],
       "layout": {
@@ -5172,13 +5172,13 @@
       "documentation": " A type which is commonly used to define margins, paddings and borders.\n\n # Examples\n\n ## Margin\n\n A margin is used to create space around UI elements, outside of any defined borders.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let margin = UiRect::all(Val::Auto); // Centers the UI element\n ```\n\n ## Padding\n\n A padding is used to create space around UI elements, inside of any defined borders.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let padding = UiRect {\n     left: Val::Px(10.0),\n     right: Val::Px(20.0),\n     top: Val::Px(30.0),\n     bottom: Val::Px(40.0),\n };\n ```\n\n ## Borders\n\n A border is used to define the width of the border of a UI element.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let border = UiRect {\n     left: Val::Px(10.0),\n     right: Val::Px(20.0),\n     top: Val::Px(30.0),\n     bottom: Val::Px(40.0),\n };\n ```",
       "associated_functions": [
         "bevy_ui::geometry::UiRect::px",
-        "bevy_ui::geometry::UiRect::new",
-        "bevy_ui::geometry::UiRect::zero",
         "bevy_ui::geometry::UiRect::horizontal",
+        "bevy_ui::geometry::UiRect::zero",
         "bevy_ui::geometry::UiRect::vertical",
         "bevy_ui::geometry::UiRect::percent",
         "bevy_ui::geometry::UiRect::axes",
-        "bevy_ui::geometry::UiRect::all"
+        "bevy_ui::geometry::UiRect::all",
+        "bevy_ui::geometry::UiRect::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -5231,12 +5231,12 @@
       "namespace": "ui",
       "documentation": " Represents the possible value types for layout properties.\n\n This enum allows specifying values for various [`Node`](crate::Node) properties in different units,\n such as logical pixels, percentages, or automatically determined values.\n\n `Val` also implements [`core::str::FromStr`] to allow parsing values from strings in the format `#.#px`. Whitespaces between the value and unit is allowed. The following units are supported:\n * `px`: logical pixels\n * `%`: percentage\n * `vw`: percentage of the viewport width\n * `vh`: percentage of the viewport height\n * `vmin`: percentage of the viewport's smaller dimension\n * `vmax`: percentage of the viewport's larger dimension\n\n Additionally, `auto` will be parsed as [`Val::Auto`].",
       "associated_functions": [
-        "bevy_ui::geometry::Val::vh",
-        "bevy_ui::geometry::Val::vw",
+        "bevy_ui::geometry::Val::vmin",
         "bevy_ui::geometry::Val::px",
         "bevy_ui::geometry::Val::auto",
+        "bevy_ui::geometry::Val::vw",
+        "bevy_ui::geometry::Val::vh",
         "bevy_ui::geometry::Val::vmax",
-        "bevy_ui::geometry::Val::vmin",
         "bevy_ui::geometry::Val::percent",
         "bevy_ui::geometry::Val::new"
       ],
@@ -5474,9 +5474,9 @@
       "documentation": " Provides the computed size and layout properties of a UI [`Node`].\n\n All of the fields are automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`)\n during `PostUpdate` in the [`UiSystems::Layout`](super::UiSystems) set.\n\n The fields are measured in physical pixels.\n You can multiply by the `inverse_scale_factor` field to convert back to logical pixels.\n\n Fields in this struct are public but should only rarely be directly modified.\n For example, in a scrollbar you may want to derive the handle's size from the proportion of\n scrollable content in-view. You can directly modify `ComputedNode` after layout to set the\n handle size without a frame delay.",
       "associated_functions": [
         "bevy_ui::ui_node::ComputedNode::size",
+        "bevy_ui::ui_node::ComputedNode::is_empty",
         "bevy_ui::ui_node::ComputedNode::inverse_scale_factor",
         "bevy_ui::ui_node::ComputedNode::content_size",
-        "bevy_ui::ui_node::ComputedNode::is_empty",
         "bevy_ui::ui_node::ComputedNode::new"
       ],
       "layout": {
@@ -5592,12 +5592,12 @@
       "namespace": "ui",
       "documentation": " Whether to show or hide overflowing items",
       "associated_functions": [
-        "bevy_ui::ui_node::Overflow::clip_x",
-        "bevy_ui::ui_node::Overflow::clip",
         "bevy_ui::ui_node::Overflow::scroll",
         "bevy_ui::ui_node::Overflow::visible",
-        "bevy_ui::ui_node::Overflow::clip_y",
+        "bevy_ui::ui_node::Overflow::clip_x",
         "bevy_ui::ui_node::Overflow::hidden",
+        "bevy_ui::ui_node::Overflow::clip",
+        "bevy_ui::ui_node::Overflow::clip_y",
         "bevy_ui::ui_node::Overflow::new"
       ],
       "layout": {
@@ -5637,8 +5637,8 @@
       "namespace": "ui",
       "documentation": " A UI Node that renders an image.",
       "associated_functions": [
-        "bevy_ui::widget::image::ImageNode::with_color",
-        "bevy_ui::widget::image::ImageNode::new"
+        "bevy_ui::widget::image::ImageNode::new",
+        "bevy_ui::widget::image::ImageNode::with_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -5721,8 +5721,8 @@
       "documentation": " The top-level UI text component.\n\n Adding [`Text`] to an entity will pull in required components for setting up a UI text node.\n\n The string in this component is the first 'text span' in a hierarchy of text spans that are collected into\n a [`ComputedTextBlock`]. See [`TextSpan`](bevy_text::TextSpan) for the component used by children of entities with [`Text`].\n\n\n ```\n # use bevy_asset::Handle;\n # use bevy_color::Color;\n # use bevy_color::palettes::basic::BLUE;\n # use bevy_ecs::world::World;\n # use bevy_text::{Font, FontSize, Justify, TextLayout, TextFont, TextColor, TextSpan};\n # use bevy_ui::prelude::Text;\n #\n # let font_handle: Handle<Font> = Default::default();\n # let mut world = World::default();\n #\n // Basic usage.\n world.spawn(Text::new(\"hello world!\"));\n\n // With non-default style.\n world.spawn((\n     Text::new(\"hello world!\"),\n     TextFont {\n         font: font_handle.clone().into(),\n         font_size: FontSize::Px(60.0),\n         ..Default::default()\n     },\n     TextColor(BLUE.into()),\n ));\n\n // With text justification.\n world.spawn((\n     Text::new(\"hello world\\nand bevy!\"),\n     TextLayout::justify(Justify::Center)\n ));\n\n // With spans\n world.spawn(Text::new(\"hello \")).with_children(|parent| {\n     parent.spawn(TextSpan::new(\"world\"));\n     parent.spawn((TextSpan::new(\"!\"), TextColor(BLUE.into())));\n });\n ```",
       "associated_functions": [
         "bevy_ui::widget::text::Text::set",
-        "bevy_ui::widget::text::Text::as_str",
-        "bevy_ui::widget::text::Text::new"
+        "bevy_ui::widget::text::Text::new",
+        "bevy_ui::widget::text::Text::as_str"
       ],
       "layout": {
         "kind": "TupleStruct",

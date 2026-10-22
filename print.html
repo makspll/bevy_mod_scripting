@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-fb953fd2.js";
+            window.path_to_searchindex_js = "searchindex-417f0a7d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-57256a8c.js"></script>
+        <script src="toc-c23ad9d7.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -208,6 +208,23 @@
 </tbody>
 </table>
 </div>
+<h3 id="mobile"><a class="header" href="#mobile">Mobile</a></h3>
+<p>CI type-checks <code>bevy_mod_scripting</code> for <code>aarch64-linux-android</code> and <code>aarch64-apple-ios</code>; nothing is run on a device. Both need the target’s C toolchain (Android NDK, Xcode) as the Lua runtimes are built from source, and Android needs a <code>bevy</code> activity feature in your app (e.g. <code>bevy/android-native-activity</code>).</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Language</th><th>Android</th><th>iOS</th></tr>
+</thead>
+<tbody>
+<tr><td>Lua51, Lua52, Lua53</td><td>yes</td><td>no: the Lua sources call <code>system</code>, which the iOS SDK marks unavailable (fixed upstream in Lua 5.4)</td></tr>
+<tr><td>Lua54</td><td>yes</td><td>yes</td></tr>
+<tr><td>Luajit, Luajit52</td><td>yes</td><td>no: <code>luajit-src</code> can’t build for iOS, which also forbids JIT</td></tr>
+<tr><td>Luau</td><td>yes</td><td>yes</td></tr>
+<tr><td>Rune</td><td>yes</td><td>yes</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>unsafe_lua_modules</code> loads native libraries at runtime, which iOS restricts.</p>
 <h2 id="extra-features"><a class="header" href="#extra-features">Extra Features</a></h2>
 <p>In order to fit as many use cases as possible, BMS allows you to disable a lot of its functionality.</p>
 <p>By default all of the useful features are enabled, but you may disable them if you wish if you are only needing BMS for script lifecycle management, and want to populate the bindings yourself.</p>
@@ -6054,8 +6071,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </thead>
 <tbody>
 <tr><td><a href="#namespace-1">namespace</a></td><td>Retrieves the script namespace of the type, by default the name of the crate defining it. Types in t...</td></tr>
-<tr><td><a href="#type_name-1">type_name</a></td><td>Retrieves the name of the type.</td></tr>
 <tr><td><a href="#short_name-1">short_name</a></td><td>Retrieves the short name of the type. The short name is a more human-readable version of the type na...</td></tr>
+<tr><td><a href="#type_name-1">type_name</a></td><td>Retrieves the name of the type.</td></tr>
 <tr><td><a href="#new-33">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -6089,9 +6106,10 @@ Types in the root namespace have the empty string as namespace.</p>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="type_name-1"><a class="header" href="#type_name-1"><code>type_name</code></a></h1>
+<h1 id="short_name-1"><a class="header" href="#short_name-1"><code>short_name</code></a></h1>
 <blockquote>
-<p>Retrieves the name of the type.</p>
+<p>Retrieves the short name of the type.
+The short name is a more human-readable version of the type name.</p>
 </blockquote>
 <h4 id="arguments-97"><a class="header" href="#arguments-97">Arguments</a></h4>
 <div class="table-wrapper">
@@ -6111,15 +6129,14 @@ Types in the root namespace have the empty string as namespace.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>type_name</strong></td><td><a href="#str">Str</a></td><td>The name of the type.</td></tr>
+<tr><td><strong>short_name</strong></td><td><a href="#str">Str</a></td><td>The short name of the</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="short_name-1"><a class="header" href="#short_name-1"><code>short_name</code></a></h1>
+<h1 id="type_name-1"><a class="header" href="#type_name-1"><code>type_name</code></a></h1>
 <blockquote>
-<p>Retrieves the short name of the type.
-The short name is a more human-readable version of the type name.</p>
+<p>Retrieves the name of the type.</p>
 </blockquote>
 <h4 id="arguments-98"><a class="header" href="#arguments-98">Arguments</a></h4>
 <div class="table-wrapper">
@@ -6139,7 +6156,7 @@ The short name is a more human-readable version of the type name.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>short_name</strong></td><td><a href="#str">Str</a></td><td>The short name of the</td></tr>
+<tr><td><strong>type_name</strong></td><td><a href="#str">Str</a></td><td>The name of the type.</td></tr>
 </tbody>
 </table>
 </div>
@@ -6853,8 +6870,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#exclusive">exclusive</a></td><td>Specifies the system is to run exclusively, meaning it can access anything, but will not run in para...</td></tr>
 <tr><td><a href="#after">after</a></td><td>Specifies the system is to run *after* the given system  Note: this is an experimental feature, and ...</td></tr>
 <tr><td><a href="#before">before</a></td><td>Specifies the system is to run *before* the given system.  Note: this is an experimental feature, an...</td></tr>
-<tr><td><a href="#resource">resource</a></td><td>Requests the system have access to the given resource. The resource will be added to the list of arg...</td></tr>
 <tr><td><a href="#query">query</a></td><td>Adds a query to the system builder.</td></tr>
+<tr><td><a href="#resource">resource</a></td><td>Requests the system have access to the given resource. The resource will be added to the list of arg...</td></tr>
 <tr><td><a href="#new-39">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -6945,40 +6962,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="resource"><a class="header" href="#resource"><code>resource</code></a></h1>
-<blockquote>
-<p>Requests the system have access to the given resource. The resource will be added to the
-list of arguments of the callback in the order they’re provided.</p>
-</blockquote>
-<h4 id="arguments-122"><a class="header" href="#arguments-122">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder to add the resource to.</td></tr>
-<tr><td><strong>resource</strong></td><td><a href="#scriptresourceregistration">ScriptResourceRegistration</a></td><td>The resource to add.</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-122"><a class="header" href="#returns-122">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder with the resource added.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="query"><a class="header" href="#query"><code>query</code></a></h1>
 <blockquote>
 <p>Adds a query to the system builder.</p>
 </blockquote>
-<h4 id="arguments-123"><a class="header" href="#arguments-123">Arguments</a></h4>
+<h4 id="arguments-122"><a class="header" href="#arguments-122">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6990,7 +6978,7 @@ list of arguments of the callback in the order they’re provided.</p>
 </tbody>
 </table>
 </div>
-<h4 id="returns-123"><a class="header" href="#returns-123">Returns</a></h4>
+<h4 id="returns-122"><a class="header" href="#returns-122">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6998,6 +6986,35 @@ list of arguments of the callback in the order they’re provided.</p>
 </thead>
 <tbody>
 <tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder with the query added.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="resource"><a class="header" href="#resource"><code>resource</code></a></h1>
+<blockquote>
+<p>Requests the system have access to the given resource. The resource will be added to the
+list of arguments of the callback in the order they’re provided.</p>
+</blockquote>
+<h4 id="arguments-123"><a class="header" href="#arguments-123">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder to add the resource to.</td></tr>
+<tr><td><strong>resource</strong></td><td><a href="#scriptresourceregistration">ScriptResourceRegistration</a></td><td>The resource to add.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-123"><a class="header" href="#returns-123">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>builder</strong></td><td><a href="#scriptsystembuilder">ScriptSystemBuilder</a></td><td>The system builder with the resource added.</td></tr>
 </tbody>
 </table>
 </div>
@@ -42006,44 +42023,27 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#center-1">center</a></td><td>The anchor in the middle of the sprite.</td></tr>
-<tr><td><a href="#bottom_center">bottom_center</a></td><td>The anchor in the middle of the bottom edge.</td></tr>
-<tr><td><a href="#as_vec">as_vec</a></td><td>The offset of the anchor from the center, as a fraction of the sprite size.</td></tr>
-<tr><td><a href="#top_left">top_left</a></td><td>The anchor in the top left corner.</td></tr>
 <tr><td><a href="#center_left">center_left</a></td><td>The anchor in the middle of the left edge.</td></tr>
+<tr><td><a href="#as_vec">as_vec</a></td><td>The offset of the anchor from the center, as a fraction of the sprite size.</td></tr>
+<tr><td><a href="#bottom_center">bottom_center</a></td><td>The anchor in the middle of the bottom edge.</td></tr>
 <tr><td><a href="#bottom_right">bottom_right</a></td><td>The anchor in the bottom right corner.</td></tr>
-<tr><td><a href="#top_right">top_right</a></td><td>The anchor in the top right corner.</td></tr>
-<tr><td><a href="#top_center">top_center</a></td><td>The anchor in the middle of the top edge.</td></tr>
 <tr><td><a href="#center_right">center_right</a></td><td>The anchor in the middle of the right edge.</td></tr>
 <tr><td><a href="#bottom_left">bottom_left</a></td><td>The anchor in the bottom left corner.</td></tr>
+<tr><td><a href="#top_left">top_left</a></td><td>The anchor in the top left corner.</td></tr>
+<tr><td><a href="#top_right">top_right</a></td><td>The anchor in the top right corner.</td></tr>
+<tr><td><a href="#top_center">top_center</a></td><td>The anchor in the middle of the top edge.</td></tr>
+<tr><td><a href="#center-1">center</a></td><td>The anchor in the middle of the sprite.</td></tr>
 <tr><td><a href="#new-184">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="center-1"><a class="header" href="#center-1"><code>center</code></a></h1>
+<h1 id="center_left"><a class="header" href="#center_left"><code>center_left</code></a></h1>
 <blockquote>
-<p>The anchor in the middle of the sprite.</p>
+<p>The anchor in the middle of the left edge.</p>
 </blockquote>
 <h4 id="arguments-1182"><a class="header" href="#arguments-1182">Arguments</a></h4>
 <h4 id="returns-1182"><a class="header" href="#returns-1182">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>return</strong></td><td><a href="#anchor">Anchor</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="bottom_center"><a class="header" href="#bottom_center"><code>bottom_center</code></a></h1>
-<blockquote>
-<p>The anchor in the middle of the bottom edge.</p>
-</blockquote>
-<h4 id="arguments-1183"><a class="header" href="#arguments-1183">Arguments</a></h4>
-<h4 id="returns-1183"><a class="header" href="#returns-1183">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -42059,7 +42059,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <blockquote>
 <p>The offset of the anchor from the center, as a fraction of the sprite size.</p>
 </blockquote>
-<h4 id="arguments-1184"><a class="header" href="#arguments-1184">Arguments</a></h4>
+<h4 id="arguments-1183"><a class="header" href="#arguments-1183">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -42070,7 +42070,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h4 id="returns-1184"><a class="header" href="#returns-1184">Returns</a></h4>
+<h4 id="returns-1183"><a class="header" href="#returns-1183">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -42082,29 +42082,12 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="top_left"><a class="header" href="#top_left"><code>top_left</code></a></h1>
+<h1 id="bottom_center"><a class="header" href="#bottom_center"><code>bottom_center</code></a></h1>
 <blockquote>
-<p>The anchor in the top left corner.</p>
+<p>The anchor in the middle of the bottom edge.</p>
 </blockquote>
-<h4 id="arguments-1185"><a class="header" href="#arguments-1185">Arguments</a></h4>
-<h4 id="returns-1185"><a class="header" href="#returns-1185">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>return</strong></td><td><a href="#anchor">Anchor</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="center_left"><a class="header" href="#center_left"><code>center_left</code></a></h1>
-<blockquote>
-<p>The anchor in the middle of the left edge.</p>
-</blockquote>
-<h4 id="arguments-1186"><a class="header" href="#arguments-1186">Arguments</a></h4>
-<h4 id="returns-1186"><a class="header" href="#returns-1186">Returns</a></h4>
+<h4 id="arguments-1184"><a class="header" href="#arguments-1184">Arguments</a></h4>
+<h4 id="returns-1184"><a class="header" href="#returns-1184">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -42120,42 +42103,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <blockquote>
 <p>The anchor in the bottom right corner.</p>
 </blockquote>
-<h4 id="arguments-1187"><a class="header" href="#arguments-1187">Arguments</a></h4>
-<h4 id="returns-1187"><a class="header" href="#returns-1187">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>return</strong></td><td><a href="#anchor">Anchor</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="top_right"><a class="header" href="#top_right"><code>top_right</code></a></h1>
-<blockquote>
-<p>The anchor in the top right corner.</p>
-</blockquote>
-<h4 id="arguments-1188"><a class="header" href="#arguments-1188">Arguments</a></h4>
-<h4 id="returns-1188"><a class="header" href="#returns-1188">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>return</strong></td><td><a href="#anchor">Anchor</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="top_center"><a class="header" href="#top_center"><code>top_center</code></a></h1>
-<blockquote>
-<p>The anchor in the middle of the top edge.</p>
-</blockquote>
-<h4 id="arguments-1189"><a class="header" href="#arguments-1189">Arguments</a></h4>
-<h4 id="returns-1189"><a class="header" href="#returns-1189">Returns</a></h4>
+<h4 id="arguments-1185"><a class="header" href="#arguments-1185">Arguments</a></h4>
+<h4 id="returns-1185"><a class="header" href="#returns-1185">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -42171,8 +42120,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <blockquote>
 <p>The anchor in the middle of the right edge.</p>
 </blockquote>
-<h4 id="arguments-1190"><a class="header" href="#arguments-1190">Arguments</a></h4>
-<h4 id="returns-1190"><a class="header" href="#returns-1190">Returns</a></h4>
+<h4 id="arguments-1186"><a class="header" href="#arguments-1186">Arguments</a></h4>
+<h4 id="returns-1186"><a class="header" href="#returns-1186">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -42187,6 +42136,74 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <h1 id="bottom_left"><a class="header" href="#bottom_left"><code>bottom_left</code></a></h1>
 <blockquote>
 <p>The anchor in the bottom left corner.</p>
+</blockquote>
+<h4 id="arguments-1187"><a class="header" href="#arguments-1187">Arguments</a></h4>
+<h4 id="returns-1187"><a class="header" href="#returns-1187">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>return</strong></td><td><a href="#anchor">Anchor</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="top_left"><a class="header" href="#top_left"><code>top_left</code></a></h1>
+<blockquote>
+<p>The anchor in the top left corner.</p>
+</blockquote>
+<h4 id="arguments-1188"><a class="header" href="#arguments-1188">Arguments</a></h4>
+<h4 id="returns-1188"><a class="header" href="#returns-1188">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>return</strong></td><td><a href="#anchor">Anchor</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="top_right"><a class="header" href="#top_right"><code>top_right</code></a></h1>
+<blockquote>
+<p>The anchor in the top right corner.</p>
+</blockquote>
+<h4 id="arguments-1189"><a class="header" href="#arguments-1189">Arguments</a></h4>
+<h4 id="returns-1189"><a class="header" href="#returns-1189">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>return</strong></td><td><a href="#anchor">Anchor</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="top_center"><a class="header" href="#top_center"><code>top_center</code></a></h1>
+<blockquote>
+<p>The anchor in the middle of the top edge.</p>
+</blockquote>
+<h4 id="arguments-1190"><a class="header" href="#arguments-1190">Arguments</a></h4>
+<h4 id="returns-1190"><a class="header" href="#returns-1190">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>return</strong></td><td><a href="#anchor">Anchor</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="center-1"><a class="header" href="#center-1"><code>center</code></a></h1>
+<blockquote>
+<p>The anchor in the middle of the sprite.</p>
 </blockquote>
 <h4 id="arguments-1191"><a class="header" href="#arguments-1191">Arguments</a></h4>
 <h4 id="returns-1191"><a class="header" href="#returns-1191">Returns</a></h4>
@@ -42255,18 +42272,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#sized">sized</a></td><td>A sprite with no image that is drawn at the given size.</td></tr>
-<tr><td><a href="#from_atlas_image">from_atlas_image</a></td><td>A sprite that shows a section of an image from a texture atlas.</td></tr>
-<tr><td><a href="#from_image">from_image</a></td><td>A sprite that shows the whole image.</td></tr>
 <tr><td><a href="#from_color-1">from_color</a></td><td>A solid square of the given color and size.</td></tr>
+<tr><td><a href="#from_image">from_image</a></td><td>A sprite that shows the whole image.</td></tr>
+<tr><td><a href="#from_atlas_image">from_atlas_image</a></td><td>A sprite that shows a section of an image from a texture atlas.</td></tr>
+<tr><td><a href="#sized">sized</a></td><td>A sprite with no image that is drawn at the given size.</td></tr>
 <tr><td><a href="#new-185">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="sized"><a class="header" href="#sized"><code>sized</code></a></h1>
+<h1 id="from_color-1"><a class="header" href="#from_color-1"><code>from_color</code></a></h1>
 <blockquote>
-<p>A sprite with no image that is drawn at the given size.</p>
+<p>A solid square of the given color and size.</p>
 </blockquote>
 <h4 id="arguments-1193"><a class="header" href="#arguments-1193">Arguments</a></h4>
 <div class="table-wrapper">
@@ -42275,6 +42292,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
+<tr><td><strong>color</strong></td><td><a href="#color-1">Color</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><strong>size</strong></td><td><a href="#vec2">Vec2</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
@@ -42291,9 +42309,9 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="from_atlas_image"><a class="header" href="#from_atlas_image"><code>from_atlas_image</code></a></h1>
+<h1 id="from_image"><a class="header" href="#from_image"><code>from_image</code></a></h1>
 <blockquote>
-<p>A sprite that shows a section of an image from a texture atlas.</p>
+<p>A sprite that shows the whole image.</p>
 </blockquote>
 <h4 id="arguments-1194"><a class="header" href="#arguments-1194">Arguments</a></h4>
 <div class="table-wrapper">
@@ -42303,7 +42321,6 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </thead>
 <tbody>
 <tr><td><strong>image</strong></td><td><a href="#handlea">Handle</a>&lt;<a href="#image-1">Image</a>&gt;</td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>atlas</strong></td><td><a href="#textureatlas">TextureAtlas</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -42319,9 +42336,9 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="from_image"><a class="header" href="#from_image"><code>from_image</code></a></h1>
+<h1 id="from_atlas_image"><a class="header" href="#from_atlas_image"><code>from_atlas_image</code></a></h1>
 <blockquote>
-<p>A sprite that shows the whole image.</p>
+<p>A sprite that shows a section of an image from a texture atlas.</p>
 </blockquote>
 <h4 id="arguments-1195"><a class="header" href="#arguments-1195">Arguments</a></h4>
 <div class="table-wrapper">
@@ -42331,6 +42348,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </thead>
 <tbody>
 <tr><td><strong>image</strong></td><td><a href="#handlea">Handle</a>&lt;<a href="#image-1">Image</a>&gt;</td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>atlas</strong></td><td><a href="#textureatlas">TextureAtlas</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -42346,9 +42364,9 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="from_color-1"><a class="header" href="#from_color-1"><code>from_color</code></a></h1>
+<h1 id="sized"><a class="header" href="#sized"><code>sized</code></a></h1>
 <blockquote>
-<p>A solid square of the given color and size.</p>
+<p>A sprite with no image that is drawn at the given size.</p>
 </blockquote>
 <h4 id="arguments-1196"><a class="header" href="#arguments-1196">Arguments</a></h4>
 <div class="table-wrapper">
@@ -42357,7 +42375,6 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>color</strong></td><td><a href="#color-1">Color</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><strong>size</strong></td><td><a href="#vec2">Vec2</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
@@ -44208,16 +44225,16 @@ but each node has its own [<code>TextFont</code>] and [<code>TextColor</code>].<
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#set-3">set</a></td><td>Replaces the text.</td></tr>
 <tr><td><a href="#new-200">new</a></td><td>Creates a new text span holding `text`.</td></tr>
+<tr><td><a href="#set-3">set</a></td><td>Replaces the text.</td></tr>
 <tr><td><a href="#as_str-2">as_str</a></td><td>The text as a string.</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="set-3"><a class="header" href="#set-3"><code>set</code></a></h1>
+<h1 id="new-200"><a class="header" href="#new-200"><code>new</code></a></h1>
 <blockquote>
-<p>Replaces the text.</p>
+<p>Creates a new text span holding <code>text</code>.</p>
 </blockquote>
 <h4 id="arguments-1243"><a class="header" href="#arguments-1243">Arguments</a></h4>
 <div class="table-wrapper">
@@ -44226,7 +44243,6 @@ but each node has its own [<code>TextFont</code>] and [<code>TextColor</code>].<
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>_self</strong></td><td><a href="#textspan">TextSpan</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><strong>text</strong></td><td><a href="#string">String</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
@@ -44238,14 +44254,14 @@ but each node has its own [<code>TextFont</code>] and [<code>TextColor</code>].<
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>return</strong></td><td>()</td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>return</strong></td><td><a href="#textspan">TextSpan</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="new-200"><a class="header" href="#new-200"><code>new</code></a></h1>
+<h1 id="set-3"><a class="header" href="#set-3"><code>set</code></a></h1>
 <blockquote>
-<p>Creates a new text span holding <code>text</code>.</p>
+<p>Replaces the text.</p>
 </blockquote>
 <h4 id="arguments-1244"><a class="header" href="#arguments-1244">Arguments</a></h4>
 <div class="table-wrapper">
@@ -44254,6 +44270,7 @@ but each node has its own [<code>TextFont</code>] and [<code>TextColor</code>].<
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
+<tr><td><strong>_self</strong></td><td><a href="#textspan">TextSpan</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><strong>text</strong></td><td><a href="#string">String</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
@@ -44265,7 +44282,7 @@ but each node has its own [<code>TextFont</code>] and [<code>TextColor</code>].<
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>return</strong></td><td><a href="#textspan">TextSpan</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>return</strong></td><td>()</td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -44354,8 +44371,8 @@ world.spawn(Text::new("hello ")).with_children(|parent| {
 </thead>
 <tbody>
 <tr><td><a href="#set-4">set</a></td><td>Replaces the text.</td></tr>
-<tr><td><a href="#as_str-3">as_str</a></td><td>The text as a string.</td></tr>
 <tr><td><a href="#new-201">new</a></td><td>Creates a new text component holding `text`.  ```multi-lang-example,lua local Text = import_namespace(“text”).Text local text = Text.new(“hi”) assert(text:as_str() == “hi”) `...</td></tr>
+<tr><td><a href="#as_str-3">as_str</a></td><td>The text as a string.</td></tr>
 </tbody>
 </table>
 </div>
@@ -44388,33 +44405,6 @@ world.spawn(Text::new("hello ")).with_children(|parent| {
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="as_str-3"><a class="header" href="#as_str-3"><code>as_str</code></a></h1>
-<blockquote>
-<p>The text as a string.</p>
-</blockquote>
-<h4 id="arguments-1247"><a class="header" href="#arguments-1247">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>_self</strong></td><td><a href="#text-1">Text</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-1247"><a class="header" href="#returns-1247">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>return</strong></td><td><a href="#string">String</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="new-201"><a class="header" href="#new-201"><code>new</code></a></h1>
 <blockquote>
 <p>Creates a new text component holding <code>text</code>.</p>
@@ -44427,7 +44417,7 @@ let text = Text.new("hi");
 assert!(text.as_str() == "hi");
 </code></pre>
 </blockquote>
-<h4 id="arguments-1248"><a class="header" href="#arguments-1248">Arguments</a></h4>
+<h4 id="arguments-1247"><a class="header" href="#arguments-1247">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -44438,7 +44428,7 @@ assert!(text.as_str() == "hi");
 </tbody>
 </table>
 </div>
-<h4 id="returns-1248"><a class="header" href="#returns-1248">Returns</a></h4>
+<h4 id="returns-1247"><a class="header" href="#returns-1247">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -44446,6 +44436,33 @@ assert!(text.as_str() == "hi");
 </thead>
 <tbody>
 <tr><td><strong>return</strong></td><td><a href="#text-1">Text</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="as_str-3"><a class="header" href="#as_str-3"><code>as_str</code></a></h1>
+<blockquote>
+<p>The text as a string.</p>
+</blockquote>
+<h4 id="arguments-1248"><a class="header" href="#arguments-1248">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>_self</strong></td><td><a href="#text-1">Text</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-1248"><a class="header" href="#returns-1248">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>return</strong></td><td><a href="#string">String</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -52204,13 +52221,13 @@ let border = UiRect {
 </thead>
 <tbody>
 <tr><td><a href="#px-1">px</a></td><td>A rectangle with lengths in logical pixels for its left, right, top and bottom sides.</td></tr>
-<tr><td><a href="#new-231">new</a></td><td>A rectangle with a length for each of its left, right, top and bottom sides.</td></tr>
-<tr><td><a href="#zero-8">zero</a></td><td>A rectangle with no space on any side.</td></tr>
 <tr><td><a href="#horizontal">horizontal</a></td><td>A rectangle with the length on its left and right sides only.</td></tr>
+<tr><td><a href="#zero-8">zero</a></td><td>A rectangle with no space on any side.</td></tr>
 <tr><td><a href="#vertical">vertical</a></td><td>A rectangle with the length on its top and bottom sides only.</td></tr>
 <tr><td><a href="#percent">percent</a></td><td>A rectangle with percentages of the parent for its left, right, top and bottom sides.</td></tr>
 <tr><td><a href="#axes-1">axes</a></td><td>A rectangle with one length for the left and right sides and another for the top and bottom.</td></tr>
 <tr><td><a href="#all">all</a></td><td>A rectangle with the same length on all four sides.</td></tr>
+<tr><td><a href="#new-231">new</a></td><td>A rectangle with a length for each of its left, right, top and bottom sides.</td></tr>
 </tbody>
 </table>
 </div>
@@ -52245,9 +52262,9 @@ let border = UiRect {
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="new-231"><a class="header" href="#new-231"><code>new</code></a></h1>
+<h1 id="horizontal"><a class="header" href="#horizontal"><code>horizontal</code></a></h1>
 <blockquote>
-<p>A rectangle with a length for each of its left, right, top and bottom sides.</p>
+<p>A rectangle with the length on its left and right sides only.</p>
 </blockquote>
 <h4 id="arguments-1460"><a class="header" href="#arguments-1460">Arguments</a></h4>
 <div class="table-wrapper">
@@ -52256,10 +52273,7 @@ let border = UiRect {
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>left</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>right</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>top</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>bottom</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>value</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -52292,9 +52306,9 @@ let border = UiRect {
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="horizontal"><a class="header" href="#horizontal"><code>horizontal</code></a></h1>
+<h1 id="vertical"><a class="header" href="#vertical"><code>vertical</code></a></h1>
 <blockquote>
-<p>A rectangle with the length on its left and right sides only.</p>
+<p>A rectangle with the length on its top and bottom sides only.</p>
 </blockquote>
 <h4 id="arguments-1462"><a class="header" href="#arguments-1462">Arguments</a></h4>
 <div class="table-wrapper">
@@ -52319,9 +52333,9 @@ let border = UiRect {
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="vertical"><a class="header" href="#vertical"><code>vertical</code></a></h1>
+<h1 id="percent"><a class="header" href="#percent"><code>percent</code></a></h1>
 <blockquote>
-<p>A rectangle with the length on its top and bottom sides only.</p>
+<p>A rectangle with percentages of the parent for its left, right, top and bottom sides.</p>
 </blockquote>
 <h4 id="arguments-1463"><a class="header" href="#arguments-1463">Arguments</a></h4>
 <div class="table-wrapper">
@@ -52330,7 +52344,10 @@ let border = UiRect {
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>value</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>left</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>right</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>top</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>bottom</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -52346,9 +52363,9 @@ let border = UiRect {
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="percent"><a class="header" href="#percent"><code>percent</code></a></h1>
+<h1 id="axes-1"><a class="header" href="#axes-1"><code>axes</code></a></h1>
 <blockquote>
-<p>A rectangle with percentages of the parent for its left, right, top and bottom sides.</p>
+<p>A rectangle with one length for the left and right sides and another for the top and bottom.</p>
 </blockquote>
 <h4 id="arguments-1464"><a class="header" href="#arguments-1464">Arguments</a></h4>
 <div class="table-wrapper">
@@ -52357,10 +52374,8 @@ let border = UiRect {
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>left</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>right</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>top</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>bottom</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>horizontal</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>vertical</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -52376,9 +52391,9 @@ let border = UiRect {
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="axes-1"><a class="header" href="#axes-1"><code>axes</code></a></h1>
+<h1 id="all"><a class="header" href="#all"><code>all</code></a></h1>
 <blockquote>
-<p>A rectangle with one length for the left and right sides and another for the top and bottom.</p>
+<p>A rectangle with the same length on all four sides.</p>
 </blockquote>
 <h4 id="arguments-1465"><a class="header" href="#arguments-1465">Arguments</a></h4>
 <div class="table-wrapper">
@@ -52387,8 +52402,7 @@ let border = UiRect {
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>horizontal</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>vertical</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>value</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -52404,9 +52418,9 @@ let border = UiRect {
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="all"><a class="header" href="#all"><code>all</code></a></h1>
+<h1 id="new-231"><a class="header" href="#new-231"><code>new</code></a></h1>
 <blockquote>
-<p>A rectangle with the same length on all four sides.</p>
+<p>A rectangle with a length for each of its left, right, top and bottom sides.</p>
 </blockquote>
 <h4 id="arguments-1466"><a class="header" href="#arguments-1466">Arguments</a></h4>
 <div class="table-wrapper">
@@ -52415,7 +52429,10 @@ let border = UiRect {
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>value</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>left</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>right</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>top</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>bottom</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -52489,12 +52506,12 @@ such as logical pixels, percentages, or automatically determined values.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#vh-2">vh</a></td><td>A length as a percentage of the viewport height.</td></tr>
-<tr><td><a href="#vw-2">vw</a></td><td>A length as a percentage of the viewport width.</td></tr>
+<tr><td><a href="#vmin-2">vmin</a></td><td>A length as a percentage of the viewport’s smaller dimension.</td></tr>
 <tr><td><a href="#px-3">px</a></td><td>A length in logical pixels, such as `Val.px(100)` for 100 pixels.  ```multi-lang-example,lua local Node = import_namespace(“ui”).Node local Val = import_namespace(“ui”).Val local node = Node.new({ width = Val.px(100) }) assert(node.width[1] == 100) ```  ```multi-lang-example,rune let Node = import_namespace(“ui”).Node; let Val = import_namespace(“ui”).Val; let node = Node.new(#{ width: Val.px(100.0) }); assert!(node.width[0]...</td></tr>
 <tr><td><a href="#auto-5">auto</a></td><td>A length that the layout works out from the node and its contents.</td></tr>
+<tr><td><a href="#vw-2">vw</a></td><td>A length as a percentage of the viewport width.</td></tr>
+<tr><td><a href="#vh-2">vh</a></td><td>A length as a percentage of the viewport height.</td></tr>
 <tr><td><a href="#vmax-2">vmax</a></td><td>A length as a percentage of the viewport’s larger dimension.</td></tr>
-<tr><td><a href="#vmin-2">vmin</a></td><td>A length as a percentage of the viewport’s smaller dimension.</td></tr>
 <tr><td><a href="#percent-2">percent</a></td><td>A length as a percentage of the parent’s size along the axis it applies to.</td></tr>
 <tr><td><a href="#new-232">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 <tr><td><a href="#autonew-4">Auto.new</a></td><td>No Documentation 🚧</td></tr>
@@ -52510,9 +52527,9 @@ such as logical pixels, percentages, or automatically determined values.</p>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="vh-2"><a class="header" href="#vh-2"><code>vh</code></a></h1>
+<h1 id="vmin-2"><a class="header" href="#vmin-2"><code>vmin</code></a></h1>
 <blockquote>
-<p>A length as a percentage of the viewport height.</p>
+<p>A length as a percentage of the viewport’s smaller dimension.</p>
 </blockquote>
 <h4 id="arguments-1467"><a class="header" href="#arguments-1467">Arguments</a></h4>
 <div class="table-wrapper">
@@ -52526,33 +52543,6 @@ such as logical pixels, percentages, or automatically determined values.</p>
 </table>
 </div>
 <h4 id="returns-1467"><a class="header" href="#returns-1467">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>return</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="vw-2"><a class="header" href="#vw-2"><code>vw</code></a></h1>
-<blockquote>
-<p>A length as a percentage of the viewport width.</p>
-</blockquote>
-<h4 id="arguments-1468"><a class="header" href="#arguments-1468">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>value</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-1468"><a class="header" href="#returns-1468">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -52578,7 +52568,7 @@ let node = Node.new(#{ width: Val.px(100.0) });
 assert!(node.width[0] == 100.0);
 </code></pre>
 </blockquote>
-<h4 id="arguments-1469"><a class="header" href="#arguments-1469">Arguments</a></h4>
+<h4 id="arguments-1468"><a class="header" href="#arguments-1468">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -52589,7 +52579,7 @@ assert!(node.width[0] == 100.0);
 </tbody>
 </table>
 </div>
-<h4 id="returns-1469"><a class="header" href="#returns-1469">Returns</a></h4>
+<h4 id="returns-1468"><a class="header" href="#returns-1468">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -52605,7 +52595,34 @@ assert!(node.width[0] == 100.0);
 <blockquote>
 <p>A length that the layout works out from the node and its contents.</p>
 </blockquote>
+<h4 id="arguments-1469"><a class="header" href="#arguments-1469">Arguments</a></h4>
+<h4 id="returns-1469"><a class="header" href="#returns-1469">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>return</strong></td><td><a href="#val">Val</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vw-2"><a class="header" href="#vw-2"><code>vw</code></a></h1>
+<blockquote>
+<p>A length as a percentage of the viewport width.</p>
+</blockquote>
 <h4 id="arguments-1470"><a class="header" href="#arguments-1470">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>value</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
 <h4 id="returns-1470"><a class="header" href="#returns-1470">Returns</a></h4>
 <div class="table-wrapper">
 <table>
@@ -52618,9 +52635,9 @@ assert!(node.width[0] == 100.0);
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="vmax-2"><a class="header" href="#vmax-2"><code>vmax</code></a></h1>
+<h1 id="vh-2"><a class="header" href="#vh-2"><code>vh</code></a></h1>
 <blockquote>
-<p>A length as a percentage of the viewport’s larger dimension.</p>
+<p>A length as a percentage of the viewport height.</p>
 </blockquote>
 <h4 id="arguments-1471"><a class="header" href="#arguments-1471">Arguments</a></h4>
 <div class="table-wrapper">
@@ -52645,9 +52662,9 @@ assert!(node.width[0] == 100.0);
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="vmin-2"><a class="header" href="#vmin-2"><code>vmin</code></a></h1>
+<h1 id="vmax-2"><a class="header" href="#vmax-2"><code>vmax</code></a></h1>
 <blockquote>
-<p>A length as a percentage of the viewport’s smaller dimension.</p>
+<p>A length as a percentage of the viewport’s larger dimension.</p>
 </blockquote>
 <h4 id="arguments-1472"><a class="header" href="#arguments-1472">Arguments</a></h4>
 <div class="table-wrapper">
@@ -53311,9 +53328,9 @@ handle size without a frame delay.</p>
 </thead>
 <tbody>
 <tr><td><a href="#size-2">size</a></td><td>The width and height of the node in physical pixels, as calculated by the last layout.</td></tr>
+<tr><td><a href="#is_empty-1">is_empty</a></td><td>Whether the node has no width or no height, so that nothing is drawn for it.</td></tr>
 <tr><td><a href="#inverse_scale_factor">inverse_scale_factor</a></td><td>The factor that turns physical pixels into logical pixels for this node.</td></tr>
 <tr><td><a href="#content_size">content_size</a></td><td>The width and height of the node’s content in physical pixels, as calculated by the last layout.</td></tr>
-<tr><td><a href="#is_empty-1">is_empty</a></td><td>Whether the node has no width or no height, so that nothing is drawn for it.</td></tr>
 <tr><td><a href="#new-235">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -53346,9 +53363,9 @@ handle size without a frame delay.</p>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="inverse_scale_factor"><a class="header" href="#inverse_scale_factor"><code>inverse_scale_factor</code></a></h1>
+<h1 id="is_empty-1"><a class="header" href="#is_empty-1"><code>is_empty</code></a></h1>
 <blockquote>
-<p>The factor that turns physical pixels into logical pixels for this node.</p>
+<p>Whether the node has no width or no height, so that nothing is drawn for it.</p>
 </blockquote>
 <h4 id="arguments-1493"><a class="header" href="#arguments-1493">Arguments</a></h4>
 <div class="table-wrapper">
@@ -53368,14 +53385,14 @@ handle size without a frame delay.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>return</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>return</strong></td><td><a href="#bool">Bool</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="content_size"><a class="header" href="#content_size"><code>content_size</code></a></h1>
+<h1 id="inverse_scale_factor"><a class="header" href="#inverse_scale_factor"><code>inverse_scale_factor</code></a></h1>
 <blockquote>
-<p>The width and height of the node’s content in physical pixels, as calculated by the last layout.</p>
+<p>The factor that turns physical pixels into logical pixels for this node.</p>
 </blockquote>
 <h4 id="arguments-1494"><a class="header" href="#arguments-1494">Arguments</a></h4>
 <div class="table-wrapper">
@@ -53395,14 +53412,14 @@ handle size without a frame delay.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>return</strong></td><td><a href="#vec2">Vec2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>return</strong></td><td><a href="#f32-1">F32</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="is_empty-1"><a class="header" href="#is_empty-1"><code>is_empty</code></a></h1>
+<h1 id="content_size"><a class="header" href="#content_size"><code>content_size</code></a></h1>
 <blockquote>
-<p>Whether the node has no width or no height, so that nothing is drawn for it.</p>
+<p>The width and height of the node’s content in physical pixels, as calculated by the last layout.</p>
 </blockquote>
 <h4 id="arguments-1495"><a class="header" href="#arguments-1495">Arguments</a></h4>
 <div class="table-wrapper">
@@ -53422,7 +53439,7 @@ handle size without a frame delay.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>return</strong></td><td><a href="#bool">Bool</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>return</strong></td><td><a href="#vec2">Vec2</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -53474,47 +53491,13 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#clip_x">clip_x</a></td><td>Content that overflows the node is clipped on the horizontal axis only.</td></tr>
-<tr><td><a href="#clip">clip</a></td><td>Content that overflows the node is clipped on both axes.</td></tr>
 <tr><td><a href="#scroll">scroll</a></td><td>Content that overflows the node can be scrolled on both axes.</td></tr>
 <tr><td><a href="#visible-1">visible</a></td><td>Content that overflows the node is shown.</td></tr>
-<tr><td><a href="#clip_y">clip_y</a></td><td>Content that overflows the node is clipped on the vertical axis only.</td></tr>
+<tr><td><a href="#clip_x">clip_x</a></td><td>Content that overflows the node is clipped on the horizontal axis only.</td></tr>
 <tr><td><a href="#hidden-1">hidden</a></td><td>Content that overflows the node is hidden on both axes, with the layout making room for it to be cut...</td></tr>
+<tr><td><a href="#clip">clip</a></td><td>Content that overflows the node is clipped on both axes.</td></tr>
+<tr><td><a href="#clip_y">clip_y</a></td><td>Content that overflows the node is clipped on the vertical axis only.</td></tr>
 <tr><td><a href="#new-236">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="clip_x"><a class="header" href="#clip_x"><code>clip_x</code></a></h1>
-<blockquote>
-<p>Content that overflows the node is clipped on the horizontal axis only.</p>
-</blockquote>
-<h4 id="arguments-1497"><a class="header" href="#arguments-1497">Arguments</a></h4>
-<h4 id="returns-1497"><a class="header" href="#returns-1497">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>return</strong></td><td><a href="#overflow">Overflow</a></td><td>No Documentation 🚧</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="clip"><a class="header" href="#clip"><code>clip</code></a></h1>
-<blockquote>
-<p>Content that overflows the node is clipped on both axes.</p>
-</blockquote>
-<h4 id="arguments-1498"><a class="header" href="#arguments-1498">Arguments</a></h4>
-<h4 id="returns-1498"><a class="header" href="#returns-1498">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>return</strong></td><td><a href="#overflow">Overflow</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -53523,8 +53506,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <blockquote>
 <p>Content that overflows the node can be scrolled on both axes.</p>
 </blockquote>
-<h4 id="arguments-1499"><a class="header" href="#arguments-1499">Arguments</a></h4>
-<h4 id="returns-1499"><a class="header" href="#returns-1499">Returns</a></h4>
+<h4 id="arguments-1497"><a class="header" href="#arguments-1497">Arguments</a></h4>
+<h4 id="returns-1497"><a class="header" href="#returns-1497">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -53540,8 +53523,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <blockquote>
 <p>Content that overflows the node is shown.</p>
 </blockquote>
-<h4 id="arguments-1500"><a class="header" href="#arguments-1500">Arguments</a></h4>
-<h4 id="returns-1500"><a class="header" href="#returns-1500">Returns</a></h4>
+<h4 id="arguments-1498"><a class="header" href="#arguments-1498">Arguments</a></h4>
+<h4 id="returns-1498"><a class="header" href="#returns-1498">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -53553,12 +53536,12 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="clip_y"><a class="header" href="#clip_y"><code>clip_y</code></a></h1>
+<h1 id="clip_x"><a class="header" href="#clip_x"><code>clip_x</code></a></h1>
 <blockquote>
-<p>Content that overflows the node is clipped on the vertical axis only.</p>
+<p>Content that overflows the node is clipped on the horizontal axis only.</p>
 </blockquote>
-<h4 id="arguments-1501"><a class="header" href="#arguments-1501">Arguments</a></h4>
-<h4 id="returns-1501"><a class="header" href="#returns-1501">Returns</a></h4>
+<h4 id="arguments-1499"><a class="header" href="#arguments-1499">Arguments</a></h4>
+<h4 id="returns-1499"><a class="header" href="#returns-1499">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -53573,6 +53556,40 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <h1 id="hidden-1"><a class="header" href="#hidden-1"><code>hidden</code></a></h1>
 <blockquote>
 <p>Content that overflows the node is hidden on both axes, with the layout making room for it to be cut off.</p>
+</blockquote>
+<h4 id="arguments-1500"><a class="header" href="#arguments-1500">Arguments</a></h4>
+<h4 id="returns-1500"><a class="header" href="#returns-1500">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>return</strong></td><td><a href="#overflow">Overflow</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="clip"><a class="header" href="#clip"><code>clip</code></a></h1>
+<blockquote>
+<p>Content that overflows the node is clipped on both axes.</p>
+</blockquote>
+<h4 id="arguments-1501"><a class="header" href="#arguments-1501">Arguments</a></h4>
+<h4 id="returns-1501"><a class="header" href="#returns-1501">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>return</strong></td><td><a href="#overflow">Overflow</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="clip_y"><a class="header" href="#clip_y"><code>clip_y</code></a></h1>
+<blockquote>
+<p>Content that overflows the node is clipped on the vertical axis only.</p>
 </blockquote>
 <h4 id="arguments-1502"><a class="header" href="#arguments-1502">Arguments</a></h4>
 <h4 id="returns-1502"><a class="header" href="#returns-1502">Returns</a></h4>
@@ -53640,15 +53657,15 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#with_color">with_color</a></td><td>A copy of the node that tints its image with `color`.</td></tr>
 <tr><td><a href="#new-237">new</a></td><td>A node that draws the given [`Image`](bevy_image::Image), untinted.</td></tr>
+<tr><td><a href="#with_color">with_color</a></td><td>A copy of the node that tints its image with `color`.</td></tr>
 </tbody>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="with_color"><a class="header" href="#with_color"><code>with_color</code></a></h1>
+<h1 id="new-237"><a class="header" href="#new-237"><code>new</code></a></h1>
 <blockquote>
-<p>A copy of the node that tints its image with <code>color</code>.</p>
+<p>A node that draws the given <a href="core_bindings/types/imagenode/bevy_image::Image"><code>Image</code></a>, untinted.</p>
 </blockquote>
 <h4 id="arguments-1504"><a class="header" href="#arguments-1504">Arguments</a></h4>
 <div class="table-wrapper">
@@ -53657,8 +53674,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>_self</strong></td><td><a href="#imagenode">ImageNode</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><strong>color</strong></td><td><a href="#color-1">Color</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>image</strong></td><td><a href="#handlea">Handle</a>&lt;<a href="#image-1">Image</a>&gt;</td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -53674,9 +53690,9 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="new-237"><a class="header" href="#new-237"><code>new</code></a></h1>
+<h1 id="with_color"><a class="header" href="#with_color"><code>with_color</code></a></h1>
 <blockquote>
-<p>A node that draws the given <a href="core_bindings/types/imagenode/bevy_image::Image"><code>Image</code></a>, untinted.</p>
+<p>A copy of the node that tints its image with <code>color</code>.</p>
 </blockquote>
 <h4 id="arguments-1505"><a class="header" href="#arguments-1505">Arguments</a></h4>
 <div class="table-wrapper">
@@ -53685,7 +53701,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>image</strong></td><td><a href="#handlea">Handle</a>&lt;<a href="#image-1">Image</a>&gt;</td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>_self</strong></td><td><a href="#imagenode">ImageNode</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><strong>color</strong></td><td><a href="#color-1">Color</a></td><td>No Documentation 🚧</td></tr>
 </tbody>
 </table>
 </div>
@@ -62123,10 +62140,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#write_message">write_message</a></td><td>Writes a buffered message. The message type must be registered and have `#[reflect(Message)]`.</td></tr>
 <tr><td><a href="#real_time">real_time</a></td><td>The clock of the real world, which always advances at the system’s pace.</td></tr>
 <tr><td><a href="#find_entity_by_name">find_entity_by_name</a></td><td>The first entity with the given [`Name`](bevy_ecs::name::Name), or nil if there is none.</td></tr>
-<tr><td><a href="#insert_component">insert_component</a></td><td>Inserts the given component value into the provided entity</td></tr>
 <tr><td><a href="#spawn_bundle">spawn_bundle</a></td><td>Spawns a new entity with the given bundle value and returns it.</td></tr>
 <tr><td><a href="#query-1">query</a></td><td>Creates a new `ScriptQueryBuilder` which can be used to query the ECS.  Returns: * `query`: The new query builder.</td></tr>
 <tr><td><a href="#virtual_time">virtual_time</a></td><td>The clock which can be paused and slowed down, it is the one games usually move objects with.</td></tr>
+<tr><td><a href="#insert_component">insert_component</a></td><td>Inserts the given component value into the provided entity</td></tr>
 <tr><td><a href="#load_state">load_state</a></td><td>The loading state of the asset: `“NotLoaded”`, `“Loading”`, `“Loaded”` or `“Failed”`.</td></tr>
 <tr><td><a href="#despawn_descendants">despawn_descendants</a></td><td>Despawn the descendants of the given entity.</td></tr>
 <tr><td><a href="#remove_component">remove_component</a></td><td>Removes the given component from the entity.</td></tr>
@@ -62141,8 +62158,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#insert_bundle">insert_bundle</a></td><td>Inserts the given bundle value into the provided entity, all of its components at once.  The bundle ...</td></tr>
 <tr><td><a href="#has_component">has_component</a></td><td>Checks if the given entity has the given component.</td></tr>
 <tr><td><a href="#has_asset">has_asset</a></td><td>Checks if can get asset handle</td></tr>
-<tr><td><a href="#add_default_component">add_default_component</a></td><td>Adds the given resource to the world.</td></tr>
 <tr><td><a href="#is_loaded">is_loaded</a></td><td>Whether the asset and all of its dependencies are loaded.</td></tr>
+<tr><td><a href="#add_default_component">add_default_component</a></td><td>Adds the given resource to the world.</td></tr>
 <tr><td><a href="#get_state">get_state</a></td><td>The current value of the state of the given type, or nil if the app has no such state.  The state ty...</td></tr>
 <tr><td><a href="#asset_path">asset_path</a></td><td>The path the asset was loaded from, or nil if the handle is invalid or the asset was not loaded from...</td></tr>
 <tr><td><a href="#get_parent">get_parent</a></td><td>Retrieves the parent of the given entity.</td></tr>
@@ -62628,40 +62645,11 @@ Removed component data is no longer available inside the callback. Errors of the
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="insert_component"><a class="header" href="#insert_component"><code>insert_component</code></a></h1>
-<blockquote>
-<p>Inserts the given component value into the provided entity</p>
-</blockquote>
-<h4 id="arguments-1756"><a class="header" href="#arguments-1756">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>entity</strong></td><td><a href="#entity-1">Entity</a></td><td>The entity to insert the component into.</td></tr>
-<tr><td><strong>registration</strong></td><td><a href="#scriptcomponentregistration">ScriptComponentRegistration</a></td><td>The component registration of the component to insert.</td></tr>
-<tr><td><strong>value</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The value of the component to insert. Can be constructed using <code>construct</code></td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="returns-1756"><a class="header" href="#returns-1756">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>result</strong></td><td>()</td><td>Nothing if the component was inserted successfully.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="spawn_bundle"><a class="header" href="#spawn_bundle"><code>spawn_bundle</code></a></h1>
 <blockquote>
 <p>Spawns a new entity with the given bundle value and returns it.</p>
 </blockquote>
-<h4 id="arguments-1757"><a class="header" href="#arguments-1757">Arguments</a></h4>
+<h4 id="arguments-1756"><a class="header" href="#arguments-1756">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -62673,7 +62661,7 @@ Removed component data is no longer available inside the callback. Errors of the
 </tbody>
 </table>
 </div>
-<h4 id="returns-1757"><a class="header" href="#returns-1757">Returns</a></h4>
+<h4 id="returns-1756"><a class="header" href="#returns-1756">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -62693,8 +62681,8 @@ Removed component data is no longer available inside the callback. Errors of the
 <li><code>query</code>: The new query builder.</li>
 </ul>
 </blockquote>
-<h4 id="arguments-1758"><a class="header" href="#arguments-1758">Arguments</a></h4>
-<h4 id="returns-1758"><a class="header" href="#returns-1758">Returns</a></h4>
+<h4 id="arguments-1757"><a class="header" href="#arguments-1757">Arguments</a></h4>
+<h4 id="returns-1757"><a class="header" href="#returns-1757">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -62710,8 +62698,8 @@ Removed component data is no longer available inside the callback. Errors of the
 <blockquote>
 <p>The clock which can be paused and slowed down, it is the one games usually move objects with.</p>
 </blockquote>
-<h4 id="arguments-1759"><a class="header" href="#arguments-1759">Arguments</a></h4>
-<h4 id="returns-1759"><a class="header" href="#returns-1759">Returns</a></h4>
+<h4 id="arguments-1758"><a class="header" href="#arguments-1758">Arguments</a></h4>
+<h4 id="returns-1758"><a class="header" href="#returns-1758">Returns</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -62719,6 +62707,35 @@ Removed component data is no longer available inside the callback. Errors of the
 </thead>
 <tbody>
 <tr><td><strong>return</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>No Documentation 🚧</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="insert_component"><a class="header" href="#insert_component"><code>insert_component</code></a></h1>
+<blockquote>
+<p>Inserts the given component value into the provided entity</p>
+</blockquote>
+<h4 id="arguments-1759"><a class="header" href="#arguments-1759">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>entity</strong></td><td><a href="#entity-1">Entity</a></td><td>The entity to insert the component into.</td></tr>
+<tr><td><strong>registration</strong></td><td><a href="#scriptcomponentregistration">ScriptComponentRegistration</a></td><td>The component registration of the component to insert.</td></tr>
+<tr><td><strong>value</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The value of the component to insert. Can be constructed using <code>construct</code></td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-1759"><a class="header" href="#returns-1759">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>result</strong></td><td>()</td><td>Nothing if the component was inserted successfully.</td></tr>
 </tbody>
 </table>
 </div>
@@ -63103,11 +63120,38 @@ If the type is none of these returns a <code>ScriptTypeRegistration</code>.</p>
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="is_loaded"><a class="header" href="#is_loaded"><code>is_loaded</code></a></h1>
+<blockquote>
+<p>Whether the asset and all of its dependencies are loaded.</p>
+</blockquote>
+<h4 id="arguments-1774"><a class="header" href="#arguments-1774">Arguments</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>handle</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The handle to the asset.</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="returns-1774"><a class="header" href="#returns-1774">Returns</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>loaded</strong></td><td><a href="#bool">Bool</a></td><td>Whether the asset and its dependencies are loaded.</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="add_default_component"><a class="header" href="#add_default_component"><code>add_default_component</code></a></h1>
 <blockquote>
 <p>Adds the given resource to the world.</p>
 </blockquote>
-<h4 id="arguments-1774"><a class="header" href="#arguments-1774">Arguments</a></h4>
+<h4 id="arguments-1775"><a class="header" href="#arguments-1775">Arguments</a></h4>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -63119,33 +63163,6 @@ If the type is none of these returns a <code>ScriptTypeRegistration</code>.</p>
 </tbody>
 </table>
 </div>
-<h4 id="returns-1774"><a class="header" href="#returns-1774">Returns</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>result</strong></td><td>()</td><td>Nothing if the resource was added successfully.</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="is_loaded"><a class="header" href="#is_loaded"><code>is_loaded</code></a></h1>
-<blockquote>
-<p>Whether the asset and all of its dependencies are loaded.</p>
-</blockquote>
-<h4 id="arguments-1775"><a class="header" href="#arguments-1775">Arguments</a></h4>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>handle</strong></td><td><a href="#reflectreference">ReflectReference</a></td><td>The handle to the asset.</td></tr>
-</tbody>
-</table>
-</div>
 <h4 id="returns-1775"><a class="header" href="#returns-1775">Returns</a></h4>
 <div class="table-wrapper">
 <table>
@@ -63153,7 +63170,7 @@ If the type is none of these returns a <code>ScriptTypeRegistration</code>.</p>
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>loaded</strong></td><td><a href="#bool">Bool</a></td><td>Whether the asset and its dependencies are loaded.</td></tr>
+<tr><td><strong>result</strong></td><td>()</td><td>Nothing if the resource was added successfully.</td></tr>
 </tbody>
 </table>
 </div>
