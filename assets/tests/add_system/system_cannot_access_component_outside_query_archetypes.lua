@@ -17,6 +17,8 @@ function on_test()
 
     outsider = world.spawn()
     world.add_default_component(outsider, ComponentA)
+    assert(world._archetype_of(matched) ~= world._archetype_of(outsider),
+        "the entities should live in different archetypes")
 
     world.add_system(
         post_update_schedule,
