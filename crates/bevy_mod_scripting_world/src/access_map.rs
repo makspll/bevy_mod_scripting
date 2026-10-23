@@ -7,7 +7,7 @@ use bevy_ecs::component::ComponentId;
 use bevy_platform::collections::HashMap;
 use parking_lot::Mutex;
 
-use crate::bit_set::BitSet;
+use bevy_ecs::schedule::FixedBitSet;
 
 /// Describes access ranges in and outside a bevy world
 #[derive(Clone)]
@@ -215,7 +215,7 @@ pub struct AccessByteSet {
     data: Vec<AccessBitField>,
     /// Accesses which can only be read, empty unless the set is a subset with read only accesses.
     /// Kept outside of the [`AccessBitField`]s so that only write claims pay for checking it.
-    read_only: BitSet,
+    read_only: FixedBitSet,
 }
 
 #[profiling::all_functions]
@@ -226,7 +226,7 @@ impl AccessByteSet {
         Self {
             data: Vec::new(),
             new_capacity_forbidden: false,
-            read_only: BitSet::default(),
+            read_only: FixedBitSet::new(),
         }
     }
 
@@ -252,7 +252,7 @@ impl AccessByteSet {
             new.data[i] = new.data[i].with_forbidden(false);
         }
         for &i in read_only {
-            new.read_only.insert(i);
+            new.read_only.grow_and_insert(i);
         }
 
         new
