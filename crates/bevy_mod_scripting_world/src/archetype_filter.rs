@@ -29,7 +29,7 @@
 
 use bevy_ecs::{archetype::ArchetypeId, component::ComponentId};
 
-use crate::bit_set::BitSet;
+use bevy_ecs::schedule::FixedBitSet;
 
 /// Restricts access to components to entities in a set of archetypes, per component.
 ///
@@ -48,8 +48,8 @@ pub struct ArchetypeFilter {
 #[derive(Clone, Debug)]
 struct RestrictedComponent {
     id: ComponentId,
-    read: BitSet,
-    write: BitSet,
+    read: FixedBitSet,
+    write: FixedBitSet,
 }
 
 impl ArchetypeFilter {
@@ -59,8 +59,8 @@ impl ArchetypeFilter {
             None => {
                 self.restricted.push(RestrictedComponent {
                     id: component_id,
-                    read: BitSet::default(),
-                    write: BitSet::default(),
+                    read: FixedBitSet::new(),
+                    write: FixedBitSet::new(),
                 });
                 self.restricted.len() - 1
             }
@@ -73,9 +73,9 @@ impl ArchetypeFilter {
     /// Once called for a component, the component is restricted to the archetypes allowed this way.
     pub fn allow(&mut self, component_id: ComponentId, archetype_id: ArchetypeId, write: bool) {
         let restricted = self.restricted_mut(component_id);
-        restricted.read.insert(archetype_id.index());
+        restricted.read.grow_and_insert(archetype_id.index());
         if write {
-            restricted.write.insert(archetype_id.index());
+            restricted.write.grow_and_insert(archetype_id.index());
         }
     }
 
