@@ -171,11 +171,13 @@ impl ScriptSystemBuilder {
                 let key = (self.attachment.clone(), self.name.clone());
                 let set = match inner.systems.get(&key) {
                     Some(old) => {
-                        warn!(
-                            "Script system `{}` of script {} already exists, replacing it",
-                            self.name, self.attachment
-                        );
-                        old.alive.store(false, Ordering::Relaxed);
+                        // a dead one is a tombstone of a removed system, see `remove_systems_of`
+                        if old.alive.swap(false, Ordering::Relaxed) {
+                            warn!(
+                                "Script system `{}` of script {} already exists, replacing it",
+                                self.name, self.attachment
+                            );
+                        }
                         // keep the set, so systems ordered relative to the old system stay ordered relative to the new one
                         changes.push(PendingScheduleChange::new(
                             old.schedule,
@@ -466,23 +468,41 @@ impl ScriptSystems {
     }
 
     /// Marks the systems of the attachment as removed, and removes them from their schedules.
+    ///
+    /// A removed system other systems are ordered against stays as a tombstone keeping its set, so a reload re-adding
+    /// it is ordered as before. Tombstones nothing is ordered against anymore are freed.
     pub fn remove_systems_of(&self, world: &mut World, attachment: &ScriptAttachment) {
         let changes = {
             let mut inner = self.0.lock();
+            let mut removed = HashSet::new();
+            for ((owner, _), entry) in inner.systems.iter_mut() {
+                if owner == attachment && entry.alive.swap(false, Ordering::Relaxed) {
+                    // a tombstone holds no other sets
+                    entry.orders_against.clear();
+                    removed.insert(entry.set);
+                }
+            }
+            let ordered_against = inner
+                .systems
+                .values()
+                .flat_map(|entry| entry.orders_against.iter().copied())
+                .collect::<HashSet<_>>();
             let mut changes = Vec::new();
-            inner.systems.retain(|(owner, _), entry| {
-                if owner != attachment {
+            inner.systems.retain(|_, entry| {
+                if entry.alive.load(Ordering::Relaxed) {
                     return true;
                 }
-                entry.alive.store(false, Ordering::Relaxed);
-                changes.push(PendingScheduleChange::new(
-                    entry.schedule,
-                    ScheduleChange::Remove {
-                        set: entry.set,
-                        free_slot: true,
-                    },
-                ));
-                false
+                let free_slot = !ordered_against.contains(&entry.set.intern());
+                if free_slot || removed.contains(&entry.set) {
+                    changes.push(PendingScheduleChange::new(
+                        entry.schedule,
+                        ScheduleChange::Remove {
+                            set: entry.set,
+                            free_slot,
+                        },
+                    ));
+                }
+                !free_slot
             });
             changes
         };
@@ -1146,9 +1166,16 @@ mod test {
     }
 
     fn add(app: &mut App, label: &str) -> ReflectSystem {
+        build(
+            app,
+            ScriptSystemBuilder::new(label.to_owned().into(), attachment()),
+        )
+    }
+
+    fn build(app: &mut App, builder: ScriptSystemBuilder) -> ReflectSystem {
         let world = app.world_mut();
         let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
-        ScriptSystemBuilder::new(label.to_owned().into(), attachment())
+        builder
             .build::<TestPlugin>(
                 WorldAccessGuard::new_exclusive(world, cache),
                 &ReflectSchedule::from_label(SystemsTestSchedule),
@@ -1204,6 +1231,22 @@ mod test {
 
         let second = add(&mut app, "other");
         assert_eq!(first.default_system_sets(), second.default_system_sets());
+
+        // a system of another script is ordered against keeps its set when its script reloads
+        let mut dependent = ScriptSystemBuilder::new(
+            "dependent".to_owned().into(),
+            ScriptAttachment::EntityScript(Entity::PLACEHOLDER, Handle::default()),
+        );
+        dependent.after_system(second.clone());
+        build(&mut app, dependent);
+        remove_script_systems(app.world_mut(), &attachment());
+        let reloaded = add(&mut app, "other");
+        assert_eq!(second.default_system_sets(), reloaded.default_system_sets());
+        let schedules = app.world().resource::<Schedules>();
+        let graph = bevy_system_reflection::schedule_to_reflect_graph(
+            schedules.get(SystemsTestSchedule).unwrap(),
+        );
+        assert!(graph.system_runs_before("other", "dependent").unwrap());
     }
 
     #[test]
