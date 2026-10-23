@@ -22,6 +22,7 @@ pub mod script_component;
 pub mod script_event;
 pub mod script_value;
 pub mod static_type;
+pub mod system_set;
 pub mod type_data;
 pub mod world_extensions;
 
@@ -46,5 +47,6 @@ pub use script_component::*;
 pub use script_event::*;
 pub use script_value::*;
 pub use static_type::*;
+pub use system_set::*;
 pub use type_data::*;
 pub use world_extensions::*;

@@ -24,6 +24,8 @@ impl Plugin for BevyTimeBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
+        use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+        app.register_script_system_set("time", "TimeSystems", bevy_time::TimeSystems);
         let world = app.world_mut();
         duration::register(world);
         time::register(world);

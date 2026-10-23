@@ -274,6 +274,24 @@ impl Plugin for BevyGizmosBindingsPlugin {
     fn build(&self, app: &mut App) {
         // the marker type has no fields, scripts only see it once registered
         app.register_type::<Gizmos>();
+        {
+            use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+            app.register_script_system_set(
+                "gizmos",
+                "GizmoMeshSystems",
+                bevy_gizmos::GizmoMeshSystems,
+            )
+            .register_script_system_set(
+                "gizmos",
+                "TransformGizmoSystems",
+                bevy_gizmos::transform_gizmo::TransformGizmoSystems,
+            )
+            .register_script_system_set(
+                "gizmos",
+                "FrustumGizmoSystems",
+                bevy_gizmos::frustum::FrustumGizmoSystems,
+            );
+        }
         register(app.world_mut());
     }
 }
