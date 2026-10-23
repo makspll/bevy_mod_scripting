@@ -7,6 +7,8 @@ use bevy_ecs::component::ComponentId;
 use bevy_platform::collections::HashMap;
 use parking_lot::Mutex;
 
+use crate::bit_set::BitSet;
+
 /// Describes access ranges in and outside a bevy world
 #[derive(Clone)]
 pub enum WorldAccessRange {
@@ -211,9 +213,9 @@ impl AccessBitField {
 pub struct AccessByteSet {
     new_capacity_forbidden: bool,
     data: Vec<AccessBitField>,
-    /// Bitset of accesses which can only be read, empty unless the set is a subset with read only accesses.
+    /// Accesses which can only be read, empty unless the set is a subset with read only accesses.
     /// Kept outside of the [`AccessBitField`]s so that only write claims pay for checking it.
-    read_only: Vec<u64>,
+    read_only: BitSet,
 }
 
 #[profiling::all_functions]
@@ -224,7 +226,7 @@ impl AccessByteSet {
         Self {
             data: Vec::new(),
             new_capacity_forbidden: false,
-            read_only: Vec::new(),
+            read_only: BitSet::default(),
         }
     }
 
@@ -234,22 +236,23 @@ impl AccessByteSet {
     }
 
     /// Generates a new access byte set allowing only the given accesses, the read only ones can't be written.
-    /// Accesses in both lists can be written.
+    ///
+    /// The lists must be disjoint, callers split their accesses by whether they are written.
+    /// Every other access is forbidden.
     pub fn from_allowed_lists(read_write: &[usize], read_only: &[usize]) -> Self {
+        debug_assert!(
+            read_only.iter().all(|i| !read_write.contains(i)),
+            "read only and read write accesses overlap"
+        );
         let max_index = read_write.iter().chain(read_only).max().unwrap_or(&0);
         let mut new = Self::new();
         new.new_capacity_forbidden = true;
         new.ensure_capacity(*max_index);
-        for i in read_only.iter().filter(|i| !read_write.contains(i)) {
-            new.data[*i] = new.data[*i].with_forbidden(false);
-            let (word, bit) = (i / 64, i % 64);
-            if word >= new.read_only.len() {
-                new.read_only.resize(word + 1, 0);
-            }
-            new.read_only[word] |= 1 << bit;
+        for &i in read_write.iter().chain(read_only) {
+            new.data[i] = new.data[i].with_forbidden(false);
         }
-        for i in read_write {
-            new.data[*i] = new.data[*i].with_forbidden(false)
+        for &i in read_only {
+            new.read_only.insert(i);
         }
 
         new
@@ -258,9 +261,7 @@ impl AccessByteSet {
     #[inline]
     /// Returns true if the access can only be read
     pub fn is_read_only(&self, index: usize) -> bool {
-        self.read_only
-            .get(index / 64)
-            .is_some_and(|word| word & (1 << (index % 64)) != 0)
+        self.read_only.contains(index)
     }
 
     fn ensure_capacity(&mut self, index: usize) {

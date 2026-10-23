@@ -509,7 +509,8 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         query: crate::ScriptQueryBuilder,
     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
         self.with_world_mut(|world| {
-            let mut built_query = query.as_query_state::<Entity>(world, false);
+            let mut built_query =
+                query.as_query_state::<Entity>(world, crate::QueryAccess::MatchOnly);
             // outside of systems, changes are relative to the last update, like `World::query`
             let (last_run, this_run) = (world.last_change_tick(), world.read_change_tick());
             let world = world.as_unsafe_world_cell_readonly();
