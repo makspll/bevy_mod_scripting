@@ -28,7 +28,7 @@ use crate::{
     pipeline::hooks::{
         clear_machine_data, on_script_unloaded_for_reload_pipeline_handler,
         on_script_unloaded_for_unload_pipeline_handler, process_machine_failure,
-        queue_on_script_loaded, queue_on_script_reloaded, remove_script_systems_when_unloaded,
+        queue_on_script_loaded, queue_on_script_reloaded,
     },
     script::ScriptContexts,
 };
@@ -240,19 +240,22 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
             );
         }
 
-        // these are the only triggers on their events
-        if self.on_script_unloaded_callback {
-            app.add_observer(on_script_unloaded_for_unload_pipeline_handler::<P>);
-            app.add_observer(on_script_unloaded_for_reload_pipeline_handler::<P>);
-        }
-
+        // these are the only triggers on their events, so the unload callback runs before the script's
+        // registrations and systems are removed
+        let unloaded = self.on_script_unloaded_callback;
         app.add_observer(
-            (|trigger: On<UnloadingInitialized<P>>| trigger.attachment.clone())
-                .pipe(remove_script_systems_when_unloaded),
+            move |trigger: On<UnloadingInitialized<P>>, commands: Commands, world_id: WorldId| {
+                on_script_unloaded_for_unload_pipeline_handler(
+                    trigger, commands, world_id, unloaded,
+                )
+            },
         );
         app.add_observer(
-            (|trigger: On<ReloadingInitialized<P>>| trigger.attachment.clone())
-                .pipe(remove_script_systems_when_unloaded),
+            move |trigger: On<ReloadingInitialized<P>>, commands: Commands, world_id: WorldId| {
+                on_script_unloaded_for_reload_pipeline_handler(
+                    trigger, commands, world_id, unloaded,
+                )
+            },
         );
 
         // clear hanging machine data

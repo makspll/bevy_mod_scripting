@@ -57,88 +57,89 @@ pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>
     trigger: On<UnloadingInitialized<P>>,
     mut commands: Commands,
     world_id: WorldId,
+    run_callback: bool,
 ) {
     let event = trigger.event();
-    let emit_responses = P::readonly_configuration(world_id).emit_responses;
-    // let guard = WorldGuard::new_exclusive(world);
-    bevy_log::debug!(
-        "Running on_script_unloaded hook for script: {}, due to unload",
-        event.attachment
-    );
-    commands.queue(
-        RunScriptCallback::<P>::new(
-            event.attachment.clone(),
-            OnScriptUnloaded::into_callback_label(),
-            vec![],
-            emit_responses,
-        )
-        .with_context_override(trigger.existing_context.clone())
-        .with_post_callback_handler(|world, attachment, response| {
-            if let Ok(v) = response.as_ref() {
-                bevy_log::debug!(
-                    "on_script_unloaded hook for script: {} setting reload_state: {:?}",
-                    attachment,
-                    v
-                );
-                let mut data = world.get_resource_or_init::<ActiveMachinesData>();
-                let data = data.0.entry(attachment).or_default();
+    if run_callback {
+        let emit_responses = P::readonly_configuration(world_id).emit_responses;
+        // let guard = WorldGuard::new_exclusive(world);
+        bevy_log::debug!(
+            "Running on_script_unloaded hook for script: {}, due to unload",
+            event.attachment
+        );
+        commands.queue(
+            RunScriptCallback::<P>::new(
+                event.attachment.clone(),
+                OnScriptUnloaded::into_callback_label(),
+                vec![],
+                emit_responses,
+            )
+            .with_context_override(trigger.existing_context.clone())
+            .with_post_callback_handler(|world, attachment, response| {
+                if let Ok(v) = response.as_ref() {
+                    bevy_log::debug!(
+                        "on_script_unloaded hook for script: {} setting reload_state: {:?}",
+                        attachment,
+                        v
+                    );
+                    let mut data = world.get_resource_or_init::<ActiveMachinesData>();
+                    let data = data.0.entry(attachment).or_default();
 
-                data.reload_state = v.clone();
-            }
-        }),
-    );
+                    data.reload_state = v.clone();
+                }
+            }),
+        );
+    }
     remove_registrations_when_unloaded(&mut commands, event.attachment.clone());
 }
 
-/// Once the unload callback ran, removes what the script registered which only makes sense while it runs, i.e. its exports and observers.
+/// Removes the registrations and script systems of a script which is unloaded, or reloaded (it adds them again once loaded).
+///
+/// Runs whether or not the unload callback is enabled, after the callback.
 fn remove_registrations_when_unloaded(commands: &mut Commands, attachment: ScriptAttachment) {
-    commands.queue(move |world: &mut World| remove_script_registrations(world, &attachment));
+    commands.queue(move |world: &mut World| {
+        remove_script_registrations(world, &attachment);
+        remove_script_systems(world, &attachment);
+    });
 }
 
-/// Removes the script systems of a script which is unloaded, or reloaded (it adds them again once loaded).
-///
-/// Runs whether or not the unload callback is enabled, systems of unloaded scripts must not stay in the schedules.
-pub(crate) fn remove_script_systems_when_unloaded(
-    attachment: In<ScriptAttachment>,
-    mut commands: Commands,
-) {
-    commands.queue(move |world: &mut World| remove_script_systems(world, &attachment.0));
-}
-// todo unify the two, they just need a context extractor trait
 pub fn on_script_unloaded_for_reload_pipeline_handler<P: IntoScriptPluginParams>(
     trigger: On<ReloadingInitialized<P>>,
     mut commands: Commands,
     world_id: WorldId,
+    run_callback: bool,
 ) {
     let event = trigger.event();
-    let emit_responses = P::readonly_configuration(world_id).emit_responses;
-    bevy_log::debug!(
-        "Running on_script_unloaded hook for script: {}, due to reload",
-        event.attachment
-    );
-    commands.queue(
-        RunScriptCallback::<P>::new(
-            event.attachment.clone(),
-            OnScriptUnloaded::into_callback_label(),
-            vec![],
-            emit_responses,
-        )
-        .with_context_override(trigger.existing_context.clone())
-        .with_post_callback_handler(|world, attachment, response| {
-            if let Ok(v) = response.as_ref() {
-                bevy_log::debug!(
-                    "on_script_unloaded hook for script: {} setting reload_state: {:?}",
-                    attachment,
-                    v
-                );
-                let mut datas = world.get_resource_or_init::<ActiveMachinesData>();
-                let data = datas.0.entry(attachment).or_default();
+    if run_callback {
+        let emit_responses = P::readonly_configuration(world_id).emit_responses;
+        bevy_log::debug!(
+            "Running on_script_unloaded hook for script: {}, due to reload",
+            event.attachment
+        );
+        commands.queue(
+            RunScriptCallback::<P>::new(
+                event.attachment.clone(),
+                OnScriptUnloaded::into_callback_label(),
+                vec![],
+                emit_responses,
+            )
+            .with_context_override(trigger.existing_context.clone())
+            .with_post_callback_handler(|world, attachment, response| {
+                if let Ok(v) = response.as_ref() {
+                    bevy_log::debug!(
+                        "on_script_unloaded hook for script: {} setting reload_state: {:?}",
+                        attachment,
+                        v
+                    );
+                    let mut datas = world.get_resource_or_init::<ActiveMachinesData>();
+                    let data = datas.0.entry(attachment).or_default();
 
-                data.reload_state = v.clone();
-                bevy_log::debug!("Datas: {}", datas.0.len());
-            }
-        }),
-    );
+                    data.reload_state = v.clone();
+                    bevy_log::debug!("Datas: {}", datas.0.len());
+                }
+            }),
+        );
+    }
     remove_registrations_when_unloaded(&mut commands, event.attachment.clone());
 }
 
