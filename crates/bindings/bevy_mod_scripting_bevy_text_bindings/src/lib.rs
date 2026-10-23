@@ -26,6 +26,17 @@ impl Plugin for BevyTextBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
+        use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+        app.register_script_system_set(
+            "text",
+            "Text2dUpdateSystems",
+            bevy_text::Text2dUpdateSystems,
+        )
+        .register_script_system_set(
+            "text",
+            "EditableTextSystems",
+            bevy_text::EditableTextSystems,
+        );
         let world = app.world_mut();
         text::register(world);
         text2d::register(world);

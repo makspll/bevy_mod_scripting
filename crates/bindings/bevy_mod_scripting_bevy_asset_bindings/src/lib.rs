@@ -38,6 +38,17 @@ impl Plugin for BevyAssetBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
+        use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+        app.register_script_system_set(
+            "asset",
+            "AssetTrackingSystems",
+            bevy_asset::AssetTrackingSystems,
+        )
+        .register_script_system_set(
+            "asset",
+            "AssetEventSystems",
+            bevy_asset::AssetEventSystems,
+        );
         let world = app.world_mut();
         register_world_asset_functions(world);
         register_asset_type_functions(world);

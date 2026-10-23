@@ -34,6 +34,22 @@ impl Plugin for BevyUiBindingsPlugin {
             .register_type::<bevy_ui::Outline>()
             .register_type::<bevy_ui::ZIndex>()
             .register_type::<bevy_ui::GlobalZIndex>();
+        {
+            use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+            use bevy_ui::UiSystems;
+            app.register_script_system_set("ui.UiSystems", "Focus", UiSystems::Focus)
+                .register_script_system_set("ui.UiSystems", "Prepare", UiSystems::Prepare)
+                .register_script_system_set("ui.UiSystems", "Propagate", UiSystems::Propagate)
+                .register_script_system_set("ui.UiSystems", "Content", UiSystems::Content)
+                .register_script_system_set("ui.UiSystems", "Layout", UiSystems::Layout)
+                .register_script_system_set("ui.UiSystems", "PostLayout", UiSystems::PostLayout)
+                .register_script_system_set("ui.UiSystems", "Stack", UiSystems::Stack)
+                .register_script_system_set(
+                    "ui",
+                    "AccessibilityUiSystems",
+                    bevy_ui::AccessibilityUiSystems,
+                );
+        }
         let world = app.world_mut();
         val::register(world);
         ui_rect::register(world);

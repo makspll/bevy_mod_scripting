@@ -110,9 +110,9 @@ pub struct ScriptSystemBuilder {
     after: Vec<ReflectSystem>,
     before_script_systems: Vec<(CallbackLabel, ScriptAttachment)>,
     after_script_systems: Vec<(CallbackLabel, ScriptAttachment)>,
-    before_sets: Vec<String>,
-    after_sets: Vec<String>,
-    in_sets: Vec<String>,
+    before_sets: Vec<InternedSystemSet>,
+    after_sets: Vec<InternedSystemSet>,
+    in_sets: Vec<InternedSystemSet>,
     run_conditions: Vec<ScriptRunCondition>,
     system_params: Vec<ScriptSystemParamDescriptor>,
     is_exclusive: bool,
@@ -158,21 +158,21 @@ impl ScriptSystemBuilder {
         self
     }
 
-    /// Runs the system before the given set, see [`ScriptSystemSetRegistry`] for how names are resolved
-    pub fn before_set(&mut self, name: impl Into<String>) -> &mut Self {
-        self.before_sets.push(name.into());
+    /// Runs the system before the given set
+    pub fn before_set(&mut self, set: impl SystemSet) -> &mut Self {
+        self.before_sets.push(set.intern());
         self
     }
 
-    /// Runs the system after the given set, see [`ScriptSystemSetRegistry`] for how names are resolved
-    pub fn after_set(&mut self, name: impl Into<String>) -> &mut Self {
-        self.after_sets.push(name.into());
+    /// Runs the system after the given set
+    pub fn after_set(&mut self, set: impl SystemSet) -> &mut Self {
+        self.after_sets.push(set.intern());
         self
     }
 
-    /// Puts the system in the given set, see [`ScriptSystemSetRegistry`] for how names are resolved
-    pub fn in_set(&mut self, name: impl Into<String>) -> &mut Self {
-        self.in_sets.push(name.into());
+    /// Puts the system in the given set
+    pub fn in_set(&mut self, set: impl SystemSet) -> &mut Self {
+        self.in_sets.push(set.intern());
         self
     }
 
@@ -241,26 +241,20 @@ impl ScriptSystemBuilder {
             let alive = Arc::new(AtomicBool::new(true));
             let mut changes = Vec::with_capacity(2);
 
-            let named_set = |name: &String| {
-                world
-                    .get_resource::<ScriptSystemSetRegistry>()
-                    .and_then(|registry| registry.get(name))
-                    .unwrap_or_else(|| ScriptNamedSet(name.clone()).intern())
-            };
             let mut ordering = ScriptSystemOrdering {
                 before: self
                     .before
                     .iter()
                     .flat_map(|system| system.default_system_sets().iter().copied())
-                    .chain(self.before_sets.iter().map(named_set))
+                    .chain(self.before_sets.iter().copied())
                     .collect(),
                 after: self
                     .after
                     .iter()
                     .flat_map(|system| system.default_system_sets().iter().copied())
-                    .chain(self.after_sets.iter().map(named_set))
+                    .chain(self.after_sets.iter().copied())
                     .collect(),
-                in_sets: self.in_sets.iter().map(named_set).collect(),
+                in_sets: self.in_sets.clone(),
             };
 
             let set = {
@@ -565,55 +559,9 @@ impl System for ScriptConditionSystem {
 // Safety: conditions only read the world
 unsafe impl ReadOnlySystem for ScriptConditionSystem {}
 
-/// A system set scripts create by naming it, i.e. `builder:in_set("ai")`, see [`ScriptSystemSetRegistry`].
-///
-/// Interned once per distinct name.
-#[derive(SystemSet, Clone, Hash, PartialEq, Eq, Debug)]
-pub struct ScriptNamedSet(pub String);
-
-/// The Rust system sets scripts can order their systems against or put them in, by name.
-///
-/// Names used by scripts resolve to the set registered with that name, otherwise to a [`ScriptNamedSet`],
-/// which scripts share to group and order their systems.
-#[derive(Resource, Default)]
-pub struct ScriptSystemSetRegistry {
-    sets: HashMap<String, InternedSystemSet>,
-}
-
-impl ScriptSystemSetRegistry {
-    /// Registers the set with the given name, replacing a set registered with the same name
-    pub fn register(&mut self, name: impl Into<String>, set: impl SystemSet) {
-        self.sets.insert(name.into(), set.intern());
-    }
-
-    /// Returns the set registered with the given name
-    pub fn get(&self, name: &str) -> Option<InternedSystemSet> {
-        self.sets.get(name).copied()
-    }
-}
-
-/// Registers Rust system sets for scripts, see [`ScriptSystemSetRegistry`].
-pub trait ScriptSystemSetAppExt {
-    /// Lets scripts order their systems against the set, and put them in it, by the given name
-    fn register_script_system_set(
-        &mut self,
-        name: impl Into<String>,
-        set: impl SystemSet,
-    ) -> &mut Self;
-}
-
-impl ScriptSystemSetAppExt for bevy_app::App {
-    fn register_script_system_set(
-        &mut self,
-        name: impl Into<String>,
-        set: impl SystemSet,
-    ) -> &mut Self {
-        self.world_mut()
-            .get_resource_or_init::<ScriptSystemSetRegistry>()
-            .register(name, set);
-        self
-    }
-}
+pub use bevy_mod_scripting_bindings::{
+    ScriptNamedSet, ScriptSystemSetAppExt, ScriptSystemSetRegistry,
+};
 
 /// Keeps track of the systems added by scripts.
 ///
@@ -1791,13 +1739,12 @@ mod test {
     #[test]
     fn script_systems_order_against_registered_sets() {
         let mut app = systems_test_app();
-        app.register_script_system_set("rust_test_set", RustTestSet);
         app.add_systems(SystemsTestSchedule, rust_system_in_set.in_set(RustTestSet));
 
         let world = app.world_mut();
         let cache = WorldAccessGuard::setup_cache(world, CurrentScriptAttachment::empty());
         let mut builder = ScriptSystemBuilder::new("test".to_owned().into(), attachment());
-        builder.after_set("rust_test_set");
+        builder.after_set(RustTestSet);
         builder
             .build::<TestPlugin>(
                 WorldAccessGuard::new_exclusive(world, cache),

@@ -1,4 +1,4 @@
--- script systems order against other script systems by label, and against named sets
+-- script systems order against other script systems by label, and against script and Rust sets
 local ScriptAttachment = import_namespace("bms").ScriptAttachment
 local bms = import_namespace("bms")
 local world = bms.world
@@ -8,15 +8,28 @@ function on_test()
     local post_update_schedule = world.get_schedule_by_name("PostUpdate")
     local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
 
+    local group = world.register_new_system_set("script.test", "group")
+    -- registering again returns the same set, other namespaces are not for scripts
+    assert(world.register_new_system_set("script.test", "group", true):name() == group:name())
+    assert(not pcall(world.register_new_system_set, "script.test", "group"))
+    assert(not pcall(world.register_new_system_set, "transform", "group"))
+
+    -- Rust sets are members of their namespace, and found by their full name, which never finds script sets
+    local propagate = import_namespace("transform.TransformSystems").Propagate
+    assert(propagate:name() == "Propagate", propagate:name())
+    assert(world.get_system_set_by_name("transform.TransformSystems.Propagate"):name() == "Propagate")
+    assert(world.get_system_set_by_name("script.test.missing") == nil)
+
     world.add_system(
         post_update_schedule,
         bms.system_builder("custom_system_first", script_attachment)
-        :in_set("group")
+        :in_set(group)
     )
     world.add_system(
         post_update_schedule,
         bms.system_builder("custom_system_last", script_attachment)
-        :after_set("group")
+        :after_set(group)
+        :after_set(propagate)
     )
     world.add_system(
         post_update_schedule,

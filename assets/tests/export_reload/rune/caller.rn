@@ -13,16 +13,22 @@ pub fn on_test() {
     let old_handle = import_namespace("script.reload").double;
     state()["old_handle"] = old_handle;
     assert!(old_handle.call(21) == 42);
+    // the set is a member of its namespace, and found by its full name
+    let world = import_namespace("bms").world;
+    let name = import_namespace("script.reload").group.name();
+    assert!(name == "ScriptNamedSet(\"script.reload.group\")", "got: {}", name);
+    assert!(world.get_system_set_by_name("script.reload.group") != ());
     "called"
 }
 
 pub fn on_test_post_update() {
-    // the exporter was reloaded, its export is gone: the old handle says so, and so does the namespace
+    // the exporter was reloaded, its export and set are gone: the old handle says so, and so does the namespace
     let old_handle = state()["old_handle"];
     let err = error_of(|| old_handle.call(1));
     assert!(err.contains("does not exist (anymore)"), "{}", err);
     let err2 = error_of(|| import_namespace("script.reload"));
     assert!(err2.contains("does not exist"), "{}", err2);
+    assert!(import_namespace("bms").world.get_system_set_by_name("script.reload.group") == ());
     "gone"
 }
 
@@ -30,5 +36,6 @@ pub fn on_test_last() {
     // the exporter ran again, so a fresh import works, and the old handle does too since it looks up by path
     assert!(import_namespace("script.reload").double(4) == 8);
     assert!(state()["old_handle"].call(5) == 10);
+    assert!(import_namespace("bms").world.get_system_set_by_name("script.reload.group") != ());
     "called again"
 }
