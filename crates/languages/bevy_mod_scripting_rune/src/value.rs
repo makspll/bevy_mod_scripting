@@ -14,7 +14,9 @@ use rune::{
 
 use crate::{
     error::{IntoInteropError, RuneError, describe_vm_error},
-    types::{RuneFunction, RuneNamespace, RuneRef, RuneType, ScriptFunction},
+    types::{
+        RuneFunction, RuneNamespace, RuneRef, RuneType, RuneValue, RuneValueState, ScriptFunction,
+    },
 };
 
 /// The context for calling a function from Rune
@@ -65,6 +67,7 @@ pub fn to_rune(value: ScriptValue) -> Result<Value, InteropError> {
         }
         ScriptValue::Reference(reference) => new_value(RuneRef(reference))?,
         ScriptValue::Type(type_id) => new_value(RuneType(type_id))?,
+        ScriptValue::Value(value) => new_value(RuneValue(RuneValueState::Inline(value)))?,
         ScriptValue::Function(function) => function_to_rune(function, None)?,
         ScriptValue::FunctionMut(function) => {
             new_value(RuneFunction(ScriptFunction::Mut(function)))?
@@ -161,6 +164,12 @@ pub fn from_rune(value: &Value) -> Result<ScriptValue, InteropError> {
             .borrow_ref::<RuneType>()
             .map_err(IntoInteropError::to_bms_error)?;
         return Ok(ScriptValue::Type(type_ref.0));
+    }
+    if hash == <RuneValue as TypeHash>::HASH {
+        let inline = value
+            .borrow_ref::<RuneValue>()
+            .map_err(IntoInteropError::to_bms_error)?;
+        return Ok(inline.to_script_value());
     }
     if hash == <RuneFunction as TypeHash>::HASH {
         let function = value

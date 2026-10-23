@@ -7,7 +7,7 @@ pub fn main() {
 
     let found_entities = [];
     for result in world.query().component(NewComponent).build() {
-        found_entities.push(result.entity());
+        found_entities.push(result[0]);
     }
 
     assert!(found_entities.len() == 1, "Expected 1 entities, got {}", found_entities.len());

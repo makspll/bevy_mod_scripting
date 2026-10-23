@@ -411,6 +411,9 @@ impl World {
                 Some(ScriptValue::Reference(value)) => {
                     world.trigger_event(registration.into_inner(), &value)
                 }
+                Some(ScriptValue::Value(value)) => {
+                    world.trigger_event(registration.into_inner(), &value.into_reference())
+                }
                 _ => Err(InteropError::string(format!(
                     "triggering the event `{}` needs an event value, i.e. built with `construct`",
                     registration.short_name()
@@ -813,8 +816,11 @@ impl ReflectReference {
     ) -> Result<bool, InteropError> {
         profiling::function_scope!("eq");
         let world = ctxt.world()?;
-        let ScriptValue::Reference(other) = other else {
-            return Ok(false);
+        let other = match other {
+            ScriptValue::Reference(other) => other,
+            // only read, a copy will do
+            ScriptValue::Value(other) => other.into_reference(),
+            _ => return Ok(false),
         };
         if let Ok(variant) = other.downcast::<EnumVariantRef>(world.clone()) {
             return value_is_variant(&world, &reference, variant);
@@ -1215,8 +1221,11 @@ impl EnumVariantRef {
     ) -> Result<bool, InteropError> {
         profiling::function_scope!("eq");
         let world = ctxt.world()?;
-        let ScriptValue::Reference(other) = other else {
-            return Ok(false);
+        let other = match other {
+            ScriptValue::Reference(other) => other,
+            // only read, a copy will do
+            ScriptValue::Value(other) => other.into_reference(),
+            _ => return Ok(false),
         };
         if let Ok(other_variant) = other.downcast::<EnumVariantRef>(world.clone()) {
             return Ok(other_variant == *variant);
@@ -1578,6 +1587,9 @@ impl ScriptQueryBuilder {
 
     /// Builds the query and retrieves the entities and component references.
     ///
+    /// Each result is a list of the entity followed by the components in the order they were added to the query,
+    /// i.e. `local entity, a, b = result[1], result[2], result[3]` in Lua, absent optional components are nil.
+    ///
     /// Arguments:
     /// * `ctxt`: The function call context.
     /// * `query`: The query to build.
@@ -1586,46 +1598,11 @@ impl ScriptQueryBuilder {
     fn build(
         ctxt: FunctionCallContext,
         query: V<ScriptQueryBuilder>,
-    ) -> Result<Vec<V<ScriptQueryResult>>, InteropError> {
+    ) -> Result<Vec<ScriptQueryResult>, InteropError> {
         profiling::function_scope!("build");
         let world = ctxt.world()?;
         let builder = query.into_inner();
-        let result = world.query(builder)?;
-        let result = result.into_iter().map(V).collect::<Vec<_>>();
-        Ok(result)
-    }
-}
-
-#[script_bindings(
-    remote,
-    bms_bindings_path = "bevy_mod_scripting_bindings",
-    name = "script_query_result_functions",
-    core,
-    namespace = "bms"
-)]
-impl ScriptQueryResult {
-    /// Retrieves the entity from the query result.
-    ///
-    /// Arguments:
-    /// * `query`: The query result to retrieve the entity from.
-    /// Returns:
-    /// * `entity`: The entity from the query result.
-    fn entity(query: R<ScriptQueryResult>) -> V<Entity> {
-        profiling::function_scope!("entity");
-        V::new(query.entity)
-    }
-
-    /// Retrieves the components from the query result.
-    ///
-    /// These are ordered by the order they were added to the query, absent optional components are nil.
-    ///
-    /// Arguments:
-    /// * `query`: The query result to retrieve the components from.
-    /// Returns:
-    /// * `components`: The components from the query result.
-    fn components(query: R<ScriptQueryResult>) -> Vec<Option<ReflectReference>> {
-        profiling::function_scope!("components");
-        query.components.to_vec()
+        Ok(world.query(builder)?.into())
     }
 }
 
@@ -2461,7 +2438,6 @@ pub fn register_core_functions(app: &mut App) {
         register_script_event_registration_functions(world);
 
         register_script_query_builder_functions(world);
-        register_script_query_result_functions(world);
 
         register_reflect_schedule_functions(world);
         register_reflect_system_functions(world);

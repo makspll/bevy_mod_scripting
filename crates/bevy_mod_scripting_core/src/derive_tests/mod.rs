@@ -96,10 +96,9 @@ mod tests {
                     FunctionCallContext::new(bevy_mod_scripting_asset::Language::Lua),
                 )
                 .unwrap();
+            // small values are returned inline
             let out: MyThing = match out {
-                bevy_mod_scripting_bindings::ScriptValue::Reference(reflect_reference) => {
-                    reflect_reference.downcast(world.clone()).unwrap()
-                }
+                bevy_mod_scripting_bindings::ScriptValue::Value(value) => value.downcast().unwrap(),
                 _ => panic!("invalid return"),
             };
             assert_eq!(out.0, 42)

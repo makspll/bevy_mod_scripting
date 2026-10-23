@@ -9,7 +9,7 @@ math.randomseed(os.time())
 function fetch_life_state()
     -- find the first entity with life state
     local i, v = next(world.query():component(LifeState):build())
-    return v:components()[1]
+    return v[2]
 end
 
 function on_script_loaded()

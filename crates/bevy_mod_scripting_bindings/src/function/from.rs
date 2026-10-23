@@ -3,7 +3,7 @@
 use super::bound::BoundFields;
 use super::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
 use crate::{
-    EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
+    EnumVariantRef, InlineValue, ReflectReference, ScriptValue, construct::construct_reference,
     error::InteropError, script_value::VariadicTuple,
 };
 use bevy_mod_scripting_world::WorldGuard;
@@ -173,6 +173,8 @@ impl FromScript for ReflectReference {
     fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Reference(r) => Ok(r),
+            // an allocated copy, languages promote values before functions which might mutate them get them
+            ScriptValue::Value(v) => Ok(v.into_reference()),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<ReflectReference>(),
                 value,
@@ -276,6 +278,7 @@ impl<T: FromReflect> FromScript for V<T> {
                     },
                 }
             }
+            ScriptValue::Value(value) => inline_value_into::<T>(&value).map(V),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<T>(),
                 value,
@@ -284,20 +287,47 @@ impl<T: FromReflect> FromScript for V<T> {
     }
 }
 
+/// Copies an inline value into a `T`, directly if it is one, otherwise through reflection.
+fn inline_value_into<T: FromReflect>(value: &InlineValue) -> Result<T, InteropError> {
+    match value.downcast::<T>() {
+        Some(value) => Ok(value),
+        None => T::from_reflect(value.as_partial_reflect()).ok_or_else(|| {
+            InteropError::failed_from_reflect(
+                Some(TypeId::of::<T>()),
+                format!(
+                    "Expected '{}' but received a '{}'",
+                    std::any::type_name::<T>(),
+                    value.type_name()
+                ),
+            )
+        }),
+    }
+}
+
 /// A wrapper around a reference to a value of type `T`.
 ///
 /// This can be used to retrieve a reference out of a [`ScriptValue::Reference`] corresponding to the type `T`.
 /// Before downcasting the reference, it will claim write access to the object to ensure that the reference is valid.
 ///
+/// An inline [`ScriptValue::Value`] is copied instead, it has no place to borrow from.
+///
 /// However, the access is NOT released when the `Mut` is dropped. This is not unsafe but can lead to deadlocks if not released later.
 /// The script function calling mechanism will take care of releasing all accesses claimed during the function call.
-pub struct R<'w, T>(pub &'w T);
+pub struct R<'w, T>(RInner<'w, T>);
+
+enum RInner<'w, T> {
+    Borrowed(&'w T),
+    Owned(T),
+}
 
 impl<T> Deref for R<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.0
+        match &self.0 {
+            RInner::Borrowed(value) => value,
+            RInner::Owned(value) => value,
+        }
     }
 }
 
@@ -317,7 +347,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
                     let ref_ =
                         unsafe { reflect_reference.reflect_unsafe_non_empty(world.clone()) }?;
                     match ref_.try_downcast_ref::<T>() {
-                        Some(cast) => Ok(R(cast)),
+                        Some(cast) => Ok(R(RInner::Borrowed(cast))),
                         None => match variant_as_value::<T>(&reflect_reference, &world) {
                             Some(value) => Self::from_script(ScriptValue::Reference(value), world),
                             None => Err(InteropError::type_mismatch(
@@ -333,6 +363,13 @@ impl<T: FromReflect> FromScript for R<'_, T> {
                     ))
                 }
             }
+            // like a reference, only the exact type, a conversion could take another type for this one in a union
+            ScriptValue::Value(value) => value
+                .downcast::<T>()
+                .map(|v| R(RInner::Owned(v)))
+                .ok_or_else(|| {
+                    InteropError::type_mismatch(std::any::TypeId::of::<T>(), Some(value.type_id()))
+                }),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<T>(),
                 value,
@@ -343,7 +380,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
 
 impl<'a, T> From<&'a T> for R<'a, T> {
     fn from(value: &'a T) -> Self {
-        R(value)
+        R(RInner::Borrowed(value))
     }
 }
 
@@ -402,6 +439,12 @@ impl<T: FromReflect> FromScript for M<'_, T> {
                     ))
                 }
             }
+            // languages promote inline values before calling functions which mutate them, so this is a value passed
+            // as another argument, there is no place to write the change to
+            ScriptValue::Value(value) => Err(InteropError::string(format!(
+                "a '{}' value can't be mutated by a function it is passed to, only one called on it",
+                value.type_name()
+            ))),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<T>(),
                 value,

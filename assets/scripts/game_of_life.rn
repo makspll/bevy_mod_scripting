@@ -11,7 +11,7 @@ fn settings_type(world) {
 fn fetch_life_state(world) {
     // find the first entity with life state
     for result in world.query().component(life_state_type(world)).build() {
-        return result.components()[0];
+        return result[1];
     }
 }
 

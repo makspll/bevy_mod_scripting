@@ -33,7 +33,7 @@ end
 function check_accesses(resource, query)
     assert(resource.string == "Initial Value", "Expected 'Initial Value', got: " .. resource.string)
     assert(#query >= 1, "Expected results, got: " .. #query)
-    local component = query[1]:components()[1]
+    local component = query[1][2]
     assert(type(component[1]) == "string", "Expected to read the component, got: " .. tostring(component[1]))
 
     local ok, err = pcall(function() resource.string = "changed" end)

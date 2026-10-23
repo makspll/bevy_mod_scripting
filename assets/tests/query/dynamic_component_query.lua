@@ -6,7 +6,7 @@ world.add_default_component(entity_a, NewComponent)
 
 local found_entities = {}
 for i, result in pairs(world.query():component(NewComponent):build()) do
-    table.insert(found_entities, result:entity())
+    table.insert(found_entities, result[1])
 end
 
 assert(#found_entities == 1, "Expected 1 entities, got " .. #found_entities)

@@ -112,9 +112,16 @@ bms.system_builder("my_system")
 ```
 
 will create a system which calls the specified callback `my_system` with 2 arguments:
-- The `ScriptQueryResult` for the first query
-    - With `components` access to ComponentA and ComponentB
+- The results of the query, each a list of the entity followed by the components in the order they were added: `{entity, a, b}`
 - The `ReflectReference` to `ResourceA`
+
+```lua
+function my_system(results, resource_a)
+    for _, result in ipairs(results) do
+        local entity, a, b = result[1], result[2], result[3]
+    end
+end
+```
 
 `resource` and `component` give read and write access. Use `resource_read` and `component_read` for read only access, systems reading the same resources and components can run in parallel, while systems writing them cannot:
 

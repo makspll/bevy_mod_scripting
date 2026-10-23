@@ -143,6 +143,16 @@ impl FromScriptErased for Box<dyn PartialReflect> {
             ScriptValue::Reference(reflect_reference) => {
                 reflect_reference.to_owned_value(world.clone())
             }
+            // a copy of the value, like `to_owned_value` makes of the value of a reference
+            ScriptValue::Value(value) => {
+                let value = value.as_partial_reflect();
+                let copy: Box<dyn PartialReflect> = match value.reflect_clone() {
+                    Ok(copy) => copy.into_partial_reflect(),
+                    Err(_) => PartialReflect::to_dynamic(value)
+                        .map_err(|e| InteropError::string(e.to_string()))?,
+                };
+                Ok(copy)
+            }
             value => Err(InteropError::value_mismatch(target, value)),
         }
     }

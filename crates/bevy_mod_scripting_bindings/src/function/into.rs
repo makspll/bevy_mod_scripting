@@ -1,7 +1,7 @@
 //! Implementations of the [`IntoScript`] trait for various types.
 
 use super::{DynamicScriptFunction, DynamicScriptFunctionMut, Union, V};
-use crate::{ReflectReference, ScriptValue, VariadicTuple, error::InteropError};
+use crate::{InlineValue, ReflectReference, ScriptValue, VariadicTuple, error::InteropError};
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
@@ -114,10 +114,14 @@ impl IntoScript for ReflectReference {
 #[profiling::all_functions]
 impl<T: Reflect> IntoScript for V<T> {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        // one heap allocation, holding the value and its reference counts
-        Ok(ScriptValue::Reference(ReflectReference::new_allocated(
-            self.0,
-        )))
+        // small values are stored inline, the check is resolved at compile time, see `InlineValue`
+        match InlineValue::new(self.0) {
+            Ok(value) => Ok(ScriptValue::Value(value)),
+            // one heap allocation, holding the value and its reference counts
+            Err(value) => Ok(ScriptValue::Reference(ReflectReference::new_allocated(
+                value,
+            ))),
+        }
     }
 }
 

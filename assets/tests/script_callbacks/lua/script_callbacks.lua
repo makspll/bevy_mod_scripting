@@ -10,7 +10,7 @@ end
 -- the other entity running this script
 local function other_entity()
     for _, result in pairs(world.query():component(world.get_type_by_name("bevy_mod_scripting_core::script::ScriptComponent")):build()) do
-        local e = result:entity()
+        local e = result[1]
         if e:index() ~= bms.current_entity():index() then
             return e
         end
