@@ -7,7 +7,12 @@ use std::{collections::VecDeque, ops::Deref};
 
 use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
-use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
+use bevy_ecs::{
+    entity::Entity,
+    prelude::AppTypeRegistry,
+    schedule::{InternedSystemSet, Schedules},
+    world::World,
+};
 use bevy_mod_scripting_bindings::{
     AnyTypeRegistrationV, AppScriptNamespaceMembers, DynamicScriptFunctionMut, EnumVariantRef,
     FunctionInfo, InteropError, NamespaceMembers, NamespaceValue, PartialReflectExt,
@@ -34,7 +39,7 @@ use bevy_mod_scripting_derive::script_bindings;
 use bevy_mod_scripting_display::{OrFakeId, WithTypeInfo};
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::PartialReflect;
-use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
+use bevy_system_reflection::{ReflectSchedule, ReflectSystem, ReflectSystemSet};
 
 #[allow(unused_variables, reason = "feature flags")]
 pub fn register_bevy_bindings(app: &mut App) {
@@ -338,6 +343,51 @@ impl World {
         world
             .register_script_event(&namespace, &name, allow_existing.unwrap_or(false))
             .map(V)
+    }
+
+    /// Registers a new system set, which script systems can be put in and ordered against.
+    ///
+    /// The set is removed from its namespace when the script unloads, registering it again (i.e. after a reload) gives the same set.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `namespace`: The script namespace to register the set in, it must start with `script.`, i.e. `script.my_game`.
+    /// * `name`: The name of the set, unique within the namespace. The set can later be found as `import_namespace(namespace).name`.
+    /// * `allow_existing`: If true, returns the already registered set with this name instead of failing. Defaults to false.
+    /// Returns:
+    /// * `set`: The new system set.
+    fn register_new_system_set(
+        ctxt: FunctionCallContext,
+        namespace: String,
+        name: String,
+        allow_existing: Option<bool>,
+    ) -> Result<V<ReflectSystemSet>, InteropError> {
+        profiling::function_scope!("register_new_system_set");
+        let world = ctxt.world()?;
+        let owner = world.current_attachment().0.ok_or_else(|| {
+            InteropError::str("Cannot register a system set outside of a script callback, the set belongs to the script")
+        })?;
+        world
+            .register_script_system_set(&namespace, &name, allow_existing.unwrap_or(false), owner)
+            .map(V)
+    }
+
+    /// Retrieves a system set by its full name, i.e. `transform.TransformSystems.Propagate` for a set of the game,
+    /// or `script.my_game.ai` for a set registered by a script.
+    ///
+    /// The sets of the game are also members of their namespace, i.e. `import_namespace("transform.TransformSystems").Propagate`.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `name`: The full name of the system set.
+    /// Returns:
+    /// * `set`: The system set with the given name, if it exists.
+    fn get_system_set_by_name(
+        ctxt: FunctionCallContext,
+        name: String,
+    ) -> Result<Option<V<ReflectSystemSet>>, InteropError> {
+        profiling::function_scope!("get_system_set_by_name");
+        Ok(ctxt.world()?.get_system_set_by_name(&name).map(V))
     }
 
     /// Triggers an observer-style event: either a Rust event type with `#[reflect(Event)]`, or an event registered with `register_new_event`.
@@ -1682,6 +1732,34 @@ impl ReflectSystem {
 #[script_bindings(
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "reflect_system_set_functions",
+    core
+)]
+impl ReflectSystemSet {
+    /// Retrieves the name of the system set
+    /// Arguments:
+    /// * `set`: The system set to retrieve the name from.
+    /// Returns:
+    /// * `name`: The debug name of the set, e.g. `TransformSystems::Propagate` or `ScriptNamedSet("script.my_game.ai")`
+    fn name(set: R<ReflectSystemSet>) -> String {
+        profiling::function_scope!("name");
+        set.debug().to_owned()
+    }
+}
+
+/// The set scripts put systems in and order them against, set nodes of schedule graphs have none.
+fn usable_system_set(set: &ReflectSystemSet) -> Result<InternedSystemSet, InteropError> {
+    set.set().ok_or_else(|| {
+        InteropError::string(format!(
+            "the system set `{}` is a node of a schedule graph, systems cannot be ordered against it, find the set with `get_system_set_by_name` instead",
+            set.debug()
+        ))
+    })
+}
+
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_system_builder_functions",
     core,
     namespace = "bms"
@@ -1825,48 +1903,57 @@ impl ScriptSystemBuilder {
     }
 
     /// Specifies the system is to run *before* the given set.
-    /// The name refers to a set the game registered, or otherwise to a set shared by scripts using the same name.
+    /// Sets are registered by scripts with `register_new_system_set`, game sets are found with `get_system_set_by_name`.
     ///
     /// Arguments:
     /// * `builder`: The system builder to add the dependency to.
-    /// * `set`: The name of the set.
+    /// * `set`: The system set.
     /// Returns:
     /// * `builder`: The system builder with the dependency added.
-    fn before_set(builder: V<ScriptSystemBuilder>, set: String) -> V<ScriptSystemBuilder> {
+    fn before_set(
+        builder: V<ScriptSystemBuilder>,
+        set: R<ReflectSystemSet>,
+    ) -> Result<V<ScriptSystemBuilder>, InteropError> {
         profiling::function_scope!("before_set");
         let mut builder = builder.into_inner();
-        builder.before_set(set);
-        V(builder)
+        builder.before_set(usable_system_set(&set)?);
+        Ok(V(builder))
     }
 
     /// Specifies the system is to run *after* the given set.
-    /// The name refers to a set the game registered, or otherwise to a set shared by scripts using the same name.
+    /// Sets are registered by scripts with `register_new_system_set`, game sets are found with `get_system_set_by_name`.
     ///
     /// Arguments:
     /// * `builder`: The system builder to add the dependency to.
-    /// * `set`: The name of the set.
+    /// * `set`: The system set.
     /// Returns:
     /// * `builder`: The system builder with the dependency added.
-    fn after_set(builder: V<ScriptSystemBuilder>, set: String) -> V<ScriptSystemBuilder> {
+    fn after_set(
+        builder: V<ScriptSystemBuilder>,
+        set: R<ReflectSystemSet>,
+    ) -> Result<V<ScriptSystemBuilder>, InteropError> {
         profiling::function_scope!("after_set");
         let mut builder = builder.into_inner();
-        builder.after_set(set);
-        V(builder)
+        builder.after_set(usable_system_set(&set)?);
+        Ok(V(builder))
     }
 
     /// Puts the system in the given set, ordering the set orders the system.
-    /// The name refers to a set the game registered, or otherwise to a set shared by scripts using the same name.
+    /// Sets are registered by scripts with `register_new_system_set`, game sets are found with `get_system_set_by_name`.
     ///
     /// Arguments:
     /// * `builder`: The system builder to put in the set.
-    /// * `set`: The name of the set.
+    /// * `set`: The system set.
     /// Returns:
     /// * `builder`: The system builder in the set.
-    fn in_set(builder: V<ScriptSystemBuilder>, set: String) -> V<ScriptSystemBuilder> {
+    fn in_set(
+        builder: V<ScriptSystemBuilder>,
+        set: R<ReflectSystemSet>,
+    ) -> Result<V<ScriptSystemBuilder>, InteropError> {
         profiling::function_scope!("in_set");
         let mut builder = builder.into_inner();
-        builder.in_set(set);
-        V(builder)
+        builder.in_set(usable_system_set(&set)?);
+        Ok(V(builder))
     }
 
     /// Only runs the system if the condition holds, see `bms.conditions`. All conditions must hold for the system to run.
@@ -2378,6 +2465,7 @@ pub fn register_core_functions(app: &mut App) {
 
         register_reflect_schedule_functions(world);
         register_reflect_system_functions(world);
+        register_reflect_system_set_functions(world);
         register_script_system_builder_functions(world);
         register_script_run_condition_functions(world);
         // the conditions are static functions of the condition type, i.e. `bms.conditions.run_once()`

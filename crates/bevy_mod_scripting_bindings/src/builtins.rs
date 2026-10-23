@@ -5,16 +5,18 @@
 
 use std::collections::VecDeque;
 
+use bevy_ecs::schedule::SystemSet;
 use bevy_platform::collections::HashMap;
+use bevy_system_reflection::ReflectSystemSet;
 
 use crate::{
     AppScriptNamespaceMembers, DynamicScriptFunction, FunctionCallContext, FunctionInfo,
-    FunctionScope, GetFunctionInfo, InteropError, ScriptTypeCatalogue, ScriptValue,
+    FunctionScope, GetFunctionInfo, InteropError, ScriptNamedSet, ScriptTypeCatalogue, ScriptValue,
     WorldExtensions, WorldGuard, function::from::V, function::into::IntoScript,
     function::script_function::documented_function, script_path,
 };
 
-const IMPORT_NAMESPACE_DOCS: &str = r#"Imports a namespace, returning a table of the types, functions, values, events and exports in it by name.
+const IMPORT_NAMESPACE_DOCS: &str = r#"Imports a namespace, returning a table of the types, functions, values, events, system sets and exports in it by name.
 
 Bevy types with bindings live in a namespace per category (`math`, `ecs`, `transform`, `ui`, ...), BMS' own types and functions in `bms`,
 any other type in the namespace named after the crate defining it. Namespaces defined by scripts start with `script.`.
@@ -66,7 +68,7 @@ pub fn import_namespace(world: WorldGuard, path: &str) -> Result<ScriptValue, In
     profiling::function_scope!("import_namespace");
     let catalogue = world.type_catalogue().clone().get(world.clone())?;
     let types = catalogue.namespace_view(path);
-    let (exports, events) = {
+    let (exports, events, system_sets) = {
         let registry = world.component_registry();
         let registry = registry.read();
         let exports = registry
@@ -77,13 +79,22 @@ pub fn import_namespace(world: WorldGuard, path: &str) -> Result<ScriptValue, In
             .iter_events_in(path)
             .map(|(name, event)| (name.to_owned(), event.clone()))
             .collect::<Vec<_>>();
-        (exports, events)
+        let system_sets = registry
+            .iter_system_sets_in(path)
+            .map(|(set_path, name)| (name.to_owned(), set_path.to_owned()))
+            .collect::<Vec<_>>();
+        (exports, events, system_sets)
     };
     let members = world
         .with_resource(|members: &AppScriptNamespaceMembers| members.read().get(path).cloned())
         .ok()
         .flatten();
-    if types.is_none() && exports.is_empty() && events.is_empty() && members.is_none() {
+    if types.is_none()
+        && exports.is_empty()
+        && events.is_empty()
+        && system_sets.is_empty()
+        && members.is_none()
+    {
         return Err(namespace_not_found(&catalogue, &world, path));
     }
 
@@ -99,6 +110,10 @@ pub fn import_namespace(world: WorldGuard, path: &str) -> Result<ScriptValue, In
     }
     for (name, event) in events {
         table.insert(name, V(event).into_script(world.clone())?);
+    }
+    for (name, set_path) in system_sets {
+        let set = ReflectSystemSet::from_interned(ScriptNamedSet(set_path).intern());
+        table.insert(name, V(set).into_script(world.clone())?);
     }
     for name in exports {
         let function = exported_function(script_path(path, &name));

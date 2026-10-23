@@ -48,17 +48,27 @@ world.add_system(update_schedule,system)
 
 Besides systems (`after`/`before`), script systems can be ordered against:
 - other script systems, by callback label and script, which must have been added before: `:after_script_system("on_physics", attachment)`
-- sets by name: `:after_set("name")`, `:before_set("name")`, and put in sets: `:in_set("name")`
+- sets: `:after_set(set)`, `:before_set(set)`, and put in sets: `:in_set(set)`
 
-A set name refers to a Rust set the game registered, otherwise to a set scripts share by using the same name, i.e. to group and order systems of a mod:
+Scripts register their own sets into a `script.*` namespace, i.e. to group and order the systems of a mod. A set is removed from its namespace when its script unloads, registering it again gives the same set:
+
+```lua
+local ai = world.register_new_system_set("script.my_mod", "ai")
+-- other scripts: import_namespace("script.my_mod").ai
+```
+
+Rust sets the game registers are members of their namespace, the BMS bindings register the main Bevy sets (i.e. `transform.TransformSystems.Propagate`, `time.TimeSystems`):
 
 ```rust,ignore
-app.register_script_system_set("transform_propagate", TransformSystems::Propagate);
+app.register_script_system_set("transform.TransformSystems", "Propagate", TransformSystems::Propagate);
 ```
 
 ```lua
-builder:in_set("ai"):after_set("transform_propagate")
+local propagate = import_namespace("transform.TransformSystems").Propagate
+builder:in_set(ai):after_set(propagate)
 ```
+
+`world.get_system_set_by_name` finds either kind by its full name, i.e. `"transform.TransformSystems.Propagate"` or `"script.my_mod.ai"`.
 
 ## Run conditions
 

@@ -31,6 +31,28 @@ impl Plugin for BevyCameraBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
+        use bevy_camera::visibility::VisibilitySystems;
+        use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+        app.register_script_system_set(
+            "camera",
+            "CameraUpdateSystems",
+            bevy_camera::CameraUpdateSystems,
+        );
+        for (name, set) in [
+            ("CalculateBounds", VisibilitySystems::CalculateBounds),
+            ("UpdateFrusta", VisibilitySystems::UpdateFrusta),
+            (
+                "VisibilityPropagate",
+                VisibilitySystems::VisibilityPropagate,
+            ),
+            ("CheckVisibility", VisibilitySystems::CheckVisibility),
+            (
+                "MarkNewlyHiddenEntitiesInvisible",
+                VisibilitySystems::MarkNewlyHiddenEntitiesInvisible,
+            ),
+        ] {
+            app.register_script_system_set("camera.VisibilitySystems", name, set);
+        }
         let world = app.world_mut();
         register_camera_functions(world);
         register_orthographic_projection_functions(world);

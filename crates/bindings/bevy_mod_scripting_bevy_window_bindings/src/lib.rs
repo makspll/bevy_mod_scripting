@@ -29,6 +29,13 @@ impl Plugin for BevyWindowBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
+        use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+        app.register_script_system_set("window", "ExitSystems", bevy_window::ExitSystems)
+            .register_script_system_set(
+                "window.CursorSystems",
+                "Update",
+                bevy_window::CursorSystems::Update,
+            );
         let world = app.world_mut();
         window::register(world);
         resolution::register(world);
