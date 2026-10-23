@@ -366,7 +366,12 @@ impl ScriptSystems {
     fn apply_or_queue(&self, world: &mut World, changes: Vec<PendingScheduleChange>) -> bool {
         let mut last_applied = true;
         for change in changes {
-            // keep the order of changes to a schedule, i.e. a removal of a system must not be applied after its replacement
+            // Keep the order of changes to a schedule across calls, the loop only keeps it within one call.
+            // A change to a schedule which is back in the world must wait for the ones queued while it was running:
+            //   Update:     a script adds S to Update, which is running -> Add(S) is queued
+            //   PostUpdate: the script unloads -> Remove(S) to Update, which is back in the world
+            //   applied right away, Remove(S) finds no set and frees the slot, then `Last` applies the queued Add(S):
+            //   a dead system stays in the schedule, in the set of whichever system reuses the slot
             let queued_before = self
                 .0
                 .lock()
