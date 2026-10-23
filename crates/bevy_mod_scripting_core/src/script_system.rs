@@ -14,7 +14,7 @@ use ::{
     bevy_ecs::{
         component::ComponentId,
         entity::Entity,
-        query::{FilteredAccess, FilteredAccessSet, QueryState},
+        query::{FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
         schedule::SystemSet,
         system::{System, SystemParamValidationError},
@@ -38,7 +38,7 @@ use bevy_log::{debug, warn, warn_once};
 use bevy_mod_scripting_bindings::{
     AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, AppScriptTypeCatalogue, CurrentScriptAttachment, InteropError,
-    IntoScript, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
+    IntoScript, QueryAccess, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
     ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_display::DisplayProxy;
@@ -89,7 +89,10 @@ impl SystemSet for ScriptSystemSet {
 
 #[derive(Clone)]
 enum ScriptSystemParamDescriptor {
-    Res(ScriptResourceRegistration),
+    Res {
+        resource: ScriptResourceRegistration,
+        write: bool,
+    },
     EntityQuery(ScriptQueryBuilder),
 }
 
@@ -126,10 +129,21 @@ impl ScriptSystemBuilder {
         self
     }
 
-    /// Adds a resource access to the system
+    /// Adds a resource access to the system, the resource can be read and written
     pub fn resource(&mut self, resource: ScriptResourceRegistration) -> &mut Self {
-        self.system_params
-            .push(ScriptSystemParamDescriptor::Res(resource));
+        self.system_params.push(ScriptSystemParamDescriptor::Res {
+            resource,
+            write: true,
+        });
+        self
+    }
+
+    /// Adds a read only resource access to the system, systems reading a resource can run in parallel with each other
+    pub fn resource_read(&mut self, resource: ScriptResourceRegistration) -> &mut Self {
+        self.system_params.push(ScriptSystemParamDescriptor::Res {
+            resource,
+            write: false,
+        });
         self
     }
 
@@ -847,12 +861,17 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
         // start with resources
         let mut subset = HashSet::<ComponentId>::new();
+        // the accesses in `subset` which can be written, the others are read only
+        let mut written = HashSet::<ComponentId>::new();
         let mut system_params = Vec::with_capacity(self.system_param_descriptors.len());
         let mut component_access_set = FilteredAccessSet::new();
         let mut initialization_errors = Vec::new();
         for param in &self.system_param_descriptors {
             match param {
-                ScriptSystemParamDescriptor::Res(res) => {
+                ScriptSystemParamDescriptor::Res {
+                    resource: res,
+                    write,
+                } => {
                     let component_id = res.resource_id;
                     let type_id = res.type_registration().type_id();
 
@@ -862,10 +881,13 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     };
                     system_params.push(system_param);
 
-                    let mut access = FilteredAccess::matches_nothing();
-
-                    access.add_write(component_id);
-                    component_access_set.add(access);
+                    // like `Res`/`ResMut`, an access matching nothing would be compatible with any other access
+                    if *write {
+                        component_access_set.add_resource_write(component_id);
+                        written.insert(component_id);
+                    } else {
+                        component_access_set.add_resource_read(component_id);
+                    }
                     if subset.contains(&component_id) {
                         initialization_errors.push(format!(
                             "Duplicate resource access in system: {component_id:?}."
@@ -879,7 +901,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                         .iter()
                         .map(|c| (c.component_id, c.type_registration().type_id()))
                         .collect();
-                    let query = query.as_query_state::<Entity>(world);
+                    let query = query.as_query_state::<Entity>(world, QueryAccess::Declared);
 
                     // The access carries the query filters, so bevy runs this system in parallel with systems accessing
                     // the same components on other archetypes (i.e. `With<A>` vs `Without<A>`).
@@ -887,10 +909,14 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     // matched by this query in `run_unsafe`, see `ArchetypeFilter`.
                     component_access_set.add(query.component_access().clone());
 
-                    let new_raids = get_all_access_ids(query.component_access().access())
-                        .into_iter()
-                        .map(|(a, _)| a)
-                        .collect::<HashSet<_>>();
+                    let accesses = get_all_access_ids(query.component_access().access());
+                    written.extend(
+                        accesses
+                            .iter()
+                            .filter(|(_, write)| *write)
+                            .map(|(id, _)| *id),
+                    );
+                    let new_raids = accesses.into_iter().map(|(a, _)| a).collect::<HashSet<_>>();
 
                     if !subset.is_disjoint(&new_raids) {
                         initialization_errors
@@ -906,8 +932,15 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             }
         }
 
-        let final_subset =
-            AccessByteSet::from_allowed_list(&subset.iter().map(|c| c.index()).collect::<Vec<_>>());
+        // the guard must not allow writes which are declared to bevy as reads
+        let (read_write, read_only): (Vec<_>, Vec<_>) = subset
+            .iter()
+            .map(|c| (c.index(), written.contains(c)))
+            .partition(|(_, write)| *write);
+        let final_subset = AccessByteSet::from_allowed_lists(
+            &read_write.into_iter().map(|(c, _)| c).collect::<Vec<_>>(),
+            &read_only.into_iter().map(|(c, _)| c).collect::<Vec<_>>(),
+        );
 
         self.state = Some(ScriptSystemState {
             type_registry: world.get_resource_or_init::<AppTypeRegistry>().clone().0,
@@ -1077,7 +1110,9 @@ mod test {
             schedule::{ScheduleLabel, Schedules},
         },
     };
-    use bevy_mod_scripting_bindings::ScriptValue;
+    use bevy_mod_scripting_bindings::{
+        ScriptComponentRegistration, ScriptTypeRegistration, ScriptValue,
+    };
     use test_utils::make_test_plugin;
 
     use crate::{
@@ -1290,5 +1325,62 @@ mod test {
             app.world().resource::<Messages<ScriptErrorMessage>>().len(),
             1
         );
+    }
+
+    #[derive(bevy_ecs::resource::Resource, Reflect, Default)]
+    struct AccessTestResource;
+
+    #[derive(bevy_ecs::component::Component, Reflect)]
+    struct AccessTestComponent;
+
+    fn access_of(world: &mut World, f: impl FnOnce(&mut ScriptSystemBuilder)) -> FilteredAccessSet {
+        let mut builder = ScriptSystemBuilder::new("test".to_owned().into(), attachment());
+        f(&mut builder);
+        let mut system = DynamicScriptSystem::<TestPlugin>::new(
+            builder,
+            ScriptSystemSet(0),
+            Arc::new(AtomicBool::new(true)),
+            ScriptSystems::default(),
+        );
+        match system.initialize(world) {
+            SystemAccess::Shared(access) => access,
+            _ => panic!("expected a non-exclusive system"),
+        }
+    }
+
+    #[test]
+    fn read_only_parameters_are_declared_as_reads() {
+        let mut world = World::new();
+        let resource = ScriptResourceRegistration::new(
+            ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
+                AccessTestResource,
+            >())),
+            world.init_resource::<AccessTestResource>(),
+        );
+        let component = ScriptComponentRegistration::new(
+            ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
+                AccessTestComponent,
+            >())),
+            world.register_component::<AccessTestComponent>(),
+        );
+        let reader = |builder: &mut ScriptSystemBuilder| {
+            let mut query = ScriptQueryBuilder::new();
+            query.component_read(component.clone());
+            builder.resource_read(resource.clone()).query(query);
+        };
+        let resource_writer = |builder: &mut ScriptSystemBuilder| {
+            builder.resource(resource.clone());
+        };
+        let component_writer = |builder: &mut ScriptSystemBuilder| {
+            let mut query = ScriptQueryBuilder::new();
+            query.component(component.clone());
+            builder.query(query);
+        };
+
+        let a = access_of(&mut world, reader);
+        let b = access_of(&mut world, reader);
+        assert!(a.is_compatible(&b), "readers should run in parallel");
+        assert!(!a.is_compatible(&access_of(&mut world, resource_writer)));
+        assert!(!a.is_compatible(&access_of(&mut world, component_writer)));
     }
 }

@@ -7,6 +7,8 @@ use bevy_ecs::component::ComponentId;
 use bevy_platform::collections::HashMap;
 use parking_lot::Mutex;
 
+use bevy_ecs::schedule::FixedBitSet;
+
 /// Describes access ranges in and outside a bevy world
 #[derive(Clone)]
 pub enum WorldAccessRange {
@@ -101,8 +103,13 @@ impl AccessBitField {
         let conflicting_exclusive = one_is_exclusive && count != 0;
         let aliasing_exclusive_access = (kind_requested == 1) && (count != 0);
         let access_is_forbidden = self.is_forbidden();
+        // another claim would wrap the count to 0, letting a write alias the existing reads
+        let count_is_full = count == Self::MAX_COUNT;
 
-        let allowed = !(conflicting_exclusive || aliasing_exclusive_access || access_is_forbidden);
+        let allowed = !(conflicting_exclusive
+            || aliasing_exclusive_access
+            || access_is_forbidden
+            || count_is_full);
         let allowed_u8 = allowed as u8;
 
         // Increment count only if allowed
@@ -206,6 +213,9 @@ impl AccessBitField {
 pub struct AccessByteSet {
     new_capacity_forbidden: bool,
     data: Vec<AccessBitField>,
+    /// Accesses which can only be read, empty unless the set is a subset with read only accesses.
+    /// Kept outside of the [`AccessBitField`]s so that only write claims pay for checking it.
+    read_only: FixedBitSet,
 }
 
 #[profiling::all_functions]
@@ -216,20 +226,42 @@ impl AccessByteSet {
         Self {
             data: Vec::new(),
             new_capacity_forbidden: false,
+            read_only: FixedBitSet::new(),
         }
     }
 
-    /// Generates a new access byte set with the given forbidden list
+    /// Generates a new access byte set allowing only the given accesses
     pub fn from_allowed_list(iter: &[usize]) -> Self {
-        let max_index = iter.iter().max().unwrap_or(&0);
+        Self::from_allowed_lists(iter, &[])
+    }
+
+    /// Generates a new access byte set allowing only the given accesses, the read only ones can't be written.
+    ///
+    /// The lists must be disjoint, callers split their accesses by whether they are written.
+    /// Every other access is forbidden.
+    pub fn from_allowed_lists(read_write: &[usize], read_only: &[usize]) -> Self {
+        debug_assert!(
+            read_only.iter().all(|i| !read_write.contains(i)),
+            "read only and read write accesses overlap"
+        );
+        let max_index = read_write.iter().chain(read_only).max().unwrap_or(&0);
         let mut new = Self::new();
         new.new_capacity_forbidden = true;
         new.ensure_capacity(*max_index);
-        for i in iter {
-            new.data[*i] = new.data[*i].with_forbidden(false)
+        for &i in read_write.iter().chain(read_only) {
+            new.data[i] = new.data[i].with_forbidden(false);
+        }
+        for &i in read_only {
+            new.read_only.grow_and_insert(i);
         }
 
         new
+    }
+
+    #[inline]
+    /// Returns true if the access can only be read
+    pub fn is_read_only(&self, index: usize) -> bool {
+        self.read_only.contains(index)
     }
 
     fn ensure_capacity(&mut self, index: usize) {
@@ -408,6 +440,9 @@ impl AccessMapInner {
 
     pub fn claim_component_if_free(&mut self, id: ComponentId, write: bool) -> bool {
         let idx = id.index();
+        if write && self.component_access.is_read_only(idx) {
+            return false;
+        }
         let elem = self.component_access.entry_mut(idx);
         let (free, new) = elem.claim_if_free(write);
         *elem = new;
@@ -1058,6 +1093,34 @@ mod test {
         assert!(!subset_access_map.claim_read_access(TestAccess(2)));
         assert!(!subset_access_map.claim_write_access(TestAccess(2)));
         assert!(!subset_access_map.claim_read_access(WorldAccessRange::Global));
+    }
+
+    #[test]
+    fn subset_map_read_only_accesses_cannot_be_written() {
+        let subset_access_map =
+            AccessMap::new_subset(AccessByteSet::from_allowed_lists(&[1], &[2]));
+
+        assert!(!subset_access_map.claim_write_access(TestAccess(2)));
+        assert!(subset_access_map.claim_read_access(TestAccess(2)));
+        assert!(subset_access_map.claim_read_access(TestAccess(2)));
+        assert!(subset_access_map.claim_write_access(TestAccess(1)));
+
+        // the permission survives releasing all accesses
+        subset_access_map.release_all_accesses();
+        assert!(!subset_access_map.claim_write_access(TestAccess(2)));
+    }
+
+    #[test]
+    fn access_counts_do_not_overflow() {
+        let access_map = AccessMap::default();
+        let mut claimed = 0;
+        while access_map.claim_read_access(TestAccess(0)) {
+            claimed += 1;
+            assert!(claimed < 1000, "claims never fail");
+        }
+        assert_eq!(claimed, 63);
+        // all reads are still counted, so writes stay blocked
+        assert!(!access_map.claim_write_access(TestAccess(0)));
     }
 
     #[test]
