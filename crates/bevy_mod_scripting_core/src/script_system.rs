@@ -1186,6 +1186,8 @@ mod test {
         let second = add(&mut app, "test");
         assert_eq!(count(&mut app, "test"), 1);
         assert_eq!(first.default_system_sets(), second.default_system_sets());
+        // sets are interned by value, so each slot is its own set
+        assert_ne!(ScriptSystemSet(0).intern(), ScriptSystemSet(1).intern());
     }
 
     #[test]
