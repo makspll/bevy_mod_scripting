@@ -40,7 +40,7 @@ use bevy_log::{debug, warn, warn_once};
 use bevy_mod_scripting_bindings::{
     AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, AppScriptTypeCatalogue, CurrentScriptAttachment, InteropError,
-    IntoScript, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
+    IntoScript, QueryAccess, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
     ScriptQueryResult, ScriptResourceRegistration, V, WorldExtensions,
 };
 use bevy_mod_scripting_display::DisplayProxy;
@@ -1265,7 +1265,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                         .iter()
                         .map(|c| (c.component_id, c.type_registration().type_id()))
                         .collect();
-                    let query = query.as_query_state::<Entity>(world, true);
+                    let query = query.as_query_state::<Entity>(world, QueryAccess::Declared);
 
                     // The access carries the query filters, so bevy runs this system in parallel with systems accessing
                     // the same components on other archetypes (i.e. `With<A>` vs `Without<A>`).
