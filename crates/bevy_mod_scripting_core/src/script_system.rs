@@ -23,6 +23,7 @@ use ::{
     bevy_reflect::Reflect,
 };
 use bevy_ecs::{
+    archetype::ArchetypeGeneration,
     change_detection::{CheckChangeTicks, Tick},
     message::Messages,
     resource::Resource,
@@ -589,7 +590,8 @@ struct ScriptSystemState<P: IntoScriptPluginParams> {
     /// restricts component accesses to the archetypes matched by the queries, see [`ArchetypeFilter`].
     /// Rebuilt whenever new archetypes appear, as the queries might match them.
     archetype_filter: Option<Arc<ArchetypeFilter>>,
-    archetype_count: usize,
+    /// the archetype generation the filter was built for
+    archetype_generation: ArchetypeGeneration,
 }
 
 /// Equivalent of [`bevy_ecs::system::SystemParam`] but for dynamic systems, these are the kinds of things
@@ -762,7 +764,8 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             WorldAccessGuard::new_exclusive(world, cache)
         } else {
             // the queries match newly created archetypes when updated, the filter has to include them
-            if state.archetype_filter.is_none() || world.archetypes().len() != state.archetype_count
+            if state.archetype_filter.is_none()
+                || world.archetypes().generation() != state.archetype_generation
             {
                 for param in &mut state.system_params {
                     if let ScriptSystemParam::EntityQuery { query, .. } = param {
@@ -771,7 +774,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 }
                 state.archetype_filter =
                     Some(Arc::new(build_archetype_filter(&state.system_params)));
-                state.archetype_count = world.archetypes().len();
+                state.archetype_generation = world.archetypes().generation();
             }
             // Safety: the subset and archetype filter are exactly the accesses declared to bevy in `initialize`
             unsafe {
@@ -929,7 +932,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             invalid: !initialization_errors.is_empty(),
             world_id: world.id(),
             archetype_filter: None,
-            archetype_count: 0,
+            archetype_generation: ArchetypeGeneration::initial(),
         });
 
         for error in initialization_errors {
