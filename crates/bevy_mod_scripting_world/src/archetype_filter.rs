@@ -29,6 +29,8 @@
 
 use bevy_ecs::{archetype::ArchetypeId, component::ComponentId};
 
+use crate::bit_set::BitSet;
+
 /// Restricts access to components to entities in a set of archetypes, per component.
 ///
 /// Components without a restriction are not affected, i.e. resources and components accessed by exclusive guards.
@@ -39,28 +41,15 @@ pub struct ArchetypeFilter {
     restricted: Vec<RestrictedComponent>,
 }
 
-/// The archetypes a component may be read and written on, bitsets indexed by [`ArchetypeId::index`].
+/// The archetypes a component may be read and written on, sets of [`ArchetypeId::index`]es.
 ///
 /// Reads and writes are restricted separately, as queries of a system may read a component on some archetypes
 /// and write it on others, i.e. `C with A` written and `C without A` read.
 #[derive(Clone, Debug)]
 struct RestrictedComponent {
     id: ComponentId,
-    read: Vec<u64>,
-    write: Vec<u64>,
-}
-
-fn set_bit(bits: &mut Vec<u64>, index: usize) {
-    let (word, bit) = (index / 64, index % 64);
-    if word >= bits.len() {
-        bits.resize(word + 1, 0);
-    }
-    bits[word] |= 1 << bit;
-}
-
-fn has_bit(bits: &[u64], index: usize) -> bool {
-    bits.get(index / 64)
-        .is_some_and(|word| word & (1 << (index % 64)) != 0)
+    read: BitSet,
+    write: BitSet,
 }
 
 impl ArchetypeFilter {
@@ -70,8 +59,8 @@ impl ArchetypeFilter {
             None => {
                 self.restricted.push(RestrictedComponent {
                     id: component_id,
-                    read: Vec::new(),
-                    write: Vec::new(),
+                    read: BitSet::default(),
+                    write: BitSet::default(),
                 });
                 self.restricted.len() - 1
             }
@@ -84,9 +73,9 @@ impl ArchetypeFilter {
     /// Once called for a component, the component is restricted to the archetypes allowed this way.
     pub fn allow(&mut self, component_id: ComponentId, archetype_id: ArchetypeId, write: bool) {
         let restricted = self.restricted_mut(component_id);
-        set_bit(&mut restricted.read, archetype_id.index());
+        restricted.read.insert(archetype_id.index());
         if write {
-            set_bit(&mut restricted.write, archetype_id.index());
+            restricted.write.insert(archetype_id.index());
         }
     }
 
@@ -104,8 +93,8 @@ impl ArchetypeFilter {
         write: bool,
     ) -> bool {
         match self.restricted.iter().find(|c| c.id == component_id) {
-            Some(c) if write => has_bit(&c.write, archetype_id.index()),
-            Some(c) => has_bit(&c.read, archetype_id.index()),
+            Some(c) if write => c.write.contains(archetype_id.index()),
+            Some(c) => c.read.contains(archetype_id.index()),
             None => true,
         }
     }

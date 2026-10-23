@@ -409,6 +409,22 @@ impl std::fmt::Display for ScriptTypeRegistration {
     }
 }
 
+/// How [`ScriptQueryBuilder::as_query_state`] declares the accesses of the query.
+///
+/// Read and written components match the same entities, the difference is only in the access the query reports.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum QueryAccess {
+    /// Every component is declared as read, for finding the matching entities, i.e. with
+    /// [`bevy_ecs::query::QueryState::iter`] on a `&World`, while the actual component accesses are claimed through
+    /// the world guard.
+    ///
+    /// The query state must not be used to write components, or have its access reported to the scheduler.
+    MatchOnly,
+    /// The written components are declared as written, for queries whose access is reported to the scheduler,
+    /// i.e. the queries of script systems.
+    Declared,
+}
+
 #[derive(Clone, Default, Reflect)]
 #[reflect(opaque)]
 /// The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.
@@ -608,20 +624,17 @@ impl ScriptQueryBuilder {
         self
     }
 
-    /// Builds the query into a query state as used in systems.
-    ///
-    /// With `declare_writes`, the written components are declared as written in the query's access, as needed when the
-    /// query's access is reported to the scheduler. Otherwise all components are declared as read.
+    /// Builds the query into a query state, declaring its component accesses as given by `access`.
     pub fn as_query_state<Q: QueryData>(
         &self,
         world: &mut World,
-        declare_writes: bool,
+        access: QueryAccess,
     ) -> QueryState<Q> {
         let mut dynamic_query = QueryBuilder::<Q>::new(world);
         // we don't actually want to fetch the data for components now, only figure out
         // which entities match the query, and declare the access
         for (index, c) in self.components.iter().enumerate() {
-            let write = declare_writes && self.is_written(index);
+            let write = access == QueryAccess::Declared && self.is_written(index);
             let id = c.component_id();
             if self.is_optional(index) {
                 dynamic_query.optional(|optional| {
