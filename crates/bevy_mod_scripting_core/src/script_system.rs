@@ -14,7 +14,7 @@ use ::{
     bevy_ecs::{
         component::ComponentId,
         entity::Entity,
-        query::{FilteredAccessSet, QueryBuilder, QueryState},
+        query::{AccessConflicts, FilteredAccessSet, QueryBuilder, QueryState},
         reflect::AppTypeRegistry,
         schedule::SystemSet,
         system::{System, SystemParamValidationError},
@@ -1256,13 +1256,26 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     let query = builder.as_query_state::<Entity>(world, true);
 
                     // queries may access the same components if bevy considers them disjoint, i.e. `With<A>` vs `Without<A>`
-                    if !component_access_set
-                        .get_conflicts_single(query.component_access())
-                        .is_empty()
-                    {
-                        initialization_errors.push(
-                            "A query conflicts with another parameter of the system, i.e. two queries write the same component on the same entities.".to_owned(),
-                        );
+                    let conflicts =
+                        component_access_set.get_conflicts_single(query.component_access());
+                    if !conflicts.is_empty() {
+                        let components = match conflicts {
+                            AccessConflicts::All => "all components".to_owned(),
+                            AccessConflicts::Individual(ids) => ids
+                                .iter()
+                                .map(|id| {
+                                    world.components().get_name(id).map_or_else(
+                                        || format!("{id:?}"),
+                                        |name| name.shortname().to_string(),
+                                    )
+                                })
+                                .collect::<Vec<_>>()
+                                .join(", "),
+                        };
+                        initialization_errors.push(format!(
+                            "Query parameter #{} conflicts with an earlier parameter of the system on: {components}. Use `with`/`without` to make them disjoint.",
+                            system_params.len() + 1
+                        ));
                     }
 
                     // The access carries the query filters, so bevy runs this system in parallel with systems accessing
