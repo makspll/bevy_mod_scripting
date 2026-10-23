@@ -94,14 +94,16 @@ impl ScriptExport {
 #[derive(Component, Clone, Debug)]
 pub struct ScriptObserverOwner(pub ScriptAttachment);
 
-/// Removes everything a script registered which is tied to the script running: its exports and its observers.
+/// Removes everything a script registered which is tied to the script running: its exports, system sets and observers.
 ///
 /// Called when the script is unloaded (also when it is about to be reloaded, the script registers them again when it runs).
 /// Components, bundles and events stay registered, as Bevy can not unregister components, scripts re-registering them
-/// on reload use `allow_existing`.
+/// on reload use `allow_existing`. System sets are only removed from their namespace, they stay in the schedules.
 pub fn remove_script_registrations(world: &mut World, attachment: &ScriptAttachment) {
     if let Some(registry) = world.get_resource::<AppScriptComponentRegistry>() {
-        registry.write().remove_exports_of(attachment);
+        let mut registry = registry.write();
+        registry.remove_exports_of(attachment);
+        registry.remove_system_sets_of(attachment);
     }
     let observers = world
         .query::<(Entity, &ScriptObserverOwner)>()
@@ -154,11 +156,13 @@ impl AppScriptComponentRegistry {
 }
 
 #[derive(Default)]
-/// A registry of dynamically registered script components, events and exports
+/// A registry of dynamically registered script components, events, exports and system sets
 pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
     events: HashMap<String, ScriptEventRegistration>,
     exports: HashMap<String, ScriptExport>,
+    /// The scripts which registered each system set, by its full path, see [`crate::ScriptNamedSet`]
+    system_sets: HashMap<String, ScriptAttachment>,
     generation: u64,
 }
 
@@ -217,9 +221,12 @@ impl ScriptComponentRegistry {
                 existing.owner
             )));
         }
-        if self.components.contains_key(&path) || self.events.contains_key(&path) {
+        if self.components.contains_key(&path)
+            || self.events.contains_key(&path)
+            || self.system_sets.contains_key(&path)
+        {
             return Err(InteropError::string(format!(
-                "cannot export `{path}`: a script registered component or event has that path"
+                "cannot export `{path}`: a script registered component, event or system set has that path"
             )));
         }
         self.exports.insert(path, export);
@@ -260,13 +267,44 @@ impl ScriptComponentRegistry {
         })
     }
 
-    /// The namespaces with at least one export or event, in no particular order, possibly repeated
+    /// The namespaces with at least one export, event or system set, in no particular order, possibly repeated
     pub fn export_and_event_namespaces(&self) -> impl Iterator<Item = &str> {
         self.exports.values().map(|e| e.namespace.as_str()).chain(
             self.events
                 .keys()
+                .chain(self.system_sets.keys())
                 .filter_map(|p| Some(p.rsplit_once('.')?.0)),
         )
+    }
+
+    /// Registers a system set of a script by its full path, i.e. `script.game.ai`, possibly replacing its owner
+    pub fn register_system_set(&mut self, path: String, owner: ScriptAttachment) {
+        self.system_sets.insert(path, owner);
+    }
+
+    /// The script which registered the system set with the given full path
+    pub fn get_system_set_owner(&self, path: &str) -> Option<&ScriptAttachment> {
+        self.system_sets.get(path)
+    }
+
+    /// Removes all system sets registered by the given script, returns how many there were.
+    ///
+    /// The sets stay in the schedules, systems can still be in and ordered against them.
+    pub fn remove_system_sets_of(&mut self, owner: &ScriptAttachment) -> usize {
+        let before = self.system_sets.len();
+        self.system_sets.retain(|_, set_owner| set_owner != owner);
+        before - self.system_sets.len()
+    }
+
+    /// Iterates over the full paths and names of the system sets registered into the given namespace
+    pub fn iter_system_sets_in<'a>(
+        &'a self,
+        namespace: &'a str,
+    ) -> impl Iterator<Item = (&'a str, &'a str)> {
+        self.system_sets.keys().filter_map(move |path| {
+            let (set_namespace, name) = path.rsplit_once('.')?;
+            (set_namespace == namespace).then_some((path.as_str(), name))
+        })
     }
 }
 

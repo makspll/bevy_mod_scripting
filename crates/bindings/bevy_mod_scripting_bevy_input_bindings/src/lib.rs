@@ -32,6 +32,21 @@ impl Plugin for BevyInputBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
+        {
+            use bevy_input_focus::InputFocusSystems;
+            use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+            app.register_script_system_set("input", "InputSystems", bevy_input::InputSystems)
+                .register_script_system_set(
+                    "input.InputFocusSystems",
+                    "Dispatch",
+                    InputFocusSystems::Dispatch,
+                )
+                .register_script_system_set(
+                    "input.InputFocusSystems",
+                    "FocusChangeEvents",
+                    InputFocusSystems::FocusChangeEvents,
+                );
+        }
         let world = app.world_mut();
         button::register(world);
         gamepad::register(world);
