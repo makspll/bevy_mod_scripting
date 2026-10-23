@@ -2,7 +2,6 @@
 
 mod access_map;
 mod archetype_filter;
-mod bit_set;
 mod world;
 
 pub use access_map::*;

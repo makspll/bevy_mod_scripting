@@ -29,7 +29,7 @@
 
 use bevy_ecs::{archetype::ArchetypeId, component::ComponentId};
 
-use crate::bit_set::BitSet;
+use bevy_ecs::schedule::FixedBitSet;
 
 /// Restricts access to components to entities in a set of archetypes, per component.
 ///
@@ -38,11 +38,11 @@ use crate::bit_set::BitSet;
 pub struct ArchetypeFilter {
     /// Restricted components, each with the set of allowed [`ArchetypeId::index`]es.
     /// Systems restrict a handful of components, so a linear scan beats indexing by component id.
-    restricted: Vec<(ComponentId, BitSet)>,
+    restricted: Vec<(ComponentId, FixedBitSet)>,
 }
 
 impl ArchetypeFilter {
-    fn bits_mut(&mut self, component_id: ComponentId) -> &mut BitSet {
+    fn bits_mut(&mut self, component_id: ComponentId) -> &mut FixedBitSet {
         let index = match self
             .restricted
             .iter()
@@ -50,7 +50,7 @@ impl ArchetypeFilter {
         {
             Some(index) => index,
             None => {
-                self.restricted.push((component_id, BitSet::default()));
+                self.restricted.push((component_id, FixedBitSet::new()));
                 self.restricted.len() - 1
             }
         };
@@ -61,7 +61,8 @@ impl ArchetypeFilter {
     ///
     /// Once called for a component, the component is restricted to the archetypes allowed this way.
     pub fn allow(&mut self, component_id: ComponentId, archetype_id: ArchetypeId) {
-        self.bits_mut(component_id).insert(archetype_id.index());
+        self.bits_mut(component_id)
+            .grow_and_insert(archetype_id.index());
     }
 
     /// Restricts the given component to no archetypes, until [`Self::allow`] is called for it.
