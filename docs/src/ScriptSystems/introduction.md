@@ -44,11 +44,11 @@ local world = import_namespace("bms").world
 world.add_system(update_schedule,system)
 ```
 
-<div class="warning">
+A script system is identified by its attachment and callback label: adding it again replaces the old one (with a warning). Script systems are removed when their script unloads or reloads, a reloading script adds them again in `on_script_loaded`.
 
-If your event handler running the script is running in a certain schedule, that schedule will be temporarilly removed by Bevy. Meaning you won't be able to modify it from within the script in-flight.
+Bevy cannot change a schedule while it runs, i.e. `PreUpdate` where scripts are loaded. Systems added to (or removed from) a running schedule are added (or removed) once it finishes, removed systems stop running right away. `world.add_system` then returns a system which can be used for ordering, but has no node in the schedule yet.
 
-</div>
+Errors in script systems are sent as `ScriptErrorMessage`s, like those of other callbacks.
 
 ## Parameters
 
@@ -82,6 +82,8 @@ An exclusive system can be created using the `exclusive` function call on the sy
 This allows the system to access everything as in a normal event handler.
 
 Non-exclusive systems, will only be able to access the set of components and resources as parameterized when building the system. This is why we can run the system in parallel to other non-overlapping systems.
+
+Components are only accessible on the entities matched by the queries declaring them, i.e. with `world.query():component(A):with(B)` the system can't access `A` on entities without `B`, since Bevy runs it in parallel with systems accessing `A` on those. Components only used as filters (`with`, `without`) can't be accessed.
 
 Exclusive systems on the other hand, cannot run in parallel.
 

@@ -240,11 +240,23 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptLoadingPipeline<P> {
             );
         }
 
-        // these are the only triggers on their events
-        if self.on_script_unloaded_callback {
-            app.add_observer(on_script_unloaded_for_unload_pipeline_handler::<P>);
-            app.add_observer(on_script_unloaded_for_reload_pipeline_handler::<P>);
-        }
+        // these are the only triggers on their events, so the unload callback runs before the script's
+        // registrations and systems are removed
+        let unloaded = self.on_script_unloaded_callback;
+        app.add_observer(
+            move |trigger: On<UnloadingInitialized<P>>, commands: Commands, world_id: WorldId| {
+                on_script_unloaded_for_unload_pipeline_handler(
+                    trigger, commands, world_id, unloaded,
+                )
+            },
+        );
+        app.add_observer(
+            move |trigger: On<ReloadingInitialized<P>>, commands: Commands, world_id: WorldId| {
+                on_script_unloaded_for_reload_pipeline_handler(
+                    trigger, commands, world_id, unloaded,
+                )
+            },
+        );
 
         // clear hanging machine data
         app.add_observer(

@@ -5,11 +5,12 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 
-use crate::{AccessByteSet, AccessMap, WorldAccessRange};
+use crate::{AccessByteSet, AccessMap, ArchetypeFilter, WorldAccessRange};
 
 use super::access_map::DynamicSystemMeta;
 use ::bevy_ecs::{
     component::ComponentId,
+    entity::Entity,
     world::{World, unsafe_world_cell::UnsafeWorldCell},
 };
 use bevy_ecs::{
@@ -22,7 +23,7 @@ use std::{
     cell::{Ref, RefCell},
     fmt::Debug,
     rc::Rc,
-    sync::atomic::AtomicBool,
+    sync::{Arc, atomic::AtomicBool},
 };
 
 /// Prefer to directly using [`WorldAccessGuard`]. If the underlying type changes, this alias will be updated.
@@ -91,6 +92,8 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     cell: UnsafeWorldCell<'w>,
     // TODO: this is fairly hefty, explore sparse sets, bit fields etc
     pub(crate) accesses: AccessMap,
+    /// Per-entity restrictions on top of `accesses`, set for non-exclusive systems with filtered queries
+    archetype_filter: Option<Arc<ArchetypeFilter>>,
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
 
@@ -361,12 +364,15 @@ impl<'w> WorldAccessGuard<'w> {
     /// It requires specyfing the exact accesses that are allowed to be given out by the guard.
     /// Those accesses need to be safe to be given out to the script, as the guard will assume that it is safe to give them out in any way.
     ///
+    /// The `archetype_filter` further restricts component accesses to entities in the given archetypes, see [`ArchetypeFilter`].
+    ///
     /// # Safety
-    /// - The caller must ensure that the accesses in subset are not aliased by any other access
+    /// - The caller must ensure that the accesses in subset (narrowed by the archetype filter) are not aliased by any other access
     /// - If an access is allowed in this subset, but alised by someone else,
     pub unsafe fn new_non_exclusive(
         world: UnsafeWorldCell<'w>,
         subset: AccessByteSet,
+        archetype_filter: Option<Arc<ArchetypeFilter>>,
         type_registry: TypeRegistryArc,
         registry_cache: RegistryCache,
     ) -> Self {
@@ -374,10 +380,40 @@ impl<'w> WorldAccessGuard<'w> {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world,
                 accesses: AccessMap::new_subset(subset),
+                archetype_filter,
                 type_registry,
                 cached_slots: registry_cache,
             }),
             invalid: Rc::new(false.into()),
+        }
+    }
+
+    /// Checks the guard's [`ArchetypeFilter`] allows accessing the component on the given entity.
+    ///
+    /// Must be checked before handing out references to components, on top of claiming the component's access.
+    /// Missing entities pass, as there is nothing to alias.
+    #[inline]
+    pub fn check_archetype_access(
+        &self,
+        entity: Entity,
+        component_id: ComponentId,
+    ) -> Result<(), DynWorldAccessError> {
+        let Some(filter) = &self.inner.archetype_filter else {
+            return Ok(());
+        };
+        // only reads entity metadata, which cannot change while a non-exclusive system runs
+        let Ok(entity_cell) = self.as_unsafe_world_cell()?.get_entity(entity) else {
+            return Ok(());
+        };
+        if filter.is_allowed(component_id, entity_cell.archetype().id()) {
+            Ok(())
+        } else {
+            Err(DynWorldAccessError::cannot_claim_access(
+                component_id.into(),
+                format!(
+                    "entity {entity} is not matched by any query of this system accessing the component"
+                ),
+            ))
         }
     }
 
@@ -391,6 +427,7 @@ impl<'w> WorldAccessGuard<'w> {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world.as_unsafe_world_cell(),
                 accesses: map,
+                archetype_filter: None,
                 cached_slots: registry_cache,
                 type_registry,
             }),
