@@ -607,6 +607,15 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
         ))))
     }
 
+    fn visit_tuple_with_rest(
+        &mut self,
+        head: &[ladfile::LadTypeKind],
+        _rest: &ladfile::LadTypeKind,
+    ) -> Self::Output {
+        // LuaLS has no variadic tuples, and an `[integer]` field would also type the head, so the rest is left untyped
+        self.visit_tuple(head)
+    }
+
     fn visit_union(&mut self, inner: &[ladfile::LadTypeKind]) -> Self::Output {
         Ok(LuaType::Union(to_lua_many(self.ladfile, inner)?))
     }

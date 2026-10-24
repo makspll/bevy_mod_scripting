@@ -145,6 +145,21 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
 
     fn visit_untyped_tuple(&mut self) {}
 
+    fn visit_tuple_with_rest(
+        &mut self,
+        head: &[ladfile::LadTypeKind],
+        rest: &ladfile::LadTypeKind,
+    ) {
+        self.buffer.text("(");
+        for arg in head {
+            self.visit(arg);
+            self.buffer.text(", ");
+        }
+        self.buffer.text("...");
+        self.visit(rest);
+        self.buffer.text(")");
+    }
+
     fn visit_union(&mut self, inner: &[ladfile::LadTypeKind]) {
         for (idx, arg) in inner.iter().enumerate() {
             self.visit(arg);
@@ -365,6 +380,13 @@ mod test {
             LadTypeKind::Primitive(ReflectionPrimitiveKind::String),
         ]));
         assert_eq!(visitor.buffer.build(), "(Bool, String)");
+
+        let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
+        visitor.visit(&LadTypeKind::TupleWithRest {
+            head: vec![LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool)],
+            rest: Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::String)),
+        });
+        assert_eq!(visitor.buffer.build(), "(Bool, ...String)");
     }
 
     #[test]

@@ -351,6 +351,13 @@ pub enum LadTypeKind {
     Tuple(Vec<LadTypeKind>),
     /// A variadic tuple
     UntypedTuple,
+    /// A list of values of the given kinds followed by any number of values of one kind
+    TupleWithRest {
+        /// The kinds of the first values
+        head: Vec<LadTypeKind>,
+        /// The kind of the values after them
+        rest: Box<LadTypeKind>,
+    },
     /// An array
     Array(Box<LadTypeKind>, usize),
     /// A primitive type, implementing `IntoScript` and `FromScript` natively in BMS.
@@ -385,6 +392,9 @@ impl LadTypeKind {
             | LadTypeKind::Array(inner, _) => vec![&**inner],
             LadTypeKind::HashMap(key, value) => vec![&**key, &**value],
             LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => inner.iter().collect(),
+            LadTypeKind::TupleWithRest { head, rest } => {
+                head.iter().chain(std::iter::once(&**rest)).collect()
+            }
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
             | LadTypeKind::Val(_)
@@ -489,6 +499,9 @@ pub trait ArgumentVisitor {
     /// Any number of values of any type
     fn visit_untyped_tuple(&mut self) -> Self::Output;
 
+    /// Values of the given kinds followed by any number of values of the `rest` kind
+    fn visit_tuple_with_rest(&mut self, head: &[LadTypeKind], rest: &LadTypeKind) -> Self::Output;
+
     /// One of many types
     fn visit_union(&mut self, inner: &[LadTypeKind]) -> Self::Output;
 
@@ -511,6 +524,7 @@ pub trait ArgumentVisitor {
             LadTypeKind::InteropResult(inner) => self.visit_interop_result(inner),
             LadTypeKind::Tuple(inner) => self.visit_tuple(inner),
             LadTypeKind::UntypedTuple => self.visit_untyped_tuple(),
+            LadTypeKind::TupleWithRest { head, rest } => self.visit_tuple_with_rest(head, rest),
             LadTypeKind::Union(inner) => self.visit_union(inner),
             LadTypeKind::Fields { type_id, variant } => {
                 self.visit_fields(type_id, variant.as_deref())

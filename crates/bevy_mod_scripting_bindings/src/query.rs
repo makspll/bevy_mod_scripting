@@ -706,7 +706,10 @@ impl IntoScript for ScriptQueryResult {
 impl TypedThrough for ScriptQueryResult {
     fn through_type_info() -> ThroughTypeInfo {
         // the entity followed by the components
-        <Vec<ScriptValue> as TypedThrough>::through_type_info()
+        ThroughTypeInfo::TupleWithRest {
+            head: vec![V::<Entity>::through_type_info()],
+            rest: Box::new(Option::<ReflectReference>::through_type_info()),
+        }
     }
 }
 
