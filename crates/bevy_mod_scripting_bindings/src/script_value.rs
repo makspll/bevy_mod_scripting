@@ -9,7 +9,7 @@ use bevy_reflect::Reflect;
 use std::{any::TypeId, borrow::Cow, collections::VecDeque};
 
 use super::{
-    InlineValue, ReflectReference,
+    ReflectReference,
     function::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
 };
 
@@ -43,11 +43,6 @@ pub enum ScriptValue {
     ///
     /// Unlike a reference, a type carries no data, so it never allocates.
     Type(TypeId),
-    /// A small value owned by the script, stored inline instead of allocated, see [`InlineValue`].
-    ///
-    /// Scripts can't tell it from an allocated [`ScriptValue::Reference`], language implementations promote it to one
-    /// with [`InlineValue::into_reference`] for anything which needs a place, i.e. accessing its fields.
-    Value(InlineValue),
     /// A dynamic script function possibly storing state. Preffer using the [`ScriptValue::Function`] variant instead if possible.
     FunctionMut(DynamicScriptFunctionMut),
     /// A stateless dynamic script function
@@ -116,7 +111,6 @@ impl DisplayWithTypeInfo for ScriptValue {
             }
             ScriptValue::Reference(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Type(v) => v.display_with_type_info(f, type_info_provider),
-            ScriptValue::Value(v) => write!(f, "{v:?}"),
             ScriptValue::FunctionMut(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Function(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Error(e) => e.display_with_type_info(f, type_info_provider),
@@ -136,7 +130,6 @@ impl PartialEq for ScriptValue {
             (Self::Map(l0), Self::Map(r0)) => l0 == r0,
             (Self::Reference(l0), Self::Reference(r0)) => l0 == r0,
             (Self::Type(l0), Self::Type(r0)) => l0 == r0,
-            (Self::Value(l0), Self::Value(r0)) => l0 == r0,
             // explicitly don't compare functions and errors
             _ => false,
         }
@@ -165,7 +158,6 @@ impl ScriptValue {
             ScriptValue::Tuple(_) => "Tuple".to_owned(),
             ScriptValue::Reference(_) => "Reference".to_owned(),
             ScriptValue::Type(_) => "Type".to_owned(),
-            ScriptValue::Value(_) => "Value".to_owned(),
             ScriptValue::FunctionMut(_) => "FunctionMut".to_owned(),
             ScriptValue::Function(_) => "Function".to_owned(),
             ScriptValue::Error(_) => "Error".to_owned(),

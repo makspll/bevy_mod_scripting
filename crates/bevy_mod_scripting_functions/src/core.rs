@@ -411,9 +411,6 @@ impl World {
                 Some(ScriptValue::Reference(value)) => {
                     world.trigger_event(registration.into_inner(), &value)
                 }
-                Some(ScriptValue::Value(value)) => {
-                    world.trigger_event(registration.into_inner(), &value.into_reference())
-                }
                 _ => Err(InteropError::string(format!(
                     "triggering the event `{}` needs an event value, i.e. built with `construct`",
                     registration.short_name()
@@ -816,11 +813,8 @@ impl ReflectReference {
     ) -> Result<bool, InteropError> {
         profiling::function_scope!("eq");
         let world = ctxt.world()?;
-        let other = match other {
-            ScriptValue::Reference(other) => other,
-            // only read, a copy will do
-            ScriptValue::Value(other) => other.into_reference(),
-            _ => return Ok(false),
+        let ScriptValue::Reference(other) = other else {
+            return Ok(false);
         };
         if let Ok(variant) = other.downcast::<EnumVariantRef>(world.clone()) {
             return value_is_variant(&world, &reference, variant);
@@ -1221,11 +1215,8 @@ impl EnumVariantRef {
     ) -> Result<bool, InteropError> {
         profiling::function_scope!("eq");
         let world = ctxt.world()?;
-        let other = match other {
-            ScriptValue::Reference(other) => other,
-            // only read, a copy will do
-            ScriptValue::Value(other) => other.into_reference(),
-            _ => return Ok(false),
+        let ScriptValue::Reference(other) = other else {
+            return Ok(false);
         };
         if let Ok(other_variant) = other.downcast::<EnumVariantRef>(world.clone()) {
             return Ok(other_variant == *variant);

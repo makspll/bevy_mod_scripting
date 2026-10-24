@@ -15,7 +15,7 @@ use bevy_mod_scripting_derive::script_bindings;
 )]
 impl InputFocus {
     /// Gives the focus to the entity, so it receives keyboard input.
-    fn set(mut _self: M<InputFocus>, entity: V<Entity>) {
+    fn set(mut _self: M<InputFocus>, entity: R<Entity>) {
         _self.set(*entity, FocusCause::Navigated);
     }
 

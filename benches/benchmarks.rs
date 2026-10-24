@@ -235,13 +235,12 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
         BatchSize::SmallInput,
     );
 
-    // references, small values are inline and have no place to borrow from
     perform_benchmark_with_generator(
         "Ref<T>::from",
-        &|rng, _| {
-            ScriptValue::Reference(ReflectReference::new_allocated(ReflectyVal(
-                rng.random::<u32>(),
-            )))
+        &|rng, w| {
+            V::new(ReflectyVal(rng.random::<u32>()))
+                .into_script(w)
+                .unwrap()
         },
         &|w, i| {
             R::<ReflectyVal>::from_script(i, w).unwrap();
@@ -252,10 +251,10 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
 
     perform_benchmark_with_generator(
         "Mut<T>::from",
-        &|rng, _| {
-            ScriptValue::Reference(ReflectReference::new_allocated(ReflectyVal(
-                rng.random::<u32>(),
-            )))
+        &|rng, w| {
+            V::new(ReflectyVal(rng.random::<u32>()))
+                .into_script(w)
+                .unwrap()
         },
         &|w, i| {
             M::<ReflectyVal>::from_script(i, w).unwrap();

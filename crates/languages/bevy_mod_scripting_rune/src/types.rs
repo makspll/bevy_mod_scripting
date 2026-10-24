@@ -7,7 +7,7 @@
 use std::{any::TypeId, borrow::Cow, cmp::Ordering, collections::BTreeSet, sync::Arc};
 
 use bevy_mod_scripting_bindings::{
-    InlineValue, InteropError, ReflectReference, ScriptValue, WorldGuard,
+    InteropError, ReflectReference, ScriptValue, WorldGuard,
     dispatch::{self, Member},
     function::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
 };
@@ -53,72 +53,6 @@ pub struct RuneRef(pub ReflectReference);
 #[derive(Any, Clone, Copy)]
 #[rune(item = ::bms, name = Type)]
 pub struct RuneType(pub TypeId);
-
-/// A small value owned by the script, see [`ScriptValue::Value`] and [`InlineValue`].
-///
-/// Stored inline until something needs it to have a place (accessing a field, calling a function which mutates it),
-/// then promoted in place to an allocated reference, so scripts can't tell it from a [`RuneRef`].
-#[derive(Any, Clone)]
-#[rune(item = ::bms, name = Value)]
-pub struct RuneValue(pub RuneValueState);
-
-/// The storage of a [`RuneValue`]
-#[derive(Clone)]
-pub enum RuneValueState {
-    /// Not promoted yet
-    Inline(InlineValue),
-    /// Promoted, behaves like a [`RuneRef`]
-    Promoted(ReflectReference),
-}
-
-impl RuneValue {
-    /// The value to pass to a function
-    pub fn to_script_value(&self) -> ScriptValue {
-        match &self.0 {
-            RuneValueState::Inline(value) => ScriptValue::Value(*value),
-            RuneValueState::Promoted(reference) => ScriptValue::Reference(reference.clone()),
-        }
-    }
-
-    /// Promotes the value in place if needed, and returns its reference.
-    pub fn promote(&mut self) -> RuneRef {
-        let reference = match &self.0 {
-            RuneValueState::Inline(value) => value.into_reference(),
-            RuneValueState::Promoted(reference) => return RuneRef(reference.clone()),
-        };
-        self.0 = RuneValueState::Promoted(reference.clone());
-        RuneRef(reference)
-    }
-
-    /// A reference to the value for reading it, a copy if it wasn't promoted.
-    fn read_reference(&self) -> ReflectReference {
-        match &self.0 {
-            RuneValueState::Inline(value) => value.into_reference(),
-            RuneValueState::Promoted(reference) => reference.clone(),
-        }
-    }
-}
-
-/// The member of an inline value which doesn't need a place, see [`dispatch::index_value`].
-fn inline_method(this: &RuneValue, name: &str) -> Result<Option<Value>, InteropError> {
-    let RuneValueState::Inline(value) = &this.0 else {
-        return Ok(None);
-    };
-    match dispatch::index_value(world()?, value, name) {
-        // the value is not one of the arguments of the function a script calls
-        dispatch::ValueMember::Method(func) => {
-            function_to_rune(func.curry(ScriptValue::Value(*value)), Some(1)).map(Some)
-        }
-        dispatch::ValueMember::NeedsPlace => Ok(None),
-    }
-}
-
-fn get_value_member(this: &mut RuneValue, name: &str) -> Result<Value, InteropError> {
-    match inline_method(this, name)? {
-        Some(method) => Ok(method),
-        None => get_ref_member(&this.promote(), name),
-    }
-}
 
 /// The values of a namespace, as returned by `import_namespace`, whose functions can be called with the method syntax.
 #[derive(Any, Clone)]
@@ -248,42 +182,6 @@ fn call_member_inner(
             RUNE_CALLER_CONTEXT,
         )?;
         call_value(member, args)?
-    } else if let Ok(mut this) = receiver.borrow_mut::<RuneValue>() {
-        let inline = match &this.0 {
-            RuneValueState::Inline(value) => Some(*value),
-            RuneValueState::Promoted(_) => None,
-        };
-        let method = match inline {
-            Some(value) => match dispatch::index_value(world()?, &value, name) {
-                dispatch::ValueMember::Method(func) => Some((func, ScriptValue::Value(value))),
-                dispatch::ValueMember::NeedsPlace => None,
-            },
-            None => None,
-        };
-        let (member, receiver) = match method {
-            Some((func, value)) => (Member::Method(func), value),
-            None => {
-                let reference = this.promote().0;
-                let member = dispatch::index_name(
-                    world()?,
-                    Cow::Borrowed(&reference),
-                    name.to_owned(),
-                    RUNE_CALLER_CONTEXT,
-                )?;
-                (member, ScriptValue::Reference(reference))
-            }
-        };
-        drop(this);
-        match member {
-            // the value is the first argument of its methods
-            Member::Method(func) => {
-                let mut with_receiver = Vec::with_capacity(args.len() + 1);
-                with_receiver.push(receiver);
-                with_receiver.extend(args);
-                func.call(with_receiver, RUNE_CALLER_CONTEXT)?
-            }
-            Member::Static(value) => call_value(value, args)?,
-        }
     } else if let Ok(this) = receiver.borrow_ref::<RuneNamespace>() {
         let member = this.0.get(name).cloned().ok_or_else(|| {
             InteropError::external(crate::error::RuneError(format!(
@@ -381,24 +279,30 @@ const COMPOUND_ASSIGNMENTS: [(&Protocol, ScriptOperatorNames); 5] = [
 /// How many fields of tuples can be accessed with `v.0`, `v.1`, .. the others with `v[16]` etc.
 const TUPLE_FIELDS: usize = 16;
 
-fn binary(operator: ScriptOperatorNames, this: ScriptValue, other: &Value) -> VmResult<Value> {
+fn binary(operator: ScriptOperatorNames, this: &RuneRef, other: &Value) -> VmResult<Value> {
     vm((|| {
         let rhs = from_rune(other)?;
-        let out = dispatch::binary(world()?, operator, this, rhs, RUNE_CALLER_CONTEXT)?;
+        let out = dispatch::binary(
+            world()?,
+            operator,
+            ScriptValue::Reference(this.0.clone()),
+            rhs,
+            RUNE_CALLER_CONTEXT,
+        )?;
         to_rune(out)
     })())
 }
 
-fn same_reference(this: ScriptValue, other: &Value) -> Result<Option<bool>, InteropError> {
-    // like in Lua, values of different kinds are never equal, references and inline values are the same kind
-    if other.borrow_ref::<RuneRef>().is_err() && other.borrow_ref::<RuneValue>().is_err() {
+fn same_reference(this: &RuneRef, other: &Value) -> Result<Option<bool>, InteropError> {
+    // like in Lua, values of different kinds are never equal
+    if other.borrow_ref::<RuneRef>().is_err() {
         return Ok(Some(false));
     }
     let rhs = from_rune(other)?;
     let out = dispatch::binary(
         world()?,
         ScriptOperatorNames::Equality,
-        this,
+        ScriptValue::Reference(this.0.clone()),
         rhs,
         RUNE_CALLER_CONTEXT,
     )?;
@@ -408,35 +312,16 @@ fn same_reference(this: ScriptValue, other: &Value) -> Result<Option<bool>, Inte
     })
 }
 
-fn less_than(this: ScriptValue, other: &Value) -> Result<bool, InteropError> {
+fn less_than(this: &RuneRef, other: &Value) -> Result<bool, InteropError> {
     let rhs = from_rune(other)?;
     let out = dispatch::binary(
         world()?,
         ScriptOperatorNames::LessThanComparison,
-        this,
+        ScriptValue::Reference(this.0.clone()),
         rhs,
         RUNE_CALLER_CONTEXT,
     )?;
     Ok(matches!(out, ScriptValue::Bool(true)))
-}
-
-fn partial_cmp(this: ScriptValue, other: &Value) -> Result<Option<Ordering>, InteropError> {
-    if same_reference(this.clone(), other)? == Some(true) {
-        return Ok(Some(Ordering::Equal));
-    }
-    if less_than(this.clone(), other)? {
-        return Ok(Some(Ordering::Less));
-    }
-    // greater, when the other is a reference or value which is less than this one
-    let other_value = from_rune(other)?;
-    if !matches!(
-        other_value,
-        ScriptValue::Reference(_) | ScriptValue::Value(_)
-    ) {
-        return Ok(None);
-    }
-    let this = to_rune(this)?;
-    Ok(less_than(other_value, &this)?.then_some(Ordering::Greater))
 }
 
 macro_rules! operators {
@@ -445,13 +330,7 @@ macro_rules! operators {
             $module.associated_function(
                 &Protocol::$protocol,
                 |this: &RuneRef, other: Value| {
-                    binary(ScriptOperatorNames::$operator, ScriptValue::Reference(this.0.clone()), &other)
-                },
-            )?;
-            $module.associated_function(
-                &Protocol::$protocol,
-                |this: &RuneValue, other: Value| {
-                    binary(ScriptOperatorNames::$operator, this.to_script_value(), &other)
+                    binary(ScriptOperatorNames::$operator, this, &other)
                 },
             )?;
         )*
@@ -481,7 +360,6 @@ pub fn register_types(
 ) -> Result<(), ContextError> {
     module.ty::<RuneRef>()?;
     module.ty::<RuneType>()?;
-    module.ty::<RuneValue>()?;
     module.ty::<RuneNamespace>()?;
     module.ty::<RuneFunction>()?;
     module.ty::<RuneIter>()?;
@@ -503,30 +381,6 @@ pub fn register_types(
                 dispatch::set_index(
                     world()?,
                     this.0.clone(),
-                    from_rune(&key)?,
-                    from_rune(&value)?,
-                    RUNE_CALLER_CONTEXT,
-                )
-            })())
-        },
-    )?;
-    module.associated_function(&Protocol::INDEX_GET, |this: &mut RuneValue, key: Value| {
-        vm((|| match from_rune(&key)? {
-            ScriptValue::String(name) => get_value_member(this, &name),
-            key => {
-                let this = this.promote();
-                let member = dispatch::index(world()?, this.0.clone(), key, RUNE_CALLER_CONTEXT)?;
-                member_to_rune(member, Some(&this.0))
-            }
-        })())
-    })?;
-    module.associated_function(
-        &Protocol::INDEX_SET,
-        |this: &mut RuneValue, key: Value, value: Value| {
-            vm((|| {
-                dispatch::set_index(
-                    world()?,
-                    this.promote().0,
                     from_rune(&key)?,
                     from_rune(&value)?,
                     RUNE_CALLER_CONTEXT,
@@ -557,13 +411,7 @@ pub fn register_types(
     );
 
     module.associated_function(&Protocol::PARTIAL_EQ, |this: &RuneRef, other: Value| {
-        vm(
-            same_reference(ScriptValue::Reference(this.0.clone()), &other)
-                .map(|eq| eq.unwrap_or(false)),
-        )
-    })?;
-    module.associated_function(&Protocol::PARTIAL_EQ, |this: &RuneValue, other: Value| {
-        vm(same_reference(this.to_script_value(), &other).map(|eq| eq.unwrap_or(false)))
+        vm(same_reference(this, &other).map(|eq| eq.unwrap_or(false)))
     })?;
     module.associated_function(&Protocol::PARTIAL_EQ, |this: &RuneType, other: Value| {
         other
@@ -571,32 +419,32 @@ pub fn register_types(
             .map(|other| other.0 == this.0)
             .unwrap_or(false)
     })?;
-
     module.associated_function(
         &Protocol::PARTIAL_CMP,
         |this: &RuneRef, other: Value| -> VmResult<Option<Ordering>> {
-            vm(partial_cmp(ScriptValue::Reference(this.0.clone()), &other))
-        },
-    )?;
-    module.associated_function(
-        &Protocol::PARTIAL_CMP,
-        |this: &RuneValue, other: Value| -> VmResult<Option<Ordering>> {
-            vm(partial_cmp(this.to_script_value(), &other))
+            vm((|| {
+                if same_reference(this, &other)? == Some(true) {
+                    return Ok(Some(Ordering::Equal));
+                }
+                if less_than(this, &other)? {
+                    return Ok(Some(Ordering::Less));
+                }
+                // greater, when the other is a reference which is less than this one
+                match other.borrow_ref::<RuneRef>() {
+                    Ok(other) => {
+                        let this_value = Value::new(RuneRef(this.0.clone()))
+                            .map_err(crate::error::IntoInteropError::to_bms_error)?;
+                        Ok(less_than(&other, &this_value)?.then_some(Ordering::Greater))
+                    }
+                    Err(_) => Ok(None),
+                }
+            })())
         },
     )?;
 
     module.associated_function(&Protocol::INTO_ITER, |this: &RuneRef| {
         vm(
             (|| match dispatch::iter(world()?, this.0.clone(), RUNE_CALLER_CONTEXT)? {
-                ScriptValue::FunctionMut(f) => Ok(RuneIter(ScriptFunction::Mut(f))),
-                ScriptValue::Function(f) => Ok(RuneIter(ScriptFunction::Plain(f))),
-                _ => Err(InteropError::str("iterating returned no function")),
-            })(),
-        )
-    })?;
-    module.associated_function(&Protocol::INTO_ITER, |this: &mut RuneValue| {
-        vm(
-            (|| match dispatch::iter(world()?, this.promote().0, RUNE_CALLER_CONTEXT)? {
                 ScriptValue::FunctionMut(f) => Ok(RuneIter(ScriptFunction::Mut(f))),
                 ScriptValue::Function(f) => Ok(RuneIter(ScriptFunction::Plain(f))),
                 _ => Err(InteropError::str("iterating returned no function")),
@@ -630,30 +478,6 @@ pub fn register_types(
         rune::vm_write!(f, "{}", text)
     })?;
 
-    // only read the value, a copy will do
-    module.associated_function(
-        &Protocol::DISPLAY_FMT,
-        |this: &RuneValue, f: &mut Formatter| {
-            let text = rune::vm_try!(vm(world().and_then(|world| dispatch::display(
-                world,
-                this.read_reference(),
-                RUNE_CALLER_CONTEXT
-            ))));
-            rune::vm_write!(f, "{}", text)
-        },
-    )?;
-    module.associated_function(
-        &Protocol::DEBUG_FMT,
-        |this: &RuneValue, f: &mut Formatter| {
-            let text = rune::vm_try!(vm(world().and_then(|world| dispatch::debug(
-                world,
-                this.read_reference(),
-                RUNE_CALLER_CONTEXT
-            ))));
-            rune::vm_write!(f, "{}", text)
-        },
-    )?;
-
     // functions of BMS are called with `f.call(..)`
     module
         .raw_function(
@@ -686,33 +510,12 @@ pub fn register_types(
                 vm(assign_member(operator, this, key(), &value))
             })?;
         }
-        module.index_function(&Protocol::GET, index, move |this: &mut RuneValue| {
-            vm((|| {
-                let this = this.promote();
-                let member = dispatch::index(world()?, this.0.clone(), key(), RUNE_CALLER_CONTEXT)?;
-                member_to_rune(member, Some(&this.0))
-            })())
-        })?;
-        for (protocol, operator) in COMPOUND_ASSIGNMENTS {
-            module.index_function(
-                protocol,
-                index,
-                move |this: &mut RuneValue, value: Value| {
-                    vm(assign_member(operator, &this.promote(), key(), &value))
-                },
-            )?;
-        }
     }
 
     for &name in names {
         // `v.name(..)`
         let convert = converter(name);
-        for container in [
-            Container::Ref,
-            Container::Type,
-            Container::Value,
-            Container::Namespace,
-        ] {
+        for container in [Container::Ref, Container::Type, Container::Namespace] {
             let builder = module.raw_function(
                 name,
                 call_raw(move |values: &[Value]| call_member_inner(name, convert, values)),
@@ -720,7 +523,6 @@ pub fn register_types(
             match container {
                 Container::Ref => builder.build_associated::<RuneRef>()?,
                 Container::Type => builder.build_associated::<RuneType>()?,
-                Container::Value => builder.build_associated::<RuneValue>()?,
                 Container::Namespace => builder.build_associated::<RuneNamespace>()?,
             };
         }
@@ -754,34 +556,6 @@ pub fn register_types(
         module.field_function(&Protocol::GET, name, move |this: &RuneType| {
             vm(get_type_member(this, name))
         })?;
-        module.field_function(&Protocol::GET, name, move |this: &mut RuneValue| {
-            vm(get_value_member(this, name))
-        })?;
-        module.field_function(
-            &Protocol::SET,
-            name,
-            move |this: &mut RuneValue, value: Value| {
-                vm((|| {
-                    dispatch::set_index(
-                        world()?,
-                        this.promote().0,
-                        ScriptValue::String(name.to_owned().into()),
-                        from_rune(&value)?,
-                        RUNE_CALLER_CONTEXT,
-                    )
-                })())
-            },
-        )?;
-        for (protocol, operator) in COMPOUND_ASSIGNMENTS {
-            module.field_function(protocol, name, move |this: &mut RuneValue, value: Value| {
-                vm(assign_member(
-                    operator,
-                    &this.promote(),
-                    ScriptValue::String(name.to_owned().into()),
-                    &value,
-                ))
-            })?;
-        }
         module.field_function(&Protocol::GET, name, move |this: &RuneNamespace| {
             vm(get_namespace_member(this, name))
         })?;
@@ -793,6 +567,5 @@ pub fn register_types(
 enum Container {
     Ref,
     Type,
-    Value,
     Namespace,
 }
