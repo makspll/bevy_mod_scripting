@@ -29,18 +29,20 @@
 
 use bevy_ecs::{archetype::ArchetypeId, component::ComponentId};
 
+use bevy_ecs::schedule::FixedBitSet;
+
 /// Restricts access to components to entities in a set of archetypes, per component.
 ///
 /// Components without a restriction are not affected, i.e. resources and components accessed by exclusive guards.
 #[derive(Clone, Debug, Default)]
 pub struct ArchetypeFilter {
-    /// Restricted components, each with a bitset indexed by [`ArchetypeId::index`].
+    /// Restricted components, each with the set of allowed [`ArchetypeId::index`]es.
     /// Systems restrict a handful of components, so a linear scan beats indexing by component id.
-    restricted: Vec<(ComponentId, Vec<u64>)>,
+    restricted: Vec<(ComponentId, FixedBitSet)>,
 }
 
 impl ArchetypeFilter {
-    fn bits_mut(&mut self, component_id: ComponentId) -> &mut Vec<u64> {
+    fn bits_mut(&mut self, component_id: ComponentId) -> &mut FixedBitSet {
         let index = match self
             .restricted
             .iter()
@@ -48,7 +50,7 @@ impl ArchetypeFilter {
         {
             Some(index) => index,
             None => {
-                self.restricted.push((component_id, Vec::new()));
+                self.restricted.push((component_id, FixedBitSet::new()));
                 self.restricted.len() - 1
             }
         };
@@ -59,12 +61,8 @@ impl ArchetypeFilter {
     ///
     /// Once called for a component, the component is restricted to the archetypes allowed this way.
     pub fn allow(&mut self, component_id: ComponentId, archetype_id: ArchetypeId) {
-        let bits = self.bits_mut(component_id);
-        let (word, bit) = (archetype_id.index() / 64, archetype_id.index() % 64);
-        if word >= bits.len() {
-            bits.resize(word + 1, 0);
-        }
-        bits[word] |= 1 << bit;
+        self.bits_mut(component_id)
+            .grow_and_insert(archetype_id.index());
     }
 
     /// Restricts the given component to no archetypes, until [`Self::allow`] is called for it.
@@ -76,9 +74,7 @@ impl ArchetypeFilter {
     #[inline]
     pub fn is_allowed(&self, component_id: ComponentId, archetype_id: ArchetypeId) -> bool {
         match self.restricted.iter().find(|(id, _)| *id == component_id) {
-            Some((_, bits)) => bits
-                .get(archetype_id.index() / 64)
-                .is_some_and(|word| word & (1 << (archetype_id.index() % 64)) != 0),
+            Some((_, archetypes)) => archetypes.contains(archetype_id.index()),
             None => true,
         }
     }

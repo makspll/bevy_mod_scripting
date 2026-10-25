@@ -407,6 +407,22 @@ impl std::fmt::Display for ScriptTypeRegistration {
     }
 }
 
+/// How [`ScriptQueryBuilder::as_query_state`] declares the accesses of the query.
+///
+/// Read and written components match the same entities, the difference is only in the access the query reports.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum QueryAccess {
+    /// Every component is declared as read, for finding the matching entities, i.e. with
+    /// [`bevy_ecs::query::QueryState::iter`] on a `&World`, while the actual component accesses are claimed through
+    /// the world guard.
+    ///
+    /// The query state must not be used to write components, or have its access reported to the scheduler.
+    MatchOnly,
+    /// The written components are declared as written, for queries whose access is reported to the scheduler,
+    /// i.e. the queries of script systems.
+    Declared,
+}
+
 #[derive(Clone, Default, Reflect)]
 #[reflect(opaque)]
 /// The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.
@@ -431,6 +447,8 @@ impl std::fmt::Display for ScriptTypeRegistration {
 pub struct ScriptQueryBuilder {
     /// The components to query for.
     pub components: Vec<ScriptComponentRegistration>,
+    /// Whether each of the components is written, components without an entry are written.
+    writes: Vec<bool>,
     /// Components that must be present.
     pub with: Vec<ScriptComponentRegistration>,
     /// Components that must not be present.
@@ -444,15 +462,36 @@ impl ScriptQueryBuilder {
         Default::default()
     }
 
-    /// Adds components to the query.
+    /// Adds components to the query, which can be read and written.
     pub fn components(&mut self, components: Vec<ScriptComponentRegistration>) -> &mut Self {
-        self.components.extend(components);
+        for component in components {
+            self.component(component);
+        }
         self
     }
-    /// Adds a component to the query.
+    /// Adds a component to the query, which can be read and written.
     pub fn component(&mut self, component: ScriptComponentRegistration) -> &mut Self {
+        self.push_component(component, true)
+    }
+
+    /// Adds a component to the query, which can only be read.
+    ///
+    /// Systems reading a component can run in parallel with each other.
+    pub fn component_read(&mut self, component: ScriptComponentRegistration) -> &mut Self {
+        self.push_component(component, false)
+    }
+
+    fn push_component(&mut self, component: ScriptComponentRegistration, write: bool) -> &mut Self {
+        // components pushed to the public field directly are written
+        self.writes.resize(self.components.len(), true);
         self.components.push(component);
+        self.writes.push(write);
         self
+    }
+
+    /// Returns true if the component at the given index of [`Self::components`] is written
+    pub fn is_written(&self, index: usize) -> bool {
+        self.writes.get(index).copied().unwrap_or(true)
     }
 
     /// Adds components to the query that must be present.
@@ -479,14 +518,21 @@ impl ScriptQueryBuilder {
         self
     }
 
-    /// Builds the query into a query state as used in systems.
-    pub fn as_query_state<Q: QueryData>(&self, world: &mut World) -> QueryState<Q> {
+    /// Builds the query into a query state, declaring its component accesses as given by `access`.
+    pub fn as_query_state<Q: QueryData>(
+        &self,
+        world: &mut World,
+        access: QueryAccess,
+    ) -> QueryState<Q> {
         let mut dynamic_query = QueryBuilder::<Q>::new(world);
         // we don't actually want to fetch the data for components now, only figure out
-        // which entities match the query
-        // so we might be being slightly overkill
-        for c in &self.components {
-            dynamic_query.ref_id(c.component_id());
+        // which entities match the query, and declare the access
+        for (index, c) in self.components.iter().enumerate() {
+            if access == QueryAccess::Declared && self.is_written(index) {
+                dynamic_query.mut_id(c.component_id());
+            } else {
+                dynamic_query.ref_id(c.component_id());
+            }
         }
 
         for w in &self.with {
