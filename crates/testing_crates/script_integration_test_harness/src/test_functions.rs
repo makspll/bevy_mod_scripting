@@ -77,6 +77,20 @@ pub fn register_test_functions(world: &mut App) {
             },
         )
         .register(
+            "_archetype_of",
+            |s: FunctionCallContext, entity: V<Entity>| {
+                let world = s.world()?;
+                world
+                    .with_world_access(|world| {
+                        world
+                            .get_entity(*entity)
+                            .map(|entity| entity.archetype().id().index())
+                            .ok()
+                    })?
+                    .ok_or_else(|| InteropError::string(format!("missing entity: {}", *entity)))
+            },
+        )
+        .register(
             "_assert_system_runs_before",
             |s: FunctionCallContext,
              schedule: R<ReflectSchedule>,

@@ -1126,6 +1126,7 @@ mod test {
             WorldAccessGuard::new_non_exclusive(
                 world.as_unsafe_world_cell(),
                 AccessByteSet::from_allowed_list(&[]),
+                None,
                 type_registry,
                 cache,
             )
