@@ -671,8 +671,14 @@ pub struct LadTypeDefinition {
 pub struct LadTypeMetadata {
     /// True if the type is a component according to the type registry
     pub is_component: bool,
-    /// Returns true if the type is a component according to the type registry
+    /// True if the type is a resource according to the type registry
     pub is_resource: bool,
+    /// True if the type is a bundle according to the type registry
+    #[serde(skip_serializing_if = "is_false", default)]
+    pub is_bundle: bool,
+    /// True if the type is an asset according to the type registry
+    #[serde(skip_serializing_if = "is_false", default)]
+    pub is_asset: bool,
 
     /// True if the type actually implements reflect, some types can be
     /// added as namespaces without actually implementing the Reflect trait
