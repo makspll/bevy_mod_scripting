@@ -1,8 +1,7 @@
-use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
+use bevy_mod_scripting_bindings_domain::{ScriptOperatorNames, type_kinds};
 use indexmap::{IndexMap, IndexSet};
 use ladfile::{
-    ArgumentVisitor, LadFile, LadFunction, LadTypeBound, LadTypeId, LadTypeKind,
-    ReflectionPrimitiveKind,
+    ArgumentVisitor, LadFile, LadFunction, LadTypeId, LadTypeKind, ReflectionPrimitiveKind,
 };
 
 use crate::{
@@ -21,7 +20,6 @@ pub fn convert_ladfile_to_lua_declaration_files(
 ) -> Result<IndexMap<String, LuaDefinitionFile>, anyhow::Error> {
     let bound_shared = bound_shared_functions(ladfile);
     let mut modules = vec![];
-    modules.extend(shared_type_modules(ladfile));
     let (classes, with_statics) = class_modules(ladfile, &bound_shared);
     modules.extend(classes);
     modules.extend(generic_type_modules(ladfile));
@@ -128,24 +126,33 @@ fn class_modules(
 }
 
 /// A class per generic type, with its parameters as generics.
+///
+/// Generic types are opaque, so a class with the parameters is all there is to them, except for the kinds of types
+/// (i.e. `ComponentType<A>`), which carry the functions shared by all types of the kind, see [`shared_kind_fields`].
 fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
-    // generic types are opaque, so a class with the parameters is all there is to them
     ladfile
         .generic_types
-        .values()
-        .map(|generic_type| LuaModule {
-            name: generic_type.identifier.clone(),
-            table: generic_type.identifier.clone(),
-            namespace: generic_type.namespace.clone(),
-            class: Some(LuaClass {
-                name: qualified(&generic_type.namespace, &generic_type.identifier),
-                parents: vec!["ReflectReference".to_string()],
-                generics: generic_type.params.clone(),
-                documentation: generic_type.documentation.clone(),
+        .iter()
+        .map(|(id, generic_type)| {
+            let (parents, fields) = match type_kind(id) {
+                Some(kind) => (vec![], shared_kind_fields(ladfile, kind)),
+                None => (vec![REFLECT_REFERENCE_CLASS.to_string()], vec![]),
+            };
+            LuaModule {
+                name: generic_type.identifier.clone(),
+                table: generic_type.identifier.clone(),
+                namespace: generic_type.namespace.clone(),
+                class: Some(LuaClass {
+                    name: qualified(&generic_type.namespace, &generic_type.identifier),
+                    parents,
+                    fields,
+                    generics: generic_type.params.clone(),
+                    documentation: generic_type.documentation.clone(),
+                    ..Default::default()
+                }),
+                type_only: true,
                 ..Default::default()
-            }),
-            type_only: true,
-            ..Default::default()
+            }
         })
         .collect()
 }
@@ -476,16 +483,23 @@ fn type_table_type(ladfile: &LadFile, type_id: &LadTypeId, has_statics: bool) ->
         types.push(LuaType::Alias(statics_class_name(&name)));
     }
     if let Some(lad_type) = ladfile.types.get(type_id) {
-        for bound in TYPE_BOUNDS {
-            if bound.is_satisfied_by(&lad_type.metadata) {
+        for kind in type_kinds::ALL {
+            if lad_type.metadata.is_of_kind(kind) {
                 types.push(LuaType::Generic {
-                    name: type_bound_class(bound).to_owned(),
+                    name: kind.to_owned(),
                     args: vec![LuaType::Alias(name.clone())],
                 });
             }
         }
     }
     LuaType::Union(types)
+}
+
+/// The kind of types, one of [`type_kinds`], the generic type with the given id stands for, if any.
+fn type_kind(generic_type: &LadTypeId) -> Option<&'static str> {
+    type_kinds::ALL
+        .into_iter()
+        .find(|kind| *generic_type == LadTypeId::new_string_id((*kind).into()))
 }
 
 /// The type whose functions are shared by all types, `StaticTypeRef`.
@@ -514,20 +528,22 @@ fn shared_functions(ladfile: &LadFile) -> Vec<&LadFunction> {
         .unwrap_or_default()
 }
 
-/// The bounds the type a shared function is called on must satisfy, i.e. `[Component]` for `get_on`.
-fn receiver_bounds(function: &LadFunction) -> Vec<LadTypeBound> {
-    let mut bounds = vec![];
+/// The kinds of types a shared function is called on, i.e. `[ComponentType]` for `get_on`, from the generic type of its first argument.
+fn receiver_kinds(_ladfile: &LadFile, function: &LadFunction) -> Vec<&'static str> {
+    let mut kinds = vec![];
     if let Some(receiver) = function.arguments.first() {
         receiver.kind.for_each(&mut |kind| {
-            if let LadTypeKind::TypeOf { bound, .. } = kind {
-                bounds.push(*bound);
+            if let LadTypeKind::Generic { generic_type, .. } = kind
+                && let Some(kind) = type_kind(generic_type)
+            {
+                kinds.push(kind);
             }
         });
     }
-    if bounds.is_empty() {
-        bounds.push(LadTypeBound::Type);
+    if kinds.is_empty() {
+        kinds.push(type_kinds::TYPE);
     }
-    bounds
+    kinds
 }
 
 /// Whether the signature of a shared function can't be expressed with LuaLS generics, i.e. it takes the fields of the type,
@@ -539,8 +555,9 @@ fn needs_binding(function: &LadFunction) -> bool {
         .iter()
         .chain(std::iter::once(&function.return_type))
     {
-        arg.kind
-            .for_each(&mut |kind| fields |= matches!(kind, LadTypeKind::FieldsOf(_)));
+        arg.kind.for_each(&mut |kind| {
+            fields |= matches!(kind, LadTypeKind::Fields { of, .. } if matches!(**of, LadTypeKind::Param(_)))
+        });
     }
     fields
 }
@@ -569,11 +586,10 @@ fn bind_kind(kind: &LadTypeKind, type_id: &LadTypeId) -> LadTypeKind {
     let bind_all = |inner: &[LadTypeKind]| inner.iter().map(|i| bind_kind(i, type_id)).collect();
     match kind {
         LadTypeKind::Param(_) => LadTypeKind::Val(type_id.clone()),
-        LadTypeKind::FieldsOf(_) => LadTypeKind::Fields {
-            type_id: type_id.clone(),
-            variant: None,
+        LadTypeKind::Fields { of, variant } => LadTypeKind::Fields {
+            of: bind(of),
+            variant: variant.clone(),
         },
-        LadTypeKind::TypeOf { carrier, .. } => bind_kind(carrier, type_id),
         LadTypeKind::Generic { generic_type, args } => LadTypeKind::Generic {
             generic_type: generic_type.clone(),
             args: bind_all(args),
@@ -617,9 +633,9 @@ fn bound_shared_functions(ladfile: &LadFile) -> IndexMap<LadTypeId, Vec<LadFunct
             let bound = shared
                 .iter()
                 .filter(|function| {
-                    receiver_bounds(function)
+                    receiver_kinds(ladfile, function)
                         .iter()
-                        .any(|bound| bound.is_satisfied_by(&lad_type.metadata))
+                        .any(|kind| lad_type.metadata.is_of_kind(kind))
                 })
                 .filter(|function| !own(&function.identifier))
                 .map(|function| bind_shared_function(function, type_id))
@@ -629,80 +645,50 @@ fn bound_shared_functions(ladfile: &LadFile) -> IndexMap<LadTypeId, Vec<LadFunct
         .collect()
 }
 
-/// A class per kind of type, i.e. `ComponentType<A>`, with the functions shared by all types of that kind, i.e. `get_on`.
+/// The functions shared by all types of a kind, as fields of the kind's generic class, i.e. `get_on` on `ComponentType<A>`.
 ///
 /// The functions are fields, so the class's generic parameter, the type, is resolved where the class is named
 /// with its argument, see [`type_table_type`]. Shared functions which need binding are on each type instead.
-fn shared_type_modules(ladfile: &LadFile) -> Vec<LuaModule> {
-    let shared = shared_functions(ladfile);
-    TYPE_BOUNDS
-        .iter()
-        .map(|bound| {
-            let fields = shared
-                .iter()
-                .filter(|function| {
-                    !needs_binding(function) && receiver_bounds(function).contains(bound)
-                })
-                .filter_map(|function| {
-                    // the type is filled in by BMS, scripts call the function without it
-                    let mut without_type = (*function).clone();
-                    if !without_type.arguments.is_empty() {
-                        without_type.arguments.remove(0);
-                    }
-                    match lad_function_to_lua_function(ladfile, &without_type) {
-                        Ok(signature) => Some(ClassField {
-                            name: signature.name,
-                            ty: LuaType::Function(FunctionSignatureShort {
-                                parameters: signature
-                                    .params
-                                    .into_iter()
-                                    .map(|param| (param.name, param.ty))
-                                    .collect(),
-                                return_type: Box::new(
-                                    signature.returns.into_iter().next().unwrap_or(LuaType::Any),
-                                ),
-                            }),
-                            scope: FieldScope::Public,
-                            optional: false,
-                            description: signature.documentation,
-                        }),
-                        Err(err) => {
-                            log::warn!(
-                                "Error converting shared function {}: {err}. Ignoring function.",
-                                function.identifier
-                            );
-                            None
-                        }
-                    }
-                })
-                .collect();
-            let name = type_bound_class(*bound).to_owned();
-            let documentation = match bound {
-                LadTypeBound::Type => "A type, i.e. `import_namespace(\"math\").Vec3`, with the functions every type has.",
-                LadTypeBound::Component => "A component type, with the functions every component type has.",
-                LadTypeBound::Resource => "A resource type, with the functions every resource type has.",
-                LadTypeBound::Bundle => "A bundle type, with the functions every bundle type has.",
-                LadTypeBound::Asset => "An asset type, with the functions every asset type has.",
-            };
-            LuaModule {
-                name: name.clone(),
-                table: name.clone(),
-                class: Some(LuaClass {
-                    name,
-                    fields,
-                    generics: vec![SHARED_TYPE_PARAM.to_owned()],
-                    documentation: Some(documentation.to_owned()),
-                    ..Default::default()
+fn shared_kind_fields(ladfile: &LadFile, kind: &str) -> Vec<ClassField> {
+    shared_functions(ladfile)
+        .into_iter()
+        .filter(|function| {
+            !needs_binding(function) && receiver_kinds(ladfile, function).contains(&kind)
+        })
+        .filter_map(|function| {
+            // the type is filled in by BMS, scripts call the function without it
+            let mut without_type = function.clone();
+            if !without_type.arguments.is_empty() {
+                without_type.arguments.remove(0);
+            }
+            match lad_function_to_lua_function(ladfile, &without_type) {
+                Ok(signature) => Some(ClassField {
+                    name: signature.name,
+                    ty: LuaType::Function(FunctionSignatureShort {
+                        parameters: signature
+                            .params
+                            .into_iter()
+                            .map(|param| (param.name, param.ty))
+                            .collect(),
+                        return_type: Box::new(
+                            signature.returns.into_iter().next().unwrap_or(LuaType::Any),
+                        ),
+                    }),
+                    scope: FieldScope::Public,
+                    optional: false,
+                    description: signature.documentation,
                 }),
-                type_only: true,
-                ..Default::default()
+                Err(err) => {
+                    log::warn!(
+                        "Error converting shared function {}: {err}. Ignoring function.",
+                        function.identifier
+                    );
+                    None
+                }
             }
         })
         .collect()
 }
-
-/// The name of the generic parameter of the shared classes, the same as the markers in Rust signatures use.
-const SHARED_TYPE_PARAM: &str = "A";
 
 /// Converts the function implementing an operator to that operator, if it has the expected signature.
 ///
@@ -840,7 +826,7 @@ pub fn lad_function_to_lua_function(
     let mut takes_types = false;
     for arg in &function.arguments {
         arg.kind.for_each(&mut |kind| {
-            takes_types |= matches!(kind, LadTypeKind::TypeOf { .. });
+            takes_types |= matches!(kind, LadTypeKind::Generic { generic_type, .. } if type_kind(generic_type).is_some());
         });
     }
     let mut overloads = vec![];
@@ -992,11 +978,27 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
     }
 
     fn visit_union(&mut self, inner: &[ladfile::LadTypeKind]) -> Self::Output {
-        Ok(LuaType::Union(to_lua_many(self.ladfile, inner)?))
+        // a type of a kind, or what is passed for it at runtime: the generic signature takes the type of the kind,
+        // i.e. `ComponentType<A>`, the erased overload what is passed at runtime, the other arms
+        let is_kind = |kind: &LadTypeKind| matches!(kind, LadTypeKind::Generic { generic_type, .. } if type_kind(generic_type).is_some());
+        let has_kind = inner.iter().any(is_kind);
+        let erase = self.erase_generics;
+        let inner = inner
+            .iter()
+            .filter(|kind| !has_kind || is_kind(kind) != erase)
+            .map(|kind| self.visit(kind))
+            .collect::<Result<_, _>>()?;
+        Ok(LuaType::Union(inner))
     }
 
-    fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) -> Self::Output {
+    fn visit_fields(&mut self, of: &LadTypeKind, variant: Option<&str>) -> Self::Output {
         let ladfile = self.ladfile;
+        let (LadTypeKind::Val(type_id) | LadTypeKind::Ref(type_id) | LadTypeKind::Mut(type_id)) =
+            of
+        else {
+            // LuaLS can't name the fields class of a generic parameter, see `bind_shared_function`
+            return Ok(LuaType::Primitive(LuaPrimitiveType::Table));
+        };
         Ok(if is_enum_payload(ladfile, type_id, variant) {
             LuaType::Primitive(LuaPrimitiveType::Table)
         } else if lad_fields(ladfile, type_id, variant).is_some_and(lad_variant_has_fields) {
@@ -1015,11 +1017,6 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
         })
     }
 
-    fn visit_fields_of(&mut self, _param: &str) -> Self::Output {
-        // LuaLS can't name the fields class of a generic parameter, see `bind_shared_function`
-        Ok(LuaType::Primitive(LuaPrimitiveType::Table))
-    }
-
     fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[LadTypeKind]) -> Self::Output {
         let Some(generic) = self.ladfile.generic_types.get(generic_type) else {
             return Ok(LuaType::Alias(REFLECT_REFERENCE_CLASS.to_owned()));
@@ -1032,47 +1029,10 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
                 .collect::<Result<_, _>>()?,
         })
     }
-
-    fn visit_type_of(
-        &mut self,
-        bound: LadTypeBound,
-        param: &str,
-        carrier: &LadTypeKind,
-    ) -> Self::Output {
-        if self.erase_generics {
-            return self.visit(carrier);
-        }
-        Ok(LuaType::Generic {
-            name: type_bound_class(bound).to_owned(),
-            args: vec![LuaType::Alias(param.to_owned())],
-        })
-    }
 }
 
 /// The class every reflected value extends.
 const REFLECT_REFERENCE_CLASS: &str = "ReflectReference";
-
-/// The generic class of the types satisfying a bound, i.e. `ComponentType<A>` for component types.
-///
-/// They carry the functions shared by all types of that kind, i.e. `get_on`, and are part of the type of each such type in its namespace.
-fn type_bound_class(bound: LadTypeBound) -> &'static str {
-    match bound {
-        LadTypeBound::Type => "StaticTypeRef",
-        LadTypeBound::Component => "ComponentType",
-        LadTypeBound::Resource => "ResourceType",
-        LadTypeBound::Bundle => "BundleType",
-        LadTypeBound::Asset => "AssetType",
-    }
-}
-
-/// Every bound, in the order their classes are listed in.
-const TYPE_BOUNDS: [LadTypeBound; 5] = [
-    LadTypeBound::Type,
-    LadTypeBound::Component,
-    LadTypeBound::Resource,
-    LadTypeBound::Bundle,
-    LadTypeBound::Asset,
-];
 
 /// The argument of a generic type can be any type, including primitives and types the file doesn't know about.
 fn lad_generic_argument_to_lua_type(ladfile: &LadFile, type_id: &LadTypeId) -> LuaType {
@@ -1140,7 +1100,11 @@ struct FieldsReferences(IndexSet<(LadTypeId, Option<String>)>);
 impl FieldsReferences {
     fn visit_function(&mut self, function: &LadFunction) {
         let mut collect = |kind: &LadTypeKind| {
-            if let LadTypeKind::Fields { type_id, variant } = kind {
+            if let LadTypeKind::Fields { of, variant } = kind
+                && let LadTypeKind::Val(type_id)
+                | LadTypeKind::Ref(type_id)
+                | LadTypeKind::Mut(type_id) = &**of
+            {
                 self.0
                     .insert((type_id.clone(), variant.as_deref().map(str::to_owned)));
             }
@@ -1492,7 +1456,7 @@ mod test {
     use super::*;
     use ladfile::{
         LadArgument, LadDefault, LadFunctionId, LadFunctionMetadata, LadFunctionNamespace,
-        LadTypeBound, LadTypeLayout,
+        LadTypeLayout,
     };
 
     fn arg(name: &'static str, kind: LadTypeKind) -> LadArgument {
@@ -1560,7 +1524,7 @@ mod test {
             vec![arg(
                 "payload",
                 LadTypeKind::Fields {
-                    type_id: plain.clone(),
+                    of: Box::new(LadTypeKind::Val(plain.clone())),
                     variant: None,
                 },
             )],
@@ -1575,7 +1539,7 @@ mod test {
             vec![arg(
                 "payload",
                 LadTypeKind::Fields {
-                    type_id: enum_type.clone(),
+                    of: Box::new(LadTypeKind::Val(enum_type.clone())),
                     variant: None,
                 },
             )],
@@ -1619,7 +1583,7 @@ mod test {
                     arg(
                         "payload",
                         LadTypeKind::Fields {
-                            type_id: enum_type.clone(),
+                            of: Box::new(LadTypeKind::Val(enum_type.clone())),
                             variant: Some(variant.into()),
                         },
                     ),
@@ -1732,14 +1696,32 @@ mod test {
         definition.metadata.mapped_to_primitive_kind = Some(ReflectionPrimitiveKind::StaticTypeRef);
         file.types.insert(static_type_ref.clone(), definition);
 
-        let type_of = |bound| LadTypeKind::TypeOf {
-            bound,
-            param: "A".into(),
-            carrier: Box::new(LadTypeKind::Primitive(
-                ReflectionPrimitiveKind::StaticTypeRef,
-            )),
-        };
+        // the kinds of types are generic types, declared by the builder
+        for kind in [type_kinds::TYPE, type_kinds::COMPONENT_TYPE] {
+            file.generic_types.insert(
+                LadTypeId::new_string_id(kind.into()),
+                ladfile::LadGenericType {
+                    identifier: kind.into(),
+                    crate_: None,
+                    path: kind.into(),
+                    namespace: String::new(),
+                    params: vec!["A".into()],
+                    documentation: None,
+                },
+            );
+        }
         let param = || LadTypeKind::Param("A".into());
+        // the type of `A`, or what is passed at runtime
+        let type_of = |kind: &str, carrier| {
+            LadTypeKind::Union(vec![
+                LadTypeKind::Generic {
+                    generic_type: LadTypeId::new_string_id(kind.to_owned().into()),
+                    args: vec![param()],
+                },
+                carrier,
+            ])
+        };
+        let static_type = || LadTypeKind::Primitive(ReflectionPrimitiveKind::StaticTypeRef);
         let unit = type_id(&file, "UnitType");
         let mut add = |namespace: LadFunctionNamespace,
                        name: &'static str,
@@ -1777,15 +1759,24 @@ mod test {
             LadFunctionNamespace::Type(static_type_ref.clone()),
             "new",
             vec![
-                arg("type", type_of(LadTypeBound::Type)),
-                arg("payload", LadTypeKind::FieldsOf("A".into())),
+                arg("type", type_of(type_kinds::TYPE, static_type())),
+                arg(
+                    "payload",
+                    LadTypeKind::Fields {
+                        of: Box::new(param()),
+                        variant: None,
+                    },
+                ),
             ],
             param(),
         );
         add(
             LadFunctionNamespace::Type(static_type_ref.clone()),
             "get_on",
-            vec![arg("type", type_of(LadTypeBound::Component)), entity()],
+            vec![
+                arg("type", type_of(type_kinds::COMPONENT_TYPE, static_type())),
+                entity(),
+            ],
             LadTypeKind::Option(Box::new(param())),
         );
         // and a generic function taking a type, which can also be looked up at runtime
@@ -1796,11 +1787,7 @@ mod test {
                 entity(),
                 arg(
                     "registration",
-                    LadTypeKind::TypeOf {
-                        bound: LadTypeBound::Component,
-                        param: "A".into(),
-                        carrier: Box::new(LadTypeKind::Val(unit)),
-                    },
+                    type_of(type_kinds::COMPONENT_TYPE, LadTypeKind::Val(unit)),
                 ),
             ],
             LadTypeKind::Option(Box::new(param())),
@@ -1829,7 +1816,7 @@ mod test {
         // a type is its statics and the shared functions of each kind it is
         let namespace = block(&rendered, "---@class namespace.ladfile_builder");
         assert!(
-            namespace.contains("---@field  PlainStructType ladfile_builder.PlainStructType.Statics | StaticTypeRef<ladfile_builder.PlainStructType> | ComponentType<ladfile_builder.PlainStructType>\n"),
+            namespace.contains("---@field  PlainStructType ladfile_builder.PlainStructType.Statics | Type<ladfile_builder.PlainStructType> | ComponentType<ladfile_builder.PlainStructType>\n"),
             "{namespace}"
         );
         assert!(
@@ -1891,14 +1878,14 @@ mod test {
         // a type is its statics, if it has any, and the shared functions of every type
         let namespace = block(&rendered, "---@class namespace.ladfile_builder");
         assert!(
-            namespace.contains("---@field  PlainStructType StaticTypeRef<ladfile_builder.PlainStructType>\n")
-                && namespace.contains("---@field  EnumType ladfile_builder.EnumType.Statics | StaticTypeRef<ladfile_builder.EnumType>\n"),
+            namespace.contains("---@field  TupleStructType Type<ladfile_builder.TupleStructType>\n")
+                && namespace.contains("---@field  EnumType ladfile_builder.EnumType.Statics | Type<ladfile_builder.EnumType>\n"),
             "{namespace}"
         );
         assert!(!namespace.contains("---@field  UnitType"), "{namespace}");
         let other = block(&rendered, "---@class namespace.other_crate");
         assert!(
-            other.contains("---@field  UnitType StaticTypeRef<other_crate.UnitType>"),
+            other.contains("---@field  UnitType Type<other_crate.UnitType>"),
             "{other}"
         );
 

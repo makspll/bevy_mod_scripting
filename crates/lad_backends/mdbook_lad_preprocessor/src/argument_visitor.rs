@@ -177,9 +177,9 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text("]");
     }
 
-    fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
+    fn visit_fields(&mut self, of: &ladfile::LadTypeKind, variant: Option<&str>) {
         self.buffer.text("Fields<");
-        self.visit_type_id(type_id);
+        self.visit(of);
         if let Some(variant) = variant {
             self.buffer.text("::");
             self.buffer.text(variant);
@@ -189,12 +189,6 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
 
     fn visit_param(&mut self, param: &str) {
         self.buffer.text(param);
-    }
-
-    fn visit_fields_of(&mut self, param: &str) {
-        self.buffer.text("Fields<");
-        self.buffer.text(param);
-        self.buffer.text(">");
     }
 
     fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[ladfile::LadTypeKind]) {
@@ -216,23 +210,6 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
             }
             self.visit(arg);
         }
-        self.buffer.text(">");
-    }
-
-    fn visit_type_of(
-        &mut self,
-        bound: ladfile::LadTypeBound,
-        param: &str,
-        _carrier: &ladfile::LadTypeKind,
-    ) {
-        self.buffer.text(match bound {
-            ladfile::LadTypeBound::Type => "Type<",
-            ladfile::LadTypeBound::Component => "ComponentType<",
-            ladfile::LadTypeBound::Resource => "ResourceType<",
-            ladfile::LadTypeBound::Bundle => "BundleType<",
-            ladfile::LadTypeBound::Asset => "AssetType<",
-        });
-        self.buffer.text(param);
         self.buffer.text(">");
     }
 }

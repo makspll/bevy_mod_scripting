@@ -3,5 +3,6 @@
 
 mod operators;
 mod primitive;
+pub mod type_kinds;
 pub use operators::*;
 pub use primitive::*;

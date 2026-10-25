@@ -11,7 +11,10 @@ use bevy_mod_scripting_bindings::{
     AppScriptNamespaceMembers, EnumVariantRef, FunctionInfo, ScriptFunctionRegistry,
     ScriptNamespaceMembers,
     builtins::builtin_docs,
-    function::{generics::ASSET_HANDLE_PATH, script_function::AppScriptFunctionRegistry},
+    function::{
+        generics::{ASSET_HANDLE_PATH, type_kinds},
+        script_function::AppScriptFunctionRegistry,
+    },
     into_through_type_info_with_registry,
 };
 use bevy_reflect::{TypeInfo, TypeRegistry};
@@ -136,6 +139,33 @@ pub fn generate_lad_file(
         "A handle to an asset of type `A`.",
     ) {
         error!("Could not declare `Handle` as a generic type: {error}");
+    }
+    // the kinds of types shared functions are called on, i.e. `ComponentType<A>` for `Transform.get_on(entity)`
+    for (kind, documentation) in [
+        (
+            type_kinds::TYPE,
+            "A type, i.e. `import_namespace(\"math\").Vec3`, with the functions every type has.",
+        ),
+        (
+            type_kinds::COMPONENT_TYPE,
+            "A component type, with the functions every component type has.",
+        ),
+        (
+            type_kinds::RESOURCE_TYPE,
+            "A resource type, with the functions every resource type has.",
+        ),
+        (
+            type_kinds::BUNDLE_TYPE,
+            "A bundle type, with the functions every bundle type has.",
+        ),
+        (
+            type_kinds::ASSET_TYPE,
+            "An asset type, with the functions every asset type has.",
+        ),
+    ] {
+        if let Err(error) = builder.add_generic_type(&format!("{kind}<$A>"), documentation) {
+            error!("Could not declare `{kind}` as a generic type: {error}");
+        }
     }
 
     add_world(&mut builder, &functions);
@@ -454,12 +484,28 @@ mod test {
         let new = function(&file, "StaticTypeRef", "new").expect("`new` missing on StaticTypeRef");
         assert_eq!(new.generics, vec!["A".to_string()]);
         assert_eq!(new.arguments[0].name.as_deref(), Some("type"));
-        assert!(
-            matches!(&new.arguments[0].kind, LadTypeKind::TypeOf { bound: ladfile::LadTypeBound::Type, param, .. } if param == "A"),
-            "{:?}",
-            new.arguments[0].kind
+        // the type is `Type<A>`, the kind every type is of
+        let LadTypeKind::Union(type_arg) = &new.arguments[0].kind else {
+            panic!("{:?}", new.arguments[0].kind);
+        };
+        assert_eq!(
+            type_arg[0],
+            LadTypeKind::Generic {
+                generic_type: ladfile::LadTypeId::new_string_id(type_kinds::TYPE.into()),
+                args: vec![LadTypeKind::Param("A".into())],
+            }
         );
-        assert_eq!(new.arguments[1].kind, LadTypeKind::FieldsOf("A".into()));
+        assert!(
+            file.generic_types
+                .contains_key(&ladfile::LadTypeId::new_string_id(type_kinds::TYPE.into()))
+        );
+        assert_eq!(
+            new.arguments[1].kind,
+            LadTypeKind::Fields {
+                of: Box::new(LadTypeKind::Param("A".into())),
+                variant: None
+            }
+        );
         assert_eq!(new.return_type.kind, LadTypeKind::Param("A".into()));
 
         // the variant constructor is generic too, until it is bound to each variant
@@ -507,7 +553,7 @@ mod test {
             assert_eq!(
                 new.arguments[1].kind,
                 LadTypeKind::Fields {
-                    type_id: enum_id.clone(),
+                    of: Box::new(LadTypeKind::Val(enum_id.clone())),
                     variant: Some(variant.into())
                 }
             );

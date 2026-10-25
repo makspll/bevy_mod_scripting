@@ -1,8 +1,9 @@
 //! Generic parameters of script function signatures.
 //!
 //! Reflection can't see the generic parameters of Rust functions, so signatures name them with marker types instead:
-//! [`A`] is a value of the type the parameter stands for, [`TypeOf`] and its kind-bounded variants ([`ComponentOf`], ...)
-//! the type itself, as scripts get it from `import_namespace("math").Vec3`. For example
+//! [`A`] is a value of the type the parameter stands for ([`ThroughTypeInfo::Param`]), [`TypeOf`] and its kind-bounded
+//! variants ([`ComponentOf`], ...) the type itself, as scripts get it from `import_namespace("math").Vec3`,
+//! documented as the generic type of its kind, i.e. `ComponentType<A>` (see [`type_kinds`]). For example
 //! ```rust,ignore
 //! fn get_on(ty: ComponentOf<A>, entity: V<Entity>) -> Result<Option<A>, InteropError>
 //! ```
@@ -11,6 +12,7 @@
 
 use std::{any::TypeId, collections::VecDeque, marker::PhantomData, ops::Deref};
 
+pub use bevy_mod_scripting_bindings_domain::type_kinds;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::TypeRegistry;
@@ -20,7 +22,7 @@ use super::{
 };
 use crate::{
     ReflectReference, ScriptValue, StaticTypeRef,
-    docgen::typed_through::{ThroughTypeInfo, TypeBound, TypedThrough},
+    docgen::typed_through::{ThroughTypeInfo, TypedThrough},
     error::InteropError,
 };
 
@@ -90,7 +92,10 @@ impl<P> FromScript for HandleOf<P> {
 
 impl<P: GenericParam> TypedThrough for HandleOf<P> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::HandleOf(P::NAME)
+        ThroughTypeInfo::Generic {
+            path: ASSET_HANDLE_PATH,
+            args: vec![ThroughTypeInfo::Param(P::NAME)],
+        }
     }
 }
 
@@ -192,7 +197,10 @@ impl<P> ArgMeta for FieldsOf<P> {}
 
 impl<P: GenericParam> TypedThrough for FieldsOf<P> {
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::FieldsOf(P::NAME)
+        ThroughTypeInfo::Fields {
+            of: Box::new(ThroughTypeInfo::Param(P::NAME)),
+            variant: None,
+        }
     }
 }
 
@@ -203,7 +211,7 @@ impl<P> GetTypeDependencies for FieldsOf<P> {
 
 /// Declares a marker for the type a generic parameter stands for, bounded to a kind of type.
 macro_rules! type_of_marker {
-    ($(#[$doc:meta])* $name:ident, $bound:ident) => {
+    ($(#[$doc:meta])* $name:ident, $kind:ident) => {
         $(#[$doc])*
         ///
         /// `C` is what is passed at runtime: the static type reference for functions shared by all types,
@@ -234,13 +242,17 @@ macro_rules! type_of_marker {
 
         impl<P, C> ArgMeta for $name<P, C> {}
 
+        /// Documented as the generic type of its kind applied to the parameter, i.e. `ComponentType<A>`,
+        /// or what is passed at runtime, for types looked up at runtime.
         impl<P: GenericParam, C: TypedThrough> TypedThrough for $name<P, C> {
             fn through_type_info() -> ThroughTypeInfo {
-                ThroughTypeInfo::TypeOf {
-                    bound: TypeBound::$bound,
-                    param: P::NAME,
-                    carrier: Box::new(C::through_type_info()),
-                }
+                ThroughTypeInfo::Union(vec![
+                    ThroughTypeInfo::Generic {
+                        path: type_kinds::$kind,
+                        args: vec![ThroughTypeInfo::Param(P::NAME)],
+                    },
+                    C::through_type_info(),
+                ])
             }
         }
 
@@ -256,25 +268,25 @@ macro_rules! type_of_marker {
 type_of_marker!(
     /// Any type, standing for the generic parameter `P`.
     TypeOf,
-    Type
+    TYPE
 );
 type_of_marker!(
     /// A component type, standing for the generic parameter `P`.
     ComponentOf,
-    Component
+    COMPONENT_TYPE
 );
 type_of_marker!(
     /// A resource type, standing for the generic parameter `P`.
     ResourceOf,
-    Resource
+    RESOURCE_TYPE
 );
 type_of_marker!(
     /// A bundle type, standing for the generic parameter `P`.
     BundleOf,
-    Bundle
+    BUNDLE_TYPE
 );
 type_of_marker!(
     /// An asset type, standing for the generic parameter `P`.
     AssetOf,
-    Asset
+    ASSET_TYPE
 );

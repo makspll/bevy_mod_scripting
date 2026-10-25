@@ -1,35 +1,5 @@
 ---@meta
----@module "StaticTypeRef"
-
-
----@class StaticTypeRef<A>
---- A type, i.e. `import_namespace("math").Vec3`, with the functions every type has.
-
-
-
-
----@class ComponentType<A>
---- A component type, with the functions every component type has.
-
-
-
-
----@class ResourceType<A>
---- A resource type, with the functions every resource type has.
-
-
-
-
----@class BundleType<A>
---- A bundle type, with the functions every bundle type has.
-
-
-
-
----@class AssetType<A>
---- An asset type, with the functions every asset type has.
-
-
+---@module "Bool"
 
 
 ---@class Bool

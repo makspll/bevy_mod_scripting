@@ -64,48 +64,22 @@ pub enum ThroughTypeInfo {
     Union(Vec<ThroughTypeInfo>),
     /// A table of the fields of a type, i.e. the payload of a constructor.
     Fields {
-        /// The type the fields belong to
-        type_info: &'static TypeInfo,
+        /// The type the fields belong to, a value or a generic parameter
+        of: Box<ThroughTypeInfo>,
         /// For enums, the variant the fields belong to
         variant: Option<&'static str>,
     },
-    /// A handle to an asset of the given type, i.e. `Handle<Image>`.
-    ///
-    /// The handle type is only known to the type registry, see [`crate::function::generics::asset_handle_type_info`].
-    AssetHandle(&'static TypeInfo),
     /// A value of the type a generic parameter of the function stands for, i.e. [`crate::function::generics::A`]
     Param(&'static str),
-    /// A table of the fields of the type a generic parameter stands for, i.e. [`crate::function::generics::FieldsOf`]
-    FieldsOf(&'static str),
-    /// A handle to an asset of the type a generic parameter stands for, i.e. [`crate::function::generics::HandleOf`]
-    HandleOf(&'static str),
-    /// The type a generic parameter stands for itself, i.e. [`crate::function::generics::ComponentOf`].
+    /// A generic type applied to arguments, i.e. `Handle<A>`, or `ComponentType<A>` for a component type itself.
     ///
-    /// This is what scripts get from `import_namespace("math").Vec3`, it gives the parameter its type in calls.
-    TypeOf {
-        /// What kind of type the parameter must be
-        bound: TypeBound,
-        /// The name of the parameter
-        param: &'static str,
-        /// What is passed at runtime, which is also accepted where the type isn't known statically, i.e. a registration
-        carrier: Box<ThroughTypeInfo>,
+    /// Reflection can't name a generic type without its arguments, so it is named by its path, see [`crate::function::generics`].
+    Generic {
+        /// The path of the generic type, without its arguments
+        path: &'static str,
+        /// Its arguments
+        args: Vec<ThroughTypeInfo>,
     },
-}
-
-/// The kind of type a generic parameter must be, see [`ThroughTypeInfo::TypeOf`].
-#[derive(Clone, Copy, PartialEq, Eq, DebugWithTypeInfo)]
-#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-pub enum TypeBound {
-    /// Any type
-    Type,
-    /// A component type
-    Component,
-    /// A resource type
-    Resource,
-    /// A bundle type
-    Bundle,
-    /// An asset type
-    Asset,
 }
 
 impl ThroughTypeInfo {
@@ -122,18 +96,15 @@ impl ThroughTypeInfo {
             ThroughTypeInfo::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
-            ThroughTypeInfo::TypeOf { carrier, .. } => vec![&**carrier],
+            ThroughTypeInfo::Fields { of, .. } => vec![&**of],
+            ThroughTypeInfo::Generic { args, .. } => args.iter().collect(),
             ThroughTypeInfo::Ref(_)
             | ThroughTypeInfo::Mut(_)
             | ThroughTypeInfo::Val(_)
             | ThroughTypeInfo::Opaque(_)
             | ThroughTypeInfo::Primitive(_)
             | ThroughTypeInfo::UntypedTuple
-            | ThroughTypeInfo::Fields { .. }
-            | ThroughTypeInfo::AssetHandle(_)
-            | ThroughTypeInfo::Param(_)
-            | ThroughTypeInfo::FieldsOf(_)
-            | ThroughTypeInfo::HandleOf(_) => vec![],
+            | ThroughTypeInfo::Param(_) => vec![],
         }
     }
 
@@ -154,9 +125,14 @@ impl ThroughTypeInfo {
         };
         match self {
             ThroughTypeInfo::Param(_) => ThroughTypeInfo::Val(type_info),
-            ThroughTypeInfo::FieldsOf(_) => ThroughTypeInfo::Fields { type_info, variant },
-            ThroughTypeInfo::HandleOf(_) => ThroughTypeInfo::AssetHandle(type_info),
-            ThroughTypeInfo::TypeOf { carrier, .. } => carrier.bind_generics(type_info, variant),
+            ThroughTypeInfo::Fields { of, variant: own } => ThroughTypeInfo::Fields {
+                of: bind(of),
+                variant: own.or(variant),
+            },
+            ThroughTypeInfo::Generic { path, args } => ThroughTypeInfo::Generic {
+                path,
+                args: bind_all(args),
+            },
             ThroughTypeInfo::Option(inner) => ThroughTypeInfo::Option(bind(inner)),
             ThroughTypeInfo::Vec(inner) => ThroughTypeInfo::Vec(bind(inner)),
             ThroughTypeInfo::HashMap(k, v) => ThroughTypeInfo::HashMap(bind(k), bind(v)),
@@ -176,10 +152,7 @@ impl ThroughTypeInfo {
     /// Whether this mentions a generic parameter.
     pub fn has_generics(&self) -> bool {
         match self {
-            ThroughTypeInfo::Param(_)
-            | ThroughTypeInfo::FieldsOf(_)
-            | ThroughTypeInfo::HandleOf(_)
-            | ThroughTypeInfo::TypeOf { .. } => true,
+            ThroughTypeInfo::Param(_) => true,
             other => other.children().into_iter().any(Self::has_generics),
         }
     }
@@ -552,33 +525,20 @@ mod test {
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
         Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
-        UntypedTuple, TupleWithRest, Union, Fields, AssetHandle, Param, FieldsOf, HandleOf, TypeOf
+        UntypedTuple, TupleWithRest, Union, Fields, Param, Generic
     );
-    variant_names!(TypeBound, ALL_TYPE_BOUNDS, type_bound_name: Type, Component, Resource, Bundle, Asset);
 
     /// Every variant, i.e. `ThroughTypeInfo::Vec`
     fn all_variants() -> BTreeSet<String> {
-        let prefixed = |prefix: &str, names: &[&str]| {
-            names
-                .iter()
-                .map(|name| format!("{prefix}::{name}"))
-                .collect::<Vec<_>>()
-        };
-        [
-            prefixed("ThroughTypeInfo", ALL_THROUGH_TYPES),
-            prefixed("TypeBound", ALL_TYPE_BOUNDS),
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
+        ALL_THROUGH_TYPES
+            .iter()
+            .map(|name| format!("ThroughTypeInfo::{name}"))
+            .collect()
     }
 
     /// Records every variant found anywhere in the given type info
     fn collect_variants(info: &ThroughTypeInfo, seen: &mut BTreeSet<String>) {
         seen.insert(format!("ThroughTypeInfo::{}", through_name(info)));
-        if let ThroughTypeInfo::TypeOf { bound, .. } = info {
-            seen.insert(format!("TypeBound::{}", type_bound_name(bound)));
-        }
         for inner in info.children() {
             collect_variants(inner, seen);
         }
@@ -694,25 +654,15 @@ mod test {
         "ThroughTypeInfo::UntypedTuple",
         "ThroughTypeInfo::TupleWithRest",
         "ThroughTypeInfo::Fields",
-        "ThroughTypeInfo::AssetHandle",
         "ThroughTypeInfo::Param",
-        "ThroughTypeInfo::FieldsOf",
-        "ThroughTypeInfo::HandleOf",
-        "ThroughTypeInfo::TypeOf",
-        "TypeBound::Type",
-        "TypeBound::Component",
-        "TypeBound::Resource",
-        "TypeBound::Bundle",
-        "TypeBound::Asset",
+        "ThroughTypeInfo::Generic",
         // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses a value instead
         "ThroughTypeInfo::Opaque",
     ];
 
     #[test]
     fn static_conversion_produces_every_variant() {
-        use crate::function::generics::{
-            A, AssetOf, BundleOf, ComponentOf, FieldsOf, HandleOf, ResourceOf, TypeOf,
-        };
+        use crate::function::generics::{A, ComponentOf, FieldsOf, HandleOf};
 
         let mut seen = BTreeSet::new();
         let mut collect = |info: ThroughTypeInfo| collect_variants(&info, &mut seen);
@@ -738,11 +688,7 @@ mod test {
             A::through_type_info(),
             FieldsOf::<A>::through_type_info(),
             HandleOf::<A>::through_type_info(),
-            TypeOf::<A>::through_type_info(),
             ComponentOf::<A>::through_type_info(),
-            ResourceOf::<A>::through_type_info(),
-            BundleOf::<A>::through_type_info(),
-            AssetOf::<A>::through_type_info(),
         ] {
             collect(generic.bind_generics(Value::type_info(), None));
             collect(generic);
