@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-417f0a7d.js";
+            window.path_to_searchindex_js = "../../searchindex-939fa99a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-c23ad9d7.js"></script>
+        <script src="../../toc-f535c0ff.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -220,17 +220,17 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
+<tr><td><a href="./rot2/mul.html">mul</a></td><td>Composes two rotations when given a rotation, or rotates a [`Vec2`](bevy_math::Vec2) when given a vector.</td></tr>
 <tr><td><a href="./rot2/degrees.html">degrees</a></td><td>A counterclockwise rotation of `degrees` degrees.</td></tr>
-<tr><td><a href="./rot2/as_degrees.html">as_degrees</a></td><td>The angle of this rotation in degrees.</td></tr>
-<tr><td><a href="./rot2/eq.html">eq</a></td><td>Whether both rotations have exactly the same components.</td></tr>
 <tr><td><a href="./rot2/identity.html">identity</a></td><td>The rotation that leaves everything unchanged.</td></tr>
-<tr><td><a href="./rot2/turn_fraction.html">turn_fraction</a></td><td>A counterclockwise rotation of `fraction` of a full turn, so `1.0` is a full turn.</td></tr>
-<tr><td><a href="./rot2/nlerp.html">nlerp</a></td><td>Linearly interpolates between this rotation and `other` by `t`, from 0 to 1, then normalizes.</td></tr>
+<tr><td><a href="./rot2/eq.html">eq</a></td><td>Whether both rotations have exactly the same components.</td></tr>
+<tr><td><a href="./rot2/as_degrees.html">as_degrees</a></td><td>The angle of this rotation in degrees.</td></tr>
 <tr><td><a href="./rot2/slerp.html">slerp</a></td><td>Spherically interpolates between this rotation and `other` by `t`, from 0 to 1.</td></tr>
 <tr><td><a href="./rot2/as_radians.html">as_radians</a></td><td>The angle of this rotation in radians.</td></tr>
+<tr><td><a href="./rot2/nlerp.html">nlerp</a></td><td>Linearly interpolates between this rotation and `other` by `t`, from 0 to 1, then normalizes.</td></tr>
+<tr><td><a href="./rot2/turn_fraction.html">turn_fraction</a></td><td>A counterclockwise rotation of `fraction` of a full turn, so `1.0` is a full turn.</td></tr>
 <tr><td><a href="./rot2/inverse.html">inverse</a></td><td>The rotation that undoes this one.</td></tr>
 <tr><td><a href="./rot2/radians.html">radians</a></td><td>A counterclockwise rotation of `radians` radians.</td></tr>
-<tr><td><a href="./rot2/mul.html">mul</a></td><td>Composes two rotations when given a rotation, or rotates a [`Vec2`](bevy_math::Vec2) when given a vector.</td></tr>
 <tr><td><a href="./rot2/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -240,11 +240,11 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/rect/half_size.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/rect/intersect.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/rot2/degrees.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/rot2/mul.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -254,11 +254,11 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/rect/half_size.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/rect/intersect.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/rot2/degrees.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/rot2/mul.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

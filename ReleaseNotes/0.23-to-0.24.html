@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-417f0a7d.js";
+            window.path_to_searchindex_js = "../searchindex-939fa99a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-c23ad9d7.js"></script>
+        <script src="../toc-f535c0ff.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -231,6 +231,11 @@ let reference = ReflectReference::new_allocated(value);</code></pre>
 <li><code>ScriptLoadingPipeline::time_budget: Option&lt;Duration&gt;</code> is replaced by <code>tick_budget: Option&lt;usize&gt;</code>, the maximum amount of pipeline steps per frame, unlimited by default. <code>ActiveMachines::budget</code> and <code>RunProcessingPipelineOnce::new</code> take the same step count.</li>
 <li><code>ScriptAttachedMessage(a)</code> / <code>ScriptDetachedMessage(a)</code> are one message, <code>ScriptLifecycleMessage::Attached(a)</code> / <code>::Detached(a)</code>, so attachments and detachments are processed in the order they were written. <code>GetScriptHandle::get_script_handle</code> returns an <code>Option</code> (<code>None</code>: the event doesn’t wait for its script to load) and <code>ScriptLifecycleQueue::get_ready</code>, formerly known as <code>LoadedWithHandles</code> yields <code>(event, Option&lt;(StrongScriptHandle, Language)&gt;)</code>.</li>
 <li>An attachment whose script is still loading holds back the attachments and detachments after it, and callbacks reach scripts in a deterministic order (attachment order, until scripts are removed), see <a href="../ScriptPipeline/pipeline.html#determinism">Determinism</a>. Lua’s <code>math.random</code> is seeded with <code>0</code> in new contexts.</li>
+<li>Script systems are identified by attachment and callback label (adding one again replaces it) and are removed with their script. <code>ScriptSystemSet</code> holds a recycled slot instead of the callback label, <code>ScriptSystemBuilder</code> no longer implements <code>IntoSystem</code> (use <code>ScriptSystemBuilder::build</code>), and their errors are sent as <code>ScriptErrorMessage</code>s instead of being logged. <code>WorldAccessGuard::new_non_exclusive</code> takes an <code>Option&lt;Arc&lt;ArchetypeFilter&gt;&gt;</code>, restricting component accesses to the given archetypes (<code>None</code> for no restriction).</li>
+<li>Script system parameters are declared to Bevy as they’re accessed: <code>resource</code> and query <code>component</code>s as writes (they were declared as reads, or as accessing nothing for resources, while scripts could write them), <code>resource_read</code> / <code>component_read</code> as reads. Script systems writing the same resources or components no longer run in parallel. <code>ScriptQueryBuilder::as_query_state</code> takes a <code>QueryAccess</code>: <code>Declared</code> declares the written components as written (for queries reported to the scheduler), <code>MatchOnly</code> declares all components as read (i.e. for <code>EntityRef</code> queries only finding entities).</li>
+<li>Script systems are put in and ordered against system set values (<code>ReflectSystemSet</code>) instead of names: scripts register sets with <code>world.register_new_system_set(namespace, name)</code>, Rust sets are registered into a namespace with <code>app.register_script_system_set(namespace, name, set)</code> (<code>ScriptSystemSetAppExt</code>, now in <code>bevy_mod_scripting_bindings</code>), both are found with <code>world.get_system_set_by_name</code>. <code>ScriptSystemBuilder::{in_set, before_set, after_set}</code> take a <code>SystemSet</code>. <code>ReflectSystemSet</code> is opaque, and only its set nodes of a schedule graph have a node id.</li>
+<li><code>ScriptQueryResult::components</code> is a <code>Vec&lt;Option&lt;ReflectReference&gt;&gt;</code>, <code>None</code> for absent optional components. <code>ArchetypeFilter::allow</code> / <code>is_allowed</code> and <code>WorldAccessGuard::check_archetype_access</code> take whether the component is written.</li>
+<li><code>AccessByteSet::from_allowed_lists(read_write, read_only)</code> creates subsets with read only accesses. At most 63 accesses to the same value can be claimed at once, claims beyond fail (the count used to overflow).</li>
 <li><code>WorldAccessRange::External</code> holds the value’s owner (<code>AccessOwner</code>) instead of an id, and the access map keeps it alive until the claim is released. Build it from the value (<code>(&amp;allocation_id).into()</code>); <code>WorldAccessRange</code> is no longer <code>Copy</code>.</li>
 </ul>
 <h3 id="language-implementations"><a class="header" href="#language-implementations">Language implementations</a></h3>

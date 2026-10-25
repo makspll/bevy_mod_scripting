@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-417f0a7d.js";
+            window.path_to_searchindex_js = "../../searchindex-939fa99a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-c23ad9d7.js"></script>
+        <script src="../../toc-f535c0ff.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -199,11 +199,13 @@
 <tr><td><a href="././scriptresourceregistration.html"><code>ScriptResourceRegistration</code></a></td><td>A reference to a resource type’s reflection registration.   In general think of this as a handle to...</td></tr>
 <tr><td><a href="././scripttyperegistration.html"><code>ScriptTypeRegistration</code></a></td><td>A reference to a type which is not a `Resource` or `Component`.   In general think of this as a han...</td></tr>
 <tr><td><a href="././scripteventregistration.html"><code>ScriptEventRegistration</code></a></td><td>A handle to a script registered event type.</td></tr>
+<tr><td><a href="././scriptruncondition.html"><code>ScriptRunCondition</code></a></td><td>A run condition of a script system, evaluated in Rust without calling into the script, see [`ScriptSystemBuilder::run_if`].</td></tr>
 <tr><td><a href="././scriptsystembuilder.html"><code>ScriptSystemBuilder</code></a></td><td>A builder for systems living in scripts</td></tr>
 <tr><td><a href="././recipients.html"><code>Recipients</code></a></td><td>Describes the designated recipients of a script event</td></tr>
 <tr><td><a href="././scriptattachment.html"><code>ScriptAttachment</code></a></td><td>Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]’s depending on the context policy used.</td></tr>
 <tr><td><a href="././reflectschedule.html"><code>ReflectSchedule</code></a></td><td>A reflectable schedule.</td></tr>
 <tr><td><a href="././reflectsystem.html"><code>ReflectSystem</code></a></td><td>A reflectable system.</td></tr>
+<tr><td><a href="././reflectsystemset.html"><code>ReflectSystemSet</code></a></td><td>A reflectable system set: a set node of a schedule graph, or a set scripts put and order their syst...</td></tr>
 <tr><td><a href="././language.html"><code>Language</code></a></td><td>Represents a scripting language. Languages which compile into another language should use the targe...</td></tr>
 <tr><td><a href="././scriptasset.html"><code>ScriptAsset</code></a></td><td>Represents a script loaded into memory as an asset</td></tr>
 <tr><td><a href="././functionarginfo.html"><code>FunctionArgInfo</code></a></td><td>Information about a function argument.</td></tr>
@@ -229,6 +231,7 @@
 <tr><th>Name</th><th>Type</th></tr>
 </thead>
 <tbody>
+<tr><td><code>conditions</code></td><td><a href="./statictyperef.html">StaticTypeRef</a></td></tr>
 <tr><td><code>world</code></td><td><a href="./world.html">World</a></td></tr>
 </tbody>
 </table>

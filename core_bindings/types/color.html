@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-417f0a7d.js";
+            window.path_to_searchindex_js = "../../searchindex-939fa99a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-c23ad9d7.js"></script>
+        <script src="../../toc-f535c0ff.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -276,33 +276,33 @@ first convert this [<code>Color</code>] into your desired color space.</p>
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./color/srgba.html">srgba</a></td><td>A color from red, green, blue and alpha in the sRGB space, each from `0` to `1`.</td></tr>
-<tr><td><a href="./color/to_srgba.html">to_srgba</a></td><td>The color converted to the sRGB space.</td></tr>
-<tr><td><a href="./color/eq.html">eq</a></td><td>Whether both colors are the same color in the same color space.</td></tr>
 <tr><td><a href="./color/hsv.html">hsv</a></td><td>A color from hue (in degrees), saturation and value, fully opaque.</td></tr>
-<tr><td><a href="./color/srgb.html">srgb</a></td><td>A color from red, green and blue in the sRGB space, each from `0` to `1`, fully opaque.  ```multi-lang-example,lua local Color = import_namespace(“color”).Color local red = Color.srgb(1.0, 0.0, 0.0) assert(red:to_srgba().red == 1.0) `...</td></tr>
-<tr><td><a href="./color/white.html">white</a></td><td>Opaque white.</td></tr>
-<tr><td><a href="./color/with_alpha.html">with_alpha</a></td><td>A copy of the color with its alpha set to `alpha`.</td></tr>
-<tr><td><a href="./color/luminance.html">luminance</a></td><td>The perceived brightness of the color, from `0` (black) to `1` (white).</td></tr>
-<tr><td><a href="./color/named.html">named</a></td><td>A named CSS color such as `“rebecca_purple”` (case-insensitive), or nil if there is no color with that name.</td></tr>
-<tr><td><a href="./color/alpha.html">alpha</a></td><td>The alpha (opacity) of the color, from `0` (transparent) to `1` (opaque).</td></tr>
-<tr><td><a href="./color/linear_rgb.html">linear_rgb</a></td><td>A color from red, green and blue in the linear RGB space, each from `0` to `1`, fully opaque.</td></tr>
-<tr><td><a href="./color/to_hex.html">to_hex</a></td><td>The color as an uppercase hex string such as `“#FF8800”`, with alpha appended unless fully opaque.</td></tr>
-<tr><td><a href="./color/hsl.html">hsl</a></td><td>A color from hue (in degrees), saturation and lightness, fully opaque.</td></tr>
-<tr><td><a href="./color/black.html">black</a></td><td>Opaque black.</td></tr>
-<tr><td><a href="./color/to_linear.html">to_linear</a></td><td>The color converted to the linear RGB space.</td></tr>
-<tr><td><a href="./color/none.html">none</a></td><td>A fully transparent color.</td></tr>
 <tr><td><a href="./color/srgba_u8.html">srgba_u8</a></td><td>A color from red, green, blue and alpha in the sRGB space, each from `0` to `255`.</td></tr>
-<tr><td><a href="./color/hsla.html">hsla</a></td><td>A color from hue (in degrees), saturation, lightness and alpha.</td></tr>
-<tr><td><a href="./color/hex.html">hex</a></td><td>A color from a hex string such as `“#ff8800”` or `“#ff880080”`, or an error if the string is not val...</td></tr>
-<tr><td><a href="./color/mix.html">mix</a></td><td>A color between this one and `other`, `t = 0` gives this color and `t = 1` gives `other`.</td></tr>
-<tr><td><a href="./color/hsva.html">hsva</a></td><td>A color from hue (in degrees), saturation, value and alpha.</td></tr>
-<tr><td><a href="./color/set_alpha.html">set_alpha</a></td><td>Sets the alpha (opacity) of the color in place.</td></tr>
-<tr><td><a href="./color/darker.html">darker</a></td><td>A darker copy of the color, `amount` from `0` to `1`.</td></tr>
-<tr><td><a href="./color/lighter.html">lighter</a></td><td>A lighter copy of the color, `amount` from `0` to `1`.</td></tr>
-<tr><td><a href="./color/linear_rgba.html">linear_rgba</a></td><td>A color from red, green, blue and alpha in the linear RGB space, each from `0` to `1`.</td></tr>
-<tr><td><a href="./color/srgb_u8.html">srgb_u8</a></td><td>A color from red, green and blue in the sRGB space, each from `0` to `255`, fully opaque.</td></tr>
 <tr><td><a href="./color/is_fully_transparent.html">is_fully_transparent</a></td><td>Whether the color is completely transparent.</td></tr>
+<tr><td><a href="./color/hsla.html">hsla</a></td><td>A color from hue (in degrees), saturation, lightness and alpha.</td></tr>
+<tr><td><a href="./color/to_hex.html">to_hex</a></td><td>The color as an uppercase hex string such as `“#FF8800”`, with alpha appended unless fully opaque.</td></tr>
+<tr><td><a href="./color/named.html">named</a></td><td>A named CSS color such as `“rebecca_purple”` (case-insensitive), or nil if there is no color with that name.</td></tr>
+<tr><td><a href="./color/to_linear.html">to_linear</a></td><td>The color converted to the linear RGB space.</td></tr>
+<tr><td><a href="./color/set_alpha.html">set_alpha</a></td><td>Sets the alpha (opacity) of the color in place.</td></tr>
+<tr><td><a href="./color/with_alpha.html">with_alpha</a></td><td>A copy of the color with its alpha set to `alpha`.</td></tr>
+<tr><td><a href="./color/hsva.html">hsva</a></td><td>A color from hue (in degrees), saturation, value and alpha.</td></tr>
+<tr><td><a href="./color/darker.html">darker</a></td><td>A darker copy of the color, `amount` from `0` to `1`.</td></tr>
+<tr><td><a href="./color/linear_rgb.html">linear_rgb</a></td><td>A color from red, green and blue in the linear RGB space, each from `0` to `1`, fully opaque.</td></tr>
+<tr><td><a href="./color/luminance.html">luminance</a></td><td>The perceived brightness of the color, from `0` (black) to `1` (white).</td></tr>
+<tr><td><a href="./color/linear_rgba.html">linear_rgba</a></td><td>A color from red, green, blue and alpha in the linear RGB space, each from `0` to `1`.</td></tr>
+<tr><td><a href="./color/none.html">none</a></td><td>A fully transparent color.</td></tr>
+<tr><td><a href="./color/srgb_u8.html">srgb_u8</a></td><td>A color from red, green and blue in the sRGB space, each from `0` to `255`, fully opaque.</td></tr>
+<tr><td><a href="./color/to_srgba.html">to_srgba</a></td><td>The color converted to the sRGB space.</td></tr>
+<tr><td><a href="./color/mix.html">mix</a></td><td>A color between this one and `other`, `t = 0` gives this color and `t = 1` gives `other`.</td></tr>
+<tr><td><a href="./color/eq.html">eq</a></td><td>Whether both colors are the same color in the same color space.</td></tr>
+<tr><td><a href="./color/srgb.html">srgb</a></td><td>A color from red, green and blue in the sRGB space, each from `0` to `1`, fully opaque.  ```multi-lang-example,lua local Color = import_namespace(“color”).Color local red = Color.srgb(1.0, 0.0, 0.0) assert(red:to_srgba().red == 1.0) `...</td></tr>
+<tr><td><a href="./color/black.html">black</a></td><td>Opaque black.</td></tr>
+<tr><td><a href="./color/white.html">white</a></td><td>Opaque white.</td></tr>
+<tr><td><a href="./color/hsl.html">hsl</a></td><td>A color from hue (in degrees), saturation and lightness, fully opaque.</td></tr>
+<tr><td><a href="./color/hex.html">hex</a></td><td>A color from a hex string such as `“#ff8800”` or `“#ff880080”`, or an error if the string is not val...</td></tr>
+<tr><td><a href="./color/srgba.html">srgba</a></td><td>A color from red, green, blue and alpha in the sRGB space, each from `0` to `1`.</td></tr>
+<tr><td><a href="./color/alpha.html">alpha</a></td><td>The alpha (opacity) of the color, from `0` (transparent) to `1` (opaque).</td></tr>
+<tr><td><a href="./color/lighter.html">lighter</a></td><td>A lighter copy of the color, `amount` from `0` to `1`.</td></tr>
 <tr><td><a href="./color/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 <tr><td><a href="./color/hslanew.html">Hsla.new</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./color/hsvanew.html">Hsva.new</a></td><td>No Documentation 🚧</td></tr>
@@ -329,7 +329,7 @@ first convert this [<code>Color</code>] into your desired color space.</p>
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/color/srgba.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/color/hsv.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -343,7 +343,7 @@ first convert this [<code>Color</code>] into your desired color space.</p>
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/color/srgba.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/color/hsv.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

@@ -36,10 +36,10 @@
             const path_to_root = "../../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../../searchindex-417f0a7d.js";
+            window.path_to_searchindex_js = "../../../searchindex-939fa99a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../../toc-c23ad9d7.js"></script>
+        <script src="../../../toc-f535c0ff.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -184,7 +184,7 @@
                         <h1 id="components"><a class="header" href="#components"><code>components</code></a></h1>
 <blockquote>
 <p>Retrieves the components from the query result.</p>
-<p>These are ordered by the order they were added to the query.</p>
+<p>These are ordered by the order they were added to the query, absent optional components are nil.</p>
 </blockquote>
 <h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
 <div class="table-wrapper">
@@ -204,7 +204,7 @@
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>components</strong></td><td>Vec&lt;<a href="../../types/reflectreference.html">ReflectReference</a>&gt;</td><td>The components from the query result.</td></tr>
+<tr><td><strong>components</strong></td><td>Vec&lt;Optional&lt;<a href="../../types/reflectreference.html">ReflectReference</a>&gt;&gt;</td><td>The components from the query result.</td></tr>
 </tbody>
 </table>
 </div>

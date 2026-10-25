@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-417f0a7d.js";
+            window.path_to_searchindex_js = "../../searchindex-939fa99a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-c23ad9d7.js"></script>
+        <script src="../../toc-f535c0ff.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -362,20 +362,20 @@ impl CustomTime for Time&lt;Custom&gt; {
 <tr><th>Function</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./timevirtual/is_paused.html">is_paused</a></td><td>Whether the clock is paused.</td></tr>
-<tr><td><a href="./timevirtual/elapsed.html">elapsed</a></td><td>The total time that passed since the clock started.</td></tr>
+<tr><td><a href="./timevirtual/delta_secs.html">delta_secs</a></td><td>The time that passed since the previous update, in seconds.</td></tr>
+<tr><td><a href="./timevirtual/unpause.html">unpause</a></td><td>Resumes a paused clock.</td></tr>
 <tr><td><a href="./timevirtual/delta_secs_f64.html">delta_secs_f64</a></td><td>The time that passed since the previous update, in seconds as a double precision number.</td></tr>
+<tr><td><a href="./timevirtual/set_relative_speed.html">set_relative_speed</a></td><td>Sets the speed of the clock relative to real time. Errors if `speed` is negative or not finite.</td></tr>
+<tr><td><a href="./timevirtual/elapsed.html">elapsed</a></td><td>The total time that passed since the clock started.</td></tr>
+<tr><td><a href="./timevirtual/elapsed_secs_wrapped.html">elapsed_secs_wrapped</a></td><td>The total time that passed since the clock started, in seconds, wrapped to a period so it stays prec...</td></tr>
+<tr><td><a href="./timevirtual/max_delta.html">max_delta</a></td><td>The largest time a single update can add to the clock, longer frames are cut short.</td></tr>
+<tr><td><a href="./timevirtual/elapsed_secs_f64.html">elapsed_secs_f64</a></td><td>The total time that passed since the clock started, in seconds as a double precision number.</td></tr>
+<tr><td><a href="./timevirtual/pause.html">pause</a></td><td>Stops the clock until it is unpaused, the time does not advance while paused.</td></tr>
+<tr><td><a href="./timevirtual/elapsed_secs.html">elapsed_secs</a></td><td>The total time that passed since the clock started, in seconds.</td></tr>
+<tr><td><a href="./timevirtual/is_paused.html">is_paused</a></td><td>Whether the clock is paused.</td></tr>
 <tr><td><a href="./timevirtual/set_max_delta.html">set_max_delta</a></td><td>Sets the largest time a single update can add to the clock.</td></tr>
 <tr><td><a href="./timevirtual/delta.html">delta</a></td><td>The time that passed since the previous update.</td></tr>
-<tr><td><a href="./timevirtual/delta_secs.html">delta_secs</a></td><td>The time that passed since the previous update, in seconds.</td></tr>
-<tr><td><a href="./timevirtual/set_relative_speed.html">set_relative_speed</a></td><td>Sets the speed of the clock relative to real time. Errors if `speed` is negative or not finite.</td></tr>
-<tr><td><a href="./timevirtual/elapsed_secs_wrapped.html">elapsed_secs_wrapped</a></td><td>The total time that passed since the clock started, in seconds, wrapped to a period so it stays prec...</td></tr>
-<tr><td><a href="./timevirtual/pause.html">pause</a></td><td>Stops the clock until it is unpaused, the time does not advance while paused.</td></tr>
 <tr><td><a href="./timevirtual/relative_speed.html">relative_speed</a></td><td>The speed of the clock relative to real time, `1` is real time and `2` is twice as fast.</td></tr>
-<tr><td><a href="./timevirtual/unpause.html">unpause</a></td><td>Resumes a paused clock.</td></tr>
-<tr><td><a href="./timevirtual/elapsed_secs_f64.html">elapsed_secs_f64</a></td><td>The total time that passed since the clock started, in seconds as a double precision number.</td></tr>
-<tr><td><a href="./timevirtual/max_delta.html">max_delta</a></td><td>The largest time a single update can add to the clock, longer frames are cut short.</td></tr>
-<tr><td><a href="./timevirtual/elapsed_secs.html">elapsed_secs</a></td><td>The total time that passed since the clock started, in seconds.</td></tr>
 <tr><td><a href="./timevirtual/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
 </tbody>
 </table>
@@ -389,7 +389,7 @@ impl CustomTime for Time&lt;Custom&gt; {
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/timevirtual/is_paused.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/timevirtual/delta_secs.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -403,7 +403,7 @@ impl CustomTime for Time&lt;Custom&gt; {
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/timevirtual/is_paused.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/timevirtual/delta_secs.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

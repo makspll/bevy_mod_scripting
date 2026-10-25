@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-417f0a7d.js";
+            window.path_to_searchindex_js = "../searchindex-939fa99a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-c23ad9d7.js"></script>
+        <script src="../toc-f535c0ff.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -210,10 +210,34 @@ local system = bms.system_builder("my_system", attachment)
 <pre><code class="language-lua">local world = import_namespace("bms").world
 world.add_system(update_schedule,system)
 </code></pre>
-<div class="warning">
-<p>If your event handler running the script is running in a certain schedule, that schedule will be temporarilly removed by Bevy. Meaning you won’t be able to modify it from within the script in-flight.</p>
-</div>
-
+<h2 id="ordering-and-sets"><a class="header" href="#ordering-and-sets">Ordering and sets</a></h2>
+<p>Besides systems (<code>after</code>/<code>before</code>), script systems can be ordered against:</p>
+<ul>
+<li>other script systems, by callback label and script, which must have been added before: <code>:after_script_system("on_physics", attachment)</code></li>
+<li>sets: <code>:after_set(set)</code>, <code>:before_set(set)</code>, and put in sets: <code>:in_set(set)</code></li>
+</ul>
+<p>Scripts register their own sets into a <code>script.*</code> namespace, i.e. to group and order the systems of a mod. A set is removed from its namespace when its script unloads, registering it again gives the same set:</p>
+<pre><code class="language-lua">local ai = world.register_new_system_set("script.my_mod", "ai")
+-- other scripts: import_namespace("script.my_mod").ai
+</code></pre>
+<p>Rust sets the game registers are members of their namespace, the BMS bindings register the main Bevy sets (i.e. <code>transform.TransformSystems.Propagate</code>, <code>time.TimeSystems</code>):</p>
+<pre><code class="language-rust ignore">app.register_script_system_set("transform.TransformSystems", "Propagate", TransformSystems::Propagate);</code></pre>
+<pre><code class="language-lua">local propagate = import_namespace("transform.TransformSystems").Propagate
+builder:in_set(ai):after_set(propagate)
+</code></pre>
+<p><code>world.get_system_set_by_name</code> finds either kind by its full name, i.e. <code>"transform.TransformSystems.Propagate"</code> or <code>"script.my_mod.ai"</code>.</p>
+<h2 id="run-conditions"><a class="header" href="#run-conditions">Run conditions</a></h2>
+<p><code>:run_if</code> only runs the system if the condition holds, conditions are evaluated in Rust without calling the script. Every condition passed to <code>run_if</code> must hold:</p>
+<pre><code class="language-lua">local c = bms.conditions
+builder:run_if(c.any_with_component(Enemy))
+       :run_if(c.not_(c.resource_exists(Paused)))
+       :run_if(c.on_timer(0.5))
+</code></pre>
+<p>Conditions: <code>resource_exists</code>, <code>resource_changed</code>, <code>resource_added</code>, <code>any_with_component</code>, <code>on_timer(seconds)</code>, <code>run_once</code> and the combinators <code>not_</code>, <code>and_</code>, <code>or_</code> (named so as <code>not</code>, <code>and</code>, <code>or</code> are Lua keywords).</p>
+<h2 id="lifetime"><a class="header" href="#lifetime">Lifetime</a></h2>
+<p>A script system is identified by its attachment and callback label: adding it again replaces the old one (with a warning). Script systems are removed when their script unloads or reloads, a reloading script adds them again in <code>on_script_loaded</code>.</p>
+<p>Bevy cannot change a schedule while it runs, i.e. <code>PreUpdate</code> where scripts are loaded. Systems added to (or removed from) a running schedule are added (or removed) once it finishes, removed systems stop running right away. <code>world.add_system</code> then returns a system which can be used for ordering, but has no node in the schedule yet.</p>
+<p>Errors in script systems are sent as <code>ScriptErrorMessage</code>s, like those of other callbacks.</p>
 <h2 id="parameters"><a class="header" href="#parameters">Parameters</a></h2>
 <p>The system builder allows script authors to parameterise systems, using <code>resource</code> and <code>query</code> functions.
 The order in which those functions are called, will define the order in which arguments will be provided to the specified script callback.</p>
@@ -239,10 +263,23 @@ bms.system_builder("my_system")
 </li>
 <li>The <code>ReflectReference</code> to <code>ResourceA</code></li>
 </ul>
+<p><code>resource</code> and <code>component</code> give read and write access. Use <code>resource_read</code> and <code>component_read</code> for read only access, systems reading the same resources and components can run in parallel, while systems writing them cannot:</p>
+<pre><code class="language-lua">bms.system_builder("my_system", attachment)
+    :query(world.query():component_read(ComponentA):component(ComponentB))
+    :resource_read(Time)
+</code></pre>
+<p>Queries can also retrieve components entities don’t need to have (<code>optional</code>, <code>optional_read</code>, nil for entities without them), and only match entities whose components were added or changed since the system last ran (<code>added</code>, <code>changed</code>, filters like <code>with</code>). Outside of systems, <code>added</code> and <code>changed</code> are relative to the last app update:</p>
+<pre><code class="language-lua">world.query()
+    :component(Transform)
+    :optional_read(Velocity)
+    :changed(Health)
+</code></pre>
+<p>Queries of a system may access the same components if they can’t match the same entities, i.e. <code>component(A):with(B)</code> and <code>component(A):without(B)</code>, otherwise the system reports an error and doesn’t run.</p>
 <h2 id="exclusive-systems"><a class="header" href="#exclusive-systems">Exclusive systems</a></h2>
 <p>An exclusive system can be created using the <code>exclusive</code> function call on the system builder.</p>
 <p>This allows the system to access everything as in a normal event handler.</p>
 <p>Non-exclusive systems, will only be able to access the set of components and resources as parameterized when building the system. This is why we can run the system in parallel to other non-overlapping systems.</p>
+<p>Components are only accessible on the entities matched by the queries declaring them, i.e. with <code>world.query():component(A):with(B)</code> the system can’t access <code>A</code> on entities without <code>B</code>, since Bevy runs it in parallel with systems accessing <code>A</code> on those. Components only used as filters (<code>with</code>, <code>without</code>) can’t be accessed.</p>
 <p>Exclusive systems on the other hand, cannot run in parallel.</p>
 <h2 id="callback"><a class="header" href="#callback">Callback</a></h2>
 <p>The system injected will be similar to an event handler, however it will only trigger the specified script, and without any entity, in the first example you’d see the following lua callback:</p>
