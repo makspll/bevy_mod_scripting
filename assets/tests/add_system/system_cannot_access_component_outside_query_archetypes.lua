@@ -38,8 +38,8 @@ end
 function check_accesses(query)
     assert(#query == 1, "Expected 1 result, got: " .. #query)
     local matched = query[1]
-    assert(matched:components()[1][1] == "Default", "the matched component should be accessible")
-    assert(world.get_component(matched:entity(), ComponentA)[1] == "Default",
+    assert(matched[2][1] == "Default", "the matched component should be accessible")
+    assert(world.get_component(matched[1], ComponentA)[1] == "Default",
         "the matched component should be accessible through the world too")
 
     assert_throws(function()
@@ -49,7 +49,7 @@ function check_accesses(query)
 
     -- `with` filters by `B` without accessing it
     assert_throws(function()
-        local component = world.get_component(matched:entity(), ComponentB)
+        local component = world.get_component(matched[1], ComponentB)
         local _ = component[1]
     end, ".*annot claim access.*")
 end

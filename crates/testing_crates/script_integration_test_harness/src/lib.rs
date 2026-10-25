@@ -510,6 +510,62 @@ pub fn run_plugin_callback_command_benchmark<
     });
 }
 
+/// Benchmarks running `Update`, in which the script adds a script system querying the components of the given amount of entities.
+pub fn run_plugin_script_system_benchmark<
+    P: IntoScriptPluginParams + Plugin,
+    F: Fn() -> P,
+    M: Measurement,
+>(
+    plugin_maker: F,
+    benchmark_id: &str,
+    content: &str,
+    entity_count: usize,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+) {
+    use test_utils::test_data::{
+        CompWithDefaultAndComponentData, CompWithFromWorldAndComponentData,
+    };
+
+    let mut app = setup_integration_test(|_, _| {});
+    install_test_plugin(&mut app, false);
+    app.add_plugins(plugin_maker());
+    app.finish();
+    app.cleanup();
+    let world = app.world_mut();
+    for _ in 0..entity_count {
+        world.spawn((
+            CompWithFromWorldAndComponentData("a".into()),
+            CompWithDefaultAndComponentData("b".into()),
+        ));
+    }
+    let id = world
+        .get_resource_or_init::<Assets<ScriptAsset>>()
+        .add(ScriptAsset {
+            content: content.as_bytes().into(),
+            language: P::LANGUAGE,
+        });
+    AttachScript::<P>::new(ScriptAttachment::StaticScript(id)).apply(world);
+    // loads the script, which adds the system, which runs once
+    app.update();
+    let world = app.world_mut();
+    let errors = world
+        .resource::<Messages<ScriptErrorMessage>>()
+        .iter_current_update_messages()
+        .collect::<Vec<_>>();
+    assert!(errors.is_empty(), "benchmark setup failed: {errors:?}");
+    let added = world
+        .resource::<bevy_ecs::schedule::Schedules>()
+        .get(Update)
+        .and_then(|schedule| schedule.systems().ok())
+        .is_some_and(|mut systems| systems.any(|(_, s)| s.name().to_string() == "bench_system"));
+    assert!(added, "the script did not add its system");
+
+    let span = tracing::trace_span!("bench_fn");
+    criterion.bench_function(benchmark_id, |b| {
+        b.iter(|| span.in_scope(|| world.run_schedule(Update)));
+    });
+}
+
 pub fn perform_benchmark_with_generator<
     M: Measurement,
     I,

@@ -41,12 +41,12 @@ end
 function optional_system(query)
     local with_b, without_b = 0, 0
     for _, result in pairs(query) do
-        local components = result:components()
-        assert(components[1] ~= nil, "the required component should be present")
-        if components[2] == nil then
+        -- the entity, then the components
+        assert(result[2] ~= nil, "the required component should be present")
+        if result[3] == nil then
             without_b = without_b + 1
         else
-            assert(type(components[2][1]) == "string", "the optional component should be readable")
+            assert(type(result[3][1]) == "string", "the optional component should be readable")
             with_b = with_b + 1
         end
     end
@@ -57,8 +57,8 @@ end
 function disjoint_system(with_b, without_b)
     assert(#with_b >= 1 and #without_b >= 1, "expected results for both queries")
     -- `A` is written on entities with `B`, but only read on the others
-    with_b[1]:components()[1][1] = "written"
-    local ok, err = pcall(function() without_b[1]:components()[1][1] = "written" end)
+    with_b[1][2][1] = "written"
+    local ok, err = pcall(function() without_b[1][2][1] = "written" end)
     assert(not ok and tostring(err):find("writing the component", 1, true), tostring(err))
     runs[#runs + 1] = "disjoint_system"
 end

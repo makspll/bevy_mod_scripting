@@ -18,7 +18,8 @@ use regex::Regex;
 use script_integration_test_harness::{
     make_test_lua_plugin, perform_benchmark_with_generator, run_lua_benchmark,
     run_plugin_callback_command_benchmark, run_plugin_callback_event_benchmark,
-    run_plugin_script_load_benchmark, test_functions::rand::Rng,
+    run_plugin_script_load_benchmark, run_plugin_script_system_benchmark,
+    test_functions::rand::Rng,
 };
 #[cfg(feature = "rune")]
 use script_integration_test_harness::{make_test_rune_plugin, run_rune_benchmark};
@@ -307,6 +308,30 @@ fn callback_benchmarks(criterion: &mut Criterion) {
     run_plugin_callback_command_benchmark(make_test_rune_plugin, "command Rune", rune, &mut group);
 }
 
+/// benchmarks running a script system querying the components of many entities, measures building and passing the payload
+fn script_system_benchmarks(criterion: &mut Criterion) {
+    let mut group = criterion.benchmark_group("script_systems");
+    let lua = include_str!("../assets/macro_benchmarks/script_systems/query_system.lua");
+    let lua_iterate =
+        include_str!("../assets/macro_benchmarks/script_systems/query_system_iterate.lua");
+    for entity_count in [10, 100, 1000] {
+        run_plugin_script_system_benchmark(
+            make_test_lua_plugin,
+            &format!("query {entity_count} entities Lua"),
+            lua,
+            entity_count,
+            &mut group,
+        );
+        run_plugin_script_system_benchmark(
+            make_test_lua_plugin,
+            &format!("query and iterate {entity_count} entities Lua"),
+            lua_iterate,
+            entity_count,
+            &mut group,
+        );
+    }
+}
+
 pub fn benches() {
     maybe_with_profiler(|_profiler| {
         let mut criterion: criterion::Criterion<_> = (criterion::Criterion::default())
@@ -333,6 +358,7 @@ pub fn benches() {
         conversion_benchmarks(&mut criterion);
         script_load_benchmarks(&mut criterion);
         callback_benchmarks(&mut criterion);
+        script_system_benchmarks(&mut criterion);
     });
 }
 criterion_main!(benches);

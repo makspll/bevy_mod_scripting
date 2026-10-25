@@ -16,13 +16,13 @@ local query_result = world.query():component(componentA):component(componentA):c
 
 assert(#query_result == 1, "Expected 1 result, got " .. #query_result)
 for i, result in pairs(query_result) do
-    assert(result:entity():index() == entity_a:index(),
-        "Expected entity_a, got " .. result:entity():index())
-    components = result:components()
-    assert(#components == 3, "Expected 3 components, got " .. #components)
-    A = components[1]
-    B = components[2]
-    C = components[3]
+    assert(result[1]:index() == entity_a:index(),
+        "Expected entity_a, got " .. result[1]:index())
+    -- the entity, then the components
+    assert(#result == 4, "Expected the entity and 3 components, got " .. #result)
+    A = result[2]
+    B = result[3]
+    C = result[4]
     assert(A[1] == "Default", "Expected 'Default', got: " .. A[1])
     assert(B[1] == "Default", "Expected 'Default', got: " .. B[1])
     assert(C.strings[1] == "asd", "Expected 'asd', got: " .. C.strings[1])

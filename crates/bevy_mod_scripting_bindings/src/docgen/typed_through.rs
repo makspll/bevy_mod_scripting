@@ -53,6 +53,13 @@ pub enum ThroughTypeInfo {
     Tuple(Vec<ThroughTypeInfo>),
     /// Any number of script values, i.e. [`VariadicTuple`]
     UntypedTuple,
+    /// A list of values of the given types followed by any number of values of one type, i.e. a [`crate::ScriptQueryResult`]
+    TupleWithRest {
+        /// The types of the first values
+        head: Vec<ThroughTypeInfo>,
+        /// The type of the values after them
+        rest: Box<ThroughTypeInfo>,
+    },
     /// One of many possible types
     Union(Vec<ThroughTypeInfo>),
     /// A table of the fields of a type, i.e. the payload of a constructor.
@@ -95,6 +102,9 @@ impl ThroughTypeInfo {
             | ThroughTypeInfo::InteropResult(inner) => vec![&**inner],
             ThroughTypeInfo::HashMap(key, value) => vec![&**key, &**value],
             ThroughTypeInfo::Tuple(inner) | ThroughTypeInfo::Union(inner) => inner.iter().collect(),
+            ThroughTypeInfo::TupleWithRest { head, rest } => {
+                head.iter().chain(std::iter::once(&**rest)).collect()
+            }
             ThroughTypeInfo::Ref(_)
             | ThroughTypeInfo::Mut(_)
             | ThroughTypeInfo::Val(_)
@@ -135,6 +145,10 @@ impl ThroughTypeInfo {
             ThroughTypeInfo::Array(inner, len) => ThroughTypeInfo::Array(bind(inner), *len),
             ThroughTypeInfo::InteropResult(inner) => ThroughTypeInfo::InteropResult(bind(inner)),
             ThroughTypeInfo::Tuple(inner) => ThroughTypeInfo::Tuple(bind_all(inner)),
+            ThroughTypeInfo::TupleWithRest { head, rest } => ThroughTypeInfo::TupleWithRest {
+                head: bind_all(head),
+                rest: bind(rest),
+            },
             ThroughTypeInfo::Union(inner) => ThroughTypeInfo::Union(bind_all(inner)),
             other => other.clone(),
         }
@@ -528,7 +542,7 @@ mod test {
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
         Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
-        UntypedTuple, Union, Fields, Bound, AssetHandle
+        UntypedTuple, TupleWithRest, Union, Fields, Bound, AssetHandle
     );
     variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields, Handle);
 
@@ -671,6 +685,7 @@ mod test {
         // reflection has no notion of unions, variadics, or the placeholders of shared functions
         "ThroughTypeInfo::Union",
         "ThroughTypeInfo::UntypedTuple",
+        "ThroughTypeInfo::TupleWithRest",
         "ThroughTypeInfo::Fields",
         "ThroughTypeInfo::Bound",
         "ThroughTypeInfo::AssetHandle",
@@ -702,6 +717,7 @@ mod test {
         collect(Result::<i32, InteropError>::through_type_info());
         collect(<(i32, i32)>::through_type_info());
         collect(VariadicTuple::through_type_info());
+        collect(crate::ScriptQueryResult::through_type_info());
         collect(ThroughTypeInfo::Opaque(Value::type_info()));
         // placeholders, and what they turn into when bound
         for placeholder in [

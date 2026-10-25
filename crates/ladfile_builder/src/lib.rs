@@ -1042,6 +1042,10 @@ impl<'t> LadFileBuilder<'t> {
                 LadTypeKind::Union(inner.iter().map(|i| *nested(self, i)).collect())
             }
             ThroughTypeInfo::UntypedTuple => LadTypeKind::UntypedTuple,
+            ThroughTypeInfo::TupleWithRest { head, rest } => LadTypeKind::TupleWithRest {
+                head: head.iter().map(|i| *nested(self, i)).collect(),
+                rest: nested(self, rest),
+            },
             ThroughTypeInfo::Fields { type_info, variant } => LadTypeKind::Fields {
                 type_id: leaf(self, type_info),
                 variant: variant.map(Cow::Borrowed),
@@ -1546,8 +1550,8 @@ mod test {
 
     variant_names!(
         LadTypeKind, ALL_LAD_KINDS, lad_kind_name:
-        Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple, Array,
-        Primitive, Union, Unknown, Fields
+        Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple,
+        TupleWithRest, Array, Primitive, Union, Unknown, Fields
     );
 
     /// Records every kind found anywhere in the given kind
@@ -1565,6 +1569,10 @@ mod test {
             }
             LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => {
                 inner.iter().for_each(|kind| collect_kinds(kind, seen))
+            }
+            LadTypeKind::TupleWithRest { head, rest } => {
+                head.iter().for_each(|kind| collect_kinds(kind, seen));
+                collect_kinds(rest, seen);
             }
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
@@ -1772,6 +1780,17 @@ mod test {
                 "variadic tuple",
                 VariadicTuple::through_type_info(),
                 Kind::UntypedTuple,
+            ),
+            (
+                "tuple with rest",
+                ThroughTypeInfo::TupleWithRest {
+                    head: vec![V::<FieldValue>::through_type_info()],
+                    rest: Box::new(f32::through_type_info()),
+                },
+                Kind::TupleWithRest {
+                    head: vec![Kind::Val(value.clone())],
+                    rest: Box::new(Kind::Primitive(Primitive::F32)),
+                },
             ),
             (
                 "fields",

@@ -9,7 +9,7 @@ fn other_entity() {
     let world = bms.world;
     let script_component = world.get_type_by_name("bevy_mod_scripting_core::script::ScriptComponent");
     for result in world.query().component(script_component).build() {
-        let e = result.entity();
+        let e = result[0];
         if e.index() != bms.current_entity().index() {
             return e;
         }

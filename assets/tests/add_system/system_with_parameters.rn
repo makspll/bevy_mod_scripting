@@ -47,10 +47,10 @@ pub fn my_parameterised_system(resourceA, query, resourceB) {
     assert!(resourceB.string == "Initial Value", "Expected 'Initial Value', got: {}", resourceB.string);
     assert!(query.len() == 2, "Expected 2 results, got: {}", query.len());
     for result in query {
-        let components = result.components();
-        assert!(components.len() == 2, "Expected 2 components, got {}", components.len());
-        let componentA = components[0];
-        let componentB = components[1];
+        // the entity, then the components
+        assert!(result.len() == 3, "Expected the entity and 2 components, got {}", result.len());
+        let componentA = result[1];
+        let componentB = result[2];
         assert!(componentA[0] == "Default", "Expected 'Default', got: {}", componentA[0]);
         assert!(componentB[0] == "Default", "Expected 'Default', got: {}", componentB[0]);
     }

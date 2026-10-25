@@ -41,7 +41,7 @@ use bevy_mod_scripting_bindings::{
     AppScheduleRegistry, AppScriptCallbackRunners, AppScriptComponentRegistry,
     AppScriptFunctionRegistry, AppScriptTypeCatalogue, CurrentScriptAttachment, InteropError,
     IntoScript, QueryAccess, ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptResourceRegistration, V, WorldExtensions,
+    ScriptResourceRegistration, WorldExtensions,
 };
 use bevy_mod_scripting_display::DisplayProxy;
 use bevy_mod_scripting_script::ScriptAttachment;
@@ -1133,7 +1133,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                         .filter_map(|entity| {
                             let entity = world.get_entity(entity).ok()?;
                             // Safety: the components with change filters are declared as read
-                            unsafe { builder.result_for(entity, last_run, this_run) }.map(V)
+                            unsafe { builder.result_for(entity, last_run, this_run) }
                         })
                         .collect::<Vec<_>>();
 
