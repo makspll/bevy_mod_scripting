@@ -2,7 +2,7 @@
 pub mod plugin;
 
 use bevy_ecs::{
-    reflect::{ReflectComponent, ReflectResource},
+    reflect::{ReflectBundle, ReflectComponent, ReflectResource},
     world::World,
 };
 use bevy_log::warn;
@@ -14,7 +14,8 @@ use bevy_mod_scripting_bindings::{
         typed_through::{BoundPlaceholder, ThroughTypeInfo, primitive_kind_of, primitive_type_id},
     },
     function::{
-        bound::asset_handle_type_info, namespace::FunctionScope,
+        bound::{asset_handle_type_info, is_asset_type},
+        namespace::FunctionScope,
         script_function::FunctionCallContext,
     },
     into_through_type_info_with_registry,
@@ -143,6 +144,8 @@ impl<'t> LadFileBuilder<'t> {
                 metadata: LadTypeMetadata {
                     is_component: false,
                     is_resource: false,
+                    is_bundle: false,
+                    is_asset: false,
                     is_reflect: false,
                     mapped_to_primitive_kind: Some(primitive),
                     default: None,
@@ -212,6 +215,8 @@ impl<'t> LadFileBuilder<'t> {
                 metadata: LadTypeMetadata {
                     is_component: false,
                     is_resource: false,
+                    is_bundle: false,
+                    is_asset: false,
                     is_reflect: false,
                     mapped_to_primitive_kind: primitive_kind_of(std::any::TypeId::of::<T>()),
                     default: None,
@@ -239,6 +244,7 @@ impl<'t> LadFileBuilder<'t> {
         let mut generated = false;
         let mut is_component = false;
         let mut is_resource = false;
+        let mut is_bundle = false;
         let is_reflect = true;
         if let Some(registration) = registration {
             if registration.contains::<MarkAsGenerated>() {
@@ -256,7 +262,11 @@ impl<'t> LadFileBuilder<'t> {
             if registration.contains::<ReflectComponent>() {
                 is_component = true
             }
+            if registration.contains::<ReflectBundle>() {
+                is_bundle = true
+            }
         }
+        let is_asset = is_asset_type(self.type_registry, type_info.type_id());
 
         let crate_ = type_info
             .type_path_table()
@@ -296,6 +306,8 @@ impl<'t> LadFileBuilder<'t> {
             metadata: LadTypeMetadata {
                 is_component,
                 is_resource,
+                is_bundle,
+                is_asset,
                 is_reflect,
                 mapped_to_primitive_kind: primitive_kind_of(type_info.type_id()),
                 default: self.lad_default(type_info.type_id()),
@@ -1532,6 +1544,53 @@ mod test {
             handle.to_string().contains("Handle<"),
             "expected the handle type, got {handle}"
         );
+    }
+
+    #[test]
+    fn type_kinds_come_from_the_type_data() {
+        use bevy_asset::{Asset, ReflectAsset};
+        use bevy_ecs::{bundle::Bundle, component::Component};
+
+        #[derive(Component, Reflect, Default)]
+        #[reflect(Component)]
+        struct KindComponent;
+        #[derive(Bundle, Reflect, Default)]
+        #[reflect(Bundle)]
+        struct KindBundle {
+            component: KindComponent,
+        }
+        #[derive(Asset, Reflect)]
+        struct KindAsset;
+
+        let mut type_registry = TypeRegistry::default();
+        type_registry.register::<KindComponent>();
+        type_registry.register::<KindBundle>();
+        type_registry.register::<KindAsset>();
+        type_registry.register_type_data::<KindAsset, ReflectAsset>();
+
+        let lad_file = LadFileBuilder::new_empty(&type_registry)
+            .add_type::<KindComponent>()
+            .add_type::<KindBundle>()
+            .add_type::<KindAsset>()
+            .build();
+        let kinds = |identifier: &str| {
+            let metadata = &lad_file
+                .types
+                .values()
+                .find(|t| t.identifier == identifier)
+                .expect("the type is added")
+                .metadata;
+            (
+                metadata.is_component,
+                metadata.is_resource,
+                metadata.is_bundle,
+                metadata.is_asset,
+            )
+        };
+
+        assert_eq!(kinds("KindComponent"), (true, false, false, false));
+        assert_eq!(kinds("KindBundle"), (false, false, true, false));
+        assert_eq!(kinds("KindAsset"), (false, false, false, true));
     }
 
     // Every variant of the kind enum is listed exactly once here. The name lookup is an exhaustive match, so adding a variant
