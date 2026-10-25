@@ -15,8 +15,9 @@ use super::{
     static_type::registered_type_info,
 };
 use crate::{
-    AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo, ScriptEvent,
-    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
+    AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo, SCRIPT_NAMESPACE_PREFIX,
+    ScriptEvent, ScriptEventRegistration, ScriptNamedSet, ScriptQueryBuilder, ScriptQueryResult,
+    ScriptSystemSetRegistry,
     error::InteropError,
     function::{from::V, from_ref::FromScriptErased, into::IntoScript},
     script_path, validate_script_namespace_and_name,
@@ -33,6 +34,7 @@ use ::{
 };
 use bevy_app::AppExit;
 use bevy_asset::AssetPath;
+use bevy_ecs::schedule::SystemSet;
 use bevy_ecs::{
     component::{Component, ComponentCloneBehavior, ComponentDescriptor, Mutable},
     hierarchy::{ChildOf, Children},
@@ -45,7 +47,7 @@ use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
 use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
 use bevy_reflect::{GetTypeRegistration, Reflect, TypeInfo, TypeRegistration};
-use bevy_system_reflection::ReflectSchedule;
+use bevy_system_reflection::{ReflectSchedule, ReflectSystemSet};
 use std::{
     alloc::Layout,
     any::TypeId,
@@ -221,6 +223,23 @@ pub trait WorldExtensions {
         name: &str,
         allow_existing: bool,
     ) -> Result<ScriptEventRegistration, InteropError>;
+
+    /// Registers a system set of the script `owner` in a script namespace (which must start with `script.`), and returns it.
+    ///
+    /// Fails if a set with the same path is already registered, unless `allow_existing` is set,
+    /// in which case the existing set is returned instead. The set is removed from its namespace when its owner unloads,
+    /// registering it again gives the same set.
+    fn register_script_system_set(
+        &self,
+        namespace: &str,
+        name: &str,
+        allow_existing: bool,
+        owner: ScriptAttachment,
+    ) -> Result<ReflectSystemSet, InteropError>;
+
+    /// Finds a system set by its full path, i.e. `transform.TransformSystems.Propagate` for a Rust set,
+    /// or `script.game.ai` for a set registered by a script.
+    fn get_system_set_by_name(&self, path: &str) -> Option<ReflectSystemSet>;
 
     /// Spawns an observer which queues the callback `label` on the script `attachment`, with the payload as argument, whenever the script event is triggered.
     ///
@@ -967,9 +986,70 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 format!("a function named '{path}' is already exported"),
             ));
         }
+        if registry.get_system_set_owner(&path).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a script registered system set named '{path}' already exists"),
+            ));
+        }
         let registration = ScriptEventRegistration { name: path.into() };
         registry.register_event(registration.clone());
         Ok(registration)
+    }
+
+    fn register_script_system_set(
+        &self,
+        namespace: &str,
+        name: &str,
+        allow_existing: bool,
+        owner: ScriptAttachment,
+    ) -> Result<ReflectSystemSet, InteropError> {
+        validate_script_namespace_and_name(namespace, name)?;
+        let path = script_path(namespace, name);
+        let component_registry = self.component_registry();
+        let mut registry = component_registry.write();
+        if registry.get_system_set_owner(&path).is_some() && !allow_existing {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!(
+                    "script registered system set '{path}' already exists, pass `allow_existing = true` to get the existing set instead"
+                ),
+            ));
+        }
+        if registry.get(&path).is_some()
+            || registry.get_event(&path).is_some()
+            || registry.get_export(&path).is_some()
+        {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!(
+                    "a script registered component, event or exported function named '{path}' already exists"
+                ),
+            ));
+        }
+        if registry.get_system_set_owner(&path).is_none() {
+            registry.register_system_set(path.clone(), owner);
+        }
+        Ok(ReflectSystemSet::from_interned(
+            ScriptNamedSet(path).intern(),
+        ))
+    }
+
+    fn get_system_set_by_name(&self, path: &str) -> Option<ReflectSystemSet> {
+        let set = if path.starts_with(SCRIPT_NAMESPACE_PREFIX) {
+            self.component_registry()
+                .read()
+                .get_system_set_owner(path)
+                .map(|_| ScriptNamedSet(path.to_owned()).intern())
+        } else {
+            self.with_resource(|registry: &ScriptSystemSetRegistry| registry.get(path))
+                .ok()
+                .flatten()
+        };
+        set.map(ReflectSystemSet::from_interned)
     }
 
     fn add_script_event_observer(
@@ -1418,6 +1498,16 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
                 None,
                 None,
                 format!("a script registered event named '{path}' already exists"),
+            ));
+        }
+        if component_registry_read
+            .get_system_set_owner(&path)
+            .is_some()
+        {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                format!("a script registered system set named '{path}' already exists"),
             ));
         }
 

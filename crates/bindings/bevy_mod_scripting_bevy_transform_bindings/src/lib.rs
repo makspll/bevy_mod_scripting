@@ -23,6 +23,12 @@ impl Plugin for BevyTransformBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
+        use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+        app.register_script_system_set(
+            "transform.TransformSystems",
+            "Propagate",
+            bevy_transform::TransformSystems::Propagate,
+        );
         let world = app.world_mut();
         transform::register(world);
         global_transform::register(world);

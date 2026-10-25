@@ -147,11 +147,18 @@ impl ReflectSchedule {
     }
 }
 
-#[derive(Reflect)]
-/// A reflectable system set.
+#[derive(Reflect, Clone, Debug)]
+#[reflect(opaque)]
+/// A reflectable system set: a set node of a schedule graph, or a set scripts put and order their systems in.
+///
+/// Bevy does not expose the interned sets of a schedule graph, so set nodes of a graph only have a node id,
+/// while sets made from an interned set (i.e. the ones scripts use) only have the set.
 pub struct ReflectSystemSet {
-    /// The node id of the system set.
-    node_id: ReflectNodeId,
+    /// The system set, unless this is a set node of a schedule graph
+    set: Option<InternedSystemSet>,
+
+    /// The node id of the system set, only set nodes of a schedule graph have one
+    node_id: Option<ReflectNodeId>,
 
     /// The debug print of the system set
     debug: String,
@@ -161,13 +168,34 @@ pub struct ReflectSystemSet {
 }
 
 impl ReflectSystemSet {
-    /// Creates a reflect system set from a system set
+    /// Creates a reflect system set from a set node of a schedule graph
     pub fn from_set(set: &dyn SystemSet, node_id: NodeId) -> Self {
         ReflectSystemSet {
-            node_id: ReflectNodeId(node_id),
+            set: None,
+            node_id: Some(ReflectNodeId(node_id)),
             debug: format!("{set:?}"),
             type_id: set.system_type(),
         }
+    }
+
+    /// Creates a reflect system set from a system set, which is not a node of a particular schedule graph
+    pub fn from_interned(set: InternedSystemSet) -> Self {
+        ReflectSystemSet {
+            debug: format!("{set:?}"),
+            type_id: set.system_type(),
+            set: Some(set),
+            node_id: None,
+        }
+    }
+
+    /// Retrieves the system set, `None` for set nodes of a schedule graph
+    pub fn set(&self) -> Option<InternedSystemSet> {
+        self.set
+    }
+
+    /// Retrieves the debug print of the system set, i.e. `TransformSystems::Propagate`
+    pub fn debug(&self) -> &str {
+        &self.debug
     }
 }
 
@@ -206,7 +234,9 @@ pub fn reflect_graph_to_dot(graph: ReflectSystemGraph) -> String {
 
                     let mut node = writer.node_auto();
                     node.set_label(&name);
-                    node_id_map.insert(reflect_system_set.node_id, node.id());
+                    if let Some(node_id) = reflect_system_set.node_id {
+                        node_id_map.insert(node_id, node.id());
+                    }
                 }
             }
         }
@@ -347,8 +377,10 @@ impl ReflectSystemGraph {
     pub fn sort(&mut self) {
         // sort everything in this graph
         self.nodes.sort_by_key(|node| match node {
-            ReflectSystemGraphNode::System(system) => system.node_id.0,
-            ReflectSystemGraphNode::SystemSet(system_set) => system_set.node_id.0,
+            ReflectSystemGraphNode::System(system) => Some(system.node_id.0),
+            ReflectSystemGraphNode::SystemSet(system_set) => {
+                system_set.node_id.as_ref().map(|n| n.0)
+            }
         });
 
         self.dependencies.sort();
@@ -518,7 +550,9 @@ impl ReflectSystemGraph {
 
         // remove the set from nodes
         self.nodes.retain(|node| match node {
-            ReflectSystemGraphNode::SystemSet(system_set) => system_set.node_id.0 != node_id,
+            ReflectSystemGraphNode::SystemSet(system_set) => {
+                system_set.node_id.as_ref().is_none_or(|n| n.0 != node_id)
+            }
             _ => true,
         });
 
@@ -537,12 +571,8 @@ impl ReflectSystemGraph {
             .nodes
             .iter()
             .filter_map(|node| match node {
-                ReflectSystemGraphNode::SystemSet(system_set) => {
-                    if system_set.type_id.is_some() {
-                        Some(system_set.node_id.0)
-                    } else {
-                        None
-                    }
+                ReflectSystemGraphNode::SystemSet(system_set) if system_set.type_id.is_some() => {
+                    system_set.node_id.as_ref().map(|n| n.0)
                 }
                 _ => None,
             })

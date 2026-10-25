@@ -44,6 +44,47 @@ local world = import_namespace("bms").world
 world.add_system(update_schedule,system)
 ```
 
+## Ordering and sets
+
+Besides systems (`after`/`before`), script systems can be ordered against:
+- other script systems, by callback label and script, which must have been added before: `:after_script_system("on_physics", attachment)`
+- sets: `:after_set(set)`, `:before_set(set)`, and put in sets: `:in_set(set)`
+
+Scripts register their own sets into a `script.*` namespace, i.e. to group and order the systems of a mod. A set is removed from its namespace when its script unloads, registering it again gives the same set:
+
+```lua
+local ai = world.register_new_system_set("script.my_mod", "ai")
+-- other scripts: import_namespace("script.my_mod").ai
+```
+
+Rust sets the game registers are members of their namespace, the BMS bindings register the main Bevy sets (i.e. `transform.TransformSystems.Propagate`, `time.TimeSystems`):
+
+```rust,ignore
+app.register_script_system_set("transform.TransformSystems", "Propagate", TransformSystems::Propagate);
+```
+
+```lua
+local propagate = import_namespace("transform.TransformSystems").Propagate
+builder:in_set(ai):after_set(propagate)
+```
+
+`world.get_system_set_by_name` finds either kind by its full name, i.e. `"transform.TransformSystems.Propagate"` or `"script.my_mod.ai"`.
+
+## Run conditions
+
+`:run_if` only runs the system if the condition holds, conditions are evaluated in Rust without calling the script. Every condition passed to `run_if` must hold:
+
+```lua
+local c = bms.conditions
+builder:run_if(c.any_with_component(Enemy))
+       :run_if(c.not_(c.resource_exists(Paused)))
+       :run_if(c.on_timer(0.5))
+```
+
+Conditions: `resource_exists`, `resource_changed`, `resource_added`, `any_with_component`, `on_timer(seconds)`, `run_once` and the combinators `not_`, `and_`, `or_` (named so as `not`, `and`, `or` are Lua keywords).
+
+## Lifetime
+
 A script system is identified by its attachment and callback label: adding it again replaces the old one (with a warning). Script systems are removed when their script unloads or reloads, a reloading script adds them again in `on_script_loaded`.
 
 Bevy cannot change a schedule while it runs, i.e. `PreUpdate` where scripts are loaded. Systems added to (or removed from) a running schedule are added (or removed) once it finishes, removed systems stop running right away. `world.add_system` then returns a system which can be used for ordering, but has no node in the schedule yet.
