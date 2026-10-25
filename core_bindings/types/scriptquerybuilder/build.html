@@ -36,10 +36,10 @@
             const path_to_root = "../../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../../searchindex-939fa99a.js";
+            window.path_to_searchindex_js = "../../../searchindex-a06f9fcc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../../toc-f535c0ff.js"></script>
+        <script src="../../../toc-5705454a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -184,6 +184,8 @@
                         <h1 id="build"><a class="header" href="#build"><code>build</code></a></h1>
 <blockquote>
 <p>Builds the query and retrieves the entities and component references.</p>
+<p>Each result is a list of the entity followed by the components in the order they were added to the query,
+i.e. <code>local entity, a, b = result[1], result[2], result[3]</code> in Lua, absent optional components are nil.</p>
 </blockquote>
 <h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
 <div class="table-wrapper">
@@ -203,7 +205,7 @@
 <tr><th>Name</th><th>Type</th><th>Documentation</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>result</strong></td><td>Vec&lt;<a href="../../types/scriptqueryresult.html">ScriptQueryResult</a>&gt;</td><td>The entities and component references that match the query.</td></tr>
+<tr><td><strong>result</strong></td><td>Vec&lt;(<a href="../../types/entity.html">Entity</a>, …Optional&lt;<a href="../../types/reflectreference.html">ReflectReference</a>&gt;)&gt;</td><td>The entities and component references that match the query.</td></tr>
 </tbody>
 </table>
 </div>

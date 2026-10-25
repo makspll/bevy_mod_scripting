@@ -3729,27 +3729,6 @@
         "mapped_to_primitive_kind": null
       }
     },
-    "bevy_mod_scripting_bindings::query::ScriptQueryResult": {
-      "identifier": "ScriptQueryResult",
-      "crate": "bevy_mod_scripting_bindings",
-      "path": "bevy_mod_scripting_bindings::query::ScriptQueryResult",
-      "namespace": "bms",
-      "documentation": " A result from a query.",
-      "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryResult::components",
-        "bevy_mod_scripting_bindings::query::ScriptQueryResult::entity",
-        "bevy_mod_scripting_bindings::query::ScriptQueryResult::new"
-      ],
-      "layout": null,
-      "generated": false,
-      "insignificance": 500,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null
-      }
-    },
     "bevy_mod_scripting_bindings::query::ScriptResourceRegistration": {
       "identifier": "ScriptResourceRegistration",
       "crate": "bevy_mod_scripting_bindings",
@@ -10812,6 +10791,25 @@
           "name": "Builtin"
         }
       ],
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "bevy_mod_scripting_bindings::query::ScriptQueryResult": {
+      "identifier": "ScriptQueryResult",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::query::ScriptQueryResult",
+      "namespace": "bms",
+      "documentation": " A result from a query.\n\n Scripts receive it as a plain list, the entity followed by the components in the order they were added to the query,\n i.e. `{entity, a, b}` in Lua, with nil for absent optional components. Nothing is allocated for the result itself.",
+      "associated_functions": [
+        "bevy_mod_scripting_bindings::query::ScriptQueryResult::new"
+      ],
+      "layout": null,
       "generated": false,
       "insignificance": 1000,
       "metadata": {
@@ -20239,33 +20237,6 @@
         "kind": {
           "interopResult": {
             "val": "alloc::vec::Vec<core::option::Option<(bevy_ecs::entity::Entity, bevy_input_focus::gained_and_lost::FocusCause)>>"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
-    "alloc::vec::Vec<core::option::Option<bevy_mod_scripting_bindings::reference::ReflectReference>>::new": {
-      "namespace": "alloc::vec::Vec<core::option::Option<bevy_mod_scripting_bindings::reference::ReflectReference>>",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "alloc::vec::Vec<core::option::Option<bevy_mod_scripting_bindings::reference::ReflectReference>>"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "alloc::vec::Vec<core::option::Option<bevy_mod_scripting_bindings::reference::ReflectReference>>"
           }
         },
         "documentation": "The constructed value.",
@@ -43933,14 +43904,25 @@
         "kind": {
           "interopResult": {
             "vec": {
-              "val": "bevy_mod_scripting_bindings::query::ScriptQueryResult"
+              "tupleWithRest": {
+                "head": [
+                  {
+                    "val": "bevy_ecs::entity::Entity"
+                  }
+                ],
+                "rest": {
+                  "option": {
+                    "primitive": "reflectReference"
+                  }
+                }
+              }
             }
           }
         },
         "documentation": "The entities and component references that match the query.",
         "name": "result"
       },
-      "documentation": "Builds the query and retrieves the entities and component references.\n",
+      "documentation": "Builds the query and retrieves the entities and component references.\n\nEach result is a list of the entity followed by the components in the order they were added to the query,\ni.e. `local entity, a, b = result[1], result[2], result[3]` in Lua, absent optional components are nil.\n",
       "metadata": {},
       "receiver": true
     },
@@ -44182,58 +44164,6 @@
         "name": "query"
       },
       "documentation": "Adds a component to filter the query by. This component will NOT be retrieved.\n",
-      "metadata": {},
-      "receiver": true
-    },
-    "bevy_mod_scripting_bindings::query::ScriptQueryResult::components": {
-      "namespace": "bevy_mod_scripting_bindings::query::ScriptQueryResult",
-      "identifier": "components",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "ref": "bevy_mod_scripting_bindings::query::ScriptQueryResult"
-          },
-          "documentation": "The query result to retrieve the components from.",
-          "name": "query"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "vec": {
-            "option": {
-              "primitive": "reflectReference"
-            }
-          }
-        },
-        "documentation": "The components from the query result.",
-        "name": "components"
-      },
-      "documentation": "Retrieves the components from the query result.\n\nThese are ordered by the order they were added to the query, absent optional components are nil.\n",
-      "metadata": {},
-      "receiver": true
-    },
-    "bevy_mod_scripting_bindings::query::ScriptQueryResult::entity": {
-      "namespace": "bevy_mod_scripting_bindings::query::ScriptQueryResult",
-      "identifier": "entity",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "ref": "bevy_mod_scripting_bindings::query::ScriptQueryResult"
-          },
-          "documentation": "The query result to retrieve the entity from.",
-          "name": "query"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "val": "bevy_ecs::entity::Entity"
-        },
-        "documentation": "The entity from the query result.",
-        "name": "entity"
-      },
-      "documentation": "Retrieves the entity from the query result.\n",
       "metadata": {},
       "receiver": true
     },

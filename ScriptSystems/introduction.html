@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-939fa99a.js";
+            window.path_to_searchindex_js = "../searchindex-a06f9fcc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-f535c0ff.js"></script>
+        <script src="../toc-5705454a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -256,13 +256,15 @@ bms.system_builder("my_system")
 </code></pre>
 <p>will create a system which calls the specified callback <code>my_system</code> with 2 arguments:</p>
 <ul>
-<li>The <code>ScriptQueryResult</code> for the first query
-<ul>
-<li>With <code>components</code> access to ComponentA and ComponentB</li>
-</ul>
-</li>
+<li>The results of the query, each a list of the entity followed by the components in the order they were added: <code>{entity, a, b}</code></li>
 <li>The <code>ReflectReference</code> to <code>ResourceA</code></li>
 </ul>
+<pre><code class="language-lua">function my_system(results, resource_a)
+    for _, result in ipairs(results) do
+        local entity, a, b = result[1], result[2], result[3]
+    end
+end
+</code></pre>
 <p><code>resource</code> and <code>component</code> give read and write access. Use <code>resource_read</code> and <code>component_read</code> for read only access, systems reading the same resources and components can run in parallel, while systems writing them cannot:</p>
 <pre><code class="language-lua">bms.system_builder("my_system", attachment)
     :query(world.query():component_read(ComponentA):component(ComponentB))
