@@ -33,6 +33,17 @@ Do not write getters or setters for public fields.
 - There is one function per name: registering a name again replaces the function. For mixed operands accept a `Union`, i.e. `rhs: Union<R<Vec3>, f32>`.
 - Mutate in place by taking `M<Self>`; pure functions return new values.
 
+## Generic signatures
+
+Reflection can't see the generic parameters of a function, so signatures whose types depend on a type passed in name them with the markers in `bevy_mod_scripting_bindings::function::generics`: `A` is a value of the type, `TypeOf<A>` (or `ComponentOf`, `ResourceOf`, `BundleOf`, `AssetOf`) the type itself, `FieldsOf<A>` its fields and `HandleOf<A>` a handle to it:
+
+```rust,ignore
+// documented as returning a value of the component type it is given
+fn get_component(ctxt: FunctionCallContext, entity: V<Entity>, registration: ComponentOf<A, V<ScriptComponentRegistration>>) -> Result<Option<A>, InteropError>
+```
+
+The second parameter of the type markers is what is passed at runtime, `StaticTypeRef` by default. Functions registered on `StaticTypeRef` are available on every type of the marker's kind, i.e. `Transform.get_on(entity)`.
+
 ## Documentation
 
 Doc comments end up in the generated docs and in editor declaration files, and are read by script writers rather than Rust developers:

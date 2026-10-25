@@ -7,8 +7,8 @@ use bevy_mod_scripting_bindings::{
     EnumVariantRef, InteropError, StaticTypeRef,
     construct::construct_reference,
     function::{
-        bound::{BoundFields, BoundValue},
         from::V,
+        generics::{A, FieldsOf, TypeOf},
         namespace::NamespaceBuilder,
         script_function::FunctionCallContext,
     },
@@ -18,36 +18,36 @@ use bevy_mod_scripting_bindings::{
 /// when accessed through a static type reference, i.e. `Type.new{...}`.
 fn construct_type(
     ctxt: FunctionCallContext,
-    type_ref: StaticTypeRef,
-    payload: BoundFields,
-) -> Result<BoundValue, InteropError> {
+    type_ref: TypeOf<A>,
+    payload: FieldsOf<A>,
+) -> Result<A, InteropError> {
     let world = ctxt.world()?;
     let type_info = type_ref.type_info(&world)?;
     construct_reference(
         &world,
         type_info,
         None,
-        payload,
+        payload.into_inner(),
         ctxt.convert_to_0_indexed(),
     )
-    .map(BoundValue)
+    .map(A)
 }
 
 /// The constructor of a variant, i.e. `MyEnum.Variant:new{...}`.
 fn construct_variant(
     ctxt: FunctionCallContext,
     variant: V<EnumVariantRef>,
-    payload: BoundFields,
-) -> Result<BoundValue, InteropError> {
+    payload: FieldsOf<A>,
+) -> Result<A, InteropError> {
     let world = ctxt.world()?;
     construct_reference(
         &world,
         variant.type_info(&world)?,
         Some(variant.variant_name(&world)?),
-        payload,
+        payload.into_inner(),
         ctxt.convert_to_0_indexed(),
     )
-    .map(BoundValue)
+    .map(A)
 }
 
 /// Adds a type level constructor to scripts, i.e. `MyType.new{ field = value }`, and to enum variants, i.e. `MyEnum.Variant:new{ field = value }`.

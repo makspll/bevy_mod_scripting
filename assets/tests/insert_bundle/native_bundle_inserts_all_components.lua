@@ -17,3 +17,9 @@ assert(world.has_component(entity, Simple) == true, "Expected the nested bundle'
 local spawned = world.spawn_bundle(Bundle, TestBundle.new({}))
 assert(world.has_component(spawned, Comp) == true, "Expected spawn_bundle to spawn an entity with the bundle")
 assert(world.has_component(spawned, Simple) == true, "Expected spawn_bundle to insert the nested bundle")
+
+-- the bundle type itself spawns and inserts its values too
+local with = TestBundle.spawn_with(TestBundle.new({}))
+assert(world.has_component(with, Comp) == true, "Expected spawn_with to spawn an entity with the bundle")
+TestBundle.insert_on(entity, TestBundle.new({ comp = CompWithDefaultAndComponentData.new({ "again" }) }))
+assert(world.get_component(entity, Comp)[1] == "again", "Expected insert_on to insert the bundle")

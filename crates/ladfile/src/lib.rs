@@ -242,6 +242,9 @@ pub struct LadFunction {
     /// Whether the function is called on a value, which is its first argument, i.e. `v:length()` in Lua.
     #[serde(skip_serializing_if = "is_false", default)]
     pub receiver: bool,
+    /// The generic parameters the signature mentions, see [`LadTypeKind::Param`].
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub generics: Vec<String>,
 }
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// Additional data relevant to functions
@@ -379,6 +382,55 @@ pub enum LadTypeKind {
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
     },
+    /// A value of the type a generic parameter of the function stands for, see [`LadFunction::generics`].
+    Param(String),
+    /// A table of the fields of the type a generic parameter stands for.
+    FieldsOf(String),
+    /// An instantiation of a generic type whose arguments aren't all known, i.e. `Handle<A>` with the parameter `A`.
+    Generic {
+        /// The generic type, see [`LadFile::generic_types`]
+        generic_type: LadTypeId,
+        /// Its arguments
+        args: Vec<LadTypeKind>,
+    },
+    /// The type a generic parameter stands for itself, i.e. what `import_namespace("math").Vec3` is in scripts.
+    TypeOf {
+        /// What kind of type the parameter must be
+        bound: LadTypeBound,
+        /// The name of the parameter
+        param: String,
+        /// What is passed at runtime, which is also accepted where the type isn't known statically, i.e. a registration
+        carrier: Box<LadTypeKind>,
+    },
+}
+
+/// The kind of type a generic parameter must be, see [`LadTypeKind::TypeOf`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum LadTypeBound {
+    /// Any type
+    Type,
+    /// A component type, see [`LadTypeMetadata::is_component`]
+    Component,
+    /// A resource type, see [`LadTypeMetadata::is_resource`]
+    Resource,
+    /// A bundle type, see [`LadTypeMetadata::is_bundle`]
+    Bundle,
+    /// An asset type, see [`LadTypeMetadata::is_asset`]
+    Asset,
+}
+
+impl LadTypeBound {
+    /// Whether a type with the given metadata satisfies the bound.
+    pub fn is_satisfied_by(&self, metadata: &LadTypeMetadata) -> bool {
+        match self {
+            LadTypeBound::Type => true,
+            LadTypeBound::Component => metadata.is_component,
+            LadTypeBound::Resource => metadata.is_resource,
+            LadTypeBound::Bundle => metadata.is_bundle,
+            LadTypeBound::Asset => metadata.is_asset,
+        }
+    }
 }
 
 impl LadTypeKind {
@@ -395,6 +447,9 @@ impl LadTypeKind {
             LadTypeKind::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
+            LadTypeKind::Generic { args, .. } => args.iter().collect(),
+            LadTypeKind::TypeOf { carrier, .. } => vec![&**carrier],
+            LadTypeKind::Param(_) | LadTypeKind::FieldsOf(_) => vec![],
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
             | LadTypeKind::Val(_)
@@ -508,6 +563,23 @@ pub trait ArgumentVisitor {
     /// A table of the fields of a type, or of a variant of an enum
     fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) -> Self::Output;
 
+    /// A value of the type a generic parameter stands for
+    fn visit_param(&mut self, param: &str) -> Self::Output;
+
+    /// A table of the fields of the type a generic parameter stands for
+    fn visit_fields_of(&mut self, param: &str) -> Self::Output;
+
+    /// An instantiation of a generic type, with arguments which aren't all known
+    fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[LadTypeKind]) -> Self::Output;
+
+    /// The type a generic parameter stands for, with what is passed for it at runtime
+    fn visit_type_of(
+        &mut self,
+        bound: LadTypeBound,
+        param: &str,
+        carrier: &LadTypeKind,
+    ) -> Self::Output;
+
     /// Visits a type, dispatching to the method for its kind.
     fn visit(&mut self, kind: &LadTypeKind) -> Self::Output {
         match kind {
@@ -529,6 +601,14 @@ pub trait ArgumentVisitor {
             LadTypeKind::Fields { type_id, variant } => {
                 self.visit_fields(type_id, variant.as_deref())
             }
+            LadTypeKind::Param(param) => self.visit_param(param),
+            LadTypeKind::FieldsOf(param) => self.visit_fields_of(param),
+            LadTypeKind::Generic { generic_type, args } => self.visit_generic(generic_type, args),
+            LadTypeKind::TypeOf {
+                bound,
+                param,
+                carrier,
+            } => self.visit_type_of(*bound, param, carrier),
         }
     }
 }

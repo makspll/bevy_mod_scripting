@@ -186,6 +186,55 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
         self.buffer.text(">");
     }
+
+    fn visit_param(&mut self, param: &str) {
+        self.buffer.text(param);
+    }
+
+    fn visit_fields_of(&mut self, param: &str) {
+        self.buffer.text("Fields<");
+        self.buffer.text(param);
+        self.buffer.text(">");
+    }
+
+    fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[ladfile::LadTypeKind]) {
+        let name = self
+            .ladfile
+            .generic_types
+            .get(generic_type)
+            .map(|generic| (generic.identifier.clone(), generic.name_with_params()));
+        match name {
+            Some((identifier, target)) => self.link_or_text(identifier, target),
+            None => {
+                self.buffer.text(generic_type.to_string());
+            }
+        }
+        self.buffer.text("<");
+        for (idx, arg) in args.iter().enumerate() {
+            if idx > 0 {
+                self.buffer.text(", ");
+            }
+            self.visit(arg);
+        }
+        self.buffer.text(">");
+    }
+
+    fn visit_type_of(
+        &mut self,
+        bound: ladfile::LadTypeBound,
+        param: &str,
+        _carrier: &ladfile::LadTypeKind,
+    ) {
+        self.buffer.text(match bound {
+            ladfile::LadTypeBound::Type => "Type<",
+            ladfile::LadTypeBound::Component => "ComponentType<",
+            ladfile::LadTypeBound::Resource => "ResourceType<",
+            ladfile::LadTypeBound::Bundle => "BundleType<",
+            ladfile::LadTypeBound::Asset => "AssetType<",
+        });
+        self.buffer.text(param);
+        self.buffer.text(">");
+    }
 }
 
 #[cfg(test)]

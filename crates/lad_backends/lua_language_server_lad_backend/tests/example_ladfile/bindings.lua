@@ -1,5 +1,35 @@
 ---@meta
----@module "Bool"
+---@module "StaticTypeRef"
+
+
+---@class StaticTypeRef<A>
+--- A type, i.e. `import_namespace("math").Vec3`, with the functions every type has.
+
+
+
+
+---@class ComponentType<A>
+--- A component type, with the functions every component type has.
+
+
+
+
+---@class ResourceType<A>
+--- A resource type, with the functions every resource type has.
+
+
+
+
+---@class BundleType<A>
+--- A bundle type, with the functions every bundle type has.
+
+
+
+
+---@class AssetType<A>
+--- An asset type, with the functions every asset type has.
+
+
 
 
 ---@class Bool
@@ -101,12 +131,6 @@ local ReflectReference = {}
 ---@class ScriptValue
 --- A value representing the union of all representable values
 local ScriptValue = {}
-
-
-
----@class StaticTypeRef
---- A type itself, used to reach its static members, i.e. `Vec3` in `Vec3.new{}`. Functions on it are shared by all types
-local StaticTypeRef = {}
 
 
 

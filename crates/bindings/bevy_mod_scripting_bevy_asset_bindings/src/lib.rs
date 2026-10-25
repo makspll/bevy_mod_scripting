@@ -13,8 +13,8 @@ use bevy_mod_scripting_bindings::{
     InteropError, ReflectReference, ScriptTypeRegistration, StaticTypeRef, WorldExtensions,
     WorldGuard,
     function::{
-        bound::{BoundHandle, BoundValue},
         from::V,
+        generics::{A, AssetOf, HandleOf},
         script_function::FunctionCallContext,
     },
 };
@@ -122,12 +122,12 @@ impl StaticTypeRef {
     /// * `handle`: A handle to the asset, which is loaded in the background.
     fn load(
         ctxt: FunctionCallContext,
-        asset_type: StaticTypeRef,
+        asset_type: AssetOf<A>,
         path: String,
-    ) -> Result<BoundHandle, InteropError> {
+    ) -> Result<HandleOf<A>, InteropError> {
         let world = ctxt.world()?;
         let asset_type_id = asset_type.type_info(&world)?.type_id();
-        load(&world, asset_type_id, path).map(BoundHandle)
+        load(&world, asset_type_id, path).map(HandleOf::new)
     }
 
     /// Adds a value of this type as a new asset, returning a strong handle to it.
@@ -140,9 +140,9 @@ impl StaticTypeRef {
     /// * `handle`: A handle to the new asset.
     fn add_asset(
         ctxt: FunctionCallContext,
-        asset_type: StaticTypeRef,
-        value: BoundValue,
-    ) -> Result<BoundHandle, InteropError> {
+        asset_type: AssetOf<A>,
+        value: A,
+    ) -> Result<HandleOf<A>, InteropError> {
         let world = ctxt.world()?;
         let asset_type_id = asset_type.type_info(&world)?.type_id();
         if value.0.tail_type_id(world.clone())? != Some(asset_type_id) {
@@ -150,7 +150,7 @@ impl StaticTypeRef {
                 "the value is not of the asset type it is added as",
             ));
         }
-        add(&world, value.0).map(BoundHandle)
+        add(&world, value.0).map(HandleOf::new)
     }
 
     /// The asset a handle points to, or nil if it isn't loaded or added yet.
@@ -165,12 +165,12 @@ impl StaticTypeRef {
     /// * `asset`: The asset, or nil.
     fn get_asset(
         ctxt: FunctionCallContext,
-        asset_type: StaticTypeRef,
-        handle: BoundHandle,
-    ) -> Result<Option<BoundValue>, InteropError> {
+        asset_type: AssetOf<A>,
+        handle: HandleOf<A>,
+    ) -> Result<Option<A>, InteropError> {
         let world = ctxt.world()?;
         let asset_type_id = asset_type.type_info(&world)?.type_id();
-        Ok(get(&world, asset_type_id, handle.0)?.map(BoundValue))
+        Ok(get(&world, asset_type_id, handle.0)?.map(A))
     }
 }
 
@@ -220,9 +220,9 @@ impl World {
     fn load_asset(
         ctxt: FunctionCallContext,
         path: String,
-        asset_type: V<ScriptTypeRegistration>,
-    ) -> Result<ReflectReference, InteropError> {
-        load(&ctxt.world()?, asset_type.type_id(), path)
+        asset_type: AssetOf<A, V<ScriptTypeRegistration>>,
+    ) -> Result<HandleOf<A>, InteropError> {
+        load(&ctxt.world()?, asset_type.type_id(), path).map(HandleOf::new)
     }
 
     /// Whether the asset and all of its dependencies are loaded.
@@ -292,10 +292,7 @@ impl World {
     /// * `value`: The asset value, of a type registered for asset reflection.
     /// Returns:
     /// * `handle`: A handle to the new asset.
-    fn add_asset(
-        ctxt: FunctionCallContext,
-        value: ReflectReference,
-    ) -> Result<ReflectReference, InteropError> {
-        add(&ctxt.world()?, value)
+    fn add_asset(ctxt: FunctionCallContext, value: A) -> Result<HandleOf<A>, InteropError> {
+        add(&ctxt.world()?, value.0).map(HandleOf::new)
     }
 }

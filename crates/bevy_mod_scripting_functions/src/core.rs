@@ -18,13 +18,13 @@ use bevy_mod_scripting_bindings::{
     FunctionInfo, InteropError, NamespaceMembers, NamespaceValue, PartialReflectExt,
     QueuedScriptCallback, ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration,
     ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
-    ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
+    ScriptTypeRegistration, StaticTypeRef, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
     docgen::typed_through::ThroughTypeInfo,
     function::{
-        bound::BoundFields,
         from::{R, V},
         from_ref::FromScriptErased,
+        generics::{A, AssetOf, BundleOf, ComponentOf, FieldsOf, HandleOf, ResourceOf, TypeOf},
         into_ref::IntoScriptErased,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
@@ -170,12 +170,12 @@ impl World {
     fn get_component(
         ctxt: FunctionCallContext,
         entity: V<Entity>,
-        registration: V<ScriptComponentRegistration>,
-    ) -> Result<Option<ReflectReference>, InteropError> {
+        registration: ComponentOf<A, V<ScriptComponentRegistration>>,
+    ) -> Result<Option<A>, InteropError> {
         profiling::function_scope!("get_component");
         let world = ctxt.world()?;
-        let val = world.get_component(*entity, registration.into_inner())?;
-        Ok(val)
+        let val = world.get_component(*entity, registration.into_inner().into_inner())?;
+        Ok(val.map(A))
     }
 
     /// Checks if the given entity has the given component.
@@ -189,7 +189,7 @@ impl World {
     fn has_component(
         ctxt: FunctionCallContext,
         entity: V<Entity>,
-        registration: V<ScriptComponentRegistration>,
+        registration: ComponentOf<A, V<ScriptComponentRegistration>>,
     ) -> Result<bool, InteropError> {
         profiling::function_scope!("has_component");
         let world = ctxt.world()?;
@@ -206,11 +206,11 @@ impl World {
     fn remove_component(
         ctxt: FunctionCallContext,
         entity: V<Entity>,
-        registration: V<ScriptComponentRegistration>,
+        registration: ComponentOf<A, V<ScriptComponentRegistration>>,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("remove_component");
         let world = ctxt.world()?;
-        world.remove_component(*entity, registration.clone())
+        world.remove_component(*entity, registration.into_inner().into_inner())
     }
 
     /// Retrieves the resource with the given registration.
@@ -221,12 +221,12 @@ impl World {
     /// * `resource`: The resource, if it exists.
     fn get_resource(
         ctxt: FunctionCallContext,
-        registration: V<ScriptResourceRegistration>,
-    ) -> Result<Option<ReflectReference>, InteropError> {
+        registration: ResourceOf<A, V<ScriptResourceRegistration>>,
+    ) -> Result<Option<A>, InteropError> {
         profiling::function_scope!("get_resource");
         let world = ctxt.world()?;
         let val = world.get_resource(registration.resource_id())?;
-        Ok(val)
+        Ok(val.map(A))
     }
 
     /// Checks if the world has the given resource.
@@ -238,7 +238,7 @@ impl World {
     /// * `has_resource`: Whether the world has the resource.
     fn has_resource(
         ctxt: FunctionCallContext,
-        registration: V<ScriptResourceRegistration>,
+        registration: ResourceOf<A, V<ScriptResourceRegistration>>,
     ) -> Result<bool, InteropError> {
         profiling::function_scope!("has_resource");
         let world = ctxt.world()?;
@@ -253,11 +253,11 @@ impl World {
     /// * `result`: Nothing if the resource was removed successfully or didn't exist in the first place.
     fn remove_resource(
         ctxt: FunctionCallContext,
-        registration: V<ScriptResourceRegistration>,
+        registration: ResourceOf<A, V<ScriptResourceRegistration>>,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("remove_resource");
         let world = ctxt.world()?;
-        world.remove_resource(registration.into_inner())
+        world.remove_resource(registration.into_inner().into_inner())
     }
 
     /// Adds an observer which runs the callback `callback` of the calling script whenever an event of the given type is triggered.
@@ -450,11 +450,11 @@ impl World {
     fn add_default_component(
         ctxt: FunctionCallContext,
         entity: V<Entity>,
-        registration: V<ScriptComponentRegistration>,
+        registration: ComponentOf<A, V<ScriptComponentRegistration>>,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("add_default_component");
         let world = ctxt.world()?;
-        world.add_default_component(*entity, registration.clone())
+        world.add_default_component(*entity, registration.into_inner().into_inner())
     }
 
     /// Spawns a new entity and returns it
@@ -481,12 +481,12 @@ impl World {
     fn insert_component(
         ctxt: FunctionCallContext,
         entity: V<Entity>,
-        registration: V<ScriptComponentRegistration>,
-        value: ReflectReference,
+        registration: ComponentOf<A, V<ScriptComponentRegistration>>,
+        value: A,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("insert_component");
         let world = ctxt.world()?;
-        world.insert_component(*entity, registration.into_inner(), value)
+        world.insert_component(*entity, registration.into_inner().into_inner(), value.0)
     }
 
     /// Inserts the given bundle value into the provided entity, all of its components at once.
@@ -503,12 +503,12 @@ impl World {
     fn insert_bundle(
         ctxt: FunctionCallContext,
         entity: V<Entity>,
-        registration: V<ScriptBundleRegistration>,
-        value: ReflectReference,
+        registration: BundleOf<A, V<ScriptBundleRegistration>>,
+        value: A,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("insert_bundle");
         let world = ctxt.world()?;
-        world.insert_bundle(*entity, registration.into_inner(), value)
+        world.insert_bundle(*entity, registration.into_inner().into_inner(), value.0)
     }
 
     /// Spawns a new entity with the given bundle value and returns it.
@@ -521,12 +521,15 @@ impl World {
     /// * `entity`: The newly spawned entity
     fn spawn_bundle(
         ctxt: FunctionCallContext,
-        registration: V<ScriptBundleRegistration>,
-        value: ReflectReference,
+        registration: BundleOf<A, V<ScriptBundleRegistration>>,
+        value: A,
     ) -> Result<V<Entity>, InteropError> {
         profiling::function_scope!("spawn_bundle");
         let world = ctxt.world()?;
-        Ok(V(world.spawn_bundle(registration.into_inner(), value)?))
+        Ok(V(world.spawn_bundle(
+            registration.into_inner().into_inner(),
+            value.0,
+        )?))
     }
 
     /// Inserts the given children entities into the provided parent entity.
@@ -762,16 +765,16 @@ impl World {
     /// * `asset`: The asset reference, if the asset is loaded.
     fn get_asset(
         ctxt: FunctionCallContext,
-        handle_reference: ReflectReference,
-        registration: V<ScriptTypeRegistration>,
-    ) -> Result<Option<ReflectReference>, InteropError> {
+        handle_reference: HandleOf<A>,
+        registration: AssetOf<A, V<ScriptTypeRegistration>>,
+    ) -> Result<Option<A>, InteropError> {
         profiling::function_scope!("get_asset");
-        let untyped_handle = handle_reference.try_untyped_asset_handle(ctxt.world()?)?;
-        Ok(Some(ReflectReference::new_asset_ref(
+        let untyped_handle = handle_reference.0.try_untyped_asset_handle(ctxt.world()?)?;
+        Ok(Some(A(ReflectReference::new_asset_ref(
             untyped_handle,
             registration.type_id(),
             ctxt.world()?,
-        )?))
+        )?)))
     }
 
     /// Checks if can get asset handle
@@ -2111,17 +2114,18 @@ impl NamespaceMembers {
     /// * `reference`: The constructed type.
     fn construct(
         ctxt: FunctionCallContext,
-        registration: AnyTypeRegistrationV,
-        payload: BoundFields,
-    ) -> Result<ReflectReference, InteropError> {
-        let registration = registration.into_type_registration();
+        registration: TypeOf<A, AnyTypeRegistrationV>,
+        payload: FieldsOf<A>,
+    ) -> Result<A, InteropError> {
+        let registration = registration.into_inner().into_type_registration();
         construct_reference(
             &ctxt.world()?,
             registration.type_registration().type_info(),
             None,
-            payload,
+            payload.into_inner(),
             ctxt.convert_to_0_indexed(),
         )
+        .map(A)
     }
 
     /// Creates a new script system builder, which can be used to add new systems to the world.
@@ -2409,6 +2413,211 @@ impl ScriptRunCondition {
     }
 }
 
+/// The component registration of a type, or an error if it isn't a component.
+fn component_registration(
+    world: &WorldGuard,
+    ty: &StaticTypeRef,
+) -> Result<ScriptComponentRegistration, InteropError> {
+    world
+        .get_component_type(ty.registration(world)?)?
+        .map_err(|r| InteropError::missing_type_data(r.type_id(), "ReflectComponent".into()))
+}
+
+/// The resource registration of a type, or an error if it isn't a resource.
+fn resource_registration(
+    world: &WorldGuard,
+    ty: &StaticTypeRef,
+) -> Result<ScriptResourceRegistration, InteropError> {
+    world
+        .get_resource_type(ty.registration(world)?)?
+        .map_err(|r| InteropError::missing_type_data(r.type_id(), "ReflectResource".into()))
+}
+
+/// The bundle registration of a type, or an error if it isn't a bundle.
+fn bundle_registration(
+    world: &WorldGuard,
+    ty: &StaticTypeRef,
+) -> Result<ScriptBundleRegistration, InteropError> {
+    world
+        .get_bundle_type(ty.registration(world)?)?
+        .map_err(|r| InteropError::missing_type_data(r.type_id(), "ReflectBundle".into()))
+}
+
+/// Functions available on every component, resource and bundle type, i.e. `Transform.get_on(entity)`.
+///
+/// They are shared by all types, and documented only on the kinds of types they work with.
+#[script_bindings(
+    remote,
+    bms_bindings_path = "bevy_mod_scripting_bindings",
+    name = "type_kind_functions"
+)]
+impl StaticTypeRef {
+    /// The component of this type on the entity, or nil if it doesn't have one.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The component type, filled in automatically.
+    /// * `entity`: The entity to get the component from.
+    /// Returns:
+    /// * `component`: The component, if the entity has it.
+    fn get_on(
+        ctxt: FunctionCallContext,
+        ty: ComponentOf<A>,
+        entity: V<Entity>,
+    ) -> Result<Option<A>, InteropError> {
+        profiling::function_scope!("get_on");
+        let world = ctxt.world()?;
+        let registration = component_registration(&world, &ty)?;
+        Ok(world.get_component(*entity, registration)?.map(A))
+    }
+
+    /// Inserts a value of this component or bundle type into the entity, replacing the components it already has.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The component or bundle type, filled in automatically.
+    /// * `entity`: The entity to insert the value into.
+    /// * `value`: The value to insert.
+    /// Returns:
+    /// * `result`: Nothing if the value was inserted.
+    fn insert_on(
+        ctxt: FunctionCallContext,
+        ty: Union<ComponentOf<A>, BundleOf<A>>,
+        entity: V<Entity>,
+        value: A,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("insert_on");
+        let world = ctxt.world()?;
+        // both carry the type itself, which kind it is is only known from its registration
+        let ty = match ty.into_left() {
+            Ok(component) => component.into_inner(),
+            Err(bundle) => bundle.into_inner(),
+        };
+        match world.get_component_type(ty.registration(&world)?)? {
+            Ok(component) => world.insert_component(*entity, component, value.0),
+            Err(_) => world.insert_bundle(*entity, bundle_registration(&world, &ty)?, value.0),
+        }
+    }
+
+    /// Adds the default value of this component type to the entity.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The component type, filled in automatically.
+    /// * `entity`: The entity to add the component to.
+    /// Returns:
+    /// * `result`: Nothing if the component was added.
+    fn add_default_on(
+        ctxt: FunctionCallContext,
+        ty: ComponentOf<A>,
+        entity: V<Entity>,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("add_default_on");
+        let world = ctxt.world()?;
+        let registration = component_registration(&world, &ty)?;
+        world.add_default_component(*entity, registration)
+    }
+
+    /// Whether the entity has a component of this type.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The component type, filled in automatically.
+    /// * `entity`: The entity to check.
+    /// Returns:
+    /// * `has_component`: Whether the entity has the component.
+    fn is_on(
+        ctxt: FunctionCallContext,
+        ty: ComponentOf<A>,
+        entity: V<Entity>,
+    ) -> Result<bool, InteropError> {
+        profiling::function_scope!("is_on");
+        let world = ctxt.world()?;
+        let registration = component_registration(&world, &ty)?;
+        world.has_component(*entity, registration.component_id())
+    }
+
+    /// Removes the component of this type from the entity, if it has one.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The component type, filled in automatically.
+    /// * `entity`: The entity to remove the component from.
+    /// Returns:
+    /// * `result`: Nothing if the component was removed or wasn't there.
+    fn remove_from(
+        ctxt: FunctionCallContext,
+        ty: ComponentOf<A>,
+        entity: V<Entity>,
+    ) -> Result<(), InteropError> {
+        profiling::function_scope!("remove_from");
+        let world = ctxt.world()?;
+        let registration = component_registration(&world, &ty)?;
+        world.remove_component(*entity, registration)
+    }
+
+    /// The resource of this type, or nil if the world doesn't have it.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The resource type, filled in automatically.
+    /// Returns:
+    /// * `resource`: The resource, if it exists.
+    fn fetch(ctxt: FunctionCallContext, ty: ResourceOf<A>) -> Result<Option<A>, InteropError> {
+        profiling::function_scope!("fetch");
+        let world = ctxt.world()?;
+        let registration = resource_registration(&world, &ty)?;
+        Ok(world.get_resource(registration.resource_id())?.map(A))
+    }
+
+    /// Whether the world has the resource of this type.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The resource type, filled in automatically.
+    /// Returns:
+    /// * `exists`: Whether the resource exists.
+    fn exists(ctxt: FunctionCallContext, ty: ResourceOf<A>) -> Result<bool, InteropError> {
+        profiling::function_scope!("exists");
+        let world = ctxt.world()?;
+        let registration = resource_registration(&world, &ty)?;
+        world.has_resource(registration.resource_id())
+    }
+
+    /// Removes the resource of this type from the world, if it exists.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The resource type, filled in automatically.
+    /// Returns:
+    /// * `result`: Nothing if the resource was removed or didn't exist.
+    fn remove_resource(ctxt: FunctionCallContext, ty: ResourceOf<A>) -> Result<(), InteropError> {
+        profiling::function_scope!("remove_resource");
+        let world = ctxt.world()?;
+        let registration = resource_registration(&world, &ty)?;
+        world.remove_resource(registration)
+    }
+
+    /// Spawns a new entity with a value of this bundle type, returning the entity.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `ty`: The bundle type, filled in automatically.
+    /// * `value`: The bundle value.
+    /// Returns:
+    /// * `entity`: The spawned entity.
+    fn spawn_with(
+        ctxt: FunctionCallContext,
+        ty: BundleOf<A>,
+        value: A,
+    ) -> Result<V<Entity>, InteropError> {
+        profiling::function_scope!("spawn_with");
+        let world = ctxt.world()?;
+        let registration = bundle_registration(&world, &ty)?;
+        Ok(V(world.spawn_bundle(registration, value.0)?))
+    }
+}
+
 pub fn register_core_functions(app: &mut App) {
     let world = app.world_mut();
     // we don't exclude from compilation here,
@@ -2418,6 +2627,7 @@ pub fn register_core_functions(app: &mut App) {
     #[cfg(feature = "core_functions")]
     {
         register_world_functions(world);
+        register_type_kind_functions(world);
 
         register_reflect_reference_functions(world);
 

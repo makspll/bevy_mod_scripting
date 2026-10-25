@@ -1,9 +1,9 @@
 //! Abstractions to do with dynamic script functions
 
 pub mod arg_meta;
-pub mod bound;
 pub mod from;
 pub mod from_ref;
+pub mod generics;
 pub mod into;
 pub mod into_ref;
 pub mod magic_functions;
@@ -12,9 +12,9 @@ pub mod script_function;
 pub mod type_dependencies;
 
 pub use arg_meta::*;
-pub use bound::*;
 pub use from::*;
 pub use from_ref::*;
+pub use generics::*;
 pub use into::*;
 pub use into_ref::*;
 pub use magic_functions::*;

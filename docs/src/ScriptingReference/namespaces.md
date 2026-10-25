@@ -29,6 +29,21 @@ world.add_default_component(bms.current_entity(), transform.Transform)
 
 Import once at the top of a script, and keep the types you use in locals. In Lua, don't name the table of the `math` namespace `math`: that would hide Lua's own `math` library.
 
+Besides their own static functions, types have the functions of their kind, unless they have a function of the same name:
+
+| Kind | Functions |
+|---|---|
+| any type | `Type.new{...}`, see [Constructing Arbitrary Types](./constructing-arbitrary-types.md) |
+| component | `Type.get_on(entity)`, `Type.insert_on(entity, value)`, `Type.add_default_on(entity)`, `Type.is_on(entity)`, `Type.remove_from(entity)` |
+| resource | `Type.fetch()`, `Type.exists()`, `Type.remove_resource()` |
+| bundle | `Type.insert_on(entity, value)`, `Type.spawn_with(value)` |
+| asset | `Type.load(path)`, `Type.add_asset(value)`, `Type.get_asset(handle)` |
+
+```lua
+local Transform = import_namespace("transform").Transform
+local transform = Transform.get_on(entity) -- a `Transform` or nil
+```
+
 * If two types in a namespace share a short name, the first one registered wins.
 * Each call reads the shared type catalogue, so the result is always up to date. A table imported earlier does not pick up later registrations: import again.
 * A namespace which does not exist is an error, with suggestions: `namespace "transfrom" does not exist. ... Did you mean: transform?`
@@ -107,3 +122,5 @@ When a script unloads or is about to reload, its exports and observers are remov
 ## Editor support
 
 LAD files record each type's namespace. The Lua language server definitions declare a `namespace.<name>` class per native namespace, and `import_namespace("transform")` returns the matching class, so completion works on imported tables. Script namespaces only exist at runtime and are untyped.
+
+Imported types are typed as themselves, so functions taking a type know what they return: `world.get_component(entity, Transform)` and `Transform.get_on(entity)` are a `Transform` or nil. Types looked up with `world.get_type_by_name` give untyped values.

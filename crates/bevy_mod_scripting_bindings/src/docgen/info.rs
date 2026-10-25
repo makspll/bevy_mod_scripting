@@ -9,7 +9,7 @@ use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{Reflect, TypeInfo};
 use std::{any::TypeId, borrow::Cow};
 
-use super::typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedThrough};
+use super::typed_through::{ThroughTypeInfo, TypedThrough};
 
 /// for things you can call and provide some introspection capability.
 #[diagnostic::on_unimplemented(
@@ -101,8 +101,10 @@ impl FunctionInfo {
         self
     }
 
-    /// Replaces the [`ThroughTypeInfo::Bound`] placeholders in the signature with the given type, and for fields, the variant.
-    pub fn bind_placeholders(
+    /// Replaces the generic parameters in the signature with the given type, and for fields, the variant.
+    ///
+    /// See [`ThroughTypeInfo::bind_generics`].
+    pub fn bind_generics(
         mut self,
         type_info: &'static TypeInfo,
         variant: Option<&'static str>,
@@ -111,38 +113,29 @@ impl FunctionInfo {
             arg.type_info = arg
                 .type_info
                 .as_ref()
-                .map(|t| t.bind_placeholders(type_info, variant));
+                .map(|t| t.bind_generics(type_info, variant));
         }
         self.return_info.type_info = self
             .return_info
             .type_info
             .as_ref()
-            .map(|t| t.bind_placeholders(type_info, variant));
+            .map(|t| t.bind_generics(type_info, variant));
         self
     }
 
-    /// Whether the signature contains [`ThroughTypeInfo::Bound`] placeholders, i.e. depends on the type it is bound to.
-    pub fn has_placeholders(&self) -> bool {
+    /// Whether the signature mentions generic parameters, i.e. depends on what it is bound to.
+    pub fn has_generics(&self) -> bool {
         self.arg_info
             .iter()
             .map(|arg| &arg.type_info)
             .chain(std::iter::once(&self.return_info.type_info))
-            .any(|t| t.as_ref().is_some_and(ThroughTypeInfo::has_placeholders))
-    }
-
-    /// Whether the signature contains the given placeholder, i.e. [`BoundPlaceholder::Handle`] for functions which only apply to asset types.
-    pub fn has_placeholder(&self, placeholder: BoundPlaceholder) -> bool {
-        self.arg_info
-            .iter()
-            .map(|arg| &arg.type_info)
-            .chain(std::iter::once(&self.return_info.type_info))
-            .any(|t| t.as_ref().is_some_and(|t| t.has_placeholder(placeholder)))
+            .any(|t| t.as_ref().is_some_and(ThroughTypeInfo::has_generics))
     }
 
     /// The signature of a function shared between all types, as seen on the given type.
     ///
     /// The first argument passed by scripts is the type itself, which is bound automatically and so removed,
-    /// the function is moved into the type's namespace, and its placeholders are bound to the type.
+    /// the function is moved into the type's namespace, and its generic parameters are bound to the type.
     pub fn bind_to_type(&self, type_info: &'static TypeInfo) -> Self {
         let mut info = self.clone();
         if let Some(receiver) = info
@@ -156,7 +149,7 @@ impl FunctionInfo {
             arg.arg_index = idx;
         }
         info.namespace = FunctionScope::OnType(type_info.type_id());
-        info.bind_placeholders(type_info, None)
+        info.bind_generics(type_info, None)
     }
 
     /// Add argument names to the function info.

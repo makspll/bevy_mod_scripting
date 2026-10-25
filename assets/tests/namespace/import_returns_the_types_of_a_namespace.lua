@@ -28,6 +28,20 @@ function on_test()
     world.add_default_component(entity, transform.Transform)
     assert(world.has_component(entity, transform.Transform))
 
+    -- and have the functions of their kind of type
+    local Transform = transform.Transform
+    assert(Transform.is_on(entity) and Transform.get_on(entity).translation.x == 0)
+    Transform.insert_on(entity, Transform.from_xyz(1, 2, 3))
+    assert(Transform.get_on(entity).translation.y == 2)
+    Transform.remove_from(entity)
+    assert(not Transform.is_on(entity) and Transform.get_on(entity) == nil)
+    Transform.add_default_on(entity)
+    assert(Transform.is_on(entity))
+    local TestResource = import_namespace("test_utils").TestResource
+    assert(TestResource.exists() == (TestResource.fetch() ~= nil))
+    local not_a_resource = error_of(Transform.fetch)
+    assert(not_a_resource:find("ReflectResource", 1, true), not_a_resource)
+
     -- missing namespaces say so, with hints
     local typo = error_of(import_namespace, "transfrom")
     assert(typo:find('namespace "transfrom" does not exist', 1, true), typo)

@@ -6,7 +6,8 @@ use crate::{
     ReflectReference,
     error::InteropError,
     function::{
-        bound::BoundFields, from::FromScript, from_ref::FromScriptErased, namespace::FunctionScope,
+        from::FromScript, from_ref::FromScriptErased, generics::FieldsPayload,
+        namespace::FunctionScope,
     },
     reflection_extensions::PartialReflectExt,
     script_value::ScriptValue,
@@ -165,7 +166,7 @@ pub fn construct(
     guard: &WorldGuard,
     type_info: &'static TypeInfo,
     variant: Option<&str>,
-    fields: BoundFields,
+    fields: FieldsPayload,
     one_indexed: bool,
 ) -> Result<Box<dyn PartialReflect>, InteropError> {
     if variant.is_some() && !matches!(type_info, TypeInfo::Enum(_)) {
@@ -254,7 +255,7 @@ pub fn construct_reference(
     guard: &WorldGuard,
     type_info: &'static TypeInfo,
     variant: Option<&str>,
-    fields: BoundFields,
+    fields: FieldsPayload,
     one_indexed: bool,
 ) -> Result<ReflectReference, InteropError> {
     let value = construct(guard, type_info, variant, fields, one_indexed)?
@@ -321,7 +322,7 @@ mod test {
         T: bevy_reflect::FromReflect + bevy_reflect::Typed + bevy_reflect::GetTypeRegistration,
     >(
         variant: Option<&str>,
-        fields: BoundFields,
+        fields: FieldsPayload,
         one_indexed: bool,
     ) -> Result<Box<dyn PartialReflect>, InteropError> {
         let mut world = setup_world(|_, registry| {
@@ -335,8 +336,8 @@ mod test {
         construct(&guard, T::type_info(), variant, fields, one_indexed)
     }
 
-    fn keyed(payload: Vec<(&str, i64)>) -> BoundFields {
-        BoundFields::Keyed(
+    fn keyed(payload: Vec<(&str, i64)>) -> FieldsPayload {
+        FieldsPayload::Keyed(
             payload
                 .into_iter()
                 .map(|(k, v)| (k.to_owned(), ScriptValue::Integer(v)))
@@ -394,7 +395,7 @@ mod test {
         assert!(format!("{result:?}").contains("bb"), "{result:?}");
         // positional fields beyond the last field too
         let fields =
-            BoundFields::Positional([1, 2, 3].map(ScriptValue::Integer).into_iter().collect());
+            FieldsPayload::Positional([1, 2, 3].map(ScriptValue::Integer).into_iter().collect());
         assert!(run::<Pair>(None, fields, false).is_err());
     }
 
@@ -406,8 +407,9 @@ mod test {
     #[test]
     fn positional_fields_build_tuple_structs() {
         for one_indexed in [false, true] {
-            let fields =
-                BoundFields::Positional([ScriptValue::Integer(1), ScriptValue::Integer(2)].into());
+            let fields = FieldsPayload::Positional(
+                [ScriptValue::Integer(1), ScriptValue::Integer(2)].into(),
+            );
             assert_is(run::<Pair>(None, fields, one_indexed), Pair(1, 2));
         }
     }
@@ -439,14 +441,14 @@ mod test {
     #[test]
     fn enums_take_the_variant_from_the_payload() {
         let with_variant = |variant: &str, fields: Vec<(&str, i64)>| {
-            let BoundFields::Keyed(mut map) = keyed(fields) else {
+            let FieldsPayload::Keyed(mut map) = keyed(fields) else {
                 unreachable!()
             };
             map.insert(
                 "variant".into(),
                 ScriptValue::String(variant.to_owned().into()),
             );
-            run::<SimpleEnum>(None, BoundFields::Keyed(map), false)
+            run::<SimpleEnum>(None, FieldsPayload::Keyed(map), false)
         };
         assert_is(
             with_variant("Struct", vec![("foo", 1)]),

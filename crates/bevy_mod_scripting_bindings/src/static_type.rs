@@ -1,8 +1,8 @@
 //! The static reference to a type, as accessed through a type's global in scripts, i.e. `Vec3` in `Vec3.new{}`.
 
-use std::any::TypeId;
+use std::{any::TypeId, sync::Arc};
 
-use crate::{FromScript, InteropError, IntoScript, ScriptValue};
+use crate::{FromScript, InteropError, IntoScript, ScriptTypeRegistration, ScriptValue};
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{Reflect, TypeInfo};
 
@@ -27,6 +27,18 @@ impl StaticTypeRef {
     /// The type information of the referenced type
     pub fn type_info(&self, world: &WorldGuard) -> Result<&'static TypeInfo, InteropError> {
         registered_type_info(world, self.type_id)
+    }
+
+    /// The registration of the referenced type
+    pub fn registration(&self, world: &WorldGuard) -> Result<ScriptTypeRegistration, InteropError> {
+        let registry = world.type_registry();
+        let registry = registry.read();
+        registry
+            .get(self.type_id)
+            .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
+            .ok_or_else(|| {
+                InteropError::string(format!("type with id {:?} is not registered", self.type_id))
+            })
     }
 }
 

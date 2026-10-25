@@ -1,6 +1,6 @@
 //! This module contains the [`FromScript`] trait and its implemenations.
 
-use super::bound::BoundFields;
+use super::generics::FieldsPayload;
 use super::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
 use crate::{
     EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
@@ -202,7 +202,7 @@ pub(crate) fn variant_as_value_of(
         world,
         variant.type_info(world).ok()?,
         Some(variant.variant_name(world).ok()?),
-        BoundFields::Positional(VecDeque::new()),
+        FieldsPayload::Positional(VecDeque::new()),
         false,
     )
     .ok()

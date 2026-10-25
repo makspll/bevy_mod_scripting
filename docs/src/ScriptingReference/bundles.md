@@ -6,6 +6,7 @@ Scripts can insert [bundles](https://docs.rs/bevy/latest/bevy/ecs/bundle/trait.B
 |---|---|
 | `world.insert_bundle(entity, type, value)` | Inserts the bundle's components into the entity. |
 | `world.spawn_bundle(type, value)` | Spawns an entity with the bundle and returns it. |
+| `Type.insert_on(entity, value)`, `Type.spawn_with(value)` | The same, called on the bundle type. |
 
 Bundles need `ReflectBundle` type data, and are constructed like any other type:
 
