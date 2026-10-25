@@ -485,7 +485,7 @@ impl ReflectReference {
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
         if let ReflectBase::Component(entity, component_id) = &self.base.base_id {
-            world.check_archetype_access(*entity, *component_id)?;
+            world.check_archetype_access(*entity, *component_id, false)?;
         }
 
         let ptr = unsafe {
@@ -561,7 +561,7 @@ impl ReflectReference {
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
         if let ReflectBase::Component(entity, component_id) = &self.base.base_id {
-            world.check_archetype_access(*entity, *component_id)?;
+            world.check_archetype_access(*entity, *component_id, true)?;
         }
 
         let ptr = unsafe {

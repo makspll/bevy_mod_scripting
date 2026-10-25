@@ -36,45 +36,65 @@ use bevy_ecs::schedule::FixedBitSet;
 /// Components without a restriction are not affected, i.e. resources and components accessed by exclusive guards.
 #[derive(Clone, Debug, Default)]
 pub struct ArchetypeFilter {
-    /// Restricted components, each with the set of allowed [`ArchetypeId::index`]es.
+    /// Restricted components.
     /// Systems restrict a handful of components, so a linear scan beats indexing by component id.
-    restricted: Vec<(ComponentId, FixedBitSet)>,
+    restricted: Vec<RestrictedComponent>,
+}
+
+/// The archetypes a component may be read and written on, sets of [`ArchetypeId::index`]es.
+///
+/// Reads and writes are restricted separately, as queries of a system may read a component on some archetypes
+/// and write it on others, i.e. `C with A` written and `C without A` read.
+#[derive(Clone, Debug)]
+struct RestrictedComponent {
+    id: ComponentId,
+    read: FixedBitSet,
+    write: FixedBitSet,
 }
 
 impl ArchetypeFilter {
-    fn bits_mut(&mut self, component_id: ComponentId) -> &mut FixedBitSet {
-        let index = match self
-            .restricted
-            .iter()
-            .position(|(id, _)| *id == component_id)
-        {
+    fn restricted_mut(&mut self, component_id: ComponentId) -> &mut RestrictedComponent {
+        let index = match self.restricted.iter().position(|c| c.id == component_id) {
             Some(index) => index,
             None => {
-                self.restricted.push((component_id, FixedBitSet::new()));
+                self.restricted.push(RestrictedComponent {
+                    id: component_id,
+                    read: FixedBitSet::new(),
+                    write: FixedBitSet::new(),
+                });
                 self.restricted.len() - 1
             }
         };
-        &mut self.restricted[index].1
+        &mut self.restricted[index]
     }
 
-    /// Allows access to the given component on entities in the given archetype.
+    /// Allows reading, and if `write` writing, the given component on entities in the given archetype.
     ///
     /// Once called for a component, the component is restricted to the archetypes allowed this way.
-    pub fn allow(&mut self, component_id: ComponentId, archetype_id: ArchetypeId) {
-        self.bits_mut(component_id)
-            .grow_and_insert(archetype_id.index());
+    pub fn allow(&mut self, component_id: ComponentId, archetype_id: ArchetypeId, write: bool) {
+        let restricted = self.restricted_mut(component_id);
+        restricted.read.grow_and_insert(archetype_id.index());
+        if write {
+            restricted.write.grow_and_insert(archetype_id.index());
+        }
     }
 
     /// Restricts the given component to no archetypes, until [`Self::allow`] is called for it.
     pub fn restrict(&mut self, component_id: ComponentId) {
-        self.bits_mut(component_id);
+        self.restricted_mut(component_id);
     }
 
-    /// Returns true if the component may be accessed on an entity in the given archetype.
+    /// Returns true if the component may be read, or if `write` written, on an entity in the given archetype.
     #[inline]
-    pub fn is_allowed(&self, component_id: ComponentId, archetype_id: ArchetypeId) -> bool {
-        match self.restricted.iter().find(|(id, _)| *id == component_id) {
-            Some((_, archetypes)) => archetypes.contains(archetype_id.index()),
+    pub fn is_allowed(
+        &self,
+        component_id: ComponentId,
+        archetype_id: ArchetypeId,
+        write: bool,
+    ) -> bool {
+        match self.restricted.iter().find(|c| c.id == component_id) {
+            Some(c) if write => c.write.contains(archetype_id.index()),
+            Some(c) => c.read.contains(archetype_id.index()),
             None => true,
         }
     }
@@ -87,7 +107,7 @@ mod test {
     #[test]
     fn unrestricted_components_are_allowed_everywhere() {
         let filter = ArchetypeFilter::default();
-        assert!(filter.is_allowed(ComponentId::new(3), ArchetypeId::new(70)));
+        assert!(filter.is_allowed(ComponentId::new(3), ArchetypeId::new(70), true));
     }
 
     #[test]
@@ -95,14 +115,15 @@ mod test {
         let mut filter = ArchetypeFilter::default();
         let (component, other) = (ComponentId::new(2), ComponentId::new(5));
         filter.restrict(component);
-        assert!(!filter.is_allowed(component, ArchetypeId::new(1)));
+        assert!(!filter.is_allowed(component, ArchetypeId::new(1), false));
 
-        filter.allow(component, ArchetypeId::new(1));
-        filter.allow(component, ArchetypeId::new(130));
-        assert!(filter.is_allowed(component, ArchetypeId::new(1)));
-        assert!(filter.is_allowed(component, ArchetypeId::new(130)));
-        assert!(!filter.is_allowed(component, ArchetypeId::new(0)));
-        assert!(!filter.is_allowed(component, ArchetypeId::new(64)));
-        assert!(filter.is_allowed(other, ArchetypeId::new(0)));
+        filter.allow(component, ArchetypeId::new(1), true);
+        filter.allow(component, ArchetypeId::new(130), false);
+        assert!(filter.is_allowed(component, ArchetypeId::new(1), true));
+        assert!(filter.is_allowed(component, ArchetypeId::new(130), false));
+        assert!(!filter.is_allowed(component, ArchetypeId::new(130), true));
+        assert!(!filter.is_allowed(component, ArchetypeId::new(0), false));
+        assert!(!filter.is_allowed(component, ArchetypeId::new(64), false));
+        assert!(filter.is_allowed(other, ArchetypeId::new(0), true));
     }
 }

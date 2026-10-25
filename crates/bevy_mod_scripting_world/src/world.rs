@@ -388,7 +388,7 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
-    /// Checks the guard's [`ArchetypeFilter`] allows accessing the component on the given entity.
+    /// Checks the guard's [`ArchetypeFilter`] allows reading, or if `write` writing, the component on the given entity.
     ///
     /// Must be checked before handing out references to components, on top of claiming the component's access.
     /// Missing entities pass, as there is nothing to alias.
@@ -397,6 +397,7 @@ impl<'w> WorldAccessGuard<'w> {
         &self,
         entity: Entity,
         component_id: ComponentId,
+        write: bool,
     ) -> Result<(), DynWorldAccessError> {
         let Some(filter) = &self.inner.archetype_filter else {
             return Ok(());
@@ -405,13 +406,14 @@ impl<'w> WorldAccessGuard<'w> {
         let Ok(entity_cell) = self.as_unsafe_world_cell()?.get_entity(entity) else {
             return Ok(());
         };
-        if filter.is_allowed(component_id, entity_cell.archetype().id()) {
+        if filter.is_allowed(component_id, entity_cell.archetype().id(), write) {
             Ok(())
         } else {
+            let access = if write { "writing" } else { "accessing" };
             Err(DynWorldAccessError::cannot_claim_access(
                 component_id.into(),
                 format!(
-                    "entity {entity} is not matched by any query of this system accessing the component"
+                    "entity {entity} is not matched by any query of this system {access} the component"
                 ),
             ))
         }
