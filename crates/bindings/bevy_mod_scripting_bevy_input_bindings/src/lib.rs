@@ -47,6 +47,17 @@ impl Plugin for BevyInputBindingsPlugin {
                     InputFocusSystems::FocusChangeEvents,
                 );
         }
+        {
+            use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
+            app.register_generic_type::<bevy_input::ButtonInput<A>>(
+                &["T"],
+                "The pressed state of the inputs of type `T`, i.e. `KeyCode`.",
+            )
+            .register_generic_type::<bevy_input::Axis<A>>(
+                &["T"],
+                "The position of the inputs of type `T` on an axis, i.e. `GamepadInput`.",
+            );
+        }
         let world = app.world_mut();
         button::register(world);
         gamepad::register(world);

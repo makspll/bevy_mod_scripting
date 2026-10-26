@@ -12,7 +12,9 @@ use bevy_mod_scripting_bindings::{
     ScriptNamespaceMembers, StaticTypeRef,
     builtins::builtin_docs,
     docgen::typed_through::BoundPlaceholder,
-    function::{bound::is_asset_type, generics::A, script_function::AppScriptFunctionRegistry},
+    function::{
+        bound::is_asset_type, generics::AppGenericTypes, script_function::AppScriptFunctionRegistry,
+    },
     into_through_type_info_with_registry,
 };
 use bevy_reflect::{TypeInfo, TypeRegistry};
@@ -115,11 +117,13 @@ impl ScriptingFilesGenerationPlugin {
     }
 }
 
-/// The function used to generate a ladfile from pre-populated type, function and namespace registries
+/// The function used to generate a ladfile from pre-populated type, function and namespace registries,
+/// and the declared generic types
 pub fn generate_lad_file(
     type_registry: &AppTypeRegistry,
     function_registry: &AppScriptFunctionRegistry,
     namespace_members: &AppScriptNamespaceMembers,
+    generic_types: &AppGenericTypes,
     settings: &LadFileSettings,
 ) {
     let type_registry = type_registry.read();
@@ -131,11 +135,15 @@ pub fn generate_lad_file(
         .set_sorted(true);
 
     // reflection only tells us the arguments of a generic type, so the generic types
-    // which scripts see have to be declared
-    if let Err(error) = builder
-        .add_generic_type::<bevy_asset::Handle<A>>(&["A"], "A handle to an asset of type `A`.")
-    {
-        error!("Could not declare `Handle` as a generic type: {error}");
+    // which scripts see are declared, i.e. by the bindings of their crate
+    for declaration in &generic_types.0 {
+        if let Err(error) = builder.add_generic_type_info(
+            declaration.type_info,
+            &declaration.params,
+            declaration.documentation,
+        ) {
+            error!("Could not declare a generic type: {error}");
+        }
     }
 
     add_world(&mut builder, &functions);
@@ -281,12 +289,14 @@ fn generate_lad_file_system(
     type_registry: Res<AppTypeRegistry>,
     function_registry: Res<AppScriptFunctionRegistry>,
     namespace_members: Option<Res<AppScriptNamespaceMembers>>,
+    generic_types: Option<Res<AppGenericTypes>>,
     settings: Res<LadFileSettingsArc>,
 ) {
     generate_lad_file(
         &type_registry,
         &function_registry,
         &namespace_members.map(|m| m.clone()).unwrap_or_default(),
+        &generic_types.map(|g| g.clone()).unwrap_or_default(),
         &settings.0,
     );
 }
@@ -396,6 +406,7 @@ mod test {
             &world
                 .get_resource_or_init::<AppScriptNamespaceMembers>()
                 .clone(),
+            &world.get_resource_or_init::<AppGenericTypes>().clone(),
             &settings,
         );
         captured
@@ -612,11 +623,14 @@ mod test {
     }
 
     #[test]
-    fn handles_are_a_declared_generic_type() {
+    fn generic_types_declared_by_the_app_are_documented() {
+        use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
+
         let mut app = App::new();
         app.register_type::<TestAsset>()
             .register_type::<bevy_asset::Handle<TestAsset>>()
-            .register_type_data::<TestAsset, bevy_asset::ReflectAsset>();
+            .register_type_data::<TestAsset, bevy_asset::ReflectAsset>()
+            .register_generic_type::<bevy_asset::Handle<A>>(&["A"], "A handle");
         let file = generate_from(app);
 
         assert_eq!(file.generic_types.len(), 1, "{:?}", file.generic_types);

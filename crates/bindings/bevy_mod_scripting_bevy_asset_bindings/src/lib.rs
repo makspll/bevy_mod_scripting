@@ -38,16 +38,25 @@ impl Plugin for BevyAssetBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
-        use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
+        use bevy_mod_scripting_bindings::{
+            ScriptSystemSetAppExt,
+            function::generics::{A, GenericTypesAppExt},
+        };
         app.register_script_system_set(
             "asset",
             "AssetTrackingSystems",
             bevy_asset::AssetTrackingSystems,
         )
-        .register_script_system_set(
-            "asset",
-            "AssetEventSystems",
-            bevy_asset::AssetEventSystems,
+        .register_script_system_set("asset", "AssetEventSystems", bevy_asset::AssetEventSystems)
+        .register_generic_type::<bevy_asset::Handle<A>>(&["A"], "A handle to an asset of type `A`.")
+        .register_generic_type::<bevy_asset::AssetId<A>>(&["A"], "The id of an asset of type `A`.")
+        .register_generic_type::<bevy_asset::HandleTemplate<A>>(
+            &["T"],
+            "A template for a handle to an asset of type `T`.",
+        )
+        .register_generic_type::<bevy_asset::ArcMutexValue<A>>(
+            &["T"],
+            "A shared value of an asset of type `T`.",
         );
         let world = app.world_mut();
         register_world_asset_functions(world);
