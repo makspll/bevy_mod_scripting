@@ -683,24 +683,52 @@ pub fn lad_function_to_lua_function(
     let name = function.identifier.to_string();
     ForbiddenKeywords::is_forbidden_err(&function.identifier)?;
 
-    let params = function
-        .arguments
-        .iter()
-        .map(|a| {
-            let ident = a.name.as_deref().unwrap_or_default().to_owned();
-            Ok(FunctionParam::new(
-                match ForbiddenKeywords::is_forbidden_err(&ident) {
-                    Ok(_) => ident,
-                    Err(_) => format!("_{ident}"),
-                },
-                lad_instance_to_lua_type(ladfile, &a.kind)?,
-                matches!(a.kind, LadTypeKind::Option(..)),
-                a.documentation.as_ref().map(|d| d.to_string()),
-            ))
-        })
-        .collect::<Result<Vec<_>, anyhow::Error>>()?;
+    let signature = |erase: bool| -> Result<(Vec<FunctionParam>, LuaType), anyhow::Error> {
+        let kind = |kind: &LadTypeKind| match erase {
+            true => erase_generics(kind, &function.generics),
+            false => kind.clone(),
+        };
+        let params = function
+            .arguments
+            .iter()
+            .map(|a| {
+                let ident = a.name.as_deref().unwrap_or_default().to_owned();
+                Ok(FunctionParam::new(
+                    match ForbiddenKeywords::is_forbidden_err(&ident) {
+                        Ok(_) => ident,
+                        Err(_) => format!("_{ident}"),
+                    },
+                    lad_instance_to_lua_type(ladfile, &kind(&a.kind))?,
+                    matches!(a.kind, LadTypeKind::Option(..)),
+                    a.documentation.as_ref().map(|d| d.to_string()),
+                ))
+            })
+            .collect::<Result<Vec<_>, anyhow::Error>>()?;
+        let returns = lad_instance_to_lua_type(ladfile, &kind(&function.return_type.kind))?;
+        Ok((params, returns))
+    };
+    let (params, returns) = signature(false)?;
 
-    let returns = lad_instance_to_lua_type(ladfile, &function.return_type.kind)?;
+    // the types a generic function takes can also be passed untyped, i.e. a registration found by name,
+    // which LuaLS can only express as an overload, as overloads can't be generic
+    let mut takes_types = false;
+    for argument in &function.arguments {
+        argument
+            .kind
+            .for_each(&mut |kind| takes_types |= matches!(kind, LadTypeKind::Type { .. }));
+    }
+    let overloads = match takes_types {
+        true => {
+            let (params, returns) = signature(true)?;
+            vec![FunctionSignature {
+                name: name.clone(),
+                params,
+                returns: vec![returns],
+                ..Default::default()
+            }]
+        }
+        false => vec![],
+    };
 
     Ok(FunctionSignature {
         name,
@@ -710,11 +738,29 @@ pub fn lad_function_to_lua_function(
         deprecated: false,
         nodiscard: false,
         package: false,
-        overloads: vec![],
-        generics: vec![],
+        overloads,
+        generics: function.generics.clone(),
         documentation: function.documentation.as_ref().map(|d| d.to_string()),
         has_self: function.receiver,
     })
+}
+
+/// The kind as it is at runtime, without the given parameters of a generic function: types are what they are passed as,
+/// i.e. a component registration, and values of a parameter are references.
+fn erase_generics(kind: &LadTypeKind, generics: &[String]) -> LadTypeKind {
+    let is_generic = |named: &LadNamedType| matches!(named, LadNamedType::Param { param } if generics.contains(param));
+    let mut kind = kind.clone();
+    match &kind {
+        LadTypeKind::Type { of, erased } if is_generic(of) => return (**erased).clone(),
+        kind if kind.named().is_some_and(is_generic) => {
+            return LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference);
+        }
+        _ => {}
+    }
+    for child in kind.children_mut() {
+        *child = erase_generics(child, generics);
+    }
+    kind
 }
 
 pub fn to_lua_many(
@@ -1326,6 +1372,7 @@ mod test {
                     misc: Default::default(),
                 },
                 receiver: false,
+                generics: vec![],
             },
         );
     }
@@ -1542,6 +1589,7 @@ mod test {
                     misc: Default::default(),
                 },
                 receiver: false,
+                generics: vec![],
             },
         );
         let rendered = render(&file);
@@ -1768,6 +1816,7 @@ mod test {
                         misc: Default::default(),
                     },
                     receiver: true,
+                    generics: vec![],
                 },
             );
             id
@@ -1779,6 +1828,40 @@ mod test {
             of_plain.clone(),
             LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool),
         );
+        // and a generic function, generic over the type it is given
+        let a = || LadNamedType::Param { param: "A".into() };
+        let get = LadFunctionId::new_string_id("get".into());
+        file.functions.insert(
+            get.clone(),
+            LadFunction {
+                namespace: LadFunctionNamespace::Type(plain.clone().into()),
+                identifier: "get".into(),
+                overload_index: None,
+                arguments: vec![arg(
+                    "registration",
+                    LadTypeKind::Type {
+                        of: a(),
+                        erased: Box::new(LadTypeKind::Val(plain.clone().into())),
+                    },
+                )],
+                return_type: arg(
+                    "return",
+                    LadTypeKind::Option(Box::new(LadTypeKind::Val(a()))),
+                ),
+                documentation: None,
+                metadata: LadFunctionMetadata {
+                    operator: None,
+                    misc: Default::default(),
+                },
+                receiver: false,
+                generics: vec!["A".into()],
+            },
+        );
+        file.types
+            .get_mut(&plain)
+            .unwrap()
+            .associated_functions
+            .push(get);
         let generic_type = file.generic_types.get_mut(&generic_id).unwrap();
         generic_type.associated_functions.push(value);
         generic_type.instantiations.push(ladfile::LadInstantiation {
@@ -1787,6 +1870,14 @@ mod test {
             metadata: file.types[&plain].metadata.clone(),
         });
         let rendered = render(&file);
+
+        // the generic function returns the type it is given, or a reference when given it untyped
+        assert!(
+            rendered.contains(
+                "---@generic A\n---@param registration A\n---@overload fun(registration: ladfile_builder.PlainStructType): ReflectReference | nil\n---@return A | nil\nfunction PlainStructType.get(registration) end"
+            ),
+            "{rendered}"
+        );
 
         // the function of every instantiation is a field of the generic class, so subclasses keep its parameter
         let class = block(

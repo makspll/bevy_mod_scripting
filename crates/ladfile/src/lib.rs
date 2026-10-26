@@ -240,6 +240,10 @@ pub struct LadFunction {
     /// Whether the function is called on a value, which is its first argument, i.e. `v:length()` in Lua.
     #[serde(skip_serializing_if = "is_false", default)]
     pub receiver: bool,
+    /// The generic parameters of the function, which its arguments and return value use as
+    /// [`LadNamedType::Param`]s, i.e. `A` in `get_component(entity, registration: Type<A>) -> Option<A>`.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub generics: Vec<String>,
 }
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// Additional data relevant to functions
@@ -377,6 +381,14 @@ pub enum LadTypeKind {
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
     },
+    /// A type itself rather than a value of it, i.e. the component type `get_component` takes,
+    /// `{ "type": { "of": { "param": "A" }, "erased": { "val": "..::ScriptComponentRegistration" } } }`.
+    Type {
+        /// The type, usually a parameter of the function, see [`LadFunction::generics`]
+        of: LadNamedType,
+        /// How the type is passed at runtime, i.e. as a component registration
+        erased: Box<LadTypeKind>,
+    },
 }
 
 /// A type with a name, which values, references and mutable references are of, see [`LadTypeKind::Val`].
@@ -445,6 +457,9 @@ impl LadTypeKind {
             | LadTypeKind::Mut(named)
             | LadTypeKind::Val(named)
             | LadTypeKind::Fields { of: named, .. } => named.args().iter().collect(),
+            LadTypeKind::Type { of, erased } => {
+                of.args().iter().chain(std::iter::once(&**erased)).collect()
+            }
             LadTypeKind::Unknown(_) | LadTypeKind::Primitive(_) | LadTypeKind::UntypedTuple => {
                 vec![]
             }
@@ -472,6 +487,13 @@ impl LadTypeKind {
                 of: LadNamedType::Generic { args, .. },
                 ..
             } => args.iter_mut().collect(),
+            LadTypeKind::Type { of, erased } => match of {
+                LadNamedType::Generic { args, .. } => args
+                    .iter_mut()
+                    .chain(std::iter::once(&mut **erased))
+                    .collect(),
+                LadNamedType::Id(_) | LadNamedType::Param { .. } => vec![&mut **erased],
+            },
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
             | LadTypeKind::Val(_)
@@ -515,8 +537,8 @@ impl LadTypeKind {
                     None => *self = arg.clone(),
                 }
             }
-            // the fields of an argument without fields stay the fields of the parameter
-            LadTypeKind::Fields { of, .. } if is_param(of) => {
+            // the fields (or type) of an argument without a name stay the fields of the parameter
+            LadTypeKind::Fields { of, .. } | LadTypeKind::Type { of, .. } if is_param(of) => {
                 if let Some(arg) = arg.named() {
                     *of = arg.clone();
                 }
@@ -543,6 +565,7 @@ impl LadTypeKind {
             | LadTypeKind::Mut(named)
             | LadTypeKind::Val(named)
             | LadTypeKind::Fields { of: named, .. }
+            | LadTypeKind::Type { of: named, .. }
                 if Some(&*named) == arg.named() =>
             {
                 *named = param()
@@ -664,6 +687,11 @@ pub trait ArgumentVisitor {
     /// A value of the type a generic parameter stands for
     fn visit_param(&mut self, param: &str) -> Self::Output;
 
+    /// A type itself, passed as `erased` at runtime, by default [`Self::visit_named`] of the type
+    fn visit_type(&mut self, of: &LadNamedType, _erased: &LadTypeKind) -> Self::Output {
+        self.visit_named(of)
+    }
+
     /// Visits a type, dispatching to the method for its kind.
     fn visit(&mut self, kind: &LadTypeKind) -> Self::Output {
         match kind {
@@ -683,6 +711,7 @@ pub trait ArgumentVisitor {
             LadTypeKind::TupleWithRest { head, rest } => self.visit_tuple_with_rest(head, rest),
             LadTypeKind::Union(inner) => self.visit_union(inner),
             LadTypeKind::Fields { of, variant } => self.visit_fields(of, variant.as_deref()),
+            LadTypeKind::Type { of, erased } => self.visit_type(of, erased),
         }
     }
 }
