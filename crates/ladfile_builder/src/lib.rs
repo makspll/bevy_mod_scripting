@@ -34,6 +34,11 @@ use std::{
     cmp::{max, min},
 };
 
+/// Whether the type stands for a generic parameter when declaring a generic type, see [`LadFileBuilder::add_generic_type`].
+fn is_param_marker(type_id: TypeId) -> bool {
+    type_id == TypeId::of::<A>()
+}
+
 /// The kinds of the fields of each variant, in order.
 fn field_kinds(layout: &LadTypeLayout) -> Vec<(&str, Vec<&LadTypeKind>)> {
     let variants = match layout {
@@ -64,8 +69,9 @@ pub struct LadFileBuilder<'t> {
     sorted: bool,
     exclude_types_involving_unregistered_types: bool,
     generic_types: Vec<GenericTypeSpec>,
-    /// The name of the parameter of the generic type whose layout is being described, see [`LadFileBuilder::add_generic_type`]
-    describing_param: Option<String>,
+    /// The names of the parameters of the generic type whose layout is being described, by the marker standing for each,
+    /// see [`LadFileBuilder::add_generic_type`]
+    describing_params: HashMap<TypeId, String>,
 }
 
 /// A generic type declared with [`LadFileBuilder::add_generic_type`]
@@ -89,7 +95,7 @@ impl<'t> LadFileBuilder<'t> {
             sorted: false,
             exclude_types_involving_unregistered_types: false,
             generic_types: Vec::new(),
-            describing_param: None,
+            describing_params: HashMap::new(),
         }
     }
 
@@ -356,13 +362,15 @@ impl<'t> LadFileBuilder<'t> {
 
     /// Declares a generic type, so its instantiations are documented as such instead of as unrelated types.
     ///
-    /// `G` is the generic type instantiated with [`A`] in place of its parameter, i.e. `Handle<A>`, and `params` names
-    /// the parameter. Reflection can't tell which fields of an instantiation like `Time<Virtual>` are of the parameter's
+    /// `G` is the generic type instantiated with a marker in place of each parameter, i.e. `Handle<A>`, and `params` names
+    /// the parameters in order. Reflection can't tell which fields of an instantiation like `Time<Virtual>` are of a parameter's
     /// type, but in `Time<A>` those are exactly the fields of type `A`, so the layout is described from `G`.
     /// Instantiations in the type registry are matched by path and number of parameters.
     ///
+    /// The only marker so far is [`A`], so only types with one parameter can be declared.
+    ///
     /// # Errors
-    /// If `G` is not instantiated with [`A`], or `params` doesn't name each of its parameters.
+    /// If a parameter of `G` is not instantiated with a marker, two share one, or `params` doesn't name each of them.
     pub fn add_generic_type<G: Typed>(
         &mut self,
         params: &[&str],
@@ -370,31 +378,39 @@ impl<'t> LadFileBuilder<'t> {
     ) -> Result<&mut Self, String> {
         let type_info = G::type_info();
         let path = type_info.type_path_table().path();
-        // `A` stands for every parameter, so with more than one their fields couldn't be told apart
-        match &**type_info.generics() {
-            [param] if param.type_id() == TypeId::of::<A>() => {}
-            [_] => return Err(format!("`{path}` is not instantiated with `A`")),
-            generics => {
+        let generics = type_info.generics();
+        if generics.is_empty() || generics.len() != params.len() {
+            return Err(format!(
+                "`{path}` has {} generic parameters, but {} names were given",
+                generics.len(),
+                params.len()
+            ));
+        }
+        // each marker stands for one parameter, so the fields of each can be told apart
+        let mut markers = HashMap::new();
+        for (generic, name) in generics.iter().zip(params) {
+            if !is_param_marker(generic.type_id()) {
                 return Err(format!(
-                    "`{path}` has {} generic parameters, only types with one can be declared",
-                    generics.len()
+                    "`{path}` does not instantiate `{name}` with a marker, i.e. `A`"
+                ));
+            }
+            if markers
+                .insert(generic.type_id(), (*name).to_owned())
+                .is_some()
+            {
+                return Err(format!(
+                    "`{path}` instantiates more than one parameter with the same marker"
                 ));
             }
         }
-        let [param] = params else {
-            return Err(format!(
-                "`{path}` has one generic parameter, but {} names were given",
-                params.len()
-            ));
-        };
 
-        self.describing_param = Some((*param).to_owned());
+        self.describing_params = markers;
         let layout = self.lad_layout_from_type_info(type_info);
-        self.describing_param = None;
+        self.describing_params.clear();
 
         self.generic_types.push(GenericTypeSpec {
             path: path.split('<').next().unwrap_or(path).to_owned(),
-            params: vec![(*param).to_owned()],
+            params: params.iter().map(|&name| name.to_owned()).collect(),
             documentation: documentation.to_owned(),
             layout,
         });
@@ -1054,7 +1070,7 @@ impl<'t> LadFileBuilder<'t> {
         type_id: TypeId,
         type_info: Option<&'static TypeInfo>,
     ) -> LadTypeKind {
-        if self.describing_param.is_some()
+        if !self.describing_params.is_empty()
             && let Some(type_info) = type_info
         {
             let kind = self.lad_type_kind_from_through_type(&into_through_type_info_with_registry(
@@ -1120,13 +1136,12 @@ impl<'t> LadFileBuilder<'t> {
         let nested = |builder: &mut Self, inner: &ThroughTypeInfo| {
             Box::new(builder.lad_kind(inner, register))
         };
-        // in the layout of a generic type, `A` is its parameter
-        if let Some(param) = &self.describing_param
-            && let ThroughTypeInfo::Ref(type_info)
-            | ThroughTypeInfo::Mut(type_info)
-            | ThroughTypeInfo::Val(type_info)
-            | ThroughTypeInfo::Opaque(type_info) = through_type
-            && type_info.type_id() == TypeId::of::<A>()
+        // in the layout of a generic type, the markers are its parameters
+        if let ThroughTypeInfo::Ref(type_info)
+        | ThroughTypeInfo::Mut(type_info)
+        | ThroughTypeInfo::Val(type_info)
+        | ThroughTypeInfo::Opaque(type_info) = through_type
+            && let Some(param) = self.describing_params.get(&type_info.type_id())
         {
             return LadTypeKind::Param(param.clone());
         }
@@ -2060,27 +2075,36 @@ mod test {
     }
 
     #[test]
-    fn generic_types_are_declared_with_a_in_place_of_their_parameter() {
+    fn generic_types_are_declared_with_markers_in_place_of_their_parameters() {
         let registry = TypeRegistry::default();
         let mut builder = LadFileBuilder::new_empty(&registry);
 
-        // the parameter has to be `A`, which stands for one parameter only
+        // each parameter has to be instantiated with a marker of its own
         let error = builder
             .add_generic_type::<OneParam<usize>>(&["T"], "")
             .err()
             .unwrap();
-        assert!(error.contains("is not instantiated with `A`"), "{error}");
+        assert!(
+            error.contains("does not instantiate `T` with a marker"),
+            "{error}"
+        );
         let error = builder
             .add_generic_type::<TwoParams<A, A>>(&["P", "Q"], "")
             .err()
             .unwrap();
-        assert!(error.contains("has 2 generic parameters"), "{error}");
-        // and is named by the registration
+        assert!(
+            error.contains("more than one parameter with the same marker"),
+            "{error}"
+        );
+        // and named by the registration
         let error = builder
             .add_generic_type::<OneParam<A>>(&[], "")
             .err()
             .unwrap();
-        assert!(error.contains("0 names were given"), "{error}");
+        assert!(
+            error.contains("has 1 generic parameters, but 0 names"),
+            "{error}"
+        );
 
         // nothing was declared by the failed attempts
         assert!(builder.add_generic_type::<OneParam<A>>(&["T"], "").is_ok());
