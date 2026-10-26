@@ -619,14 +619,14 @@ impl<'a> Section<'a> {
         ]
     }
 
-    /// The page of a generic type, with the arguments it is instantiated with
+    /// The page of a generic type, with its layout in terms of its parameters and the arguments it is instantiated with
     fn generic_type_detail_items(&self, generic_type: &'a LadGenericType) -> Vec<SectionItem<'a>> {
         let instantiations = generic_type.instantiations.as_slice();
         vec![
-            SectionItem::Markdown {
-                markdown: Box::new(|builder| {
-                    builder.text("Opaque Type. 🔒");
-                }),
+            SectionItem::Layout {
+                layout: &generic_type.layout,
+                ladfile: self.ladfile,
+                types_directory: PathBuf::from("./"),
             },
             SectionItem::Description {
                 documentation: generic_type.documentation.as_deref(),
@@ -1360,7 +1360,9 @@ mod test {
         let markdown = builder.build();
 
         assert!(markdown.contains("# `OpaqueGenericType<T>`"), "{markdown}");
-        assert!(markdown.contains("Opaque Type"), "{markdown}");
+        // its layout, in terms of its parameter
+        assert!(markdown.contains("- **value**:T"), "{markdown}");
+        assert!(!markdown.contains("Opaque Type"), "{markdown}");
         assert!(
             markdown.contains("> I am the documentation of a generic type."),
             "{markdown}"

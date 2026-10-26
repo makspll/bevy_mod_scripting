@@ -99,27 +99,69 @@ fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     modules
 }
 
-/// A class per generic type, with its parameters as generics.
+/// A class per generic type, with its parameters as generics and its fields in terms of them, i.e. `---@field context T`.
+///
+/// Like enums, generic enums have a field per variant, of the variant's class, which is generic over the same parameters.
 fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
-    // generic types are opaque, so a class with the parameters is all there is to them
-    ladfile
-        .generic_types
-        .values()
-        .map(|generic_type| LuaModule {
+    let mut modules = vec![];
+    for generic_type in ladfile.generic_types.values() {
+        let name = qualified(&generic_type.namespace, &generic_type.identifier);
+        let params = || {
+            generic_type
+                .params
+                .iter()
+                .map(|param| LuaType::Alias(param.clone()))
+                .collect::<Vec<_>>()
+        };
+        let mut fields = layout_fields(ladfile, &generic_type.layout);
+        let mut variant_modules = vec![];
+        if let ladfile::LadTypeLayout::Enum(variants) = &generic_type.layout {
+            for variant in variants.iter().map(lad_variant_name) {
+                let variant_class = variant_class_name(&name, variant);
+                fields.push(ClassField {
+                    name: variant.to_string(),
+                    ty: LuaType::Generic {
+                        name: variant_class.clone(),
+                        args: params(),
+                    },
+                    scope: FieldScope::Public,
+                    optional: false,
+                    description: None,
+                });
+                variant_modules.push(LuaModule {
+                    name: variant_class.clone(),
+                    table: format!("{}.{variant}", generic_type.identifier),
+                    namespace: generic_type.namespace.clone(),
+                    class: Some(LuaClass {
+                        name: variant_class,
+                        parents: vec![enum_variant_class(ladfile)],
+                        generics: generic_type.params.clone(),
+                        documentation: Some(format!("The `{variant}` variant of `{name}`.")),
+                        ..Default::default()
+                    }),
+                    type_only: true,
+                    ..Default::default()
+                });
+            }
+        }
+        modules.push(LuaModule {
             name: generic_type.identifier.clone(),
             table: generic_type.identifier.clone(),
             namespace: generic_type.namespace.clone(),
             class: Some(LuaClass {
-                name: qualified(&generic_type.namespace, &generic_type.identifier),
+                name,
                 parents: vec!["ReflectReference".to_string()],
+                fields,
                 generics: generic_type.params.clone(),
                 documentation: generic_type.documentation.clone(),
                 ..Default::default()
             }),
             type_only: true,
             ..Default::default()
-        })
-        .collect()
+        });
+        modules.extend(variant_modules);
+    }
+    modules
 }
 
 /// The fields class of each type or variant constructors take fields for, plus `no_fields` for the rest.
@@ -238,54 +280,8 @@ fn type_to_lua_class(
 
     {
         {
-            // add fields for the type
-            match &lad_type.layout {
-                ladfile::LadTypeLayout::Opaque => {}
-                ladfile::LadTypeLayout::MonoVariant(lad_variant) => match lad_variant {
-                    ladfile::LadVariant::TupleStruct { name, fields } => {
-                        for (idx, field) in fields.iter().enumerate() {
-                            lua_fields.push(ClassField {
-                                name: format!("[{}]", idx + 1),
-                                ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
-                                    Ok(ty) => ty,
-                                    Err(e) => {
-                                        log::warn!(
-                                            "error converting field {idx}: {e}. for tuple struct {name}"
-                                        );
-                                        LuaType::Any
-                                    }
-                                },
-                                scope: crate::lua_declaration_file::FieldScope::Public,
-                                optional: false,
-                                description: None,
-                            })
-                        }
-                    }
-                    ladfile::LadVariant::Struct { name, fields } => {
-                        for field in fields.iter() {
-                            lua_fields.push(ClassField {
-                                name: field.name.clone(),
-                                ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
-                                    Ok(ty) => ty,
-                                    Err(e) => {
-                                        log::warn!(
-                                            "error converting field {}: {e}. for struct {name}",
-                                            field.name
-                                        );
-                                        LuaType::Any
-                                    }
-                                },
-                                scope: crate::lua_declaration_file::FieldScope::Public,
-                                optional: true,
-                                description: None,
-                            })
-                        }
-                    }
-                    ladfile::LadVariant::Unit { .. } => {}
-                },
-                // variants are added as fields below, once the functions which take priority are known
-                ladfile::LadTypeLayout::Enum(_) => {}
-            }
+            // add fields for the type, the variants of enums are added as fields below, once the functions which take priority are known
+            lua_fields.extend(layout_fields(ladfile, &lad_type.layout));
 
             for function in &lad_type.associated_functions {
                 if let Some(function) = ladfile.functions.get(function) {
@@ -361,6 +357,57 @@ fn type_to_lua_class(
         operators: lua_operators,
     };
     (class, lua_functions)
+}
+
+/// The fields of a struct or tuple struct, named or by their index, i.e. `[1]`. Enums and opaque types have none.
+fn layout_fields(ladfile: &LadFile, layout: &ladfile::LadTypeLayout) -> Vec<ClassField> {
+    let ladfile::LadTypeLayout::MonoVariant(lad_variant) = layout else {
+        return vec![];
+    };
+    let mut lua_fields = vec![];
+    match lad_variant {
+        ladfile::LadVariant::TupleStruct { name, fields } => {
+            for (idx, field) in fields.iter().enumerate() {
+                lua_fields.push(ClassField {
+                    name: format!("[{}]", idx + 1),
+                    ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
+                        Ok(ty) => ty,
+                        Err(e) => {
+                            log::warn!(
+                                "error converting field {idx}: {e}. for tuple struct {name}"
+                            );
+                            LuaType::Any
+                        }
+                    },
+                    scope: crate::lua_declaration_file::FieldScope::Public,
+                    optional: false,
+                    description: None,
+                })
+            }
+        }
+        ladfile::LadVariant::Struct { name, fields } => {
+            for field in fields.iter() {
+                lua_fields.push(ClassField {
+                    name: field.name.clone(),
+                    ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
+                        Ok(ty) => ty,
+                        Err(e) => {
+                            log::warn!(
+                                "error converting field {}: {e}. for struct {name}",
+                                field.name
+                            );
+                            LuaType::Any
+                        }
+                    },
+                    scope: crate::lua_declaration_file::FieldScope::Public,
+                    optional: true,
+                    description: None,
+                })
+            }
+        }
+        ladfile::LadVariant::Unit { .. } => {}
+    }
+    lua_fields
 }
 
 /// Converts the function implementing an operator to that operator, if it has the expected signature.
@@ -1475,6 +1522,44 @@ mod test {
         // and as there is nothing to construct, it is not in the namespace either
         let namespace = block(&rendered, "---@class namespace.ladfile_builder");
         assert!(!namespace.contains("OpaqueGenericType"), "{namespace}");
+
+        // its fields are in terms of its parameter
+        let class = block(
+            &rendered,
+            "---@class ladfile_builder.OpaqueGenericType<T> : ReflectReference",
+        );
+        assert!(class.contains("---@field  value? T"), "{class}");
+
+        // as an enum, it has a field per variant, of the variant's class, generic over the same parameter
+        let mut file = file;
+        let generic_type = file.generic_types.values_mut().next().unwrap();
+        generic_type.layout = LadTypeLayout::Enum(vec![
+            ladfile::LadVariant::TupleStruct {
+                name: "Some".into(),
+                fields: vec![ladfile::LadField {
+                    type_: LadTypeKind::Param("T".into()),
+                    has_default: false,
+                }],
+            },
+            ladfile::LadVariant::Unit {
+                name: "None".into(),
+            },
+        ]);
+        let rendered = render(&file);
+        let class = block(
+            &rendered,
+            "---@class ladfile_builder.OpaqueGenericType<T> : ReflectReference",
+        );
+        assert!(
+            class.contains("---@field  Some ladfile_builder.OpaqueGenericType.Some<T>")
+                && class.contains("---@field  None ladfile_builder.OpaqueGenericType.None<T>"),
+            "{class}"
+        );
+        assert!(
+            rendered
+                .contains("---@class ladfile_builder.OpaqueGenericType.Some<T> : EnumVariantRef"),
+            "{rendered}"
+        );
     }
 
     #[test]
