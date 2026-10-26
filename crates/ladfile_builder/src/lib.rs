@@ -24,8 +24,8 @@ use bevy_mod_scripting_bindings::{
 pub use bevy_mod_scripting_bindings_domain::*; // re-export the thing we use
 use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{
-    NamedField, ReflectRef, TypeInfo, TypeRegistration, TypeRegistry, Typed, UnnamedField,
-    enums::VariantInfo, std_traits::ReflectDefault,
+    GenericInfo, NamedField, ReflectRef, TypeInfo, TypeRegistration, TypeRegistry, Typed,
+    UnnamedField, enums::VariantInfo, std_traits::ReflectDefault,
 };
 use ladfile::*;
 use std::{
@@ -63,13 +63,14 @@ fn mentions_param_marker(type_info: &TypeInfo) -> bool {
         }
 }
 
-/// Collects the generic types the kind applies to arguments, i.e. `Handle` for `Vec<Handle<T>>`.
+/// Collects the generic types the kind applies to arguments, i.e. `Handle` for `Vec<Handle<T>>` or `Fields<Handle<T>>`.
 fn named_generic_types(kind: &LadTypeKind, named: &mut Vec<LadTypeId>) {
     kind.for_each(&mut |kind| {
-        if let LadTypeKind::Ref(LadNamedType::Generic { generic_type, .. })
-        | LadTypeKind::Mut(LadNamedType::Generic { generic_type, .. })
-        | LadTypeKind::Val(LadNamedType::Generic { generic_type, .. }) = kind
-        {
+        let named_type = match kind {
+            LadTypeKind::Fields { of, .. } => Some(of),
+            kind => kind.named(),
+        };
+        if let Some(LadNamedType::Generic { generic_type, .. }) = named_type {
             named.push(generic_type.clone());
         }
     })
@@ -307,6 +308,13 @@ impl<'t> LadFileBuilder<'t> {
     /// Add a type definition to the LAD file.
     /// Will overwrite any existing type definitions with the same type id.
     pub fn add_type_info(&mut self, type_info: &TypeInfo) -> &mut Self {
+        // instantiations of declared generic types are excluded here as types are in `build`, since they aren't types
+        if self.exclude_types_involving_unregistered_types
+            && self.declared_generic_index(type_info).is_some()
+            && self.has_unknowns(type_info.type_id())
+        {
+            return self;
+        }
         let registration = self.type_registry.get(type_info.type_id());
 
         let mut insignificance = default_importance();
@@ -357,13 +365,6 @@ impl<'t> LadFileBuilder<'t> {
             default: self.lad_default(type_info.type_id()),
             misc: Default::default(),
         };
-        // instantiations of declared generic types are excluded here as types are in `build`, since they aren't types
-        if self.exclude_types_involving_unregistered_types
-            && self.declared_generic_index(type_info).is_some()
-            && self.has_unknowns(type_info.type_id())
-        {
-            return self;
-        }
         let type_id = self.lad_id_from_type_id(type_info.type_id());
         let generic_type = self.add_generic_type_of(type_info);
         let layout = self.lad_layout_from_type_info(type_info);
@@ -380,7 +381,7 @@ impl<'t> LadFileBuilder<'t> {
             let args: Vec<_> = type_info
                 .generics()
                 .iter()
-                .map(|arg| self.lad_generic_arg_kind(arg.type_id(), false))
+                .map(|arg| self.lad_generic_arg_kind(arg, false))
                 .collect();
             if let Some(generic) = self.file.generic_types.get_mut(&generic_type)
                 && !generic.instantiations.iter().any(|i| i.args == args)
@@ -580,7 +581,7 @@ impl<'t> LadFileBuilder<'t> {
         let params = self.generic_types[index].params.clone();
         // the parameters are in the order of the arguments
         for (param, arg) in params.iter().zip(args.iter()) {
-            let arg = self.lad_generic_arg_kind(arg.type_id(), false);
+            let arg = self.lad_generic_arg_kind(arg, false);
             layout.replace_param(param, &arg);
         }
         Some(layout)
@@ -862,6 +863,13 @@ impl<'t> LadFileBuilder<'t> {
 
         // declared generic types named by layouts and signatures, but without instantiations in the file,
         // which would otherwise have added them, with the namespace of their instantiations
+        let named_in_layout = |layout: &LadTypeLayout, named: &mut Vec<LadTypeId>| {
+            for (_, kinds) in field_kinds(layout) {
+                kinds
+                    .into_iter()
+                    .for_each(|kind| named_generic_types(kind, named));
+            }
+        };
         let mut named = Vec::new();
         for function in file.functions.values() {
             for arg in function.arguments.iter().chain([&function.return_type]) {
@@ -874,11 +882,7 @@ impl<'t> LadFileBuilder<'t> {
             .map(|t| &t.layout)
             .chain(file.generic_types.values().map(|t| &t.layout))
         {
-            for (_, kinds) in field_kinds(layout) {
-                kinds
-                    .into_iter()
-                    .for_each(|kind| named_generic_types(kind, &mut named));
-            }
+            named_in_layout(layout, &mut named);
         }
         // the layouts of the generic types added name generic types in turn
         while let Some(id) = named.pop() {
@@ -893,11 +897,7 @@ impl<'t> LadFileBuilder<'t> {
                 continue;
             };
             let generic_type = self.lad_generic_type(index);
-            for (_, kinds) in field_kinds(&generic_type.layout) {
-                kinds
-                    .into_iter()
-                    .for_each(|kind| named_generic_types(kind, &mut named));
-            }
+            named_in_layout(&generic_type.layout, &mut named);
             file.generic_types.insert(id, generic_type);
         }
 
@@ -1325,7 +1325,7 @@ impl<'t> LadFileBuilder<'t> {
         let args = type_info
             .generics()
             .iter()
-            .map(|arg| self.lad_generic_arg_kind(arg.type_id(), register))
+            .map(|arg| self.lad_generic_arg_kind(arg, register))
             .collect();
         LadNamedType::Generic { generic_type, args }
     }
@@ -1336,16 +1336,14 @@ impl<'t> LadFileBuilder<'t> {
             .map(|index| LadTypeId::new_string_id(self.generic_types[index].path.clone().into()))
     }
 
-    /// The kind of an argument of a generic type, as a field of its type would be described, or a parameter of the
-    /// generic type whose layout is being described.
-    fn lad_generic_arg_kind(&mut self, type_id: TypeId, register: bool) -> LadTypeKind {
-        if is_param_marker(type_id) {
-            return marker_param(<A as bevy_reflect::TypePath>::type_path());
+    fn lad_generic_arg_kind(&mut self, arg: &GenericInfo, register: bool) -> LadTypeKind {
+        if is_param_marker(arg.type_id()) {
+            return marker_param(arg.type_path());
         }
-        if register && let Some(type_info) = self.type_registry.get_type_info(type_id) {
+        if register && let Some(type_info) = self.type_registry.get_type_info(arg.type_id()) {
             self.add_type_info(type_info);
         }
-        self.lad_type_kind_from_type_id(type_id)
+        self.lad_type_kind_from_type_id(arg.type_id())
     }
 
     /// Converts a description of a type to its LAD kind, also adding the types it involves to the file if `register` is set.
@@ -1359,16 +1357,16 @@ impl<'t> LadFileBuilder<'t> {
         let nested = |builder: &mut Self, inner: &ThroughTypeInfo| {
             Box::new(builder.lad_kind(inner, register))
         };
-        // in the layout of a generic type, the markers are its parameters
-        if let ThroughTypeInfo::Ref(type_info)
-        | ThroughTypeInfo::Mut(type_info)
-        | ThroughTypeInfo::Val(type_info)
-        | ThroughTypeInfo::Opaque(type_info) = through_type
-            && is_param_marker(type_info.type_id())
-        {
-            return marker_param(type_info.type_path());
-        }
         match through_type {
+            // in the layout of a generic type, the markers are its parameters
+            ThroughTypeInfo::Ref(type_info)
+            | ThroughTypeInfo::Mut(type_info)
+            | ThroughTypeInfo::Val(type_info)
+            | ThroughTypeInfo::Opaque(type_info)
+                if is_param_marker(type_info.type_id()) =>
+            {
+                marker_param(type_info.type_path())
+            }
             ThroughTypeInfo::Ref(type_info) => {
                 LadTypeKind::Ref(self.lad_named_type(type_info, register))
             }

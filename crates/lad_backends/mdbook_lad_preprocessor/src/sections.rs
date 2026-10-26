@@ -257,7 +257,9 @@ impl<'a> Section<'a> {
     /// The namespaces types or namespace members are in, sorted, with the root namespace last
     fn namespaces(&self) -> Vec<&'a str> {
         let mut namespaces = self
-            .documented_types()
+            .ladfile
+            .types
+            .iter()
             .map(|(_, lad_type)| lad_type.namespace.as_str())
             .chain(
                 self.ladfile
@@ -279,7 +281,9 @@ impl<'a> Section<'a> {
 
     /// The ids of the types in the namespace which have a page of their own, generic types last
     fn types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
-        self.documented_types()
+        self.ladfile
+            .types
+            .iter()
             .filter(|(_, lad_type)| lad_type.namespace == namespace)
             .map(|(id, _)| id)
             .chain(
@@ -290,11 +294,6 @@ impl<'a> Section<'a> {
                     .map(|(id, _)| id),
             )
             .collect()
-    }
-
-    /// The types with a page of their own, instantiations of generic types are documented by the page of the generic type
-    fn documented_types(&self) -> impl Iterator<Item = (&'a LadTypeId, &'a LadTypeDefinition)> {
-        self.ladfile.types.iter()
     }
 
     pub(crate) fn file_name(&self) -> String {
@@ -342,7 +341,9 @@ impl<'a> Section<'a> {
             // the pages of the types stay next to the page of the namespace, so they link to each other
             // in the same way no matter the namespace
             SectionData::Namespace { namespace } => self
-                .documented_types()
+                .ladfile
+                .types
+                .iter()
                 .filter(|(_, lad_type)| lad_type.namespace == namespace)
                 .map(|(lad_type_id, lad_type)| {
                     Section::new(
