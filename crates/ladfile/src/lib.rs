@@ -416,25 +416,30 @@ impl LadTypeKind {
         }
     }
 
-    /// Replaces the generic parameter in this kind with the given argument, i.e. `Vec<T>` with `Vec<Image>`.
-    pub fn replace_params(&mut self, arg: &LadTypeKind) {
+    /// Replaces the generic parameter with the given name in this kind with the given argument, i.e. `Vec<T>` with `Vec<Image>`.
+    pub fn replace_param(&mut self, name: &str, arg: &LadTypeKind) {
         match self {
-            LadTypeKind::Param(_) => *self = arg.clone(),
+            LadTypeKind::Param(param) => {
+                if param == name {
+                    *self = arg.clone()
+                }
+            }
             LadTypeKind::Option(inner)
             | LadTypeKind::Vec(inner)
             | LadTypeKind::HashSet(inner)
             | LadTypeKind::InteropResult(inner)
-            | LadTypeKind::Array(inner, _) => inner.replace_params(arg),
+            | LadTypeKind::Array(inner, _) => inner.replace_param(name, arg),
             LadTypeKind::HashMap(key, value) => {
-                key.replace_params(arg);
-                value.replace_params(arg);
+                key.replace_param(name, arg);
+                value.replace_param(name, arg);
             }
-            LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => {
-                inner.iter_mut().for_each(|kind| kind.replace_params(arg))
-            }
+            LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => inner
+                .iter_mut()
+                .for_each(|kind| kind.replace_param(name, arg)),
             LadTypeKind::TupleWithRest { head, rest } => {
-                head.iter_mut().for_each(|kind| kind.replace_params(arg));
-                rest.replace_params(arg);
+                head.iter_mut()
+                    .for_each(|kind| kind.replace_param(name, arg));
+                rest.replace_param(name, arg);
             }
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
@@ -770,8 +775,8 @@ pub enum LadTypeLayout {
 }
 
 impl LadTypeLayout {
-    /// Replaces the generic parameter in the types of all fields with the given argument, see [`LadGenericType::layout`].
-    pub fn replace_params(&mut self, arg: &LadTypeKind) {
+    /// Replaces the generic parameter with the given name in the types of all fields with the given argument, see [`LadGenericType::layout`].
+    pub fn replace_param(&mut self, name: &str, arg: &LadTypeKind) {
         let variants = match self {
             LadTypeLayout::Opaque => return,
             LadTypeLayout::MonoVariant(variant) => std::slice::from_mut(variant),
@@ -781,10 +786,10 @@ impl LadTypeLayout {
             match variant {
                 LadVariant::TupleStruct { fields, .. } => fields
                     .iter_mut()
-                    .for_each(|field| field.type_.replace_params(arg)),
+                    .for_each(|field| field.type_.replace_param(name, arg)),
                 LadVariant::Struct { fields, .. } => fields
                     .iter_mut()
-                    .for_each(|field| field.type_.replace_params(arg)),
+                    .for_each(|field| field.type_.replace_param(name, arg)),
                 LadVariant::Unit { .. } => {}
             }
         }

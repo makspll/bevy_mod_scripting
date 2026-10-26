@@ -439,18 +439,19 @@ impl<'t> LadFileBuilder<'t> {
     fn instantiated_layout(&mut self, type_info: &TypeInfo) -> Option<LadTypeLayout> {
         let path = type_info.type_path_table().path();
         let generic_path = path.split('<').next().unwrap_or(path);
-        let [arg] = &**type_info.generics() else {
-            return None;
-        };
-        let mut layout = self
+        let args = type_info.generics();
+        let spec = self
             .generic_types
             .iter()
-            .find(|spec| spec.path == generic_path && spec.params.len() == 1)?
-            .layout
-            .clone();
-        // as a field of the argument's type would be described
-        let arg = self.lad_type_kind_from_type_id(arg.type_id());
-        layout.replace_params(&arg);
+            .find(|spec| spec.path == generic_path && spec.params.len() == args.len())?;
+        let mut layout = spec.layout.clone();
+        let params = spec.params.clone();
+        // the parameters are in the order of the arguments
+        for (param, arg) in params.iter().zip(args.iter()) {
+            // as a field of the argument's type would be described
+            let arg = self.lad_type_kind_from_type_id(arg.type_id());
+            layout.replace_param(param, &arg);
+        }
         Some(layout)
     }
 
@@ -2143,9 +2144,12 @@ mod test {
             ]
         );
 
-        // and the instantiation is the generic type with the parameter replaced by its argument
+        // and the instantiation is the generic type with the parameter replaced by its argument, by name
         let mut declared = generic_type.layout.clone();
-        declared.replace_params(&LadTypeKind::Primitive(ReflectionPrimitiveKind::F32));
+        let f32_kind = LadTypeKind::Primitive(ReflectionPrimitiveKind::F32);
+        declared.replace_param("U", &f32_kind);
+        assert_eq!(declared, generic_type.layout);
+        declared.replace_param("T", &f32_kind);
         assert_eq!(field_kinds(&declared), field_kinds(&instantiation.layout));
 
         // as for the generic types declared by the plugin
