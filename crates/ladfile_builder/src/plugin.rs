@@ -425,7 +425,7 @@ mod test {
         let (type_id, _) = file.types.iter().find(|(_, t)| t.identifier == type_name)?;
         file.functions.values().find(|f| {
             f.identifier == function
-                && matches!(&f.namespace, ladfile::LadFunctionNamespace::Type(id) if id == type_id)
+                && matches!(&f.namespace, ladfile::LadFunctionNamespace::Type(named) if named.type_id() == Some(type_id))
         })
     }
 
@@ -485,7 +485,7 @@ mod test {
             assert_eq!(
                 new.arguments[0].kind,
                 LadTypeKind::Fields {
-                    type_id: type_id.clone(),
+                    of: type_id.clone().into(),
                     variant: None
                 }
             );
@@ -520,7 +520,7 @@ mod test {
                     f.identifier == "new"
                         && f.namespace
                             == LadFunctionNamespace::Variant {
-                                type_id: enum_id.clone(),
+                                type_id: enum_id.clone().into(),
                                 variant: variant.into(),
                             }
                 })
@@ -531,7 +531,7 @@ mod test {
             assert_eq!(
                 new.arguments[1].kind,
                 LadTypeKind::Fields {
-                    type_id: enum_id.clone(),
+                    of: enum_id.clone().into(),
                     variant: Some(variant.into())
                 }
             );
@@ -631,6 +631,9 @@ mod test {
             .register_type::<bevy_asset::Handle<TestAsset>>()
             .register_type_data::<TestAsset, bevy_asset::ReflectAsset>()
             .register_generic_type::<bevy_asset::Handle<A>>(&["A"], "A handle");
+        // a function shared by all types, which is bound to the instantiation too
+        NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
+            .register("describe", |_: StaticTypeRef| 1usize);
         let file = generate_from(app);
 
         assert_eq!(file.generic_types.len(), 1, "{:?}", file.generic_types);
@@ -641,16 +644,23 @@ mod test {
         assert_eq!(generic_type.name_with_params(), "Handle<A>");
         assert!(generic_type.documentation.is_some());
 
-        // the instantiation points at it, and its argument is the asset
-        let instantiations = file
-            .types
-            .values()
-            .filter(|ty| ty.generic_type.as_ref() == Some(generic_id))
-            .collect::<Vec<_>>();
-        assert_eq!(instantiations.len(), 1);
-        let argument = &instantiations[0].generics[0];
-        assert_eq!(argument.name, generic_type.params[0]);
-        assert_eq!(argument.type_id, type_id(&file, "TestAsset"));
+        // the instantiation is recorded on it rather than being a type, with its argument and functions
+        assert!(file.types.values().all(|ty| ty.identifier != "Handle"));
+        let asset = LadTypeKind::Val(type_id(&file, "TestAsset").into());
+        let [instantiation] = generic_type.instantiations.as_slice() else {
+            panic!("{:?}", generic_type.instantiations);
+        };
+        assert_eq!(instantiation.args, std::slice::from_ref(&asset));
+        let [describe] = instantiation.associated_functions.as_slice() else {
+            panic!("{:?}", instantiation.associated_functions);
+        };
+        assert_eq!(
+            file.functions[describe].namespace,
+            LadFunctionNamespace::Type(ladfile::LadNamedType::Generic {
+                generic_type: generic_id.clone(),
+                args: vec![asset],
+            })
+        );
     }
 
     #[test]
@@ -683,7 +693,6 @@ mod test {
 
         let instantiation = &file.types[&type_id(&file, "UndeclaredGeneric")];
         assert_eq!(instantiation.generics.len(), 1);
-        assert!(instantiation.generic_type.is_none());
         assert!(file.generic_types.is_empty());
     }
 }

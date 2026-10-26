@@ -5,7 +5,7 @@ use std::{
 
 use ladfile::{
     LadArgument, LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstance,
-    LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout, LadVisitable,
+    LadInstantiation, LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout, LadVisitable,
     ReflectionPrimitiveKind,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
@@ -71,7 +71,6 @@ pub(crate) enum SectionData<'a> {
     },
     /// A generic type, which is documented once for all its instantiations
     GenericTypeDetail {
-        generic_type_id: &'a LadTypeId,
         generic_type: &'a LadGenericType,
     },
     FunctionDetail {
@@ -222,7 +221,9 @@ impl<'a> Section<'a> {
             .functions
             .values()
             .filter_map(|function| match &function.namespace {
-                LadFunctionNamespace::Variant { type_id, variant } if type_id == enum_id => {
+                LadFunctionNamespace::Variant { type_id, variant }
+                    if type_id.type_id() == Some(enum_id) =>
+                {
                     Some((Some(variant.as_ref()), function))
                 }
                 _ => None,
@@ -293,10 +294,7 @@ impl<'a> Section<'a> {
 
     /// The types with a page of their own, instantiations of generic types are documented by the page of the generic type
     fn documented_types(&self) -> impl Iterator<Item = (&'a LadTypeId, &'a LadTypeDefinition)> {
-        self.ladfile
-            .types
-            .iter()
-            .filter(|(_, lad_type)| lad_type.generic_type.is_none())
+        self.ladfile.types.iter()
     }
 
     pub(crate) fn file_name(&self) -> String {
@@ -361,14 +359,11 @@ impl<'a> Section<'a> {
                         .generic_types
                         .iter()
                         .filter(|(_, generic_type)| generic_type.namespace == namespace)
-                        .map(|(generic_type_id, generic_type)| {
+                        .map(|(_, generic_type)| {
                             Section::new(
                                 self.parent_path.clone(),
                                 self.ladfile,
-                                SectionData::GenericTypeDetail {
-                                    generic_type_id,
-                                    generic_type,
-                                },
+                                SectionData::GenericTypeDetail { generic_type },
                             )
                         }),
                 )
@@ -434,10 +429,9 @@ impl<'a> Section<'a> {
                 lad_type_id,
                 lad_type,
             } => self.type_detail_items(lad_type_id, lad_type),
-            SectionData::GenericTypeDetail {
-                generic_type_id,
-                generic_type,
-            } => self.generic_type_detail_items(generic_type_id, generic_type),
+            SectionData::GenericTypeDetail { generic_type } => {
+                self.generic_type_detail_items(generic_type)
+            }
             SectionData::FunctionDetail {
                 function,
                 ref types_directory,
@@ -626,18 +620,8 @@ impl<'a> Section<'a> {
     }
 
     /// The page of a generic type, with the arguments it is instantiated with
-    fn generic_type_detail_items(
-        &self,
-        generic_type_id: &LadTypeId,
-        generic_type: &'a LadGenericType,
-    ) -> Vec<SectionItem<'a>> {
-        let instantiations = self
-            .ladfile
-            .types
-            .iter()
-            .filter(|(_, lad_type)| lad_type.generic_type.as_ref() == Some(generic_type_id))
-            .map(|(id, _)| id)
-            .collect();
+    fn generic_type_detail_items(&self, generic_type: &'a LadGenericType) -> Vec<SectionItem<'a>> {
+        let instantiations = generic_type.instantiations.as_slice();
         vec![
             SectionItem::Markdown {
                 markdown: Box::new(|builder| {
@@ -687,7 +671,7 @@ pub enum SectionItem<'a> {
     },
     /// The instantiations of a generic type
     Instantiations {
-        instantiations: Vec<&'a LadTypeId>,
+        instantiations: &'a [LadInstantiation],
         ladfile: &'a LadFile,
         types_directory: PathBuf,
     },
@@ -854,7 +838,7 @@ fn layout_markdown(
 
 /// Lists the arguments each instantiation of a generic type is used with
 fn instantiations_markdown(
-    instantiations: &[&LadTypeId],
+    instantiations: &[LadInstantiation],
     ladfile: &LadFile,
     types_directory: &Path,
     builder: &mut MarkdownBuilder,
@@ -865,15 +849,14 @@ fn instantiations_markdown(
         false,
         instantiations
             .iter()
-            .filter_map(|id| ladfile.types.get(*id))
             .map(|instantiation| {
                 let arguments = instantiation
-                    .generics
+                    .args
                     .iter()
                     .map(|argument| {
                         print_type(
                             ladfile,
-                            &argument.type_id,
+                            argument,
                             None,
                             Some((types_directory.to_path_buf(), true)),
                         )
@@ -1296,7 +1279,7 @@ mod test {
             let mut function = template.clone();
             function.identifier = "new".into();
             function.namespace = LadFunctionNamespace::Variant {
-                type_id: enum_id.clone(),
+                type_id: enum_id.clone().into(),
                 variant: variant.into(),
             };
             ladfile.functions.insert(
@@ -1364,14 +1347,11 @@ mod test {
     #[test]
     fn generic_type_pages_describe_the_type_and_what_it_is_used_with() {
         let ladfile = setup_ladfile();
-        let (generic_type_id, generic_type) = ladfile.generic_types.iter().next().unwrap();
+        let generic_type = ladfile.generic_types.values().next().unwrap();
         let page = Section::new(
             PathBuf::new(),
             &ladfile,
-            SectionData::GenericTypeDetail {
-                generic_type_id,
-                generic_type,
-            },
+            SectionData::GenericTypeDetail { generic_type },
         );
         assert_eq!(page.file_name(), "opaquegenerictypet.md");
 
