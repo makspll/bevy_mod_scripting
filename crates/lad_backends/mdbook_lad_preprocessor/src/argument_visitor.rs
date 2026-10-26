@@ -186,6 +186,10 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
         self.buffer.text(">");
     }
+
+    fn visit_param(&mut self, param: &str) {
+        self.buffer.text(param);
+    }
 }
 
 #[cfg(test)]

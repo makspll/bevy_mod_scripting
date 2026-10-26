@@ -12,7 +12,7 @@ use bevy_mod_scripting_bindings::{
     ScriptNamespaceMembers, StaticTypeRef,
     builtins::builtin_docs,
     docgen::typed_through::BoundPlaceholder,
-    function::{bound::is_asset_type, script_function::AppScriptFunctionRegistry},
+    function::{bound::is_asset_type, generics::A, script_function::AppScriptFunctionRegistry},
     into_through_type_info_with_registry,
 };
 use bevy_reflect::{TypeInfo, TypeRegistry};
@@ -132,10 +132,9 @@ pub fn generate_lad_file(
 
     // reflection only tells us the arguments of a generic type, so the generic types
     // which scripts see have to be declared
-    if let Err(error) = builder.add_generic_type(
-        "bevy_asset::handle::Handle<$A>",
-        "A handle to an asset of type `A`.",
-    ) {
+    if let Err(error) = builder
+        .add_generic_type::<bevy_asset::Handle<A>>(&["A"], "A handle to an asset of type `A`.")
+    {
         error!("Could not declare `Handle` as a generic type: {error}");
     }
 

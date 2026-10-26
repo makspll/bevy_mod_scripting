@@ -631,6 +631,11 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
             LuaType::Alias(NO_FIELDS_CLASS.to_string())
         })
     }
+
+    // only in the layouts of generic types, whose classes declare the parameter, i.e. `---@class Handle<A>`
+    fn visit_param(&mut self, param: &str) -> Self::Output {
+        Ok(LuaType::Alias(param.to_owned()))
+    }
 }
 
 /// The argument of a generic type can be any type, including primitives and types the file doesn't know about.

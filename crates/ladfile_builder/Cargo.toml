@@ -18,6 +18,7 @@ lua_language_server_files = ["lua_language_server_lad_backend"]
 
 [dependencies]
 bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true }
 bevy_ecs = { workspace = true, default-features = false, features = [] }
 bevy_platform = { workspace = true, default-features = false, features = [] }
 bevy_log = { workspace = true, default-features = false, features = [] }
@@ -32,7 +33,6 @@ regex = { workspace = true, features = ["std", "unicode-perl"] }
 
 [dev-dependencies]
 pretty_assertions = { workspace = true }
-bevy_asset = { workspace = true }
 
 [lints]
 workspace = true

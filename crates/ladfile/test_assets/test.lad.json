@@ -633,10 +633,19 @@
         }
       ],
       "generic_type": "ladfile_builder::test::OpaqueGenericType",
-      "documentation": " I am a generic type, which the builder is told about so only my arguments are known",
+      "documentation": " I am a generic type, which the builder is told about so my layout is described in terms of my parameter",
       "layout": {
         "kind": "Struct",
-        "name": "OpaqueGenericType"
+        "name": "OpaqueGenericType",
+        "fields": [
+          {
+            "name": "value",
+            "type": {
+              "primitive": "usize"
+            },
+            "has_default": true
+          }
+        ]
       },
       "generated": false,
       "insignificance": 1000,
@@ -657,6 +666,18 @@
       "params": [
         "T"
       ],
+      "layout": {
+        "kind": "Struct",
+        "name": "OpaqueGenericType",
+        "fields": [
+          {
+            "name": "value",
+            "type": {
+              "param": "T"
+            }
+          }
+        ]
+      },
       "documentation": "I am the documentation of a generic type."
     }
   },

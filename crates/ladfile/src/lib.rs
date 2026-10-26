@@ -379,6 +379,8 @@ pub enum LadTypeKind {
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
     },
+    /// A value of the type the parameter of a generic type stands for, in the layout of the generic type, see [`LadGenericType::layout`].
+    Param(String),
 }
 
 impl LadTypeKind {
@@ -401,7 +403,8 @@ impl LadTypeKind {
             | LadTypeKind::Unknown(_)
             | LadTypeKind::Primitive(_)
             | LadTypeKind::UntypedTuple
-            | LadTypeKind::Fields { .. } => vec![],
+            | LadTypeKind::Fields { .. }
+            | LadTypeKind::Param(_) => vec![],
         }
     }
 
@@ -410,6 +413,36 @@ impl LadTypeKind {
         f(self);
         for child in self.children() {
             child.for_each(f);
+        }
+    }
+
+    /// Replaces the generic parameter in this kind with the given argument, i.e. `Vec<T>` with `Vec<Image>`.
+    pub fn replace_params(&mut self, arg: &LadTypeKind) {
+        match self {
+            LadTypeKind::Param(_) => *self = arg.clone(),
+            LadTypeKind::Option(inner)
+            | LadTypeKind::Vec(inner)
+            | LadTypeKind::HashSet(inner)
+            | LadTypeKind::InteropResult(inner)
+            | LadTypeKind::Array(inner, _) => inner.replace_params(arg),
+            LadTypeKind::HashMap(key, value) => {
+                key.replace_params(arg);
+                value.replace_params(arg);
+            }
+            LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => {
+                inner.iter_mut().for_each(|kind| kind.replace_params(arg))
+            }
+            LadTypeKind::TupleWithRest { head, rest } => {
+                head.iter_mut().for_each(|kind| kind.replace_params(arg));
+                rest.replace_params(arg);
+            }
+            LadTypeKind::Ref(_)
+            | LadTypeKind::Mut(_)
+            | LadTypeKind::Val(_)
+            | LadTypeKind::Unknown(_)
+            | LadTypeKind::Primitive(_)
+            | LadTypeKind::UntypedTuple
+            | LadTypeKind::Fields { .. } => {}
         }
     }
 }
@@ -508,6 +541,9 @@ pub trait ArgumentVisitor {
     /// A table of the fields of a type, or of a variant of an enum
     fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) -> Self::Output;
 
+    /// A value of the type a generic parameter stands for
+    fn visit_param(&mut self, param: &str) -> Self::Output;
+
     /// Visits a type, dispatching to the method for its kind.
     fn visit(&mut self, kind: &LadTypeKind) -> Self::Output {
         match kind {
@@ -529,6 +565,7 @@ pub trait ArgumentVisitor {
             LadTypeKind::Fields { type_id, variant } => {
                 self.visit_fields(type_id, variant.as_deref())
             }
+            LadTypeKind::Param(param) => self.visit_param(param),
         }
     }
 }
@@ -733,6 +770,26 @@ pub enum LadTypeLayout {
 }
 
 impl LadTypeLayout {
+    /// Replaces the generic parameter in the types of all fields with the given argument, see [`LadGenericType::layout`].
+    pub fn replace_params(&mut self, arg: &LadTypeKind) {
+        let variants = match self {
+            LadTypeLayout::Opaque => return,
+            LadTypeLayout::MonoVariant(variant) => std::slice::from_mut(variant),
+            LadTypeLayout::Enum(variants) => variants.as_mut_slice(),
+        };
+        for variant in variants {
+            match variant {
+                LadVariant::TupleStruct { fields, .. } => fields
+                    .iter_mut()
+                    .for_each(|field| field.type_.replace_params(arg)),
+                LadVariant::Struct { fields, .. } => fields
+                    .iter_mut()
+                    .for_each(|field| field.type_.replace_params(arg)),
+                LadVariant::Unit { .. } => {}
+            }
+        }
+    }
+
     /// Traverses the layout in a depth-first manner and calls the provided function on each variant in order of appearance.
     /// Calls the function with the variant and its index in the layout starting from 0.
     ///
@@ -821,6 +878,14 @@ fn is_false(value: &bool) -> bool {
     !value
 }
 
+fn opaque_layout() -> LadTypeLayout {
+    LadTypeLayout::Opaque
+}
+
+fn is_opaque(layout: &LadTypeLayout) -> bool {
+    matches!(layout, LadTypeLayout::Opaque)
+}
+
 impl LadTypeDefinition {
     /// Whether a constructor can leave out the given field of the given variant, i.e. a default fills it in.
     ///
@@ -839,7 +904,6 @@ impl LadTypeDefinition {
 /// A generic type used in a LAD file, i.e. `Handle<A>`.
 ///
 /// Its instantiations are types of their own, which point back to it, see [`LadTypeDefinition::generic_type`].
-/// The layout of the type is not described, backends treat it as opaque.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LadGenericType {
     /// The identifier of the type, without generics, i.e. `Handle`.
@@ -858,6 +922,13 @@ pub struct LadGenericType {
 
     /// The names of the generic parameters, i.e. `["A"]`.
     pub params: Vec<String>,
+
+    /// The layout of the type, in terms of its parameters, i.e. `{ context: T }` for `Time<T>`, see [`LadTypeKind::Param`].
+    ///
+    /// The layout of an instantiation is this one with the parameters replaced by its arguments.
+    /// Whether a field mentioning a parameter has a default depends on the argument, see the instantiation for that.
+    #[serde(default = "opaque_layout", skip_serializing_if = "is_opaque")]
+    pub layout: LadTypeLayout,
 
     /// The documentation describing the type.
     #[serde(skip_serializing_if = "Option::is_none", default)]
