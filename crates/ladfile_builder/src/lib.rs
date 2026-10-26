@@ -121,6 +121,13 @@ struct GenericTypeSpec {
     layout: Option<LadTypeLayout>,
 }
 
+impl GenericTypeSpec {
+    /// The id of the generic type in the file, its path
+    fn id(&self) -> LadTypeId {
+        LadTypeId::new_string_id(self.path.clone().into())
+    }
+}
+
 impl<'t> LadFileBuilder<'t> {
     /// Create a new LAD file builder without default primitives.
     pub fn new_empty(type_registry: &'t TypeRegistry) -> Self {
@@ -527,7 +534,7 @@ impl<'t> LadFileBuilder<'t> {
     /// If the type is an instantiation of a declared generic type, adds the generic type to the file and returns its id.
     fn add_generic_type_of(&mut self, type_info: &TypeInfo) -> Option<LadTypeId> {
         let index = self.declared_generic_index(type_info)?;
-        let id = LadTypeId::new_string_id(self.generic_types[index].path.clone().into());
+        let id = self.generic_types[index].id();
         if !self.file.generic_types.contains_key(&id) {
             let generic_type = self.lad_generic_type(index);
             self.file.generic_types.insert(id.clone(), generic_type);
@@ -851,11 +858,7 @@ impl<'t> LadFileBuilder<'t> {
             if file.generic_types.contains_key(&id) {
                 continue;
             }
-            let Some(index) = self
-                .generic_types
-                .iter()
-                .position(|spec| spec.path == id.to_string())
-            else {
+            let Some(index) = self.generic_types.iter().position(|spec| spec.id() == id) else {
                 continue;
             };
             let generic_type = self.lad_generic_type(index);
@@ -1287,7 +1290,7 @@ impl<'t> LadFileBuilder<'t> {
     /// The id of the declared generic type the type is an instantiation of, see [`Self::declared_generic_index`]
     fn declared_generic_type(&self, type_info: &TypeInfo) -> Option<LadTypeId> {
         self.declared_generic_index(type_info)
-            .map(|index| LadTypeId::new_string_id(self.generic_types[index].path.clone().into()))
+            .map(|index| self.generic_types[index].id())
     }
 
     fn lad_generic_arg_kind(&mut self, arg: &GenericInfo, register: bool) -> LadTypeKind {
