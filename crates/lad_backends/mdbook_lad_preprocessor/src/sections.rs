@@ -5,8 +5,8 @@ use std::{
 
 use ladfile::{
     LadArgument, LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstance,
-    LadInstantiation, LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout, LadVisitable,
-    ReflectionPrimitiveKind,
+    LadInstantiation, LadNamedType, LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout,
+    LadVisitable, ReflectionPrimitiveKind,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
@@ -71,13 +71,14 @@ pub(crate) enum SectionData<'a> {
     },
     /// A generic type, which is documented once for all its instantiations
     GenericTypeDetail {
+        generic_type_id: &'a LadTypeId,
         generic_type: &'a LadGenericType,
     },
     FunctionDetail {
         types_directory: PathBuf,
         function: &'a LadFunction,
-        /// The variant of an enum the function is on, if any
-        variant: Option<&'a str>,
+        /// What the title is prefixed with: the variant of an enum, or the instantiation of a generic type the function is on, if any
+        variant: Option<Cow<'a, str>>,
     },
 }
 
@@ -99,8 +100,12 @@ fn namespace_title(namespace: &str) -> &str {
     }
 }
 
+/// A function with what its title is prefixed with, see [`function_title`]
+type TitledFunction<'a> = (Option<Cow<'a, str>>, &'a LadFunction);
+
 /// The title of a function's page, which includes the variant for functions on variants of enums,
-/// as these all have the same names, i.e. `Variant.new`.
+/// as these all have the same names, i.e. `Variant.new`, and the instantiation for functions of a single
+/// instantiation of a generic type, i.e. `Time<Virtual>.pause`.
 fn function_title(variant: Option<&str>, function: &LadFunction) -> String {
     match variant {
         Some(variant) => format!("{variant}.{}", function.identifier_with_overload()),
@@ -191,7 +196,7 @@ impl<'a> Section<'a> {
             SectionData::GenericTypeDetail { generic_type, .. } => generic_type.name_with_params(),
             SectionData::FunctionDetail {
                 function, variant, ..
-            } => function_title(*variant, function),
+            } => function_title(variant.as_deref(), function),
         }
     }
 
@@ -204,7 +209,7 @@ impl<'a> Section<'a> {
     }
 
     /// The functions which are members of the namespace, i.e. `import_namespace("bms").log_info`
-    fn namespace_functions(&self, namespace: &str) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+    fn namespace_functions(&self, namespace: &str) -> Vec<TitledFunction<'a>> {
         self.ladfile
             .namespaces
             .get(namespace)
@@ -216,7 +221,7 @@ impl<'a> Section<'a> {
     }
 
     /// The functions on the variants of the given enum, with the variant they are on
-    fn variant_functions(&self, enum_id: &LadTypeId) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+    fn variant_functions(&self, enum_id: &LadTypeId) -> Vec<TitledFunction<'a>> {
         self.ladfile
             .functions
             .values()
@@ -224,7 +229,7 @@ impl<'a> Section<'a> {
                 LadFunctionNamespace::Variant { type_id, variant }
                     if type_id.type_id() == Some(enum_id) =>
                 {
-                    Some((Some(variant.as_ref()), function))
+                    Some((Some(Cow::Borrowed(variant.as_ref())), function))
                 }
                 _ => None,
             })
@@ -236,12 +241,65 @@ impl<'a> Section<'a> {
         &self,
         lad_type_id: &LadTypeId,
         lad_type: &'a LadTypeDefinition,
-    ) -> Vec<(Option<&'a str>, &'a LadFunction)> {
+    ) -> Vec<TitledFunction<'a>> {
         lad_type
             .associated_functions
             .iter()
             .filter_map(|f| Some((None, self.ladfile.functions.get(f)?)))
             .chain(self.variant_functions(lad_type_id))
+            .collect()
+    }
+
+    /// The functions with a page below the generic type's page: the ones of every instantiation and of their variants,
+    /// then the ones of a single instantiation, titled by it, i.e. `Time<Virtual>.pause`
+    fn generic_type_functions(
+        &self,
+        generic_type_id: &LadTypeId,
+        generic_type: &'a LadGenericType,
+    ) -> Vec<TitledFunction<'a>> {
+        let variant_functions =
+            self.ladfile
+                .functions
+                .values()
+                .filter_map(|function| match &function.namespace {
+                    LadFunctionNamespace::Variant {
+                        type_id: LadNamedType::Generic { generic_type, args },
+                        variant,
+                    } if generic_type == generic_type_id
+                        && args
+                            .iter()
+                            .all(|arg| matches!(arg.named(), Some(LadNamedType::Param { .. }))) =>
+                    {
+                        Some((Some(Cow::Borrowed(variant.as_ref())), function))
+                    }
+                    _ => None,
+                });
+        let instantiation_functions =
+            generic_type
+                .instantiations
+                .iter()
+                .flat_map(|instantiation| {
+                    let title = print_type(
+                        self.ladfile,
+                        &LadTypeKind::Val(LadNamedType::Generic {
+                            generic_type: generic_type_id.clone(),
+                            args: instantiation.args.clone(),
+                        }),
+                        None,
+                        None,
+                    );
+                    instantiation
+                        .associated_functions
+                        .iter()
+                        .filter_map(|f| self.ladfile.functions.get(f))
+                        .map(move |function| (Some(Cow::Owned(title.clone())), function))
+                });
+        generic_type
+            .associated_functions
+            .iter()
+            .filter_map(|f| Some((None, self.ladfile.functions.get(f)?)))
+            .chain(variant_functions)
+            .chain(instantiation_functions)
             .collect()
     }
 
@@ -360,11 +418,14 @@ impl<'a> Section<'a> {
                         .generic_types
                         .iter()
                         .filter(|(_, generic_type)| generic_type.namespace == namespace)
-                        .map(|(_, generic_type)| {
+                        .map(|(generic_type_id, generic_type)| {
                             Section::new(
                                 self.parent_path.clone(),
                                 self.ladfile,
-                                SectionData::GenericTypeDetail { generic_type },
+                                SectionData::GenericTypeDetail {
+                                    generic_type_id,
+                                    generic_type,
+                                },
                             )
                         }),
                 )
@@ -416,7 +477,25 @@ impl<'a> Section<'a> {
                     )
                 })
                 .collect(),
-            SectionData::GenericTypeDetail { .. } | SectionData::FunctionDetail { .. } => vec![],
+            SectionData::GenericTypeDetail {
+                generic_type_id,
+                generic_type,
+            } => self
+                .generic_type_functions(generic_type_id, generic_type)
+                .into_iter()
+                .map(|(variant, function)| {
+                    Section::new(
+                        child_parent_path.clone(),
+                        self.ladfile,
+                        SectionData::FunctionDetail {
+                            function,
+                            types_directory: PathBuf::from("../../types"),
+                            variant,
+                        },
+                    )
+                })
+                .collect(),
+            SectionData::FunctionDetail { .. } => vec![],
         }
     }
 
@@ -430,9 +509,10 @@ impl<'a> Section<'a> {
                 lad_type_id,
                 lad_type,
             } => self.type_detail_items(lad_type_id, lad_type),
-            SectionData::GenericTypeDetail { generic_type } => {
-                self.generic_type_detail_items(generic_type)
-            }
+            SectionData::GenericTypeDetail {
+                generic_type_id,
+                generic_type,
+            } => self.generic_type_detail_items(generic_type_id, generic_type),
             SectionData::FunctionDetail {
                 function,
                 ref types_directory,
@@ -620,9 +700,14 @@ impl<'a> Section<'a> {
         ]
     }
 
-    /// The page of a generic type, with its layout in terms of its parameters and the arguments it is instantiated with
-    fn generic_type_detail_items(&self, generic_type: &'a LadGenericType) -> Vec<SectionItem<'a>> {
+    /// The page of a generic type, with its layout in terms of its parameters, the arguments it is instantiated with and its functions
+    fn generic_type_detail_items(
+        &self,
+        generic_type_id: &LadTypeId,
+        generic_type: &'a LadGenericType,
+    ) -> Vec<SectionItem<'a>> {
         let instantiations = generic_type.instantiations.as_slice();
+        let functions = self.generic_type_functions(generic_type_id, generic_type);
         vec![
             SectionItem::Layout {
                 layout: &generic_type.layout,
@@ -636,6 +721,15 @@ impl<'a> Section<'a> {
                 instantiations,
                 ladfile: self.ladfile,
                 types_directory: PathBuf::from("./"),
+            },
+            SectionItem::Markdown {
+                markdown: Box::new(|builder| {
+                    builder.heading(2, "Associated Functions");
+                }),
+            },
+            SectionItem::FunctionsSummary {
+                functions,
+                functions_directory: linkify_filename(self.title()),
             },
         ]
     }
@@ -678,7 +772,7 @@ pub enum SectionItem<'a> {
     },
     FunctionsSummary {
         /// The functions, with the variant of an enum they are on if any
-        functions: Vec<(Option<&'a str>, &'a LadFunction)>,
+        functions: Vec<TitledFunction<'a>>,
         functions_directory: String,
     },
     FunctionDetails {
@@ -871,7 +965,7 @@ fn instantiations_markdown(
 
 /// A table of functions as a quick reference, linking to the function details sub-pages
 fn functions_summary_markdown(
-    functions: &[(Option<&str>, &LadFunction)],
+    functions: &[TitledFunction<'_>],
     functions_path: &str,
     builder: &mut MarkdownBuilder,
 ) {
@@ -881,7 +975,7 @@ fn functions_summary_markdown(
     builder.table(|builder| {
         builder.headers(vec!["Function", "Summary"]);
         for (variant, function) in functions.iter() {
-            let first_col = function_title(*variant, function);
+            let first_col = function_title(variant.as_deref(), function);
 
             // first line with content from documentation trimmed to 100 chars
             let second_col = function
@@ -892,12 +986,8 @@ fn functions_summary_markdown(
 
             builder.row(markdown_vec![
                 Markdown::Link {
-                    text: Box::new(first_col),
-                    url: format!(
-                        "./{}/{}.md",
-                        functions_path,
-                        linkify_filename(function_title(*variant, function))
-                    ),
+                    text: Box::new(first_col.clone()),
+                    url: format!("./{}/{}.md", functions_path, linkify_filename(first_col)),
                     anchor: false
                 },
                 Markdown::new_paragraph(second_col.to_string().replace("\n", " ")),
@@ -1347,12 +1437,34 @@ mod test {
 
     #[test]
     fn generic_type_pages_describe_the_type_and_what_it_is_used_with() {
-        let ladfile = setup_ladfile();
-        let generic_type = ladfile.generic_types.values().next().unwrap();
+        let mut ladfile = setup_ladfile();
+        // a function of every instantiation, and one of the instantiation with `usize`
+        let template = ladfile.functions.values().next().unwrap().clone();
+        let (generic_type_id, generic_type) = ladfile.generic_types.iter_mut().next().unwrap();
+        for (name, instantiation) in [("value", None), ("only_on_usize", Some(0))] {
+            let id = ladfile::LadFunctionId::new_string_id(name.into());
+            let mut function = template.clone();
+            function.identifier = name.into();
+            match instantiation {
+                None => generic_type.associated_functions.push(id.clone()),
+                Some(i) => generic_type.instantiations[i]
+                    .associated_functions
+                    .push(id.clone()),
+            }
+            ladfile.functions.insert(id, function);
+        }
+        let generic_type_id = generic_type_id.clone();
+        let (generic_type_id, generic_type) = ladfile
+            .generic_types
+            .get_key_value(&generic_type_id)
+            .unwrap();
         let page = Section::new(
             PathBuf::new(),
             &ladfile,
-            SectionData::GenericTypeDetail { generic_type },
+            SectionData::GenericTypeDetail {
+                generic_type_id,
+                generic_type,
+            },
         );
         assert_eq!(page.file_name(), "opaquegenerictypet.md");
 
@@ -1370,5 +1482,17 @@ mod test {
         );
         // the arguments of the instantiations, linked to their pages
         assert!(markdown.contains("- [Usize](./usize.md)"), "{markdown}");
+
+        // its functions have pages below it, the ones of an instantiation titled by it
+        let titles: Vec<_> = page.children().iter().map(|child| child.title()).collect();
+        assert_eq!(
+            titles,
+            ["value", "OpaqueGenericType<Usize>.only_on_usize"],
+            "{markdown}"
+        );
+        assert!(
+            markdown.contains("](./opaquegenerictypet/opaquegenerictypeusizeonly_on_usize.md)"),
+            "{markdown}"
+        );
     }
 }
