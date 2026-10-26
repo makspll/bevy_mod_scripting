@@ -16,7 +16,6 @@ use bevy_mod_scripting_bindings::{
     },
     function::{
         bound::{asset_handle_type_info, is_asset_type},
-        generics::A,
         namespace::FunctionScope,
         script_function::FunctionCallContext,
     },
@@ -1096,7 +1095,7 @@ impl<'t> LadFileBuilder<'t> {
 
 #[cfg(test)]
 mod test {
-    use bevy_mod_scripting_bindings::ReflectReference;
+    use bevy_mod_scripting_bindings::{ReflectReference, function::generics::A};
     use std::collections::HashMap;
 
     use bevy_mod_scripting_bindings::{Union, V, docgen::info::GetFunctionInfo, function::from::R};
