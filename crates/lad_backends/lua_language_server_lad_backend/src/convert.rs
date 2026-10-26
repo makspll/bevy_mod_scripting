@@ -153,7 +153,7 @@ fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
                     namespace: generic_type.namespace.clone(),
                     class: Some(LuaClass {
                         name: variant_class,
-                        parents: vec![enum_variant_class(ladfile)],
+                        parents: vec![LuaType::Alias(enum_variant_class(ladfile))],
                         fields: function_fields(ladfile, variant_functions),
                         generics: generic_type.params.clone(),
                         documentation: Some(format!("The `{variant}` variant of `{name}`.")),
@@ -170,7 +170,7 @@ fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
             namespace: generic_type.namespace.clone(),
             class: Some(LuaClass {
                 name: name.clone(),
-                parents: vec!["ReflectReference".to_string()],
+                parents: vec![LuaType::Alias("ReflectReference".to_string())],
                 fields,
                 generics: generic_type.params.clone(),
                 documentation: generic_type.documentation.clone(),
@@ -190,18 +190,16 @@ fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
             let args = instantiation
                 .args
                 .iter()
-                .map(|arg| {
-                    lad_instance_to_lua_type(ladfile, arg)
-                        .ok()
-                        .as_ref()
-                        .and_then(lua_type_name)
-                })
-                .collect::<Option<Vec<_>>>();
-            let Some(args) = args else {
-                log::warn!(
-                    "The arguments of an instantiation of {name} can't be named, its functions are not documented"
-                );
-                continue;
+                .map(|arg| lad_instance_to_lua_type(ladfile, arg))
+                .collect::<Result<Vec<_>, _>>();
+            let args = match args {
+                Ok(args) => args,
+                Err(err) => {
+                    log::warn!(
+                        "The arguments of an instantiation of {name} can't be converted: {err}. Its functions are not documented"
+                    );
+                    continue;
+                }
             };
             let functions = instantiation
                 .associated_functions
@@ -224,7 +222,10 @@ fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
                 namespace: generic_type.namespace.clone(),
                 class: Some(LuaClass {
                     name: class_name,
-                    parents: vec![format!("{name}<{}>", args.join(", "))],
+                    parents: vec![LuaType::Generic {
+                        name: name.clone(),
+                        args,
+                    }],
                     generics: vec![],
                     documentation: generic_type.documentation.clone(),
                     ..Default::default()
@@ -240,7 +241,9 @@ fn generic_type_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
 /// The class of an instantiation of a generic type with functions of its own, i.e. `time.Time.Virtual` for `Time<Virtual>`,
 /// which extends the generic class applied to the arguments. Instantiations without functions of their own have none.
 ///
-/// It is named after the identifiers of the arguments, unless they aren't types of the file or clash with a variant.
+/// It is named after the identifiers of the arguments, joined by `_` (`Time.Virtual`, `Foo.Image_Mesh`), unless they aren't
+/// types of the file or clash with a variant. Its table is the class name with `_` for `.`, a local table, as the generic class
+/// has none to nest it in.
 fn instantiation_class_name(
     ladfile: &LadFile,
     generic_type: &ladfile::LadGenericType,
@@ -249,6 +252,7 @@ fn instantiation_class_name(
     if instantiation.associated_functions.is_empty() {
         return None;
     }
+    let generic_class = qualified(&generic_type.namespace, &generic_type.identifier);
     let suffix = instantiation
         .args
         .iter()
@@ -258,32 +262,22 @@ fn instantiation_class_name(
             }
             _ => None,
         })
-        .collect::<Option<Vec<_>>>()?
-        .join("_");
+        .collect::<Option<Vec<_>>>()
+        .map(|identifiers| identifiers.join("_"));
     // variant classes are named the same way, i.e. `asset.Handle.Strong`
-    if let ladfile::LadTypeLayout::Enum(variants) = &generic_type.layout
-        && variants.iter().any(|v| lad_variant_name(v) == suffix)
-    {
-        return None;
-    }
-    Some(variant_class_name(
-        &qualified(&generic_type.namespace, &generic_type.identifier),
-        &suffix,
-    ))
-}
-
-/// The name of a class or an application of a generic class, i.e. `time.Time<time.Virtual>`, for the parents of classes
-fn lua_type_name(ty: &LuaType) -> Option<String> {
-    match ty {
-        LuaType::Alias(name) => Some(name.clone()),
-        LuaType::Generic { name, args } => Some(format!(
-            "{name}<{}>",
-            args.iter()
-                .map(lua_type_name)
-                .collect::<Option<Vec<_>>>()?
-                .join(", ")
-        )),
-        _ => None,
+    let clashes = |suffix: &String| {
+        matches!(&generic_type.layout, ladfile::LadTypeLayout::Enum(variants)
+            if variants.iter().any(|v| lad_variant_name(v) == suffix))
+    };
+    match suffix {
+        Some(suffix) if !clashes(&suffix) => Some(variant_class_name(&generic_class, &suffix)),
+        _ => {
+            log::warn!(
+                "An instantiation of {generic_class} with arguments {:?} has functions of its own, but no class to document them on: its arguments aren't types of the file, or are named like a variant",
+                instantiation.args
+            );
+            None
+        }
     }
 }
 
@@ -510,7 +504,7 @@ fn type_to_lua_class(
             }
 
             if lad_type.metadata.is_reflect && name != "ReflectReference" {
-                parents.push(String::from("ReflectReference"))
+                parents.push(LuaType::Alias(String::from("ReflectReference")))
             }
             // if metadata.is_component {
             //     parents.push(String::from("ScriptComponentRegistration"))
@@ -1013,7 +1007,7 @@ fn enum_variant_modules(
                 namespace: lad_type.namespace.clone(),
                 class: Some(LuaClass {
                     name: class_name,
-                    parents: vec![variant_parent.clone()],
+                    parents: vec![LuaType::Alias(variant_parent.clone())],
                     fields: vec![],
                     generics: vec![],
                     documentation: Some(format!(

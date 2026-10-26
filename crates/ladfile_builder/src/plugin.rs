@@ -640,6 +640,16 @@ mod test {
         // a function shared by all types, which is bound to every instantiation too
         NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
             .register("describe", |_: StaticTypeRef| 1usize);
+        // a function returning the argument of one instantiation, which isn't the parameter on the other
+        use bevy_mod_scripting_bindings::function::from::{R, V};
+        NamespaceBuilder::<bevy_asset::Handle<TestAsset>>::new(app.world_mut())
+            .register("other", |_: R<bevy_asset::Handle<TestAsset>>| {
+                V::new(OtherAsset)
+            });
+        NamespaceBuilder::<bevy_asset::Handle<OtherAsset>>::new(app.world_mut())
+            .register("other", |_: R<bevy_asset::Handle<OtherAsset>>| {
+                V::new(OtherAsset)
+            });
         // and a function only one instantiation has
         NamespaceBuilder::<bevy_asset::Handle<TestAsset>>::new(app.world_mut()).register(
             "only_on_test_asset",
@@ -668,10 +678,14 @@ mod test {
             .expect("the instantiation with the asset");
 
         // the function of every instantiation is on the generic type, in terms of its parameter
-        let [describe] = generic_type.associated_functions.as_slice() else {
+        let [describe, other] = generic_type.associated_functions.as_slice() else {
             panic!("{:?}", generic_type.associated_functions);
         };
         assert_eq!(file.functions[describe].identifier, "describe");
+        assert_eq!(
+            file.functions[other].return_type.kind,
+            LadTypeKind::Val(type_id(&file, "OtherAsset").into())
+        );
         assert_eq!(
             file.functions[describe].namespace,
             LadFunctionNamespace::Type(ladfile::LadNamedType::Generic {

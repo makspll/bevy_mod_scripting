@@ -66,8 +66,10 @@ fn generalise_instantiation_functions(file: &mut LadFile) {
 
         // the functions of each instantiation, and of the variants of each, by variant, name and overload
         type Key = (Option<String>, String, Option<usize>);
-        let mut candidates: std::collections::BTreeMap<Key, Vec<(LadFunctionId, LadFunction)>> =
-            Default::default();
+        let mut candidates: std::collections::BTreeMap<
+            Key,
+            Vec<(LadFunctionId, LadFunction, Vec<LadTypeKind>)>,
+        > = Default::default();
         for (function_id, function) in &file.functions {
             let (variant, args) = match &function.namespace {
                 LadFunctionNamespace::Type(LadNamedType::Generic { generic_type, args })
@@ -84,24 +86,6 @@ fn generalise_instantiation_functions(file: &mut LadFile) {
             if !records.contains(args) {
                 continue;
             }
-            // the function of the generic type it would be
-            let mut generalised = function.clone();
-            for (param, arg) in params.iter().zip(args) {
-                for argument in generalised
-                    .arguments
-                    .iter_mut()
-                    .chain(std::iter::once(&mut generalised.return_type))
-                {
-                    argument.kind.replace_arg(arg, param);
-                }
-            }
-            generalised.namespace = match &variant {
-                None => LadFunctionNamespace::Type(generic_named.clone()),
-                Some(variant) => LadFunctionNamespace::Variant {
-                    type_id: generic_named.clone(),
-                    variant: variant.clone().into(),
-                },
-            };
             candidates
                 .entry((
                     variant,
@@ -109,34 +93,78 @@ fn generalise_instantiation_functions(file: &mut LadFile) {
                     function.overload_index,
                 ))
                 .or_default()
-                .push((function_id.clone(), generalised));
+                .push((function_id.clone(), function.clone(), args.clone()));
         }
 
+        // the kinds of the arguments and return value, with each parameter replaced
+        let signature = |f: &LadFunction, replace: &dyn Fn(&mut LadTypeKind)| {
+            let mut kinds: Vec<_> = f
+                .arguments
+                .iter()
+                .chain([&f.return_type])
+                .map(|a| a.kind.clone())
+                .collect();
+            kinds.iter_mut().for_each(replace);
+            (kinds, f.receiver)
+        };
         for ((variant, name, _), functions) in candidates {
-            let (_, first) = &functions[0];
-            let signature = |f: &LadFunction| {
-                (
-                    f.arguments
-                        .iter()
-                        .map(|a| a.kind.clone())
-                        .collect::<Vec<_>>(),
-                    f.return_type.kind.clone(),
-                    f.receiver,
-                )
-            };
-            let generic = functions.len() == records.len()
-                && functions
-                    .iter()
-                    .all(|(_, f)| signature(f) == signature(first));
-            if !generic {
+            // a single instantiation doesn't tell which of its types are of its arguments
+            if records.len() < 2 || functions.len() != records.len() {
                 continue;
             }
-            let generalised = first.clone();
+            // the function of the generic type is an instantiation's with its arguments replaced by the parameters,
+            // which gives back each instantiation's. Replacing arguments by value can replace too much, i.e. the `()`
+            // returned by a function of `Time<()>`, so the function of another instantiation may be the one that does
+            let generalise = |f: &LadFunction, args: &[LadTypeKind]| {
+                signature(f, &|kind| {
+                    params
+                        .iter()
+                        .zip(args)
+                        .for_each(|(param, arg)| kind.replace_arg(arg, param))
+                })
+            };
+            let instantiate = |(kinds, receiver): &(Vec<LadTypeKind>, bool),
+                               args: &[LadTypeKind]| {
+                let mut kinds = kinds.clone();
+                for kind in &mut kinds {
+                    params
+                        .iter()
+                        .zip(args)
+                        .for_each(|(param, arg)| kind.replace_param(param, arg));
+                }
+                (kinds, *receiver)
+            };
+            let Some((kinds, _)) = functions
+                .iter()
+                .map(|(_, f, args)| generalise(f, args))
+                .find(|generic| {
+                    functions
+                        .iter()
+                        .all(|(_, f, args)| instantiate(generic, args) == signature(f, &|_| {}))
+                })
+            else {
+                continue;
+            };
+            let Some((return_kind, argument_kinds)) = kinds.split_last() else {
+                continue;
+            };
+            let mut generalised = functions[0].1.clone();
+            for (argument, kind) in generalised.arguments.iter_mut().zip(argument_kinds) {
+                argument.kind = kind.clone();
+            }
+            generalised.return_type.kind = return_kind.clone();
+            generalised.namespace = match &variant {
+                None => LadFunctionNamespace::Type(generic_named.clone()),
+                Some(variant) => LadFunctionNamespace::Variant {
+                    type_id: generic_named.clone(),
+                    variant: variant.clone().into(),
+                },
+            };
             let id = LadFunctionId::new_string_id(match &variant {
                 None => format!("{generic_id}::{name}"),
                 Some(variant) => format!("{generic_id}::{variant}::{name}"),
             });
-            for (original, _) in &functions {
+            for (original, _, _) in &functions {
                 file.functions.shift_remove(original);
             }
             let Some(generic_type) = file.generic_types.get_mut(&generic_id) else {
@@ -145,7 +173,7 @@ fn generalise_instantiation_functions(file: &mut LadFile) {
             for instantiation in &mut generic_type.instantiations {
                 instantiation
                     .associated_functions
-                    .retain(|f| !functions.iter().any(|(original, _)| original == f));
+                    .retain(|f| !functions.iter().any(|(original, _, _)| original == f));
             }
             if variant.is_none() {
                 generic_type.associated_functions.push(id.clone());
