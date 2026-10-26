@@ -1,18 +1,19 @@
 //! Generic parameters of script function signatures.
 //!
 //! Reflection can't see the generic parameters of Rust functions, so signatures name them with marker types instead:
-//! [`A`] is a value of the type the parameter stands for ([`ThroughTypeInfo::Param`]), [`TypeOf`] and its kind-bounded
-//! variants ([`ComponentOf`], ...) the type itself, as scripts get it from `import_namespace("math").Vec3`,
-//! documented as the generic type of its kind, i.e. `ComponentType<A>` (see [`type_kinds`]). For example
+//! [`A`] is a value of the type the parameter stands for ([`ThroughTypeInfo::Param`]), [`TypeOf`] the type itself,
+//! as scripts get it from `import_namespace("math").Vec3`, and its bounded variants ([`ComponentOf`], ...) bound the parameter,
+//! i.e. `A: Component` (see [`GenericBound`]). For example
 //! ```rust,ignore
 //! fn get_on(ty: ComponentOf<A>, entity: V<Entity>) -> Result<Option<A>, InteropError>
 //! ```
-//! returns a value of the component type it is given. Backends document such functions as generic functions,
-//! or with the parameters replaced by the type the function is bound to, see [`ThroughTypeInfo::bind_generics`].
+//! returns a value of the component type it is given. Functions shared by all types are bound to each type satisfying
+//! the bounds, with the parameter replaced by the type, see [`ThroughTypeInfo::bind_generics`].
 
 use std::{any::TypeId, collections::VecDeque, marker::PhantomData, ops::Deref};
 
-pub use bevy_mod_scripting_bindings_domain::type_kinds;
+use bevy_ecs::reflect::{ReflectBundle, ReflectComponent, ReflectResource};
+pub use bevy_mod_scripting_bindings_domain::GenericBound;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::TypeRegistry;
@@ -109,11 +110,25 @@ impl<P> GetTypeDependencies for HandleOf<P> {
 /// The path of the generic asset handle type, without its parameter.
 pub const ASSET_HANDLE_PATH: &str = "bevy_asset::handle::Handle";
 
-/// Whether the type is registered as an asset, i.e. with `App::register_asset_reflect`.
-pub fn is_asset_type(registry: &TypeRegistry, type_id: TypeId) -> bool {
-    registry
-        .get_type_data::<bevy_asset::ReflectAsset>(type_id)
-        .is_some()
+/// Whether the type satisfies the bound, i.e. is registered as a component for [`GenericBound::Component`].
+///
+/// Every component is a bundle, as in Bevy.
+pub fn satisfies_bound(registry: &TypeRegistry, type_id: TypeId, bound: GenericBound) -> bool {
+    let component = || {
+        registry
+            .get_type_data::<ReflectComponent>(type_id)
+            .is_some()
+    };
+    match bound {
+        GenericBound::Component => component(),
+        GenericBound::Resource => registry.get_type_data::<ReflectResource>(type_id).is_some(),
+        GenericBound::Bundle => {
+            component() || registry.get_type_data::<ReflectBundle>(type_id).is_some()
+        }
+        GenericBound::Asset => registry
+            .get_type_data::<bevy_asset::ReflectAsset>(type_id)
+            .is_some(),
+    }
 }
 
 #[cfg(test)]
@@ -122,17 +137,6 @@ fn asset_handle_path_is_the_path_of_the_handle_type() {
     use bevy_reflect::TypePath;
     let path = bevy_asset::Handle::<bevy_asset::LoadedFolder>::type_path();
     assert!(path.starts_with(&format!("{ASSET_HANDLE_PATH}<")), "{path}");
-}
-
-/// The registered `Handle<T>` type for the asset type `T`, if `T` is registered as an asset.
-pub fn asset_handle_type_info(
-    registry: &TypeRegistry,
-    asset_type_id: TypeId,
-) -> Option<&'static bevy_reflect::TypeInfo> {
-    registry
-        .get_type_data::<bevy_asset::ReflectAsset>(asset_type_id)
-        .and_then(|asset| registry.get(asset.handle_type_id()))
-        .map(|registration| registration.type_info())
 }
 
 /// A table of the fields of a type, the payload of a constructor.
@@ -175,6 +179,22 @@ impl FromScript for FieldsPayload {
     }
 }
 
+impl ArgMeta for FieldsPayload {}
+
+/// Documented as what it is at runtime, a table keyed by name, see [`FieldsOf`] for the fields of a known type.
+impl TypedThrough for FieldsPayload {
+    fn through_type_info() -> ThroughTypeInfo {
+        HashMap::<String, ScriptValue>::through_type_info()
+    }
+}
+
+impl GetTypeDependencies for FieldsPayload {
+    type Underlying = FieldsPayload;
+    fn register_type_dependencies(registry: &mut TypeRegistry) {
+        HashMap::<String, ScriptValue>::register_type_dependencies(registry)
+    }
+}
+
 /// The fields of the type the generic parameter `P` stands for, see [`FieldsPayload`].
 pub struct FieldsOf<P>(pub FieldsPayload, PhantomData<P>);
 
@@ -209,58 +229,50 @@ impl<P> GetTypeDependencies for FieldsOf<P> {
     fn register_type_dependencies(_registry: &mut TypeRegistry) {}
 }
 
-/// Declares a marker for the type a generic parameter stands for, bounded to a kind of type.
+/// Declares a marker for the type a generic parameter stands for, with an optional bound on the parameter.
 macro_rules! type_of_marker {
-    ($(#[$doc:meta])* $name:ident, $kind:ident) => {
+    ($(#[$doc:meta])* $name:ident, $bound:expr) => {
         $(#[$doc])*
         ///
-        /// `C` is what is passed at runtime: the static type reference for functions shared by all types,
-        /// or a registration for functions which also take types looked up at runtime, i.e. with `get_type_by_name`.
-        pub struct $name<P, C = StaticTypeRef>(pub C, PhantomData<P>);
+        /// Scripts pass the type itself, i.e. `import_namespace("transform").Transform`.
+        pub struct $name<P>(pub StaticTypeRef, PhantomData<P>);
 
-        impl<P, C> $name<P, C> {
-            /// What was passed at runtime
-            pub fn into_inner(self) -> C {
+        impl<P> $name<P> {
+            /// The type
+            pub fn into_inner(self) -> StaticTypeRef {
                 self.0
             }
         }
 
-        impl<P, C> Deref for $name<P, C> {
-            type Target = C;
-            fn deref(&self) -> &C {
+        impl<P> Deref for $name<P> {
+            type Target = StaticTypeRef;
+            fn deref(&self) -> &StaticTypeRef {
                 &self.0
             }
         }
 
-        impl<P, C: for<'w> FromScript<This<'w> = C>> FromScript for $name<P, C> {
+        impl<P> FromScript for $name<P> {
             type This<'w> = Self;
 
             fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
-                C::from_script(value, world).map(|carrier| Self(carrier, PhantomData))
+                StaticTypeRef::from_script(value, world).map(|ty| Self(ty, PhantomData))
             }
         }
 
-        impl<P, C> ArgMeta for $name<P, C> {}
+        impl<P> ArgMeta for $name<P> {}
 
-        /// Documented as the generic type of its kind applied to the parameter, i.e. `ComponentType<A>`,
-        /// or what is passed at runtime, for types looked up at runtime.
-        impl<P: GenericParam, C: TypedThrough> TypedThrough for $name<P, C> {
+        impl<P: GenericParam> TypedThrough for $name<P> {
             fn through_type_info() -> ThroughTypeInfo {
-                ThroughTypeInfo::Union(vec![
-                    ThroughTypeInfo::Generic {
-                        path: type_kinds::$kind,
-                        args: vec![ThroughTypeInfo::Param(P::NAME)],
-                    },
-                    C::through_type_info(),
-                ])
+                ThroughTypeInfo::TypeOf {
+                    of: Box::new(ThroughTypeInfo::Param(P::NAME)),
+                    bound: $bound,
+                }
             }
         }
 
-        impl<P, C: GetTypeDependencies> GetTypeDependencies for $name<P, C> {
-            type Underlying = C::Underlying;
-            fn register_type_dependencies(registry: &mut TypeRegistry) {
-                C::register_type_dependencies(registry)
-            }
+        impl<P> GetTypeDependencies for $name<P> {
+            type Underlying = StaticTypeRef;
+            fn register_type_dependencies(_registry: &mut TypeRegistry) {}
         }
     };
 }
@@ -268,25 +280,25 @@ macro_rules! type_of_marker {
 type_of_marker!(
     /// Any type, standing for the generic parameter `P`.
     TypeOf,
-    TYPE
+    None
 );
 type_of_marker!(
-    /// A component type, standing for the generic parameter `P`.
+    /// A component type, standing for the generic parameter `P: Component`.
     ComponentOf,
-    COMPONENT_TYPE
+    Some(GenericBound::Component)
 );
 type_of_marker!(
-    /// A resource type, standing for the generic parameter `P`.
+    /// A resource type, standing for the generic parameter `P: Resource`.
     ResourceOf,
-    RESOURCE_TYPE
+    Some(GenericBound::Resource)
 );
 type_of_marker!(
-    /// A bundle type, standing for the generic parameter `P`.
+    /// A bundle (or component) type, standing for the generic parameter `P: Bundle`.
     BundleOf,
-    BUNDLE_TYPE
+    Some(GenericBound::Bundle)
 );
 type_of_marker!(
-    /// An asset type, standing for the generic parameter `P`.
+    /// An asset type, standing for the generic parameter `P: Asset`.
     AssetOf,
-    ASSET_TYPE
+    Some(GenericBound::Asset)
 );

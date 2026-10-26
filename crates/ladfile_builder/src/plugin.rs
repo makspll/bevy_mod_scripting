@@ -9,10 +9,10 @@ use ::{
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
     AppScriptNamespaceMembers, EnumVariantRef, FunctionInfo, ScriptFunctionRegistry,
-    ScriptNamespaceMembers,
+    ScriptNamespaceMembers, StaticTypeRef,
     builtins::builtin_docs,
     function::{
-        generics::{ASSET_HANDLE_PATH, type_kinds},
+        generics::{ASSET_HANDLE_PATH, satisfies_bound},
         script_function::AppScriptFunctionRegistry,
     },
     into_through_type_info_with_registry,
@@ -140,33 +140,6 @@ pub fn generate_lad_file(
     ) {
         error!("Could not declare `Handle` as a generic type: {error}");
     }
-    // the kinds of types shared functions are called on, i.e. `ComponentType<A>` for `Transform.get_on(entity)`
-    for (kind, documentation) in [
-        (
-            type_kinds::TYPE,
-            "A type, i.e. `import_namespace(\"math\").Vec3`, with the functions every type has.",
-        ),
-        (
-            type_kinds::COMPONENT_TYPE,
-            "A component type, with the functions every component type has.",
-        ),
-        (
-            type_kinds::RESOURCE_TYPE,
-            "A resource type, with the functions every resource type has.",
-        ),
-        (
-            type_kinds::BUNDLE_TYPE,
-            "A bundle type, with the functions every bundle type has.",
-        ),
-        (
-            type_kinds::ASSET_TYPE,
-            "An asset type, with the functions every asset type has.",
-        ),
-    ] {
-        if let Err(error) = builder.add_generic_type(&format!("{kind}<$A>"), documentation) {
-            error!("Could not declare `{kind}` as a generic type: {error}");
-        }
-    }
 
     add_world(&mut builder, &functions);
     for registration in type_registry.iter() {
@@ -224,8 +197,26 @@ fn add_registered_type(
         builder.add_function_info(&function.info);
     }
 
-    // functions on the static type reference (`StaticTypeRef`) are available on every type's own static reference,
-    // they are documented once, on `StaticTypeRef`, with the type as their generic parameter
+    // functions on the static type reference are available on every type's own static reference,
+    // bound to the type, unless the type has a function of its own with the same name.
+    // This is the same signature scripts see at runtime, see `WorldExtensions::lookup_static_member`.
+    // Functions whose generic parameter is bounded are only documented on the types satisfying the bounds.
+    if type_id != TypeId::of::<StaticTypeRef>() {
+        for (_, function) in functions.iter_type(TypeId::of::<StaticTypeRef>()) {
+            if functions.contains(type_id, function.name().clone()) {
+                continue;
+            }
+            let satisfied = function
+                .info
+                .generic_bounds()
+                .into_iter()
+                .all(|bound| satisfies_bound(type_registry, type_id, bound));
+            if !satisfied {
+                continue;
+            }
+            builder.add_function_info(&function.info.bind_to_type(type_info));
+        }
+    }
 
     // functions on enum variants whose signatures depend on the variant, i.e. its constructor, are bound to each variant
     if let TypeInfo::Enum(enum_info) = type_info {
@@ -320,16 +311,17 @@ impl Plugin for ScriptingFilesGenerationPlugin {
 mod test {
     use super::*;
     use bevy_app::App;
+    use bevy_ecs::reflect::ReflectComponent;
     use bevy_mod_scripting_bindings::{
-        EnumVariantRef, NamespaceMembers, StaticTypeRef,
+        EnumVariantRef, NamespaceMembers,
         function::{
             from::V,
-            generics::{A, FieldsOf, TypeOf},
+            generics::{A, ComponentOf, FieldsOf, GenericBound, TypeOf},
             namespace::NamespaceBuilder,
         },
     };
     use bevy_reflect::{Reflect, std_traits::ReflectDefault};
-    use ladfile::{LadFile, LadFunctionNamespace, ReflectionPrimitiveKind};
+    use ladfile::{LadFile, LadFunctionNamespace};
     use std::{error::Error, path::Path, sync::Mutex};
 
     #[derive(Reflect)]
@@ -339,6 +331,10 @@ mod test {
 
     #[derive(Reflect)]
     struct TestStruct;
+
+    #[derive(Reflect, bevy_ecs::component::Component)]
+    #[reflect(Component)]
+    struct TestComponent;
 
     #[derive(Reflect, Default)]
     #[reflect(Default)]
@@ -383,10 +379,14 @@ mod test {
             &["variant", "payload"],
         );
         NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
-            .register("describe", |_: TypeOf<A>| -> A { unreachable!() });
+            .register("describe", |_: TypeOf<A>| -> A { unreachable!() })
+            .register("get_on", |_: ComponentOf<A>| -> Option<A> {
+                unreachable!()
+            });
         NamespaceBuilder::<TestStruct>::new(app.world_mut()).register("describe", || 1usize);
         app.register_type::<TestEnum>()
             .register_type::<TestStruct>()
+            .register_type::<TestComponent>()
             .register_type::<DefaultEnum>()
             .register_type::<MixedFields>()
             .register_type::<usize>();
@@ -474,59 +474,64 @@ mod test {
     }
 
     #[test]
-    fn static_type_functions_are_documented_once_with_the_type_as_generic_parameter() {
+    fn static_type_functions_are_bound_to_every_type_satisfying_their_bounds() {
         let file = generate("new");
 
-        // backends bind them to each type, the file has them once
-        for type_name in ["TestEnum", "TestStruct"] {
-            assert!(function(&file, type_name, "new").is_none(), "{type_name}");
+        for type_name in ["TestEnum", "TestStruct", "TestComponent"] {
+            let new = function(&file, type_name, "new")
+                .unwrap_or_else(|| panic!("`new` missing on {type_name}"));
+            let type_id = type_id(&file, type_name);
+
+            // the type is bound, so it is not an argument, and the generic parameter is the type
+            assert_eq!(new.arguments.len(), 1, "{:?}", new.arguments);
+            assert_eq!(new.arguments[0].name.as_deref(), Some("payload"));
+            assert_eq!(
+                new.arguments[0].kind,
+                LadTypeKind::Fields {
+                    of: Box::new(LadTypeKind::Val(type_id.clone())),
+                    variant: None
+                }
+            );
+            assert_eq!(new.return_type.kind, LadTypeKind::Val(type_id));
+            assert_eq!(new.generic, None);
         }
-        let new = function(&file, "StaticTypeRef", "new").expect("`new` missing on StaticTypeRef");
-        assert_eq!(new.generics, vec!["A".to_string()]);
-        assert_eq!(new.arguments[0].name.as_deref(), Some("type"));
-        // the type is `Type<A>`, the kind every type is of
-        let LadTypeKind::Union(type_arg) = &new.arguments[0].kind else {
-            panic!("{:?}", new.arguments[0].kind);
-        };
+
+        // bounded functions only on the types satisfying the bound
+        let get_on = function(&file, "TestComponent", "get_on").expect("`get_on` on the component");
         assert_eq!(
-            type_arg[0],
-            LadTypeKind::Generic {
-                generic_type: ladfile::LadTypeId::new_string_id(type_kinds::TYPE.into()),
-                args: vec![LadTypeKind::Param("A".into())],
-            }
+            get_on.return_type.kind,
+            LadTypeKind::Option(Box::new(LadTypeKind::Val(type_id(&file, "TestComponent"))))
         );
-        assert!(
-            file.generic_types
-                .contains_key(&ladfile::LadTypeId::new_string_id(type_kinds::TYPE.into()))
+        assert!(function(&file, "TestStruct", "get_on").is_none());
+
+        // the originals keep their receiver, and the generic parameter with its bounds
+        let new = function(&file, "StaticTypeRef", "new").expect("`new` missing on StaticTypeRef");
+        let param = || LadTypeKind::Param("A".into());
+        assert_eq!(
+            new.arguments[0].kind,
+            LadTypeKind::TypeOf(Box::new(param()))
         );
         assert_eq!(
             new.arguments[1].kind,
             LadTypeKind::Fields {
-                of: Box::new(LadTypeKind::Param("A".into())),
+                of: Box::new(param()),
                 variant: None
             }
         );
-        assert_eq!(new.return_type.kind, LadTypeKind::Param("A".into()));
-
-        // the variant constructor is generic too, until it is bound to each variant
+        assert_eq!(new.return_type.kind, param());
+        let get_on =
+            function(&file, "StaticTypeRef", "get_on").expect("`get_on` missing on StaticTypeRef");
+        assert_eq!(
+            get_on.generic,
+            Some(ladfile::LadGenericParam {
+                name: "A".into(),
+                bounds: vec![GenericBound::Component]
+            })
+        );
         let new =
             function(&file, "EnumVariantRef", "new").expect("`new` missing on EnumVariantRef");
         assert_eq!(new.arguments[0].name.as_deref(), Some("variant"));
-        assert_eq!(new.return_type.kind, LadTypeKind::Param("A".into()));
-
-        // functions of a type stay on the type, shared ones on `StaticTypeRef`
-        let own = function(&file, "TestStruct", "describe").unwrap();
-        assert_eq!(
-            own.return_type.kind,
-            LadTypeKind::Primitive(ReflectionPrimitiveKind::Usize)
-        );
-        assert!(function(&file, "TestEnum", "describe").is_none());
-        assert!(function(&file, "StaticTypeRef", "describe").is_some());
-
-        // the name of the constructor is whatever it was registered as
-        let file = generate("create");
-        assert!(function(&file, "StaticTypeRef", "create").is_some());
-        assert!(function(&file, "StaticTypeRef", "new").is_none());
+        assert_eq!(new.return_type.kind, param());
     }
 
     #[test]
@@ -567,6 +572,30 @@ mod test {
                 LadFunctionNamespace::Variant { .. }
             )
         }));
+    }
+
+    #[test]
+    fn functions_on_the_type_take_priority() {
+        let file = generate("new");
+
+        // `TestStruct` has its own `describe`, `TestEnum` gets the shared one
+        let own = function(&file, "TestStruct", "describe").unwrap();
+        assert_eq!(
+            own.return_type.kind,
+            LadTypeKind::Primitive(ladfile::ReflectionPrimitiveKind::Usize)
+        );
+        let shared = function(&file, "TestEnum", "describe").unwrap();
+        assert_eq!(
+            shared.return_type.kind,
+            LadTypeKind::Val(type_id(&file, "TestEnum"))
+        );
+    }
+
+    #[test]
+    fn constructor_name_is_configurable() {
+        let file = generate("create");
+        assert!(function(&file, "TestStruct", "create").is_some());
+        assert!(function(&file, "TestStruct", "new").is_none());
     }
 
     #[test]

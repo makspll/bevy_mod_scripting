@@ -34,9 +34,9 @@ Besides their own static functions, types have the functions of their kind, unle
 | Kind | Functions |
 |---|---|
 | any type | `Type.new{...}`, see [Constructing Arbitrary Types](./constructing-arbitrary-types.md) |
-| component | `Type.get_on(entity)`, `Type.insert_on(entity, value)`, `Type.add_default_on(entity)`, `Type.is_on(entity)`, `Type.remove_from(entity)` |
+| component | `Type.get_on(entity)`, `Type.add_default_on(entity)`, `Type.is_on(entity)`, `Type.remove_from(entity)` |
 | resource | `Type.fetch()`, `Type.exists()`, `Type.remove_resource()` |
-| bundle | `Type.insert_on(entity, value)`, `Type.spawn_with(value)` |
+| bundle or component | `Type.insert_on(entity, value)`, `Type.spawn_with(value)` |
 | asset | `Type.load(path)`, `Type.add_asset(value)`, `Type.get_asset(handle)` |
 
 ```lua
@@ -123,4 +123,4 @@ When a script unloads or is about to reload, its exports and observers are remov
 
 LAD files record each type's namespace. The Lua language server definitions declare a `namespace.<name>` class per native namespace, and `import_namespace("transform")` returns the matching class, so completion works on imported tables. Script namespaces only exist at runtime and are untyped.
 
-Imported types are typed as themselves, so functions taking a type know what they return: `world.get_component(entity, Transform)` and `Transform.get_on(entity)` are a `Transform` or nil. Types looked up with `world.get_type_by_name` give untyped values.
+The functions of a type's kind are typed for that type: `Transform.get_on(entity)` is a `Transform` or nil. The `world` functions taking registrations, i.e. `world.get_component(entity, Transform)`, give untyped values.

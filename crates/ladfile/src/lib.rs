@@ -23,7 +23,9 @@
 
 use std::{borrow::Cow, collections::HashMap};
 
-pub use bevy_mod_scripting_bindings_domain::{ReflectionPrimitiveKind, ScriptOperatorNames}; // re-export the things we use
+pub use bevy_mod_scripting_bindings_domain::{
+    GenericBound, ReflectionPrimitiveKind, ScriptOperatorNames,
+}; // re-export the things we use
 use indexmap::IndexMap;
 mod plugin;
 pub use plugin::*;
@@ -242,9 +244,19 @@ pub struct LadFunction {
     /// Whether the function is called on a value, which is its first argument, i.e. `v:length()` in Lua.
     #[serde(skip_serializing_if = "is_false", default)]
     pub receiver: bool,
-    /// The generic parameters the signature mentions, see [`LadTypeKind::Param`].
+    /// The generic parameter the signature mentions, if any, see [`LadTypeKind::Param`].
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub generic: Option<LadGenericParam>,
+}
+
+/// The generic parameter of a function, i.e. `A: Component` for a function returning a value of the component type it is given.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LadGenericParam {
+    /// The name of the parameter, i.e. `A`
+    pub name: String,
+    /// What the types it stands for must be, i.e. components. A type satisfies all of them.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
-    pub generics: Vec<String>,
+    pub bounds: Vec<GenericBound>,
 }
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// Additional data relevant to functions
@@ -381,10 +393,11 @@ pub enum LadTypeKind {
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
     },
-    /// A value of the type a generic parameter of the function stands for, see [`LadFunction::generics`].
+    /// A value of the type the generic parameter of the function stands for, see [`LadFunction::generic`].
     Param(String),
-    /// A generic type applied to arguments, i.e. `Handle<A>`, or `ComponentType<A>` for a component type itself
-    /// (see [`bevy_mod_scripting_bindings_domain::type_kinds`]).
+    /// A type itself rather than a value of it, i.e. `import_namespace("math").Vec3`, usually of a generic parameter.
+    TypeOf(Box<LadTypeKind>),
+    /// A generic type applied to arguments, i.e. `Handle<A>`.
     Generic {
         /// The generic type, see [`LadFile::generic_types`]
         generic_type: LadTypeId,
@@ -401,6 +414,7 @@ impl LadTypeKind {
             | LadTypeKind::Vec(inner)
             | LadTypeKind::HashSet(inner)
             | LadTypeKind::InteropResult(inner)
+            | LadTypeKind::TypeOf(inner)
             | LadTypeKind::Array(inner, _) => vec![&**inner],
             LadTypeKind::HashMap(key, value) => vec![&**key, &**value],
             LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => inner.iter().collect(),
@@ -525,6 +539,9 @@ pub trait ArgumentVisitor {
     /// A value of the type a generic parameter stands for
     fn visit_param(&mut self, param: &str) -> Self::Output;
 
+    /// A type itself, i.e. the type of a generic parameter
+    fn visit_type_of(&mut self, of: &LadTypeKind) -> Self::Output;
+
     /// A generic type applied to arguments
     fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[LadTypeKind]) -> Self::Output;
 
@@ -548,6 +565,7 @@ pub trait ArgumentVisitor {
             LadTypeKind::Union(inner) => self.visit_union(inner),
             LadTypeKind::Fields { of, variant } => self.visit_fields(of, variant.as_deref()),
             LadTypeKind::Param(param) => self.visit_param(param),
+            LadTypeKind::TypeOf(of) => self.visit_type_of(of),
             LadTypeKind::Generic { generic_type, args } => self.visit_generic(generic_type, args),
         }
     }
@@ -716,23 +734,6 @@ pub struct LadTypeMetadata {
     /// Extra metadata sections that plugins can use to serialize other information
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
     pub misc: HashMap<String, String>,
-}
-
-impl LadTypeMetadata {
-    /// Whether the type is of the given kind, one of [`bevy_mod_scripting_bindings_domain::type_kinds`].
-    ///
-    /// Functions shared by all types of a kind are documented as taking that kind's generic type, i.e. `ComponentType<A>`.
-    pub fn is_of_kind(&self, kind: &str) -> bool {
-        use bevy_mod_scripting_bindings_domain::type_kinds;
-        match kind {
-            type_kinds::TYPE => true,
-            type_kinds::COMPONENT_TYPE => self.is_component,
-            type_kinds::RESOURCE_TYPE => self.is_resource,
-            type_kinds::BUNDLE_TYPE => self.is_bundle,
-            type_kinds::ASSET_TYPE => self.is_asset,
-            _ => false,
-        }
-    }
 }
 
 /// Describes the registered `Default` implementation of a type.

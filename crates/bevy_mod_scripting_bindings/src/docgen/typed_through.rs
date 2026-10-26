@@ -14,7 +14,7 @@ use crate::{
     script_value::ScriptValue,
 };
 use crate::{error::InteropError, reflection_extensions::TypeInfoExtensions};
-use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
+use bevy_mod_scripting_bindings_domain::{GenericBound, ReflectionPrimitiveKind};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{TypeInfo, TypeRegistry, Typed};
@@ -71,7 +71,14 @@ pub enum ThroughTypeInfo {
     },
     /// A value of the type a generic parameter of the function stands for, i.e. [`crate::function::generics::A`]
     Param(&'static str),
-    /// A generic type applied to arguments, i.e. `Handle<A>`, or `ComponentType<A>` for a component type itself.
+    /// A type itself rather than a value of it, i.e. [`crate::function::generics::ComponentOf`].
+    TypeOf {
+        /// The type, usually a generic parameter
+        of: Box<ThroughTypeInfo>,
+        /// What the type must be, which becomes a bound on the generic parameter it stands for
+        bound: Option<GenericBound>,
+    },
+    /// A generic type applied to arguments, i.e. `Handle<A>`.
     ///
     /// Reflection can't name a generic type without its arguments, so it is named by its path, see [`crate::function::generics`].
     Generic {
@@ -96,7 +103,7 @@ impl ThroughTypeInfo {
             ThroughTypeInfo::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
-            ThroughTypeInfo::Fields { of, .. } => vec![&**of],
+            ThroughTypeInfo::Fields { of, .. } | ThroughTypeInfo::TypeOf { of, .. } => vec![&**of],
             ThroughTypeInfo::Generic { args, .. } => args.iter().collect(),
             ThroughTypeInfo::Ref(_)
             | ThroughTypeInfo::Mut(_)
@@ -129,6 +136,10 @@ impl ThroughTypeInfo {
                 of: bind(of),
                 variant: own.or(variant),
             },
+            ThroughTypeInfo::TypeOf { of, bound } => ThroughTypeInfo::TypeOf {
+                of: bind(of),
+                bound: *bound,
+            },
             ThroughTypeInfo::Generic { path, args } => ThroughTypeInfo::Generic {
                 path,
                 args: bind_all(args),
@@ -154,6 +165,22 @@ impl ThroughTypeInfo {
         match self {
             ThroughTypeInfo::Param(_) => true,
             other => other.children().into_iter().any(Self::has_generics),
+        }
+    }
+
+    /// The bounds on the generic parameter, from the types of it this mentions, i.e. `Component` for [`crate::function::generics::ComponentOf`].
+    pub fn generic_bounds(&self, bounds: &mut Vec<GenericBound>) {
+        if let ThroughTypeInfo::TypeOf {
+            of,
+            bound: Some(bound),
+        } = self
+            && matches!(**of, ThroughTypeInfo::Param(_))
+            && !bounds.contains(bound)
+        {
+            bounds.push(*bound);
+        }
+        for inner in self.children() {
+            inner.generic_bounds(bounds);
         }
     }
 }
@@ -525,7 +552,7 @@ mod test {
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
         Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
-        UntypedTuple, TupleWithRest, Union, Fields, Param, Generic
+        UntypedTuple, TupleWithRest, Union, Fields, Param, TypeOf, Generic
     );
 
     /// Every variant, i.e. `ThroughTypeInfo::Vec`
@@ -655,6 +682,7 @@ mod test {
         "ThroughTypeInfo::TupleWithRest",
         "ThroughTypeInfo::Fields",
         "ThroughTypeInfo::Param",
+        "ThroughTypeInfo::TypeOf",
         "ThroughTypeInfo::Generic",
         // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses a value instead
         "ThroughTypeInfo::Opaque",

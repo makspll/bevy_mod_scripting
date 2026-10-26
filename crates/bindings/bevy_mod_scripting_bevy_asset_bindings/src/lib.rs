@@ -220,9 +220,9 @@ impl World {
     fn load_asset(
         ctxt: FunctionCallContext,
         path: String,
-        asset_type: AssetOf<A, V<ScriptTypeRegistration>>,
-    ) -> Result<HandleOf<A>, InteropError> {
-        load(&ctxt.world()?, asset_type.type_id(), path).map(HandleOf::new)
+        asset_type: V<ScriptTypeRegistration>,
+    ) -> Result<ReflectReference, InteropError> {
+        load(&ctxt.world()?, asset_type.type_id(), path)
     }
 
     /// Whether the asset and all of its dependencies are loaded.
@@ -292,7 +292,10 @@ impl World {
     /// * `value`: The asset value, of a type registered for asset reflection.
     /// Returns:
     /// * `handle`: A handle to the new asset.
-    fn add_asset(ctxt: FunctionCallContext, value: A) -> Result<HandleOf<A>, InteropError> {
-        add(&ctxt.world()?, value.0).map(HandleOf::new)
+    fn add_asset(
+        ctxt: FunctionCallContext,
+        value: ReflectReference,
+    ) -> Result<ReflectReference, InteropError> {
+        add(&ctxt.world()?, value)
     }
 }

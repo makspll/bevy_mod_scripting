@@ -14,7 +14,7 @@ use bevy_mod_scripting_bindings::{
         typed_through::{ThroughTypeInfo, primitive_kind_of, primitive_type_id},
     },
     function::{
-        generics::is_asset_type, namespace::FunctionScope, script_function::FunctionCallContext,
+        generics::satisfies_bound, namespace::FunctionScope, script_function::FunctionCallContext,
     },
     into_through_type_info_with_registry,
 };
@@ -264,7 +264,8 @@ impl<'t> LadFileBuilder<'t> {
                 is_bundle = true
             }
         }
-        let is_asset = is_asset_type(self.type_registry, type_info.type_id());
+        let is_asset =
+            satisfies_bound(self.type_registry, type_info.type_id(), GenericBound::Asset);
 
         let crate_ = type_info
             .type_path_table()
@@ -564,28 +565,30 @@ impl<'t> LadFileBuilder<'t> {
                     )
                 }),
         };
-        let mut generics = vec![];
+        // signatures have at most one generic parameter, bounded by the types of it they take
+        let mut name = None;
         for kind in arguments
             .iter()
             .chain(std::iter::once(&return_type))
             .map(|arg| &arg.kind)
         {
             kind.for_each(&mut |kind| {
-                let LadTypeKind::Param(param) = kind else {
-                    return;
-                };
-                if !generics.contains(param) {
-                    generics.push(param.clone());
+                if let LadTypeKind::Param(param) = kind {
+                    name.get_or_insert_with(|| param.clone());
                 }
             });
         }
+        let generic = name.map(|name| LadGenericParam {
+            name,
+            bounds: function_info.generic_bounds(),
+        });
 
         let lad_function = LadFunction {
             identifier: identifier.to_owned().into(),
             overload_index,
             arguments,
             receiver,
-            generics,
+            generic,
             return_type,
             documentation: (!main_docstring.is_empty()).then_some(main_docstring.into()),
             namespace,
@@ -1111,6 +1114,8 @@ impl<'t> LadFileBuilder<'t> {
                 variant: variant.map(Cow::Borrowed),
             },
             ThroughTypeInfo::Param(param) => LadTypeKind::Param(param.to_string()),
+            // the bound is on the generic parameter, see `LadFunction::generic`
+            ThroughTypeInfo::TypeOf { of, .. } => LadTypeKind::TypeOf(nested(self, of)),
             // the generic type is declared with `add_generic_type`, see `build`
             ThroughTypeInfo::Generic { path, args } => LadTypeKind::Generic {
                 generic_type: LadTypeId::new_string_id((*path).into()),
@@ -1648,7 +1653,7 @@ mod test {
     variant_names!(
         LadTypeKind, ALL_LAD_KINDS, lad_kind_name:
         Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple,
-        TupleWithRest, Array, Primitive, Union, Unknown, Fields, Param, Generic
+        TupleWithRest, Array, Primitive, Union, Unknown, Fields, Param, TypeOf, Generic
     );
 
     /// Records every kind found anywhere in the given kind
@@ -1674,7 +1679,7 @@ mod test {
             LadTypeKind::Generic { args, .. } => {
                 args.iter().for_each(|kind| collect_kinds(kind, seen))
             }
-            LadTypeKind::Fields { of, .. } => collect_kinds(of, seen),
+            LadTypeKind::Fields { of, .. } | LadTypeKind::TypeOf(of) => collect_kinds(of, seen),
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
             | LadTypeKind::Val(_)
@@ -1844,7 +1849,7 @@ mod test {
             docgen::TypedThrough,
             function::{
                 from::{M, R, Union, V},
-                generics::{A, ASSET_HANDLE_PATH, ComponentOf, FieldsOf, HandleOf, type_kinds},
+                generics::{A, ASSET_HANDLE_PATH, ComponentOf, FieldsOf, HandleOf},
             },
         };
         use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
@@ -1938,15 +1943,9 @@ mod test {
                 handle_of(Kind::Val(asset.clone())),
             ),
             (
-                "type of a generic parameter, or what is passed at runtime",
-                ComponentOf::<A, V<FieldValue>>::through_type_info(),
-                Kind::Union(vec![
-                    Kind::Generic {
-                        generic_type: LadTypeId::new_string_id(type_kinds::COMPONENT_TYPE.into()),
-                        args: vec![Kind::Param("A".into())],
-                    },
-                    Kind::Val(value.clone()),
-                ]),
+                "type of a generic parameter, its bound is on the function",
+                ComponentOf::<A>::through_type_info(),
+                Kind::TypeOf(Box::new(Kind::Param("A".into()))),
             ),
             (
                 "type info",

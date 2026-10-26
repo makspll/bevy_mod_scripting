@@ -10,6 +10,7 @@ use bevy_reflect::{Reflect, TypeInfo};
 use std::{any::TypeId, borrow::Cow};
 
 use super::typed_through::{ThroughTypeInfo, TypedThrough};
+use bevy_mod_scripting_bindings_domain::GenericBound;
 
 /// for things you can call and provide some introspection capability.
 #[diagnostic::on_unimplemented(
@@ -130,6 +131,21 @@ impl FunctionInfo {
             .map(|arg| &arg.type_info)
             .chain(std::iter::once(&self.return_info.type_info))
             .any(|t| t.as_ref().is_some_and(ThroughTypeInfo::has_generics))
+    }
+
+    /// The bounds on the generic parameter of the signature, i.e. `Component` for a function taking [`crate::function::generics::ComponentOf`].
+    pub fn generic_bounds(&self) -> Vec<GenericBound> {
+        let mut bounds = vec![];
+        for type_info in self
+            .arg_info
+            .iter()
+            .map(|arg| &arg.type_info)
+            .chain(std::iter::once(&self.return_info.type_info))
+            .flatten()
+        {
+            type_info.generic_bounds(&mut bounds);
+        }
+        bounds
     }
 
     /// The signature of a function shared between all types, as seen on the given type.

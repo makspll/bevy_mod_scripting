@@ -35,14 +35,14 @@ Do not write getters or setters for public fields.
 
 ## Generic signatures
 
-Reflection can't see the generic parameters of a function, so signatures whose types depend on a type passed in name them with the markers in `bevy_mod_scripting_bindings::function::generics`: `A` is a value of the type, `TypeOf<A>` (or `ComponentOf`, `ResourceOf`, `BundleOf`, `AssetOf`) the type itself, `FieldsOf<A>` its fields and `HandleOf<A>` a handle to it:
+Reflection can't see the generic parameters of a function, so signatures whose types depend on a type passed in name them with the markers in `bevy_mod_scripting_bindings::function::generics`: `A` is a value of the type, `TypeOf<A>` the type itself, `FieldsOf<A>` its fields and `HandleOf<A>` a handle to it. `ComponentOf`, `ResourceOf`, `BundleOf` and `AssetOf` are `TypeOf` with a bound on `A`, i.e. `A: Component`:
 
 ```rust,ignore
-// documented as returning a value of the component type it is given
-fn get_component(ctxt: FunctionCallContext, entity: V<Entity>, registration: ComponentOf<A, V<ScriptComponentRegistration>>) -> Result<Option<A>, InteropError>
+// registered on `StaticTypeRef`: documented on every component type as returning a value of it
+fn get_on(ctxt: FunctionCallContext, ty: ComponentOf<A>, entity: V<Entity>) -> Result<Option<A>, InteropError>
 ```
 
-The second parameter of the type markers is what is passed at runtime, `StaticTypeRef` by default. Functions registered on `StaticTypeRef` are available on every type of the marker's kind, i.e. `Transform.get_on(entity)`.
+Functions registered on `StaticTypeRef` are available on every type satisfying their bounds, i.e. `Transform.get_on(entity)`. Signatures have at most one generic parameter.
 
 ## Documentation
 
