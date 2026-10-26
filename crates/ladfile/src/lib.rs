@@ -423,14 +423,6 @@ impl LadNamedType {
             LadNamedType::Generic { args, .. } => args,
         }
     }
-
-    /// Replaces the generic parameter with the given name in the arguments with the given argument, see [`LadTypeKind::replace_param`]
-    pub fn replace_param(&mut self, name: &str, arg: &LadTypeKind) {
-        if let LadNamedType::Generic { args, .. } = self {
-            args.iter_mut()
-                .for_each(|kind| kind.replace_param(name, arg));
-        }
-    }
 }
 
 impl LadTypeKind {
@@ -458,6 +450,44 @@ impl LadTypeKind {
         }
     }
 
+    /// The same as [`Self::children`], mutably.
+    pub fn children_mut(&mut self) -> Vec<&mut LadTypeKind> {
+        match self {
+            LadTypeKind::Option(inner)
+            | LadTypeKind::Vec(inner)
+            | LadTypeKind::HashSet(inner)
+            | LadTypeKind::InteropResult(inner)
+            | LadTypeKind::Array(inner, _) => vec![&mut **inner],
+            LadTypeKind::HashMap(key, value) => vec![&mut **key, &mut **value],
+            LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => inner.iter_mut().collect(),
+            LadTypeKind::TupleWithRest { head, rest } => head
+                .iter_mut()
+                .chain(std::iter::once(&mut **rest))
+                .collect(),
+            LadTypeKind::Ref(LadNamedType::Generic { args, .. })
+            | LadTypeKind::Mut(LadNamedType::Generic { args, .. })
+            | LadTypeKind::Val(LadNamedType::Generic { args, .. }) => args.iter_mut().collect(),
+            LadTypeKind::Ref(_)
+            | LadTypeKind::Mut(_)
+            | LadTypeKind::Val(_)
+            | LadTypeKind::Unknown(_)
+            | LadTypeKind::Primitive(_)
+            | LadTypeKind::UntypedTuple
+            | LadTypeKind::Fields { .. }
+            | LadTypeKind::Param(_) => vec![],
+        }
+    }
+
+    /// The named type of a reference, mutable reference or value, i.e. `Image` in `&Image`.
+    pub fn named(&self) -> Option<&LadNamedType> {
+        match self {
+            LadTypeKind::Ref(named) | LadTypeKind::Mut(named) | LadTypeKind::Val(named) => {
+                Some(named)
+            }
+            _ => None,
+        }
+    }
+
     /// Calls `f` on this kind and every kind nested in it, outermost first.
     pub fn for_each(&self, f: &mut impl FnMut(&LadTypeKind)) {
         f(self);
@@ -468,37 +498,15 @@ impl LadTypeKind {
 
     /// Replaces the generic parameter with the given name in this kind with the given argument, i.e. `Vec<T>` with `Vec<Image>`.
     pub fn replace_param(&mut self, name: &str, arg: &LadTypeKind) {
-        match self {
-            LadTypeKind::Param(param) => {
-                if param == name {
-                    *self = arg.clone()
-                }
-            }
-            LadTypeKind::Option(inner)
-            | LadTypeKind::Vec(inner)
-            | LadTypeKind::HashSet(inner)
-            | LadTypeKind::InteropResult(inner)
-            | LadTypeKind::Array(inner, _) => inner.replace_param(name, arg),
-            LadTypeKind::HashMap(key, value) => {
-                key.replace_param(name, arg);
-                value.replace_param(name, arg);
-            }
-            LadTypeKind::Tuple(inner) | LadTypeKind::Union(inner) => inner
-                .iter_mut()
-                .for_each(|kind| kind.replace_param(name, arg)),
-            LadTypeKind::TupleWithRest { head, rest } => {
-                head.iter_mut()
-                    .for_each(|kind| kind.replace_param(name, arg));
-                rest.replace_param(name, arg);
-            }
-            LadTypeKind::Ref(named) | LadTypeKind::Mut(named) | LadTypeKind::Val(named) => {
-                named.replace_param(name, arg)
-            }
-            LadTypeKind::Unknown(_)
-            | LadTypeKind::Primitive(_)
-            | LadTypeKind::UntypedTuple
-            | LadTypeKind::Fields { .. } => {}
+        if let LadTypeKind::Param(param) = self
+            && param == name
+        {
+            *self = arg.clone();
+            return;
         }
+        self.children_mut()
+            .into_iter()
+            .for_each(|kind| kind.replace_param(name, arg));
     }
 }
 
