@@ -636,6 +636,21 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
     fn visit_param(&mut self, param: &str) -> Self::Output {
         Ok(LuaType::Alias(param.to_owned()))
     }
+
+    fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[LadTypeKind]) -> Self::Output {
+        let Some(generic) = self.ladfile.generic_types.get(generic_type) else {
+            return Err(anyhow::anyhow!(
+                "{generic_type} is not a generic type of the file"
+            ));
+        };
+        Ok(LuaType::Generic {
+            name: qualified(&generic.namespace, &generic.identifier),
+            args: args
+                .iter()
+                .map(|arg| self.visit(arg))
+                .collect::<Result<_, _>>()?,
+        })
+    }
 }
 
 /// The argument of a generic type can be any type, including primitives and types the file doesn't know about.
@@ -646,7 +661,7 @@ fn lad_generic_argument_to_lua_type(ladfile: &LadFile, type_id: &LadTypeId) -> L
     if !ladfile.types.contains_key(type_id) {
         return LuaType::Any;
     }
-    lad_instance_to_lua_type(ladfile, &ladfile::LadTypeKind::Val(type_id.clone()))
+    lad_instance_to_lua_type(ladfile, &ladfile::LadTypeKind::Val(type_id.clone().into()))
         .unwrap_or(LuaType::Any)
 }
 
@@ -1122,7 +1137,7 @@ mod test {
                     variant: None,
                 },
             )],
-            LadTypeKind::Val(plain),
+            LadTypeKind::Val(plain.into()),
         );
 
         // the enum level constructor, `EnumType.new{ variant = ..., ... }`
@@ -1137,7 +1152,7 @@ mod test {
                     variant: None,
                 },
             )],
-            LadTypeKind::Val(enum_type.clone()),
+            LadTypeKind::Val(enum_type.clone().into()),
         );
 
         // the generic variant constructor, documented as it is at runtime
@@ -1152,7 +1167,7 @@ mod test {
             &mut file,
             LadFunctionNamespace::Type(variant_ref.clone()),
             vec![
-                arg("variant", LadTypeKind::Val(variant_ref.clone())),
+                arg("variant", LadTypeKind::Val(variant_ref.clone().into())),
                 arg(
                     "payload",
                     LadTypeKind::HashMap(
@@ -1173,7 +1188,7 @@ mod test {
                     variant: variant.into(),
                 },
                 vec![
-                    arg("variant", LadTypeKind::Val(variant_ref.clone())),
+                    arg("variant", LadTypeKind::Val(variant_ref.clone().into())),
                     arg(
                         "payload",
                         LadTypeKind::Fields {
@@ -1182,7 +1197,7 @@ mod test {
                         },
                     ),
                 ],
-                LadTypeKind::Val(enum_type.clone()),
+                LadTypeKind::Val(enum_type.clone().into()),
             );
         }
         file
@@ -1510,7 +1525,7 @@ mod test {
         );
 
         assert_eq!(
-            lad_instance_to_lua_type(&file, &LadTypeKind::Val(nested))
+            lad_instance_to_lua_type(&file, &LadTypeKind::Val(nested.into()))
                 .map(|ty| format!("{ty:?}"))
                 .unwrap(),
             format!(
@@ -1525,7 +1540,7 @@ mod test {
             )
         );
         assert_eq!(
-            lad_instance_to_lua_type(&file, &LadTypeKind::Val(unknown))
+            lad_instance_to_lua_type(&file, &LadTypeKind::Val(unknown.into()))
                 .map(|ty| format!("{ty:?}"))
                 .unwrap(),
             format!(
@@ -1545,7 +1560,7 @@ mod test {
         assert!(file.types[&generic_struct].generic_type.is_none());
 
         // there is no class for the type to refer to
-        assert!(lad_instance_to_lua_type(&file, &LadTypeKind::Val(generic_struct)).is_err());
+        assert!(lad_instance_to_lua_type(&file, &LadTypeKind::Val(generic_struct.into())).is_err());
         let rendered = render(&file);
         assert!(
             !rendered.contains("---@class GenericStructType"),

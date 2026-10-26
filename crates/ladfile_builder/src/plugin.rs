@@ -152,7 +152,7 @@ pub fn generate_lad_file(
     }
     add_namespace_members(&mut builder, &namespace_members.read());
     // `bms.world` is a type, reflection doesn't describe it, so it is documented as the world type
-    let world = LadTypeKind::Val(builder.lad_id_from_type_id(TypeId::of::<World>()));
+    let world = LadTypeKind::Val(builder.lad_id_from_type_id(TypeId::of::<World>()).into());
     builder.add_namespace_instance("bms", "world", world);
 
     write_lad_file(&builder.build(), settings);
@@ -478,7 +478,7 @@ mod test {
                     variant: None
                 }
             );
-            assert_eq!(new.return_type.kind, LadTypeKind::Val(type_id));
+            assert_eq!(new.return_type.kind, LadTypeKind::Val(type_id.into()));
         }
 
         // the original keeps its receiver, and is documented as it is at runtime
@@ -524,7 +524,10 @@ mod test {
                     variant: Some(variant.into())
                 }
             );
-            assert_eq!(new.return_type.kind, LadTypeKind::Val(enum_id.clone()));
+            assert_eq!(
+                new.return_type.kind,
+                LadTypeKind::Val(enum_id.clone().into())
+            );
         }
 
         // variants are not types, so their functions are not associated with the enum
@@ -549,7 +552,7 @@ mod test {
         let shared = function(&file, "TestEnum", "describe").unwrap();
         assert_eq!(
             shared.return_type.kind,
-            LadTypeKind::Val(type_id(&file, "TestEnum"))
+            LadTypeKind::Val(type_id(&file, "TestEnum").into())
         );
     }
 

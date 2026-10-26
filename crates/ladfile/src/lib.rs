@@ -332,11 +332,11 @@ pub struct LadArgument {
 #[serde(rename_all = "camelCase")]
 pub enum LadTypeKind {
     /// a `Ref` wrapped argument
-    Ref(LadTypeId),
+    Ref(LadNamedType),
     /// a `Mut` wrapped argument
-    Mut(LadTypeId),
+    Mut(LadNamedType),
     /// a `Val` wrapped argument
-    Val(LadTypeId),
+    Val(LadNamedType),
     /// an `Option` wrapped argument
     Option(Box<LadTypeKind>),
     /// a `Vec`
@@ -383,6 +383,56 @@ pub enum LadTypeKind {
     Param(String),
 }
 
+/// A type with a name, which values, references and mutable references are of, see [`LadTypeKind::Val`].
+///
+/// Either a type of the file, or a generic type applied to arguments, never a container.
+/// Plain ids serialize as before, i.e. `{ "val": "glam::Vec3" }`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+pub enum LadNamedType {
+    /// A type of the file, see [`LadFile::types`]
+    Id(LadTypeId),
+    /// A generic type applied to arguments, i.e. `Handle<Image>`, or `Handle<T>` in the layout of a generic type
+    Generic {
+        /// The generic type, see [`LadFile::generic_types`]
+        generic_type: LadTypeId,
+        /// Its arguments, in the order of its parameters
+        args: Vec<LadTypeKind>,
+    },
+}
+
+impl From<LadTypeId> for LadNamedType {
+    fn from(type_id: LadTypeId) -> Self {
+        LadNamedType::Id(type_id)
+    }
+}
+
+impl LadNamedType {
+    /// The id of the type, if it is a type of the file rather than a generic type applied to arguments
+    pub fn type_id(&self) -> Option<&LadTypeId> {
+        match self {
+            LadNamedType::Id(type_id) => Some(type_id),
+            LadNamedType::Generic { .. } => None,
+        }
+    }
+
+    /// The arguments of a generic type, none for a type of the file
+    pub fn args(&self) -> &[LadTypeKind] {
+        match self {
+            LadNamedType::Id(_) => &[],
+            LadNamedType::Generic { args, .. } => args,
+        }
+    }
+
+    /// Replaces the generic parameter with the given name in the arguments with the given argument, see [`LadTypeKind::replace_param`]
+    pub fn replace_param(&mut self, name: &str, arg: &LadTypeKind) {
+        if let LadNamedType::Generic { args, .. } = self {
+            args.iter_mut()
+                .for_each(|kind| kind.replace_param(name, arg));
+        }
+    }
+}
+
 impl LadTypeKind {
     /// The kinds this one contains, i.e. `T` in `Vec<T>`.
     pub fn children(&self) -> Vec<&LadTypeKind> {
@@ -397,10 +447,10 @@ impl LadTypeKind {
             LadTypeKind::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
-            LadTypeKind::Ref(_)
-            | LadTypeKind::Mut(_)
-            | LadTypeKind::Val(_)
-            | LadTypeKind::Unknown(_)
+            LadTypeKind::Ref(named) | LadTypeKind::Mut(named) | LadTypeKind::Val(named) => {
+                named.args().iter().collect()
+            }
+            LadTypeKind::Unknown(_)
             | LadTypeKind::Primitive(_)
             | LadTypeKind::UntypedTuple
             | LadTypeKind::Fields { .. }
@@ -441,10 +491,10 @@ impl LadTypeKind {
                     .for_each(|kind| kind.replace_param(name, arg));
                 rest.replace_param(name, arg);
             }
-            LadTypeKind::Ref(_)
-            | LadTypeKind::Mut(_)
-            | LadTypeKind::Val(_)
-            | LadTypeKind::Unknown(_)
+            LadTypeKind::Ref(named) | LadTypeKind::Mut(named) | LadTypeKind::Val(named) => {
+                named.replace_param(name, arg)
+            }
+            LadTypeKind::Unknown(_)
             | LadTypeKind::Primitive(_)
             | LadTypeKind::UntypedTuple
             | LadTypeKind::Fields { .. } => {}
@@ -491,19 +541,30 @@ pub trait ArgumentVisitor {
     /// A primitive type
     fn visit_primitive(&mut self, primitive_kind: &ReflectionPrimitiveKind) -> Self::Output;
 
-    /// A reference to a value of the type, by default [`Self::visit_type_id`]
-    fn visit_ref(&mut self, type_id: &LadTypeId) -> Self::Output {
-        self.visit_type_id(type_id)
+    /// A generic type applied to arguments, i.e. `Handle<Image>`
+    fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[LadTypeKind]) -> Self::Output;
+
+    /// A type with a name, by default [`Self::visit_type_id`] or [`Self::visit_generic`]
+    fn visit_named(&mut self, named: &LadNamedType) -> Self::Output {
+        match named {
+            LadNamedType::Id(type_id) => self.visit_type_id(type_id),
+            LadNamedType::Generic { generic_type, args } => self.visit_generic(generic_type, args),
+        }
     }
 
-    /// A mutable reference to a value of the type, by default [`Self::visit_type_id`]
-    fn visit_mut(&mut self, type_id: &LadTypeId) -> Self::Output {
-        self.visit_type_id(type_id)
+    /// A reference to a value of the type, by default [`Self::visit_named`]
+    fn visit_ref(&mut self, named: &LadNamedType) -> Self::Output {
+        self.visit_named(named)
     }
 
-    /// A value of the type, by default [`Self::visit_type_id`]
-    fn visit_val(&mut self, type_id: &LadTypeId) -> Self::Output {
-        self.visit_type_id(type_id)
+    /// A mutable reference to a value of the type, by default [`Self::visit_named`]
+    fn visit_mut(&mut self, named: &LadNamedType) -> Self::Output {
+        self.visit_named(named)
+    }
+
+    /// A value of the type, by default [`Self::visit_named`]
+    fn visit_val(&mut self, named: &LadNamedType) -> Self::Output {
+        self.visit_named(named)
     }
 
     /// A type converted in a way the LAD file can't describe, by default [`Self::visit_type_id`]

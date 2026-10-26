@@ -65,7 +65,14 @@
           {
             "name": "generic",
             "type": {
-              "val": "ladfile_builder::test::OpaqueGenericType<usize>"
+              "val": {
+                "generic_type": "ladfile_builder::test::OpaqueGenericType",
+                "args": [
+                  {
+                    "primitive": "usize"
+                  }
+                ]
+              }
             }
           }
         ]
@@ -761,14 +768,28 @@
         },
         {
           "kind": {
-            "val": "ladfile_builder::test::OpaqueGenericType<usize>"
+            "val": {
+              "generic_type": "ladfile_builder::test::OpaqueGenericType",
+              "args": [
+                {
+                  "primitive": "usize"
+                }
+              ]
+            }
           },
           "name": "arg2"
         }
       ],
       "return_type": {
         "kind": {
-          "val": "ladfile_builder::test::OpaqueGenericType<usize>"
+          "val": {
+            "generic_type": "ladfile_builder::test::OpaqueGenericType",
+            "args": [
+              {
+                "primitive": "usize"
+              }
+            ]
+          }
         }
       },
       "metadata": {},
