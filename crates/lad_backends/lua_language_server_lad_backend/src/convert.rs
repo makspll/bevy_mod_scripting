@@ -1759,7 +1759,7 @@ mod test {
         let param = || LadTypeKind::Val(LadNamedType::Param { param: "T".into() });
         let of_plain = applied(LadTypeKind::Val(plain.clone().into()));
         let mut add = |name: &'static str, namespace: LadNamedType, ret: LadTypeKind| {
-            let id = LadFunctionId::new_string_id(format!("{name}"));
+            let id = LadFunctionId::new_string_id(name.into());
             file.functions.insert(
                 id.clone(),
                 LadFunction {
