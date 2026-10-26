@@ -34,6 +34,127 @@ use std::{
     cmp::{max, min},
 };
 
+/// Moves the functions every instantiation of a generic type has, with the same signature once their arguments are
+/// replaced by the parameters, to the generic type, in terms of the parameters: `impl<T> Time<T>` rather than an
+/// `impl Time<Virtual>` per instantiation. The rest stay on their instantiation.
+///
+/// Functions on the variants of generic enums are generalised the same way, i.e. the constructor of `Handle<T>::Strong`.
+fn generalise_instantiation_functions(file: &mut LadFile) {
+    let generic_ids: Vec<_> = file.generic_types.keys().cloned().collect();
+    for generic_id in generic_ids {
+        let generic_type = &file.generic_types[&generic_id];
+        let params = generic_type.params.clone();
+        let records: Vec<_> = generic_type
+            .instantiations
+            .iter()
+            .map(|i| i.args.clone())
+            .collect();
+        if records.is_empty() {
+            continue;
+        }
+        let generic_named = LadNamedType::Generic {
+            generic_type: generic_id.clone(),
+            args: params
+                .iter()
+                .map(|param| {
+                    LadTypeKind::Val(LadNamedType::Param {
+                        param: param.clone(),
+                    })
+                })
+                .collect(),
+        };
+
+        // the functions of each instantiation, and of the variants of each, by variant, name and overload
+        type Key = (Option<String>, String, Option<usize>);
+        let mut candidates: std::collections::BTreeMap<Key, Vec<(LadFunctionId, LadFunction)>> =
+            Default::default();
+        for (function_id, function) in &file.functions {
+            let (variant, args) = match &function.namespace {
+                LadFunctionNamespace::Type(LadNamedType::Generic { generic_type, args })
+                    if generic_type == &generic_id =>
+                {
+                    (None, args)
+                }
+                LadFunctionNamespace::Variant {
+                    type_id: LadNamedType::Generic { generic_type, args },
+                    variant,
+                } if generic_type == &generic_id => (Some(variant.to_string()), args),
+                _ => continue,
+            };
+            if !records.contains(args) {
+                continue;
+            }
+            // the function of the generic type it would be
+            let mut generalised = function.clone();
+            for (param, arg) in params.iter().zip(args) {
+                for argument in generalised
+                    .arguments
+                    .iter_mut()
+                    .chain(std::iter::once(&mut generalised.return_type))
+                {
+                    argument.kind.replace_arg(arg, param);
+                }
+            }
+            generalised.namespace = match &variant {
+                None => LadFunctionNamespace::Type(generic_named.clone()),
+                Some(variant) => LadFunctionNamespace::Variant {
+                    type_id: generic_named.clone(),
+                    variant: variant.clone().into(),
+                },
+            };
+            candidates
+                .entry((
+                    variant,
+                    function.identifier.to_string(),
+                    function.overload_index,
+                ))
+                .or_default()
+                .push((function_id.clone(), generalised));
+        }
+
+        for ((variant, name, _), functions) in candidates {
+            let (_, first) = &functions[0];
+            let signature = |f: &LadFunction| {
+                (
+                    f.arguments
+                        .iter()
+                        .map(|a| a.kind.clone())
+                        .collect::<Vec<_>>(),
+                    f.return_type.kind.clone(),
+                    f.receiver,
+                )
+            };
+            let generic = functions.len() == records.len()
+                && functions
+                    .iter()
+                    .all(|(_, f)| signature(f) == signature(first));
+            if !generic {
+                continue;
+            }
+            let generalised = first.clone();
+            let id = LadFunctionId::new_string_id(match &variant {
+                None => format!("{generic_id}::{name}"),
+                Some(variant) => format!("{generic_id}::{variant}::{name}"),
+            });
+            for (original, _) in &functions {
+                file.functions.shift_remove(original);
+            }
+            let Some(generic_type) = file.generic_types.get_mut(&generic_id) else {
+                continue;
+            };
+            for instantiation in &mut generic_type.instantiations {
+                instantiation
+                    .associated_functions
+                    .retain(|f| !functions.iter().any(|(original, _)| original == f));
+            }
+            if variant.is_none() {
+                generic_type.associated_functions.push(id.clone());
+            }
+            file.functions.insert(id, generalised);
+        }
+    }
+}
+
 /// Whether the type stands for a generic parameter when declaring a generic type, see [`LadFileBuilder::add_generic_type`].
 fn is_param_marker(type_id: TypeId) -> bool {
     type_id == TypeId::of::<A>()
@@ -526,6 +647,7 @@ impl<'t> LadFileBuilder<'t> {
                 params: spec.params.clone(),
                 documentation: Some(spec.documentation.clone()),
                 layout,
+                associated_functions: Vec::new(),
                 instantiations: Vec::new(),
             });
         Some(id)
@@ -878,6 +1000,7 @@ impl<'t> LadFileBuilder<'t> {
                     params: spec.params.clone(),
                     documentation: Some(spec.documentation.clone()),
                     layout,
+                    associated_functions: Vec::new(),
                     instantiations: Vec::new(),
                 },
             );
@@ -910,12 +1033,16 @@ impl<'t> LadFileBuilder<'t> {
                         ),
                     }
                 }
+                LadFunctionNamespace::Type(LadNamedType::Param { .. }) => warn!(
+                    "Function {function_id} is on a generic parameter, which has no functions of its own."
+                ),
                 // variants are not types, backends find their functions by namespace
                 LadFunctionNamespace::Global
                 | LadFunctionNamespace::Variant { .. }
                 | LadFunctionNamespace::Namespace { .. } => {}
             }
         }
+        generalise_instantiation_functions(&mut file);
 
         // the types scripts import from each namespace, by the name `import_namespace` gives them
         let mut types_by_id: Vec<_> = file.types.iter().collect();
@@ -1255,7 +1382,14 @@ impl<'t> LadFileBuilder<'t> {
                     &into_through_type_info_with_registry(type_info, self.type_registry),
                 );
                 let mut mentions_param = false;
-                kind.for_each(&mut |kind| mentions_param |= matches!(kind, LadTypeKind::Param(_)));
+                kind.for_each(&mut |kind| {
+                    mentions_param |= matches!(
+                        kind,
+                        LadTypeKind::Ref(LadNamedType::Param { .. })
+                            | LadTypeKind::Mut(LadNamedType::Param { .. })
+                            | LadTypeKind::Val(LadNamedType::Param { .. })
+                    )
+                });
                 if mentions_param {
                     return kind;
                 }
@@ -1311,8 +1445,14 @@ impl<'t> LadFileBuilder<'t> {
     }
 
     /// The named type of a value or reference: an instantiation of a declared generic type is the generic type applied
-    /// to its arguments, i.e. `Handle<Image>`, any other type is its id. Also adds the types to the file if `register` is set.
+    /// to its arguments, i.e. `Handle<Image>`, in the layout of a generic type a marker is the parameter it stands for,
+    /// any other type is its id. Also adds the types to the file if `register` is set.
     fn lad_named_type(&mut self, type_info: &'static TypeInfo, register: bool) -> LadNamedType {
+        if let Some(param) = self.describing_params.get(&type_info.type_id()) {
+            return LadNamedType::Param {
+                param: param.clone(),
+            };
+        }
         if register {
             self.add_type_info(type_info);
         }
@@ -1337,7 +1477,9 @@ impl<'t> LadFileBuilder<'t> {
     /// generic type whose layout is being described.
     fn lad_generic_arg_kind(&mut self, type_id: TypeId, register: bool) -> LadTypeKind {
         if let Some(param) = self.describing_params.get(&type_id) {
-            return LadTypeKind::Param(param.clone());
+            return LadTypeKind::Val(LadNamedType::Param {
+                param: param.clone(),
+            });
         }
         if register && let Some(type_info) = self.type_registry.get_type_info(type_id) {
             self.add_type_info(type_info);
@@ -1356,14 +1498,13 @@ impl<'t> LadFileBuilder<'t> {
         let nested = |builder: &mut Self, inner: &ThroughTypeInfo| {
             Box::new(builder.lad_kind(inner, register))
         };
-        // in the layout of a generic type, the markers are its parameters
-        if let ThroughTypeInfo::Ref(type_info)
-        | ThroughTypeInfo::Mut(type_info)
-        | ThroughTypeInfo::Val(type_info)
-        | ThroughTypeInfo::Opaque(type_info) = through_type
+        // in the layout of a generic type, the markers are its parameters, see `lad_named_type` for references to them
+        if let ThroughTypeInfo::Opaque(type_info) = through_type
             && let Some(param) = self.describing_params.get(&type_info.type_id())
         {
-            return LadTypeKind::Param(param.clone());
+            return LadTypeKind::Val(LadNamedType::Param {
+                param: param.clone(),
+            });
         }
         match through_type {
             ThroughTypeInfo::Ref(type_info) => {
@@ -1986,7 +2127,7 @@ mod test {
     variant_names!(
         LadTypeKind, ALL_LAD_KINDS, lad_kind_name:
         Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple,
-        TupleWithRest, Array, Primitive, Union, Unknown, Fields, Param
+        TupleWithRest, Array, Primitive, Union, Unknown, Fields
     );
 
     /// Records every kind found anywhere in the given kind
@@ -2015,8 +2156,7 @@ mod test {
             | LadTypeKind::UntypedTuple
             | LadTypeKind::Primitive(_)
             | LadTypeKind::Unknown(_)
-            | LadTypeKind::Fields { .. }
-            | LadTypeKind::Param(_) => {}
+            | LadTypeKind::Fields { .. } => {}
         }
     }
 
@@ -2430,7 +2570,7 @@ mod test {
         else {
             panic!("expected a struct, got {:?}", generic_type.layout);
         };
-        let param = || LadTypeKind::Param("T".into());
+        let param = || LadTypeKind::Val(LadNamedType::Param { param: "T".into() });
         let kinds: Vec<_> = fields.iter().map(|f| (f.name.as_str(), &f.type_)).collect();
         assert_eq!(
             kinds,
