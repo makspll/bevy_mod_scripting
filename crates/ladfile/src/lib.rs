@@ -437,13 +437,13 @@ impl LadTypeKind {
             LadTypeKind::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
-            LadTypeKind::Ref(named) | LadTypeKind::Mut(named) | LadTypeKind::Val(named) => {
-                named.args().iter().collect()
-            }
+            LadTypeKind::Ref(named)
+            | LadTypeKind::Mut(named)
+            | LadTypeKind::Val(named)
+            | LadTypeKind::Fields { of: named, .. } => named.args().iter().collect(),
             LadTypeKind::Unknown(_)
             | LadTypeKind::Primitive(_)
             | LadTypeKind::UntypedTuple
-            | LadTypeKind::Fields { .. }
             | LadTypeKind::Param(_) => vec![],
         }
     }
@@ -464,7 +464,11 @@ impl LadTypeKind {
                 .collect(),
             LadTypeKind::Ref(LadNamedType::Generic { args, .. })
             | LadTypeKind::Mut(LadNamedType::Generic { args, .. })
-            | LadTypeKind::Val(LadNamedType::Generic { args, .. }) => args.iter_mut().collect(),
+            | LadTypeKind::Val(LadNamedType::Generic { args, .. })
+            | LadTypeKind::Fields {
+                of: LadNamedType::Generic { args, .. },
+                ..
+            } => args.iter_mut().collect(),
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
             | LadTypeKind::Val(_)

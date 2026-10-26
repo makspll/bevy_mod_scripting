@@ -63,10 +63,14 @@ fn mentions_param_marker(type_info: &TypeInfo) -> bool {
         }
 }
 
-/// Collects the generic types the kind applies to arguments, i.e. `Handle` for `Vec<Handle<T>>`.
+/// Collects the generic types the kind applies to arguments, i.e. `Handle` for `Vec<Handle<T>>` or `Fields<Handle<T>>`.
 fn named_generic_types(kind: &LadTypeKind, named: &mut Vec<LadTypeId>) {
     kind.for_each(&mut |kind| {
-        if let Some(LadNamedType::Generic { generic_type, .. }) = kind.named() {
+        let named_type = match kind {
+            LadTypeKind::Fields { of, .. } => Some(of),
+            kind => kind.named(),
+        };
+        if let Some(LadNamedType::Generic { generic_type, .. }) = named_type {
             named.push(generic_type.clone());
         }
     })
@@ -304,6 +308,13 @@ impl<'t> LadFileBuilder<'t> {
     /// Add a type definition to the LAD file.
     /// Will overwrite any existing type definitions with the same type id.
     pub fn add_type_info(&mut self, type_info: &TypeInfo) -> &mut Self {
+        // instantiations of declared generic types are excluded here as types are in `build`, since they aren't types
+        if self.exclude_types_involving_unregistered_types
+            && self.declared_generic_index(type_info).is_some()
+            && self.has_unknowns(type_info.type_id())
+        {
+            return self;
+        }
         let registration = self.type_registry.get(type_info.type_id());
 
         let mut insignificance = default_importance();
@@ -354,13 +365,6 @@ impl<'t> LadFileBuilder<'t> {
             default: self.lad_default(type_info.type_id()),
             misc: Default::default(),
         };
-        // instantiations of declared generic types are excluded here as types are in `build`, since they aren't types
-        if self.exclude_types_involving_unregistered_types
-            && self.declared_generic_index(type_info).is_some()
-            && self.has_unknowns(type_info.type_id())
-        {
-            return self;
-        }
         let type_id = self.lad_id_from_type_id(type_info.type_id());
         let generic_type = self.add_generic_type_of(type_info);
         let layout = self.lad_layout_from_type_info(type_info);
@@ -377,7 +381,7 @@ impl<'t> LadFileBuilder<'t> {
             let args: Vec<_> = type_info
                 .generics()
                 .iter()
-                .map(|arg| self.lad_generic_arg_kind(arg.type_id(), false))
+                .map(|arg| self.lad_generic_arg_kind(arg, false))
                 .collect();
             if let Some(generic) = self.file.generic_types.get_mut(&generic_type)
                 && !generic.instantiations.iter().any(|i| i.args == args)
