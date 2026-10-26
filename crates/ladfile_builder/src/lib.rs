@@ -39,6 +39,11 @@ fn is_param_marker(type_id: TypeId) -> bool {
     type_id == TypeId::of::<A>()
 }
 
+/// Whether the type path mentions a marker standing for a generic parameter, i.e. `Arc<A>`.
+fn mentions_param_marker(type_path: &str) -> bool {
+    type_path.contains(<A as bevy_reflect::TypePath>::type_path())
+}
+
 /// The kinds of the fields of each variant, in order.
 fn field_kinds(layout: &LadTypeLayout) -> Vec<(&str, Vec<&LadTypeKind>)> {
     let variants = match layout {
@@ -957,7 +962,11 @@ impl<'t> LadFileBuilder<'t> {
             fields: fields
                 .map(|field| LadNamedField {
                     name: field.name().to_string(),
-                    type_: self.lad_field_kind(field.type_id(), field.type_info()),
+                    type_: self.lad_field_kind(
+                        field.type_id(),
+                        field.type_path(),
+                        field.type_info(),
+                    ),
                     has_default: self.has_default(field.type_id()),
                 })
                 .collect(),
@@ -973,7 +982,11 @@ impl<'t> LadFileBuilder<'t> {
             name,
             fields: fields
                 .map(|field| LadField {
-                    type_: self.lad_field_kind(field.type_id(), field.type_info()),
+                    type_: self.lad_field_kind(
+                        field.type_id(),
+                        field.type_path(),
+                        field.type_info(),
+                    ),
                     has_default: self.has_default(field.type_id()),
                 })
                 .collect(),
@@ -1063,24 +1076,31 @@ impl<'t> LadFileBuilder<'t> {
 
     /// The kind of a field of the given type.
     ///
-    /// In the layout of a generic type, the types mentioning its parameter (`A`, `Vec<A>`) aren't registered,
+    /// In the layout of a generic type, the types mentioning its parameters (`A`, `Vec<A>`) aren't registered,
     /// so they are described from the field's own type information.
     fn lad_field_kind(
         &mut self,
         type_id: TypeId,
+        type_path: &str,
         type_info: Option<&'static TypeInfo>,
     ) -> LadTypeKind {
-        if !self.describing_params.is_empty()
-            && let Some(type_info) = type_info
-        {
-            let kind = self.lad_type_kind_from_through_type(&into_through_type_info_with_registry(
-                type_info,
-                self.type_registry,
-            ));
-            let mut mentions_param = false;
-            kind.for_each(&mut |kind| mentions_param |= matches!(kind, LadTypeKind::Param(_)));
-            if mentions_param {
-                return kind;
+        if !self.describing_params.is_empty() {
+            if let Some(type_info) = type_info {
+                let kind = self.lad_type_kind_from_through_type(
+                    &into_through_type_info_with_registry(type_info, self.type_registry),
+                );
+                let mut mentions_param = false;
+                kind.for_each(&mut |kind| mentions_param |= matches!(kind, LadTypeKind::Param(_)));
+                if mentions_param {
+                    return kind;
+                }
+            }
+            // i.e. in an opaque type, or in a generic type the layout has no kind for
+            if mentions_param_marker(type_path) {
+                warn!(
+                    "The type of a field, `{type_path}`, uses a parameter in a way the layout of the generic type can't describe, it is documented as unknown"
+                );
+                return LadTypeKind::Unknown(LadTypeId::new_string_id(type_path.to_owned().into()));
             }
         }
         self.lad_type_kind_from_type_id(type_id)
@@ -2074,6 +2094,20 @@ mod test {
         count: usize,
     }
 
+    /// A generic type using its parameter where reflection only exposes type ids, and in another generic type
+    #[derive(Reflect)]
+    #[reflect(from_reflect = false)]
+    struct NestedParam<
+        T: Eq
+            + std::hash::Hash
+            + bevy_reflect::FromReflect
+            + bevy_reflect::GetTypeRegistration
+            + Typed,
+    > {
+        set: bevy_platform::collections::HashSet<T>,
+        nested: OneParam<T>,
+    }
+
     #[test]
     fn generic_types_are_declared_with_markers_in_place_of_their_parameters() {
         let registry = TypeRegistry::default();
@@ -2175,6 +2209,26 @@ mod test {
         assert_eq!(declared, generic_type.layout);
         declared.replace_param("T", &f32_kind);
         assert_eq!(field_kinds(&declared), field_kinds(&instantiation.layout));
+
+        // sets only expose the type id of their values, and the layout has no kind for other generic types,
+        // so their uses of the parameter are unknown, by type path
+        let registry = TypeRegistry::default();
+        let mut builder = LadFileBuilder::new_empty(&registry);
+        builder
+            .add_generic_type::<NestedParam<A>>(&["T"], "")
+            .unwrap();
+        let LadTypeLayout::MonoVariant(LadVariant::Struct { fields, .. }) =
+            &builder.generic_types[0].layout
+        else {
+            panic!("expected a struct");
+        };
+        assert_eq!(fields[0].type_, LadTypeKind::HashSet(Box::new(param())));
+        assert_eq!(
+            fields[1].type_,
+            LadTypeKind::Unknown(LadTypeId::new_string_id(
+                <OneParam<A> as bevy_reflect::TypePath>::type_path().into()
+            ))
+        );
 
         // as for the generic types declared by the plugin
         let registry = field_test_registry();

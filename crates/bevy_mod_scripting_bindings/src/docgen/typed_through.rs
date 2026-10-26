@@ -208,8 +208,13 @@ fn convert_type_info(
                 nested(hash_map.value_info()?),
             ));
         } else if let Ok(set) = type_info.as_set() {
-            // sets only expose the type id of their values
-            let inner = registry?.get_type_info(set.value_ty().id())?;
+            // sets only expose the type id of their values, the marker standing for a generic parameter is never registered
+            let value = set.value_ty().id();
+            let inner = if value == TypeId::of::<crate::function::generics::A>() {
+                crate::function::generics::A::type_info()
+            } else {
+                registry?.get_type_info(value)?
+            };
             return Some(ThroughTypeInfo::HashSet(nested(inner)));
         } else if let Ok(list) = type_info.as_list() {
             return Some(ThroughTypeInfo::Vec(nested(list.item_info()?)));
