@@ -81,9 +81,9 @@ impl Window {
     fn primary(ctxt: FunctionCallContext) -> Result<Option<ValueOf<Window>>, InteropError> {
         let world = ctxt.world()?;
         match primary_window_entity(&world)? {
-            Some(entity) => Ok(Some(ValueOf::new(
-                ReflectReference::new_component_ref::<Window>(entity, world.clone())?,
-            ))),
+            Some(entity) => Ok(Some(ValueOf::new(ReflectReference::new_component_ref::<
+                Window,
+            >(entity, world.clone())?))),
             None => Ok(None),
         }
     }
