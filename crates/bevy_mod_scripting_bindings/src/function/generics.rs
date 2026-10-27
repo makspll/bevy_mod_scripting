@@ -148,6 +148,8 @@ impl<M: Typed> TypedThrough for ValueOf<M> {
 pub struct GenericTypeDeclaration {
     /// The generic type instantiated with markers in place of its parameters, i.e. `Handle<A>`
     pub type_info: &'static TypeInfo,
+    /// The namespace of the generic type, i.e. `asset` for `Handle`
+    pub namespace: &'static str,
     /// The names of the parameters, in order
     pub params: Vec<&'static str>,
     /// The documentation of the generic type
@@ -162,10 +164,12 @@ pub struct AppGenericTypes(pub Vec<GenericTypeDeclaration>);
 pub trait GenericTypesAppExt {
     /// Declares a generic type, so its instantiations are documented as such instead of as unrelated types.
     ///
-    /// `G` is the generic type instantiated with [`A`] in place of its parameter, i.e. `Time<A>`, and `params` names
-    /// the parameters in order, i.e. `["T"]`.
+    /// `G` is the generic type instantiated with [`A`] in place of its parameter, i.e. `Time<A>`, `namespace` is the one
+    /// of its instantiations, i.e. `time`, and `params` names the parameters in order, i.e. `["T"]`.
+    /// Also registers [`A`], so reflection can describe the uses of the parameter which only expose type ids, i.e. `HashSet<A>`.
     fn register_generic_type<G: Typed>(
         &mut self,
+        namespace: &'static str,
         params: &[&'static str],
         documentation: &'static str,
     ) -> &mut Self;
@@ -174,14 +178,17 @@ pub trait GenericTypesAppExt {
 impl GenericTypesAppExt for App {
     fn register_generic_type<G: Typed>(
         &mut self,
+        namespace: &'static str,
         params: &[&'static str],
         documentation: &'static str,
     ) -> &mut Self {
+        self.register_type::<A>();
         self.world_mut()
             .get_resource_or_init::<AppGenericTypes>()
             .0
             .push(GenericTypeDeclaration {
                 type_info: G::type_info(),
+                namespace,
                 params: params.to_vec(),
                 documentation,
             });
