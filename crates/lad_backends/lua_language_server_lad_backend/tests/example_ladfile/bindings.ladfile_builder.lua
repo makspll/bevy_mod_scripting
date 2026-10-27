@@ -85,6 +85,7 @@ local UnitType = {}
 
 ---@class ladfile_builder.OpaqueGenericType<T> : ReflectReference
 --- I am the documentation of a generic type.
+---@field  value? T
 
 
 
