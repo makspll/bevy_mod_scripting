@@ -627,41 +627,6 @@
         "is_reflect": true,
         "mapped_to_primitive_kind": null
       }
-    },
-    "ladfile_builder::test::OpaqueGenericType<usize>": {
-      "identifier": "OpaqueGenericType",
-      "crate": "ladfile_builder",
-      "path": "ladfile_builder::test::OpaqueGenericType<usize>",
-      "namespace": "ladfile_builder",
-      "generics": [
-        {
-          "type_id": "Usize",
-          "name": "T"
-        }
-      ],
-      "generic_type": "ladfile_builder::test::OpaqueGenericType",
-      "documentation": " I am a generic type, which the builder is told about so my layout is described in terms of my parameter",
-      "layout": {
-        "kind": "Struct",
-        "name": "OpaqueGenericType",
-        "fields": [
-          {
-            "name": "value",
-            "type": {
-              "primitive": "usize"
-            },
-            "has_default": true
-          }
-        ]
-      },
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null
-      }
     }
   },
   "generic_types": {
@@ -685,6 +650,21 @@
           }
         ]
       },
+      "instantiations": [
+        {
+          "args": [
+            {
+              "primitive": "usize"
+            }
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null
+          }
+        }
+      ],
       "documentation": "I am the documentation of a generic type."
     }
   },

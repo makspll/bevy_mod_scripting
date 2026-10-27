@@ -77,14 +77,17 @@ impl LadFile {
         }
     }
 
-    /// The generic type and the arguments of a type which is an instantiation of one, i.e. `Handle` and `[Image]` for `Handle<Image>`.
-    pub fn get_generic_instance(
+    /// The instantiation of a generic type with the given arguments, i.e. `Handle<Image>`.
+    pub fn get_instantiation(
         &self,
-        type_id: &LadTypeId,
-    ) -> Option<(&LadGenericType, &[LadGeneric])> {
-        let lad_type = self.types.get(type_id)?;
-        let generic_type = self.generic_types.get(lad_type.generic_type.as_ref()?)?;
-        Some((generic_type, &lad_type.generics))
+        generic_type: &LadTypeId,
+        args: &[LadTypeKind],
+    ) -> Option<&LadInstantiation> {
+        self.generic_types
+            .get(generic_type)?
+            .instantiations
+            .iter()
+            .find(|instantiation| instantiation.args == args)
     }
 
     /// Retrieves the best type identifier suitable for a type id.
@@ -137,13 +140,6 @@ impl LadFile {
         self.types.get(type_id).map(|t| &t.metadata)
     }
 
-    /// The types documented on their own, i.e. without the instantiations of generic types, which are documented by the generic type.
-    pub fn documented_types(&self) -> impl Iterator<Item = (&LadTypeId, &LadTypeDefinition)> {
-        self.types
-            .iter()
-            .filter(|(_, lad_type)| lad_type.generic_type.is_none())
-    }
-
     /// The builtins, the functions every script sees as globals, i.e. `import_namespace`.
     pub fn builtin_functions(&self) -> impl Iterator<Item = (&LadFunctionId, &LadFunction)> {
         self.functions
@@ -159,7 +155,9 @@ impl LadFile {
         self.functions
             .values()
             .filter_map(move |function| match &function.namespace {
-                LadFunctionNamespace::Variant { type_id, variant } if type_id == enum_id => {
+                LadFunctionNamespace::Variant { type_id, variant }
+                    if type_id.type_id() == Some(enum_id) =>
+                {
                     Some((variant.as_ref(), function))
                 }
                 _ => None,
@@ -276,8 +274,8 @@ impl LadFunction {
 #[serde(untagged)]
 /// A function namespace used in a LAD file.
 pub enum LadFunctionNamespace {
-    /// A function in a type's namespace
-    Type(LadTypeId),
+    /// A function in a type's namespace, a type of the file or an instantiation of a generic type, see [`LadInstantiation`]
+    Type(LadNamedType),
     /// A builtin, one of the few functions every script has as a global, i.e. `import_namespace`
     Global,
     /// A function in a script namespace, i.e. `import_namespace("bms").log_info`
@@ -291,7 +289,7 @@ pub enum LadFunctionNamespace {
     Variant {
         /// The enum
         #[serde(rename = "type")]
-        type_id: LadTypeId,
+        type_id: LadNamedType,
         /// The name of the variant
         variant: Cow<'static, str>,
     },
@@ -370,11 +368,11 @@ pub enum LadTypeKind {
     Unknown(LadTypeId),
     /// A table of the fields of a type, keyed by field name or index, i.e. the payload of a constructor.
     ///
-    /// The fields themselves are described by the type's layout.
+    /// The fields themselves are described by the type's layout, or for an instantiation of a generic type, the generic type's.
     Fields {
         /// The type the fields belong to
         #[serde(rename = "type")]
-        type_id: LadTypeId,
+        of: LadNamedType,
         /// For enums, the variant the fields belong to
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
@@ -439,13 +437,13 @@ impl LadTypeKind {
             LadTypeKind::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
-            LadTypeKind::Ref(named) | LadTypeKind::Mut(named) | LadTypeKind::Val(named) => {
-                named.args().iter().collect()
-            }
+            LadTypeKind::Ref(named)
+            | LadTypeKind::Mut(named)
+            | LadTypeKind::Val(named)
+            | LadTypeKind::Fields { of: named, .. } => named.args().iter().collect(),
             LadTypeKind::Unknown(_)
             | LadTypeKind::Primitive(_)
             | LadTypeKind::UntypedTuple
-            | LadTypeKind::Fields { .. }
             | LadTypeKind::Param(_) => vec![],
         }
     }
@@ -466,7 +464,11 @@ impl LadTypeKind {
                 .collect(),
             LadTypeKind::Ref(LadNamedType::Generic { args, .. })
             | LadTypeKind::Mut(LadNamedType::Generic { args, .. })
-            | LadTypeKind::Val(LadNamedType::Generic { args, .. }) => args.iter_mut().collect(),
+            | LadTypeKind::Val(LadNamedType::Generic { args, .. })
+            | LadTypeKind::Fields {
+                of: LadNamedType::Generic { args, .. },
+                ..
+            } => args.iter_mut().collect(),
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
             | LadTypeKind::Val(_)
@@ -612,8 +614,8 @@ pub trait ArgumentVisitor {
     /// One of many types
     fn visit_union(&mut self, inner: &[LadTypeKind]) -> Self::Output;
 
-    /// A table of the fields of a type, or of a variant of an enum
-    fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) -> Self::Output;
+    /// A table of the fields of a type (or instantiation of a generic type), or of a variant of an enum
+    fn visit_fields(&mut self, of: &LadNamedType, variant: Option<&str>) -> Self::Output;
 
     /// A value of the type a generic parameter stands for
     fn visit_param(&mut self, param: &str) -> Self::Output;
@@ -636,9 +638,7 @@ pub trait ArgumentVisitor {
             LadTypeKind::UntypedTuple => self.visit_untyped_tuple(),
             LadTypeKind::TupleWithRest { head, rest } => self.visit_tuple_with_rest(head, rest),
             LadTypeKind::Union(inner) => self.visit_union(inner),
-            LadTypeKind::Fields { type_id, variant } => {
-                self.visit_fields(type_id, variant.as_deref())
-            }
+            LadTypeKind::Fields { of, variant } => self.visit_fields(of, variant.as_deref()),
             LadTypeKind::Param(param) => self.visit_param(param),
         }
     }
@@ -744,10 +744,6 @@ pub struct LadTypeDefinition {
     /// Meaning that they are always assigned a concrete type.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub generics: Vec<LadGeneric>,
-
-    /// The generic type this type is an instantiation of, see [`LadFile::generic_types`].
-    #[serde(skip_serializing_if = "Option::is_none", default)]
-    pub generic_type: Option<LadTypeId>,
 
     /// The documentation describing the type.
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -977,7 +973,8 @@ impl LadTypeDefinition {
 
 /// A generic type used in a LAD file, i.e. `Handle<A>`.
 ///
-/// Its instantiations are types of their own, which point back to it, see [`LadTypeDefinition::generic_type`].
+/// Its instantiations aren't types of the file, they are named by the generic type applied to arguments
+/// (see [`LadNamedType::Generic`]) and recorded here, see [`Self::instantiations`].
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LadGenericType {
     /// The identifier of the type, without generics, i.e. `Handle`.
@@ -1004,9 +1001,25 @@ pub struct LadGenericType {
     #[serde(default = "opaque_layout", skip_serializing_if = "is_opaque")]
     pub layout: LadTypeLayout,
 
+    /// The instantiations of the type, i.e. `Handle<Image>`, see [`LadFile::get_instantiation`].
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub instantiations: Vec<LadInstantiation>,
+
     /// The documentation describing the type.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub documentation: Option<String>,
+}
+
+/// An instantiation of a generic type, i.e. `Handle<Image>`, with what is specific to it.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LadInstantiation {
+    /// The arguments, in the order of the parameters of the generic type
+    pub args: Vec<LadTypeKind>,
+    /// The functions on the instantiation, i.e. its constructor, see [`LadFunctionNamespace::Type`]
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub associated_functions: Vec<LadFunctionId>,
+    /// Additional metadata about the instantiation, i.e. whether it is a component
+    pub metadata: LadTypeMetadata,
 }
 
 impl LadGenericType {

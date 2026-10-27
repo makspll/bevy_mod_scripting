@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use ladfile::{ArgumentVisitor, LadTypeId, LadVisitable};
+use ladfile::{ArgumentVisitor, LadVisitable};
 
 use crate::markdown::MarkdownBuilder;
 
@@ -79,13 +79,9 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         let type_identifier = self
             .ladfile
             .get_type_identifier(type_id, self.raw_type_id_replacement);
+        // instantiations of undeclared generic types, declared ones are named by their generic type, see `visit_generic`
         if let Some(generics) = generics {
-            // instantiations of generic types link to the page of the generic type
-            if let Some((generic_type, _)) = self.ladfile.get_generic_instance(type_id) {
-                self.link_or_text(type_identifier.to_string(), generic_type.name_with_params());
-            } else {
-                self.buffer.text(type_identifier);
-            }
+            self.buffer.text(type_identifier);
             self.buffer.text('<');
             for (i, generic) in generics.iter().enumerate() {
                 if i > 0 {
@@ -177,9 +173,9 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text("]");
     }
 
-    fn visit_fields(&mut self, type_id: &LadTypeId, variant: Option<&str>) {
+    fn visit_fields(&mut self, of: &ladfile::LadNamedType, variant: Option<&str>) {
         self.buffer.text("Fields<");
-        self.visit_type_id(type_id);
+        self.visit_named(of);
         if let Some(variant) = variant {
             self.buffer.text("::");
             self.buffer.text(variant);
@@ -214,7 +210,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
 
 #[cfg(test)]
 mod test {
-    use ladfile::{LadTypeKind, ReflectionPrimitiveKind};
+    use ladfile::{LadTypeId, LadTypeKind, ReflectionPrimitiveKind};
 
     use super::*;
 
@@ -268,16 +264,18 @@ mod test {
     #[test]
     fn test_visit_generic_instantiation_links_the_generic_type() {
         let ladfile = setup_ladfile();
-        let instantiation =
-            LadTypeId::new_string_id("ladfile_builder::test::OpaqueGenericType<usize>".into());
         let generic_type =
             LadTypeId::new_string_id("ladfile_builder::test::OpaqueGenericType".into());
+        let instantiation = LadTypeKind::Val(ladfile::LadNamedType::Generic {
+            generic_type: generic_type.clone(),
+            args: vec![LadTypeKind::Primitive(ReflectionPrimitiveKind::Usize)],
+        });
 
         // the instantiation links to the generic type, and its arguments to their own pages
         let mut visitor = MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |str| {
             PathBuf::from("root\\asd").join(str)
         });
-        visitor.visit_type_id(&instantiation);
+        visitor.visit(&instantiation);
         assert_eq!(
             visitor.buffer.build(),
             "[OpaqueGenericType](root/asd/OpaqueGenericType<T>)<[Usize](root/asd/Usize)>"
