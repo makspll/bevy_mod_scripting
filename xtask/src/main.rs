@@ -283,7 +283,11 @@ impl App {
             init_args: self.subcmd.ci_init_args(),
             cache_key: format!("{}{target}-{os}", self.subcmd.as_ref().to_lowercase()),
             run_on_forks: !matches!(self.subcmd, Xtasks::Bencher { .. } | Xtasks::Bench { .. }),
-            requires_gpu: matches!(self.subcmd, Xtasks::Docs { .. }),
+            // both run the docgen example
+            requires_gpu: matches!(
+                self.subcmd,
+                Xtasks::Docs { .. } | Xtasks::CheckLuaTypes { .. }
+            ),
             requires_android_emulator: matches!(
                 self.subcmd,
                 Xtasks::Test {
