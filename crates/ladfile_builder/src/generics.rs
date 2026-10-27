@@ -5,9 +5,9 @@
 
 use std::any::TypeId;
 
-use bevy_mod_scripting_bindings::{ScriptNamespace, function::generics::A};
+use bevy_mod_scripting_bindings::function::generics::A;
 use bevy_platform::collections::HashSet;
-use bevy_reflect::{GenericInfo, TypeInfo, TypeRegistration, Typed};
+use bevy_reflect::{GenericInfo, TypeInfo, Typed};
 use ladfile::*;
 
 use crate::LadFileBuilder;
@@ -18,29 +18,11 @@ pub(crate) fn is_param_marker(type_id: TypeId) -> bool {
 }
 
 /// The parameter a marker stands for, named by the marker's path (which no declared name is) until
-/// [`LadFileBuilder::generic_layout`] names it as declared.
+/// [`LadFileBuilder::make_or_get_generic_layout`] names it as declared.
 pub(crate) fn marker_param(type_path: &str) -> LadNamedType {
     LadNamedType::Param {
         param: type_path.to_owned(),
     }
-}
-
-/// Whether the type is a marker standing for a generic parameter, or uses one, i.e. `Vec<A>` or `Arc<A>`.
-///
-/// Reflection only gives the arguments of generic types as type ids, so a marker nested in one, as in `Arc<Vec<A>>`, isn't found.
-pub(crate) fn mentions_param_marker(type_info: &TypeInfo) -> bool {
-    let mentions = |info: Option<&TypeInfo>| info.is_some_and(mentions_param_marker);
-    is_param_marker(type_info.type_id())
-        || type_info
-            .generics()
-            .iter()
-            .any(|generic| is_param_marker(generic.type_id()))
-        || match type_info {
-            TypeInfo::List(list) => mentions(list.item_info()),
-            TypeInfo::Array(array) => mentions(array.item_info()),
-            TypeInfo::Map(map) => mentions(map.key_info()) || mentions(map.value_info()),
-            _ => false,
-        }
 }
 
 /// The named type the kind itself mentions, i.e. `Image` in `&Image`, `Fields<Image>` or `Type<Image>`.
@@ -279,12 +261,14 @@ pub(crate) struct GenericTypeSpec {
     identifier: String,
     /// The crate defining the type
     crate_: Option<String>,
+    /// The namespace of the type, the one of its instantiations
+    namespace: String,
     /// The names of the parameters
     params: Vec<String>,
     documentation: String,
     /// The type instantiated with markers, which the layout is described from
     type_info: &'static TypeInfo,
-    /// The layout, in terms of the parameters, described once all generic types are declared, see [`LadFileBuilder::generic_layout`]
+    /// The layout, in terms of the parameters, described once all generic types are declared, see [`LadFileBuilder::make_or_get_generic_layout`]
     layout: Option<LadTypeLayout>,
 }
 
@@ -298,8 +282,8 @@ impl GenericTypeSpec {
 impl LadFileBuilder<'_> {
     /// Declares a generic type, so its instantiations are documented as such instead of as unrelated types.
     ///
-    /// `G` is the generic type instantiated with a marker in place of each parameter, i.e. `Handle<A>`, and `params` names
-    /// the parameters in order. Reflection can't tell which fields of an instantiation like `Time<Virtual>` are of a parameter's
+    /// `G` is the generic type instantiated with a marker in place of each parameter, i.e. `Handle<A>`, `namespace` is the
+    /// one of its instantiations, i.e. `asset`, and `params` names the parameters in order. Reflection can't tell which fields of an instantiation like `Time<Virtual>` are of a parameter's
     /// type, but in `Time<A>` those are exactly the fields of type `A`, so the layout is described from `G`.
     /// Instantiations in the type registry are matched by path and number of parameters.
     ///
@@ -309,10 +293,11 @@ impl LadFileBuilder<'_> {
     /// If a parameter of `G` is not instantiated with a marker, two share one, or `params` doesn't name each of them.
     pub fn add_generic_type<G: Typed>(
         &mut self,
+        namespace: &str,
         params: &[&str],
         documentation: &str,
     ) -> Result<&mut Self, String> {
-        self.add_generic_type_info(G::type_info(), params, documentation)
+        self.add_generic_type_info(G::type_info(), namespace, params, documentation)
     }
 
     /// The same as [`Self::add_generic_type`], for a generic type known by its type information, i.e. from [`bevy_mod_scripting_bindings::function::generics::AppGenericTypes`].
@@ -322,6 +307,7 @@ impl LadFileBuilder<'_> {
     pub fn add_generic_type_info(
         &mut self,
         type_info: &'static TypeInfo,
+        namespace: &str,
         params: &[&str],
         documentation: &str,
     ) -> Result<&mut Self, String> {
@@ -357,6 +343,7 @@ impl LadFileBuilder<'_> {
                 .unwrap_or_default()
                 .to_owned(),
             crate_: type_info.type_path_table().crate_name().map(str::to_owned),
+            namespace: namespace.to_owned(),
             params: params.iter().map(|&name| name.to_owned()).collect(),
             documentation: documentation.to_owned(),
             type_info,
@@ -370,8 +357,8 @@ impl LadFileBuilder<'_> {
         Ok(self)
     }
 
-    /// The layout of the declared generic type, described from its instantiation with markers the first time it's needed.
-    pub(crate) fn generic_layout(&mut self, index: usize) -> LadTypeLayout {
+    /// The layout of the declared generic type, described from its instantiation with markers and cached the first time it's needed.
+    pub(crate) fn make_or_get_generic_layout(&mut self, index: usize) -> LadTypeLayout {
         if let Some(layout) = &self.generic_types[index].layout {
             return layout.clone();
         }
@@ -393,37 +380,15 @@ impl LadFileBuilder<'_> {
         layout
     }
 
-    /// The declared generic type as documented in the file.
-    ///
-    /// Its namespace is the one of its instantiations, or else of the other types of its crate, which bindings put
-    /// in namespaces by crate, so it doesn't depend on which instantiations the file has.
-    fn lad_generic_type(&mut self, index: usize) -> LadGenericType {
-        let layout = self.generic_layout(index);
+    /// The declared generic type as documented in the file, see [`Self::make_or_get_generic_layout`].
+    fn make_lad_generic_type(&mut self, index: usize) -> LadGenericType {
+        let layout = self.make_or_get_generic_layout(index);
         let spec = &self.generic_types[index];
-        let in_crate = || {
-            self.type_registry.iter().filter(|registration| {
-                registration.type_info().type_path_table().crate_name() == spec.crate_.as_deref()
-            })
-        };
-        let namespace_of = |registration: &TypeRegistration| {
-            registration
-                .data::<ScriptNamespace>()
-                .map(|namespace| namespace.0.to_string())
-        };
-        let namespace = in_crate()
-            .filter(|registration| {
-                self.declared_generic_index(registration.type_info()) == Some(index)
-            })
-            .filter_map(namespace_of)
-            .min()
-            .or_else(|| in_crate().filter_map(namespace_of).min())
-            .or_else(|| spec.crate_.clone())
-            .unwrap_or_default();
         LadGenericType {
             identifier: spec.identifier.clone(),
             crate_: spec.crate_.clone(),
             path: spec.path.clone(),
-            namespace,
+            namespace: spec.namespace.clone(),
             params: spec.params.clone(),
             documentation: Some(spec.documentation.clone()),
             layout,
@@ -434,10 +399,10 @@ impl LadFileBuilder<'_> {
 
     /// If the type is an instantiation of a declared generic type, adds the generic type to the file and returns its id.
     pub(crate) fn add_generic_type_of(&mut self, type_info: &TypeInfo) -> Option<LadTypeId> {
-        let index = self.declared_generic_index(type_info)?;
+        let index = self.matches_against_declared_generic_shape(type_info)?;
         let id = self.generic_types[index].id();
         if !self.file.generic_types.contains_key(&id) {
-            let generic_type = self.lad_generic_type(index);
+            let generic_type = self.make_lad_generic_type(index);
             self.file.generic_types.insert(id.clone(), generic_type);
         }
         Some(id)
@@ -467,7 +432,10 @@ impl LadFileBuilder<'_> {
     }
 
     /// The index of the declared generic type the type is an instantiation of, matched by path and number of parameters
-    pub(crate) fn declared_generic_index(&self, type_info: &TypeInfo) -> Option<usize> {
+    pub(crate) fn matches_against_declared_generic_shape(
+        &self,
+        type_info: &TypeInfo,
+    ) -> Option<usize> {
         let path = type_info.type_path_table().path();
         let generic_path = path.split('<').next().unwrap_or(path);
         self.generic_types.iter().position(|spec| {
@@ -475,25 +443,13 @@ impl LadFileBuilder<'_> {
         })
     }
 
-    /// The id of the declared generic type the type is an instantiation of, see [`Self::declared_generic_index`]
-    pub(crate) fn declared_generic_type(&self, type_info: &TypeInfo) -> Option<LadTypeId> {
-        self.declared_generic_index(type_info)
+    /// The id of the declared generic type the type is an instantiation of, see [`Self::matches_against_declared_generic_shape`]
+    pub(crate) fn matches_against_declared_generic_type(
+        &self,
+        type_info: &TypeInfo,
+    ) -> Option<LadTypeId> {
+        self.matches_against_declared_generic_shape(type_info)
             .map(|index| self.generic_types[index].id())
-    }
-
-    /// The layout of an instantiation of a declared generic type as its declaration describes it, i.e. `{ context: Virtual }`
-    /// for `Time<Virtual>`. It should be the layout reflection gives the instantiation.
-    pub(crate) fn instantiated_layout(&mut self, type_info: &TypeInfo) -> Option<LadTypeLayout> {
-        let index = self.declared_generic_index(type_info)?;
-        let args = type_info.generics();
-        let mut layout = self.generic_layout(index);
-        let params = self.generic_types[index].params.clone();
-        // the parameters are in the order of the arguments
-        for (param, arg) in params.iter().zip(args.iter()) {
-            let arg = self.lad_generic_arg_kind(arg, false);
-            layout.replace_param(param, &arg);
-        }
-        Some(layout)
     }
 
     /// The kind of an argument of a generic type, as a field of its type would be described, or the parameter a marker stands for.
@@ -506,10 +462,12 @@ impl LadFileBuilder<'_> {
         if is_param_marker(arg.type_id()) {
             return LadTypeKind::Val(marker_param(arg.type_path()));
         }
-        if register && let Some(type_info) = self.type_registry.get_type_info(arg.type_id()) {
+        // reflection only gives the arguments as type ids
+        let type_info = self.type_registry.get_type_info(arg.type_id());
+        if register && let Some(type_info) = type_info {
             self.add_type_info(type_info);
         }
-        self.lad_type_kind_from_type_id(arg.type_id())
+        self.lad_field_kind(arg.type_id(), type_info)
     }
 
     /// Adds the declared generic types the file names in layouts and signatures but has no instantiations of,
@@ -536,7 +494,7 @@ impl LadFileBuilder<'_> {
             let Some(index) = self.generic_types.iter().position(|spec| spec.id() == id) else {
                 continue;
             };
-            let generic_type = self.lad_generic_type(index);
+            let generic_type = self.make_lad_generic_type(index);
             named_generic_types_in_layout(&generic_type.layout, &mut named);
             file.generic_types.insert(id, generic_type);
         }

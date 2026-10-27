@@ -49,13 +49,23 @@ impl Plugin for BevyAssetBindingsPlugin {
             bevy_asset::AssetTrackingSystems,
         )
         .register_script_system_set("asset", "AssetEventSystems", bevy_asset::AssetEventSystems)
-        .register_generic_type::<bevy_asset::Handle<A>>(&["A"], "A handle to an asset of type `A`.")
-        .register_generic_type::<bevy_asset::AssetId<A>>(&["A"], "The id of an asset of type `A`.")
+        .register_generic_type::<bevy_asset::Handle<A>>(
+            "asset",
+            &["A"],
+            "A handle to an asset of type `A`.",
+        )
+        .register_generic_type::<bevy_asset::AssetId<A>>(
+            "asset",
+            &["A"],
+            "The id of an asset of type `A`.",
+        )
         .register_generic_type::<bevy_asset::HandleTemplate<A>>(
+            "asset",
             &["T"],
             "A template for a handle to an asset of type `T`.",
         )
         .register_generic_type::<bevy_asset::ArcMutexValue<A>>(
+            "asset",
             &["T"],
             "A shared value of an asset of type `T`.",
         );

@@ -30,6 +30,7 @@ impl Plugin for BevyTimeBindingsPlugin {
         };
         app.register_script_system_set("time", "TimeSystems", bevy_time::TimeSystems)
             .register_generic_type::<bevy_time::Time<A>>(
+                "time",
                 &["T"],
                 "A clock, `T` is the kind of clock, i.e. `Virtual` or `Fixed`.",
             );
