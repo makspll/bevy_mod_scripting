@@ -341,6 +341,12 @@ macro_rules! impl_test_component_ids {
             )*
         }
 
+        /// Registers the types of the test components and resources, without touching a world.
+        pub(crate) fn register_all_types(registry: &mut TypeRegistry) {
+            $(registry.register::<$comp_type>();)*
+            $(registry.register::<$res_type>();)*
+        }
+
         impl EnumerateTestComponents for World {
             fn enumerate_test_components() -> Vec<(&'static str, ComponentId, Option<Entity>)> {
                 vec![
@@ -419,6 +425,23 @@ fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init:
     type_registry_guard.register::<TestBundle>();
     type_registry_guard.register::<TestNestedBundle>();
     init(world, &mut type_registry_guard);
+}
+
+/// Registers the test types (components, resources, bundles and the asset) on an app that already has the asset plugin,
+/// for tooling that only needs to know about them, i.e. generating declarations. Does not set up the test world.
+pub fn register_test_types(app: &mut App) {
+    {
+        let registry = app
+            .world_mut()
+            .get_resource_or_init::<AppTypeRegistry>()
+            .clone();
+        let mut registry = registry.0.write();
+        register_all_types(&mut registry);
+        registry.register::<TestBundle>();
+        registry.register::<TestNestedBundle>();
+    }
+    app.init_asset::<TestAsset>();
+    app.register_asset_reflect::<TestAsset>();
 }
 
 fn setup_app<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F) -> App {

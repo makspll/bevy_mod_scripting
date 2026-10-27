@@ -100,7 +100,14 @@ fn variant_modules(
             namespace: generic_type.namespace.clone(),
             class: Some(LuaClass {
                 name: variant_class,
-                parents: vec![LuaType::Alias(enum_variant_class(ladfile))],
+                // a variant is accepted wherever its enum is
+                parents: vec![
+                    LuaType::Generic {
+                        name: name.to_string(),
+                        args: params.clone(),
+                    },
+                    LuaType::Alias(enum_variant_class(ladfile)),
+                ],
                 fields: function_fields(ladfile, variant_functions),
                 generics: generic_type.params.clone(),
                 documentation: Some(format!("The `{variant}` variant of `{name}`.")),
