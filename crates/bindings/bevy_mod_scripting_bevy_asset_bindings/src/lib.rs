@@ -6,7 +6,7 @@
 use std::any::TypeId;
 
 use bevy_app::{App, Plugin};
-use bevy_asset::{AssetServer, LoadState, ReflectAsset, ReflectHandle, UntypedHandle};
+use bevy_asset::{AssetServer, Handle, LoadState, ReflectAsset, ReflectHandle, UntypedHandle};
 // `script_bindings` expects these in scope
 use bevy_ecs::world::World;
 use bevy_mod_scripting_bindings::{
@@ -15,6 +15,7 @@ use bevy_mod_scripting_bindings::{
     function::{
         bound::{BoundHandle, BoundValue},
         from::V,
+        generics::{A, TypeOf, ValueOf},
         script_function::FunctionCallContext,
     },
 };
@@ -229,9 +230,9 @@ impl World {
     fn load_asset(
         ctxt: FunctionCallContext,
         path: String,
-        asset_type: V<ScriptTypeRegistration>,
-    ) -> Result<ReflectReference, InteropError> {
-        load(&ctxt.world()?, asset_type.type_id(), path)
+        asset_type: TypeOf<V<ScriptTypeRegistration>, A>,
+    ) -> Result<ValueOf<Handle<A>>, InteropError> {
+        load(&ctxt.world()?, asset_type.type_id(), path).map(ValueOf::new)
     }
 
     /// Whether the asset and all of its dependencies are loaded.
@@ -243,7 +244,7 @@ impl World {
     /// * `loaded`: Whether the asset and its dependencies are loaded.
     fn is_loaded(
         ctxt: FunctionCallContext,
-        handle: ReflectReference,
+        handle: ValueOf<Handle<A>>,
     ) -> Result<bool, InteropError> {
         let world = ctxt.world()?;
         let handle = handle.try_untyped_asset_handle(world.clone())?;
@@ -261,7 +262,7 @@ impl World {
     /// * `state`: The name of the loading state.
     fn load_state(
         ctxt: FunctionCallContext,
-        handle: ReflectReference,
+        handle: ValueOf<Handle<A>>,
     ) -> Result<String, InteropError> {
         let world = ctxt.world()?;
         let handle = handle.try_untyped_asset_handle(world.clone())?;
@@ -283,7 +284,7 @@ impl World {
     /// * `handle`: The handle to the asset.
     /// Returns:
     /// * `path`: The asset path, if known.
-    fn asset_path(ctxt: FunctionCallContext, handle: ReflectReference) -> Option<String> {
+    fn asset_path(ctxt: FunctionCallContext, handle: ValueOf<Handle<A>>) -> Option<String> {
         let world = ctxt.world().ok()?;
         let handle = handle.try_untyped_asset_handle(world.clone()).ok()?;
         world
@@ -303,8 +304,8 @@ impl World {
     /// * `handle`: A handle to the new asset.
     fn add_asset(
         ctxt: FunctionCallContext,
-        value: ReflectReference,
-    ) -> Result<ReflectReference, InteropError> {
-        add(&ctxt.world()?, value)
+        value: ValueOf<A>,
+    ) -> Result<ValueOf<Handle<A>>, InteropError> {
+        add(&ctxt.world()?, value.into_inner()).map(ValueOf::new)
     }
 }

@@ -657,12 +657,14 @@ mod test {
                 1usize
             },
         );
-        // a generic function, over the markers of its signature
+        // a generic function, over the markers of its signature, which also uses one as an argument of a generic type
         use bevy_mod_scripting_bindings::function::generics::{TypeOf, ValueOf};
-        NamespaceBuilder::<OtherAsset>::new(app.world_mut())
-            .register("get", |_: TypeOf<V<OtherAsset>, A>| -> Option<ValueOf<A>> {
-                None
-            });
+        NamespaceBuilder::<OtherAsset>::new(app.world_mut()).register(
+            "get",
+            |_: TypeOf<V<OtherAsset>, A>,
+             _: ValueOf<bevy_asset::Handle<A>>|
+             -> Option<ValueOf<A>> { None },
+        );
         let file = generate_from(app);
 
         assert_eq!(file.generic_types.len(), 1, "{:?}", file.generic_types);
@@ -739,6 +741,15 @@ mod test {
                 erased: Box::new(LadTypeKind::Val(type_id(&file, "OtherAsset").into())),
             }
         );
+        // and its handle is the generic type applied to the parameter, which isn't recorded as an instantiation
+        assert_eq!(
+            get.arguments[1].kind,
+            LadTypeKind::Val(ladfile::LadNamedType::Generic {
+                generic_type: generic_id.clone(),
+                args: vec![LadTypeKind::Val(param())],
+            })
+        );
+        assert_eq!(file.generic_types[generic_id].instantiations.len(), 2);
         assert_eq!(
             get.return_type.kind,
             LadTypeKind::Option(Box::new(LadTypeKind::Val(param())))

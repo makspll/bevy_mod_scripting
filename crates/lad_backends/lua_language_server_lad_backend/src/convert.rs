@@ -1,7 +1,7 @@
 mod generics;
 
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
-use generics::{erase_generics, generic_type_modules, instantiation_class_name};
+use generics::{erase_generics, generic_type_modules, instantiation_class_name, mentions_generic};
 use indexmap::{IndexMap, IndexSet};
 use ladfile::{
     ArgumentVisitor, LadFile, LadFunction, LadNamedType, LadTypeId, LadTypeKind,
@@ -479,15 +479,13 @@ pub fn lad_function_to_lua_function(
     };
     let (params, returns) = signature(false)?;
 
-    // the types a generic function takes can also be passed untyped, i.e. a registration found by name,
-    // which LuaLS can only express as an overload, as overloads can't be generic
-    let mut takes_types = false;
-    for argument in &function.arguments {
-        argument
-            .kind
-            .for_each(&mut |kind| takes_types |= matches!(kind, LadTypeKind::Type { .. }));
-    }
-    let overloads = match takes_types {
+    // what a generic function takes can also be passed untyped, i.e. a registration found by name or a handle of
+    // unknown type, which LuaLS can only express as an overload, as overloads can't be generic
+    let takes_generics = function
+        .arguments
+        .iter()
+        .any(|argument| mentions_generic(&argument.kind, &function.generics));
+    let overloads = match takes_generics {
         true => {
             let (params, returns) = signature(true)?;
             vec![FunctionSignature {
@@ -1580,7 +1578,7 @@ mod test {
             of_plain.clone(),
             LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool),
         );
-        // and a generic function, generic over the type it is given
+        // and a generic function, generic over the type it is given, and over a generic type applied to it
         let a = || LadNamedType::Param { param: "A".into() };
         let get = LadFunctionId::new_string_id("get".into());
         file.functions.insert(
@@ -1589,13 +1587,16 @@ mod test {
                 namespace: LadFunctionNamespace::Type(plain.clone().into()),
                 identifier: "get".into(),
                 overload_index: None,
-                arguments: vec![arg(
-                    "registration",
-                    LadTypeKind::Type {
-                        of: a(),
-                        erased: Box::new(LadTypeKind::Val(plain.clone().into())),
-                    },
-                )],
+                arguments: vec![
+                    arg(
+                        "registration",
+                        LadTypeKind::Type {
+                            of: a(),
+                            erased: Box::new(LadTypeKind::Val(plain.clone().into())),
+                        },
+                    ),
+                    arg("handle", LadTypeKind::Val(applied(LadTypeKind::Val(a())))),
+                ],
                 return_type: arg(
                     "return",
                     LadTypeKind::Option(Box::new(LadTypeKind::Val(a()))),
@@ -1626,7 +1627,7 @@ mod test {
         // the generic function returns the type it is given, or a reference when given it untyped
         assert!(
             rendered.contains(
-                "---@generic A\n---@param registration A\n---@overload fun(registration: ladfile_builder.PlainStructType): ReflectReference | nil\n---@return A | nil\nfunction PlainStructType.get(registration) end"
+                "---@generic A\n---@param registration A\n---@param handle ladfile_builder.OpaqueGenericType<A>\n---@overload fun(registration: ladfile_builder.PlainStructType, handle: ReflectReference): ReflectReference | nil\n---@return A | nil\nfunction PlainStructType.get(registration,handle) end"
             ),
             "{rendered}"
         );
