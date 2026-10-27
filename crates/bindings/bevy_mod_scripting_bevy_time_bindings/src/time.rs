@@ -8,6 +8,7 @@ use bevy_mod_scripting_bindings::{
     InteropError, ReflectReference,
     function::{
         from::{M, R, V},
+        generics::ValueOf,
         script_function::FunctionCallContext,
     },
 };
@@ -159,23 +160,23 @@ impl Time<Fixed> {
 )]
 impl World {
     /// The default clock: in Update it advances by the frame time, in FixedUpdate by the fixed timestep.
-    fn time(ctxt: FunctionCallContext) -> Result<ReflectReference, InteropError> {
-        ReflectReference::new_resource_ref::<Time<()>>(ctxt.world()?)
+    fn time(ctxt: FunctionCallContext) -> Result<ValueOf<Time<()>>, InteropError> {
+        ReflectReference::new_resource_ref::<Time<()>>(ctxt.world()?).map(ValueOf::new)
     }
 
     /// The clock which can be paused and slowed down, it is the one games usually move objects with.
-    fn virtual_time(ctxt: FunctionCallContext) -> Result<ReflectReference, InteropError> {
-        ReflectReference::new_resource_ref::<Time<Virtual>>(ctxt.world()?)
+    fn virtual_time(ctxt: FunctionCallContext) -> Result<ValueOf<Time<Virtual>>, InteropError> {
+        ReflectReference::new_resource_ref::<Time<Virtual>>(ctxt.world()?).map(ValueOf::new)
     }
 
     /// The clock of the real world, which always advances at the system's pace.
-    fn real_time(ctxt: FunctionCallContext) -> Result<ReflectReference, InteropError> {
-        ReflectReference::new_resource_ref::<Time<Real>>(ctxt.world()?)
+    fn real_time(ctxt: FunctionCallContext) -> Result<ValueOf<Time<Real>>, InteropError> {
+        ReflectReference::new_resource_ref::<Time<Real>>(ctxt.world()?).map(ValueOf::new)
     }
 
     /// The clock of the fixed update step, which advances in steps of the fixed timestep.
-    fn fixed_time(ctxt: FunctionCallContext) -> Result<ReflectReference, InteropError> {
-        ReflectReference::new_resource_ref::<Time<Fixed>>(ctxt.world()?)
+    fn fixed_time(ctxt: FunctionCallContext) -> Result<ValueOf<Time<Fixed>>, InteropError> {
+        ReflectReference::new_resource_ref::<Time<Fixed>>(ctxt.world()?).map(ValueOf::new)
     }
 }
 
