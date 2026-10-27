@@ -12,7 +12,9 @@ use bevy_mod_scripting_bindings::{
     ScriptNamespaceMembers, StaticTypeRef,
     builtins::builtin_docs,
     docgen::typed_through::BoundPlaceholder,
-    function::{bound::is_asset_type, script_function::AppScriptFunctionRegistry},
+    function::{
+        bound::is_asset_type, generics::AppGenericTypes, script_function::AppScriptFunctionRegistry,
+    },
     into_through_type_info_with_registry,
 };
 use bevy_reflect::{TypeInfo, TypeRegistry};
@@ -115,11 +117,13 @@ impl ScriptingFilesGenerationPlugin {
     }
 }
 
-/// The function used to generate a ladfile from pre-populated type, function and namespace registries
+/// The function used to generate a ladfile from pre-populated type, function and namespace registries,
+/// and the declared generic types
 pub fn generate_lad_file(
     type_registry: &AppTypeRegistry,
     function_registry: &AppScriptFunctionRegistry,
     namespace_members: &AppScriptNamespaceMembers,
+    generic_types: &AppGenericTypes,
     settings: &LadFileSettings,
 ) {
     let type_registry = type_registry.read();
@@ -131,12 +135,16 @@ pub fn generate_lad_file(
         .set_sorted(true);
 
     // reflection only tells us the arguments of a generic type, so the generic types
-    // which scripts see have to be declared
-    if let Err(error) = builder.add_generic_type(
-        "bevy_asset::handle::Handle<$A>",
-        "A handle to an asset of type `A`.",
-    ) {
-        error!("Could not declare `Handle` as a generic type: {error}");
+    // which scripts see are declared, i.e. by the bindings of their crate
+    for declaration in &generic_types.0 {
+        if let Err(error) = builder.add_generic_type_info(
+            declaration.type_info,
+            declaration.namespace,
+            &declaration.params,
+            declaration.documentation,
+        ) {
+            error!("Could not declare a generic type: {error}");
+        }
     }
 
     add_world(&mut builder, &functions);
@@ -153,7 +161,7 @@ pub fn generate_lad_file(
     }
     add_namespace_members(&mut builder, &namespace_members.read());
     // `bms.world` is a type, reflection doesn't describe it, so it is documented as the world type
-    let world = LadTypeKind::Val(builder.lad_id_from_type_id(TypeId::of::<World>()));
+    let world = LadTypeKind::Val(builder.lad_id_from_type_id(TypeId::of::<World>()).into());
     builder.add_namespace_instance("bms", "world", world);
 
     write_lad_file(&builder.build(), settings);
@@ -282,12 +290,14 @@ fn generate_lad_file_system(
     type_registry: Res<AppTypeRegistry>,
     function_registry: Res<AppScriptFunctionRegistry>,
     namespace_members: Option<Res<AppScriptNamespaceMembers>>,
+    generic_types: Option<Res<AppGenericTypes>>,
     settings: Res<LadFileSettingsArc>,
 ) {
     generate_lad_file(
         &type_registry,
         &function_registry,
         &namespace_members.map(|m| m.clone()).unwrap_or_default(),
+        &generic_types.map(|g| g.clone()).unwrap_or_default(),
         &settings.0,
     );
 }
@@ -397,6 +407,7 @@ mod test {
             &world
                 .get_resource_or_init::<AppScriptNamespaceMembers>()
                 .clone(),
+            &world.get_resource_or_init::<AppGenericTypes>().clone(),
             &settings,
         );
         captured
@@ -479,7 +490,7 @@ mod test {
                     variant: None
                 }
             );
-            assert_eq!(new.return_type.kind, LadTypeKind::Val(type_id));
+            assert_eq!(new.return_type.kind, LadTypeKind::Val(type_id.into()));
         }
 
         // the original keeps its receiver, and is documented as it is at runtime
@@ -525,7 +536,10 @@ mod test {
                     variant: Some(variant.into())
                 }
             );
-            assert_eq!(new.return_type.kind, LadTypeKind::Val(enum_id.clone()));
+            assert_eq!(
+                new.return_type.kind,
+                LadTypeKind::Val(enum_id.clone().into())
+            );
         }
 
         // variants are not types, so their functions are not associated with the enum
@@ -550,7 +564,7 @@ mod test {
         let shared = function(&file, "TestEnum", "describe").unwrap();
         assert_eq!(
             shared.return_type.kind,
-            LadTypeKind::Val(type_id(&file, "TestEnum"))
+            LadTypeKind::Val(type_id(&file, "TestEnum").into())
         );
     }
 
@@ -610,16 +624,22 @@ mod test {
     }
 
     #[test]
-    fn handles_are_a_declared_generic_type() {
+    fn generic_types_declared_by_the_app_are_documented() {
+        use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
+
         let mut app = App::new();
         app.register_type::<TestAsset>()
             .register_type::<bevy_asset::Handle<TestAsset>>()
-            .register_type_data::<TestAsset, bevy_asset::ReflectAsset>();
+            .register_type_data::<TestAsset, bevy_asset::ReflectAsset>()
+            .register_generic_type::<bevy_asset::Handle<A>>("asset", &["A"], "A handle");
         let file = generate_from(app);
 
+        // the marker is registered, but not a type of its own
         assert_eq!(file.generic_types.len(), 1, "{:?}", file.generic_types);
+        assert!(file.types.values().all(|ty| ty.identifier != "A"));
         let (generic_id, generic_type) = file.generic_types.iter().next().unwrap();
         assert_eq!(generic_type.identifier, "Handle");
+        assert_eq!(generic_type.namespace, "asset");
         assert_eq!(generic_type.path, "bevy_asset::handle::Handle");
         assert_eq!(generic_type.params, ["A"]);
         assert_eq!(generic_type.name_with_params(), "Handle<A>");
