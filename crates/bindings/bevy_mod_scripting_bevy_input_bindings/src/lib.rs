@@ -50,10 +50,12 @@ impl Plugin for BevyInputBindingsPlugin {
         {
             use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
             app.register_generic_type::<bevy_input::ButtonInput<A>>(
+                "input",
                 &["T"],
                 "The pressed state of the inputs of type `T`, i.e. `KeyCode`.",
             )
             .register_generic_type::<bevy_input::Axis<A>>(
+                "input",
                 &["T"],
                 "The position of the inputs of type `T` on an axis, i.e. `GamepadInput`.",
             );

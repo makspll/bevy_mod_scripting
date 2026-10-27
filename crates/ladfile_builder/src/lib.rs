@@ -27,9 +27,7 @@ use bevy_reflect::{
     NamedField, ReflectRef, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo,
     std_traits::ReflectDefault,
 };
-use generics::{
-    GenericTypeSpec, field_kinds, is_param_marker, marker_param, mentions_param_marker,
-};
+use generics::{GenericTypeSpec, is_param_marker, marker_param};
 use ladfile::*;
 use std::{
     any::TypeId,
@@ -233,6 +231,10 @@ impl<'t> LadFileBuilder<'t> {
     /// Add a type definition to the LAD file.
     /// Will overwrite any existing type definitions with the same type id.
     pub fn add_type_info(&mut self, type_info: &TypeInfo) -> &mut Self {
+        // markers are registered to describe generic types, they are not types of their own
+        if is_param_marker(type_info.type_id()) {
+            return self;
+        }
         let registration = self.type_registry.get(type_info.type_id());
 
         let mut insignificance = default_importance();
@@ -275,15 +277,6 @@ impl<'t> LadFileBuilder<'t> {
 
         let type_id = self.lad_id_from_type_id(type_info.type_id());
         let generic_type = self.add_generic_type_of(type_info);
-        let layout = self.lad_layout_from_type_info(type_info);
-        // whether fields have defaults depends on the argument, so only their kinds are declared
-        if let Some(declared) = self.instantiated_layout(type_info)
-            && field_kinds(&declared) != field_kinds(&layout)
-        {
-            warn!(
-                "The layout of {type_id} is not the one its generic type declares, the declaration of the generic type may be wrong.\nreflected: {layout:?}\ndeclared: {declared:?}"
-            );
-        }
         let lad_type = LadTypeDefinition {
             identifier: type_info
                 .type_path_table()
@@ -304,7 +297,7 @@ impl<'t> LadFileBuilder<'t> {
             crate_,
             namespace,
             path: type_info.type_path_table().path().to_owned(),
-            layout,
+            layout: self.lad_layout_from_type_info(type_info),
             generated,
             insignificance,
             metadata: LadTypeMetadata {
@@ -916,41 +909,20 @@ impl<'t> LadFileBuilder<'t> {
         }
     }
 
-    /// Should only be used on fields, as those are never going to contain
-    /// untyped structures, i.e. are going to be fully reflectable
-    fn lad_type_kind_from_type_id(&mut self, type_id: TypeId) -> LadTypeKind {
-        if let Some(type_info) = self.type_registry.get_type_info(type_id) {
-            let through_type_info =
-                into_through_type_info_with_registry(type_info, self.type_registry);
-            self.lad_type_kind_from_through_type(&through_type_info)
-        } else {
-            LadTypeKind::Unknown(self.lad_id_from_type_id(type_id))
-        }
-    }
-
+    /// The kind of a field, or argument of a generic type, from its type information. Registering a type registers the
+    /// types of its fields, but not when the type is instantiated with a marker, i.e. `Vec<A>` in `Time<A>`, so the
+    /// registry isn't asked. Should only be used on those, as they are never going to contain untyped structures.
     fn lad_field_kind(
         &mut self,
         type_id: TypeId,
         type_info: Option<&'static TypeInfo>,
     ) -> LadTypeKind {
-        if let Some(type_info) = type_info.filter(|info| mentions_param_marker(info)) {
-            let kind = self.lad_type_kind_from_through_type(&into_through_type_info_with_registry(
-                type_info,
-                self.type_registry,
-            ));
-            let mut mentions_param = false;
-            kind.for_each(&mut |kind| mentions_param |= matches!(kind, LadTypeKind::Param(_)));
-            if mentions_param {
-                return kind;
-            }
-            // i.e. in an opaque type, or in a generic type the layout has no kind for
-            let type_path = type_info.type_path();
-            warn!(
-                "The type of a field, `{type_path}`, uses a parameter in a way the layout of the generic type can't describe, it is documented as unknown"
-            );
-            return LadTypeKind::Unknown(LadTypeId::new_string_id(type_path.to_owned().into()));
+        match type_info {
+            Some(type_info) => self.lad_type_kind_from_through_type(
+                &into_through_type_info_with_registry(type_info, self.type_registry),
+            ),
+            None => LadTypeKind::Unknown(self.lad_id_from_type_id(type_id)),
         }
-        self.lad_type_kind_from_type_id(type_id)
     }
 
     /// Figures out whether the type is a primitive or not and creates the right type id
@@ -998,7 +970,7 @@ impl<'t> LadFileBuilder<'t> {
         if register {
             self.add_type_info(type_info);
         }
-        let Some(generic_type) = self.declared_generic_type(type_info) else {
+        let Some(generic_type) = self.matches_against_declared_generic_type(type_info) else {
             return self.lad_id_from_type_id(type_info.type_id()).into();
         };
         let args = type_info
@@ -1102,6 +1074,7 @@ mod test {
     use bevy_reflect::Reflect;
 
     use super::*;
+    use crate::generics::field_kinds;
 
     /// normalize line endings etc..
     fn normalize_file(file: &mut String) {
@@ -1439,6 +1412,7 @@ mod test {
             .set_description("## Hello gentlemen\n I am  markdown file.\n - hello\n - world")
             .set_sorted(true)
             .add_generic_type::<OpaqueGenericType<A>>(
+                "ladfile_builder",
                 &["T"],
                 "I am the documentation of a generic type.",
             )
@@ -1543,7 +1517,9 @@ mod test {
         let return_kind = |declare: bool| {
             let mut builder = LadFileBuilder::new_empty(&type_registry);
             if declare {
-                builder.add_generic_type::<Handle<A>>(&["A"], "").unwrap();
+                builder
+                    .add_generic_type::<Handle<A>>("test", &["A"], "")
+                    .unwrap();
             }
             let asset = builder.lad_id_from_type_id(TypeId::of::<TestAsset>());
             let lad_file = builder.add_function_info(&info).build();
@@ -1683,7 +1659,7 @@ mod test {
     struct AllFieldKinds {
         primitive: f32,
         value: FieldValue,
-        unknown: FieldUnregistered,
+        unregistered: FieldUnregistered,
         vec: Vec<i32>,
         map: bevy_platform::collections::HashMap<String, f32>,
         set: bevy_platform::collections::HashSet<i32>,
@@ -1755,10 +1731,10 @@ mod test {
         let expected = [
             ("primitive", Kind::Primitive(Primitive::F32)),
             ("value", Kind::Val(id(TypeId::of::<FieldValue>()).into())),
-            // types the registry does not know about can not be described any further
+            // fields are described from their own type information, which registering their type registers
             (
-                "unknown",
-                Kind::Unknown(id(TypeId::of::<FieldUnregistered>())),
+                "unregistered",
+                Kind::Val(id(TypeId::of::<FieldUnregistered>()).into()),
             ),
             ("vec", Kind::Vec(Box::new(Kind::Primitive(Primitive::I32)))),
             (
@@ -2003,7 +1979,7 @@ mod test {
 
         // each parameter has to be instantiated with a marker of its own
         let error = builder
-            .add_generic_type::<OneParam<usize>>(&["T"], "")
+            .add_generic_type::<OneParam<usize>>("test", &["T"], "")
             .err()
             .unwrap();
         assert!(
@@ -2011,7 +1987,7 @@ mod test {
             "{error}"
         );
         let error = builder
-            .add_generic_type::<TwoParams<A, A>>(&["P", "Q"], "")
+            .add_generic_type::<TwoParams<A, A>>("test", &["P", "Q"], "")
             .err()
             .unwrap();
         assert!(
@@ -2020,7 +1996,7 @@ mod test {
         );
         // and named by the registration
         let error = builder
-            .add_generic_type::<OneParam<A>>(&[], "")
+            .add_generic_type::<OneParam<A>>("test", &[], "")
             .err()
             .unwrap();
         assert!(
@@ -2029,7 +2005,11 @@ mod test {
         );
 
         // nothing was declared by the failed attempts
-        assert!(builder.add_generic_type::<OneParam<A>>(&["T"], "").is_ok());
+        assert!(
+            builder
+                .add_generic_type::<OneParam<A>>("test", &["T"], "")
+                .is_ok()
+        );
         assert_eq!(builder.generic_types.len(), 1);
     }
 
@@ -2039,11 +2019,9 @@ mod test {
         registry.register::<OneParam<f32>>();
         registry.register::<Vec<f32>>();
         registry.register::<TwoParams<usize, f32>>();
-        registry.register_type_data_with::<OneParam<f32>, ScriptNamespace, _>("params");
-        registry.register_type_data_with::<TwoParams<usize, f32>, ScriptNamespace, _>("other");
         let mut builder = LadFileBuilder::new_empty(&registry);
         builder
-            .add_generic_type::<OneParam<A>>(&["T"], "docs")
+            .add_generic_type::<OneParam<A>>("params", &["T"], "docs")
             .unwrap()
             .add_type::<OneParam<f32>>()
             .add_type::<TwoParams<usize, f32>>();
@@ -2074,7 +2052,7 @@ mod test {
         assert_eq!(generic_type.params, ["T"]);
         assert_eq!(generic_type.identifier, "OneParam");
         assert_eq!(generic_type.documentation.as_deref(), Some("docs"));
-        // in the namespace of its instantiations rather than of the other types of its crate
+        // in the namespace it is declared with
         assert_eq!(generic_type.namespace, "params");
         let LadTypeLayout::MonoVariant(LadVariant::Struct { fields, .. }) = &generic_type.layout
         else {
@@ -2102,28 +2080,25 @@ mod test {
         declared.replace_param("T", &f32_kind);
         assert_eq!(field_kinds(&declared), field_kinds(&instantiation.layout));
 
-        // sets only expose the type id of their values, declared generic types are applied to the parameter,
-        // and undeclared ones can't be, so their uses of the parameter are unknown, by type path
-        let registry = TypeRegistry::default();
+        // sets only expose the type id of their values, which the registry knows for the registered marker,
+        // declared generic types are applied to the parameter, and undeclared ones can't be, so they stay instantiated with the marker
+        let mut registry = TypeRegistry::default();
+        registry.register::<A>();
         let mut builder = LadFileBuilder::new_empty(&registry);
         // declared before `Handle`, which its layout names all the same
         builder
-            .add_generic_type::<NestedParam<A>>(&["T"], "")
+            .add_generic_type::<NestedParam<A>>("test", &["T"], "")
             .unwrap()
-            .add_generic_type::<bevy_asset::Handle<A>>(&["A"], "")
+            .add_generic_type::<bevy_asset::Handle<A>>("test", &["A"], "")
             .unwrap();
         let LadTypeLayout::MonoVariant(LadVariant::Struct { fields, .. }) =
-            builder.generic_layout(0)
+            builder.make_or_get_generic_layout(0)
         else {
             panic!("expected a struct");
         };
         assert_eq!(fields[0].type_, LadTypeKind::HashSet(Box::new(param())));
-        assert_eq!(
-            fields[1].type_,
-            LadTypeKind::Unknown(LadTypeId::new_string_id(
-                <OneParam<A> as bevy_reflect::TypePath>::type_path().into()
-            ))
-        );
+        let undeclared = builder.lad_id_from_type_id(TypeId::of::<OneParam<A>>());
+        assert_eq!(fields[1].type_, LadTypeKind::Val(undeclared.into()));
         let handle_of_param = LadNamedType::Generic {
             generic_type: LadTypeId::new_string_id("bevy_asset::handle::Handle".into()),
             args: vec![param()],
@@ -2133,16 +2108,5 @@ mod test {
             fields[3].type_,
             LadTypeKind::Vec(Box::new(LadTypeKind::Val(handle_of_param)))
         );
-
-        // as for the generic types declared by the plugin
-        let registry = field_test_registry();
-        let mut builder = LadFileBuilder::new_empty(&registry);
-        builder
-            .add_generic_type::<bevy_asset::Handle<A>>(&["A"], "")
-            .unwrap();
-        let handle = <bevy_asset::Handle<FieldAsset> as Typed>::type_info();
-        let declared = builder.instantiated_layout(handle).unwrap();
-        let reflected = builder.lad_layout_from_type_info(handle);
-        assert_eq!(field_kinds(&declared), field_kinds(&reflected));
     }
 }

@@ -139,6 +139,7 @@ pub fn generate_lad_file(
     for declaration in &generic_types.0 {
         if let Err(error) = builder.add_generic_type_info(
             declaration.type_info,
+            declaration.namespace,
             &declaration.params,
             declaration.documentation,
         ) {
@@ -630,12 +631,15 @@ mod test {
         app.register_type::<TestAsset>()
             .register_type::<bevy_asset::Handle<TestAsset>>()
             .register_type_data::<TestAsset, bevy_asset::ReflectAsset>()
-            .register_generic_type::<bevy_asset::Handle<A>>(&["A"], "A handle");
+            .register_generic_type::<bevy_asset::Handle<A>>("asset", &["A"], "A handle");
         let file = generate_from(app);
 
+        // the marker is registered, but not a type of its own
         assert_eq!(file.generic_types.len(), 1, "{:?}", file.generic_types);
+        assert!(file.types.values().all(|ty| ty.identifier != "A"));
         let (generic_id, generic_type) = file.generic_types.iter().next().unwrap();
         assert_eq!(generic_type.identifier, "Handle");
+        assert_eq!(generic_type.namespace, "asset");
         assert_eq!(generic_type.path, "bevy_asset::handle::Handle");
         assert_eq!(generic_type.params, ["A"]);
         assert_eq!(generic_type.name_with_params(), "Handle<A>");
