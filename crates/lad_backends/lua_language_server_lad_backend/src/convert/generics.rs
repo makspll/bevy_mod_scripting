@@ -1,13 +1,10 @@
 //! The classes of generic types (see [`generic_type_modules`]), and the untyped overloads of generic functions (see [`erase_generics`]).
 
 use ladfile::{
-    LadFile, LadFunction, LadGenericType, LadInstantiation, LadNamedType, LadTypeId, LadTypeKind,
-    ReflectionPrimitiveKind,
+    LadFile, LadGenericType, LadInstantiation, LadNamedType, LadTypeKind, ReflectionPrimitiveKind,
 };
 
-use crate::lua_declaration_file::{
-    ClassField, FieldScope, FunctionSignatureShort, LuaClass, LuaModule, LuaPrimitiveType, LuaType,
-};
+use crate::lua_declaration_file::{ClassField, FieldScope, LuaClass, LuaModule, LuaType};
 
 use super::{
     enum_variant_class, lad_function_to_lua_function, lad_instance_to_lua_type, lad_variant_name,
@@ -17,23 +14,13 @@ use super::{
 /// A class per generic type, with its parameters as generics and its fields in terms of them, i.e. `---@field context T`.
 ///
 /// Like enums, generic enums have a field per variant, of the variant's class, which is generic over the same parameters.
-/// The functions of every instantiation are fields too, i.e. `---@field delta fun(self: time.Time<T>): time.Duration`, as LuaLS
-/// keeps resolving the parameters of fields in subclasses, but not of methods. The functions only some instantiations have
-/// are on a subclass per instantiation, see [`instantiation_class_name`].
+/// The functions of an instantiation are on a subclass of the generic class per instantiation, see [`instantiation_class_name`].
 pub(super) fn generic_type_modules(ladfile: &LadFile) -> Vec<LuaModule> {
     let mut modules = vec![];
-    for (generic_id, generic_type) in &ladfile.generic_types {
+    for generic_type in ladfile.generic_types.values() {
         let name = qualified(&generic_type.namespace, &generic_type.identifier);
         let mut fields = layout_fields(ladfile, &generic_type.layout);
-        fields.extend(function_fields(
-            ladfile,
-            generic_type
-                .associated_functions
-                .iter()
-                .filter_map(|id| ladfile.functions.get(id)),
-        ));
-        let (variant_fields, variant_modules) =
-            variant_modules(ladfile, generic_id, generic_type, &name);
+        let (variant_fields, variant_modules) = variant_modules(ladfile, generic_type, &name);
         fields.extend(variant_fields);
         modules.push(LuaModule {
             name: generic_type.identifier.clone(),
@@ -57,10 +44,9 @@ pub(super) fn generic_type_modules(ladfile: &LadFile) -> Vec<LuaModule> {
 }
 
 /// The fields of the class of a generic enum for its variants, and the class of each variant, generic over the same
-/// parameters, with the functions of the variant of every instantiation, i.e. its constructor.
+/// parameters.
 fn variant_modules(
     ladfile: &LadFile,
-    generic_id: &LadTypeId,
     generic_type: &LadGenericType,
     name: &str,
 ) -> (Vec<ClassField>, Vec<LuaModule>) {
@@ -86,14 +72,6 @@ fn variant_modules(
             optional: false,
             description: None,
         });
-        let variant_functions = ladfile.functions.values().filter(|f| {
-            matches!(&f.namespace, ladfile::LadFunctionNamespace::Variant {
-                type_id: LadNamedType::Generic { generic_type, args },
-                variant: function_variant,
-            } if generic_type == generic_id
-                && function_variant == variant
-                && args.iter().all(|arg| matches!(arg, LadTypeKind::Val(LadNamedType::Param { .. }))))
-        });
         modules.push(LuaModule {
             name: variant_class.clone(),
             table: format!("{}.{variant}", generic_type.identifier),
@@ -101,7 +79,6 @@ fn variant_modules(
             class: Some(LuaClass {
                 name: variant_class,
                 parents: vec![LuaType::Alias(enum_variant_class(ladfile))],
-                fields: function_fields(ladfile, variant_functions),
                 generics: generic_type.params.clone(),
                 documentation: Some(format!("The `{variant}` variant of `{name}`.")),
                 ..Default::default()
@@ -218,57 +195,8 @@ pub(super) fn instantiation_class_name(
     }
 }
 
-/// Functions as fields of a class, i.e. `---@field delta fun(self: time.Time<T>): time.Duration`.
-fn function_fields<'a>(
-    ladfile: &LadFile,
-    functions: impl Iterator<Item = &'a LadFunction>,
-) -> Vec<ClassField> {
-    functions
-        .filter_map(|function| {
-            let signature = match lad_function_to_lua_function(ladfile, function) {
-                Ok(signature) => signature,
-                Err(err) => {
-                    log::warn!(
-                        "Error converting function {}: {err}. Ignoring function.",
-                        function.identifier
-                    );
-                    return None;
-                }
-            };
-            let parameters = signature
-                .params
-                .into_iter()
-                .enumerate()
-                .map(|(idx, param)| {
-                    // called with `:`, the receiver is `self`
-                    let name = if idx == 0 && function.receiver {
-                        "self".to_owned()
-                    } else {
-                        param.name
-                    };
-                    (name, param.ty)
-                })
-                .collect();
-            Some(ClassField {
-                name: signature.name,
-                ty: LuaType::Function(FunctionSignatureShort {
-                    parameters,
-                    return_type: Box::new(
-                        signature
-                            .returns
-                            .into_iter()
-                            .next()
-                            .unwrap_or(LuaType::Primitive(LuaPrimitiveType::Nil)),
-                    ),
-                }),
-                scope: FieldScope::Public,
-                optional: false,
-                description: signature.documentation,
-            })
-        })
-        .collect()
-}
-
+/// The kind as it is at runtime, without the given parameters of a generic function: types are what they are passed as,
+/// i.e. a component registration, and values of a parameter are references.
 pub(super) fn erase_generics(kind: &LadTypeKind, generics: &[String]) -> LadTypeKind {
     let is_generic = |named: &LadNamedType| matches!(named, LadNamedType::Param { param } if generics.contains(param));
     let mut kind = kind.clone();

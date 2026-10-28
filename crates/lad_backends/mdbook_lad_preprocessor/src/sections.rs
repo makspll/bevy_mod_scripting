@@ -250,56 +250,31 @@ impl<'a> Section<'a> {
             .collect()
     }
 
-    /// The functions with a page below the generic type's page: the ones of every instantiation and of their variants,
-    /// then the ones of a single instantiation, titled by it, i.e. `Time<Virtual>.pause`
+    /// The functions of the instantiations of a generic type, titled by the instantiation, i.e. `Time<Virtual>.pause`
     fn generic_type_functions(
         &self,
         generic_type_id: &LadTypeId,
         generic_type: &'a LadGenericType,
     ) -> Vec<TitledFunction<'a>> {
-        let variant_functions =
-            self.ladfile
-                .functions
-                .values()
-                .filter_map(|function| match &function.namespace {
-                    LadFunctionNamespace::Variant {
-                        type_id: LadNamedType::Generic { generic_type, args },
-                        variant,
-                    } if generic_type == generic_type_id
-                        && args
-                            .iter()
-                            .all(|arg| matches!(arg.named(), Some(LadNamedType::Param { .. }))) =>
-                    {
-                        Some((Some(Cow::Borrowed(variant.as_ref())), function))
-                    }
-                    _ => None,
-                });
-        let instantiation_functions =
-            generic_type
-                .instantiations
-                .iter()
-                .flat_map(|instantiation| {
-                    let title = print_type(
-                        self.ladfile,
-                        &LadTypeKind::Val(LadNamedType::Generic {
-                            generic_type: generic_type_id.clone(),
-                            args: instantiation.args.clone(),
-                        }),
-                        None,
-                        None,
-                    );
-                    instantiation
-                        .associated_functions
-                        .iter()
-                        .filter_map(|f| self.ladfile.functions.get(f))
-                        .map(move |function| (Some(Cow::Owned(title.clone())), function))
-                });
         generic_type
-            .associated_functions
+            .instantiations
             .iter()
-            .filter_map(|f| Some((None, self.ladfile.functions.get(f)?)))
-            .chain(variant_functions)
-            .chain(instantiation_functions)
+            .flat_map(|instantiation| {
+                let title = print_type(
+                    self.ladfile,
+                    &LadTypeKind::Val(LadNamedType::Generic {
+                        generic_type: generic_type_id.clone(),
+                        args: instantiation.args.clone(),
+                    }),
+                    None,
+                    None,
+                );
+                instantiation
+                    .associated_functions
+                    .iter()
+                    .filter_map(|f| self.ladfile.functions.get(f))
+                    .map(move |function| (Some(Cow::Owned(title.clone())), function))
+            })
             .collect()
     }
 
@@ -1438,21 +1413,15 @@ mod test {
     #[test]
     fn generic_type_pages_describe_the_type_and_what_it_is_used_with() {
         let mut ladfile = setup_ladfile();
-        // a function of every instantiation, and one of the instantiation with `usize`
-        let template = ladfile.functions.values().next().unwrap().clone();
+        // a function of the instantiation with `usize`
+        let mut function = ladfile.functions.values().next().unwrap().clone();
+        function.identifier = "only_on_usize".into();
         let (generic_type_id, generic_type) = ladfile.generic_types.iter_mut().next().unwrap();
-        for (name, instantiation) in [("value", None), ("only_on_usize", Some(0))] {
-            let id = ladfile::LadFunctionId::new_string_id(name.into());
-            let mut function = template.clone();
-            function.identifier = name.into();
-            match instantiation {
-                None => generic_type.associated_functions.push(id.clone()),
-                Some(i) => generic_type.instantiations[i]
-                    .associated_functions
-                    .push(id.clone()),
-            }
-            ladfile.functions.insert(id, function);
-        }
+        let id = ladfile::LadFunctionId::new_string_id("only_on_usize".into());
+        generic_type.instantiations[0]
+            .associated_functions
+            .push(id.clone());
+        ladfile.functions.insert(id, function);
         let generic_type_id = generic_type_id.clone();
         let (generic_type_id, generic_type) = ladfile
             .generic_types
@@ -1483,11 +1452,11 @@ mod test {
         // the arguments of the instantiations, linked to their pages
         assert!(markdown.contains("- [Usize](./usize.md)"), "{markdown}");
 
-        // its functions have pages below it, the ones of an instantiation titled by it
+        // the functions of its instantiations have pages below it, titled by the instantiation
         let titles: Vec<_> = page.children().iter().map(|child| child.title()).collect();
         assert_eq!(
             titles,
-            ["value", "OpaqueGenericType<Usize>.only_on_usize"],
+            ["OpaqueGenericType<Usize>.only_on_usize"],
             "{markdown}"
         );
         assert!(
