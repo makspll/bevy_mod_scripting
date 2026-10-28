@@ -549,33 +549,6 @@ impl LadTypeKind {
                 .for_each(|kind| kind.replace_param(name, arg)),
         }
     }
-
-    /// The inverse of [`Self::replace_param`]: replaces the argument with the generic parameter with the given name,
-    /// i.e. `&Image` with `&T`, to describe a function of an instantiation as a function of the generic type.
-    pub fn replace_arg(&mut self, arg: &LadTypeKind, name: &str) {
-        let param = || LadNamedType::Param {
-            param: name.to_owned(),
-        };
-        if self == arg {
-            *self = LadTypeKind::Val(param());
-            return;
-        }
-        match self {
-            LadTypeKind::Ref(named)
-            | LadTypeKind::Mut(named)
-            | LadTypeKind::Val(named)
-            | LadTypeKind::Fields { of: named, .. }
-            | LadTypeKind::Type { of: named, .. }
-                if Some(&*named) == arg.named() =>
-            {
-                *named = param()
-            }
-            _ => self
-                .children_mut()
-                .into_iter()
-                .for_each(|kind| kind.replace_arg(arg, name)),
-        }
-    }
 }
 
 /// Something an [`ArgumentVisitor`] can visit, i.e. a type kind, or a type id on its own
@@ -1073,13 +1046,6 @@ pub struct LadGenericType {
     #[serde(default = "opaque_layout", skip_serializing_if = "is_opaque")]
     pub layout: LadTypeLayout,
 
-    /// The functions of every instantiation, in terms of the parameters, i.e. `Time<T>::delta`, like `impl<T> Time<T>` in Rust.
-    ///
-    /// Their namespace is the generic type applied to its parameters. Functions only some instantiations have, or have
-    /// with different signatures, stay on those instantiations, see [`LadInstantiation::associated_functions`].
-    #[serde(skip_serializing_if = "Vec::is_empty", default)]
-    pub associated_functions: Vec<LadFunctionId>,
-
     /// The instantiations of the type, i.e. `Handle<Image>`, see [`LadFile::get_instantiation`].
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub instantiations: Vec<LadInstantiation>,
@@ -1094,8 +1060,8 @@ pub struct LadGenericType {
 pub struct LadInstantiation {
     /// The arguments, in the order of the parameters of the generic type
     pub args: Vec<LadTypeKind>,
-    /// The functions only this instantiation has, i.e. `pause` on `Time<Virtual>`, like `impl Time<Virtual>` in Rust,
-    /// see [`LadGenericType::associated_functions`] for the functions of every instantiation
+    /// The functions on the instantiation, i.e. `pause` on `Time<Virtual>`, like `impl Time<Virtual>` in Rust,
+    /// see [`LadFunctionNamespace::Type`]
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub associated_functions: Vec<LadFunctionId>,
     /// Additional metadata about the instantiation, i.e. whether it is a component
