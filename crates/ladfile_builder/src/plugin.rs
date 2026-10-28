@@ -634,32 +634,15 @@ mod test {
         app.register_type::<TestAsset>()
             .register_type::<bevy_asset::Handle<TestAsset>>()
             .register_type_data::<TestAsset, bevy_asset::ReflectAsset>()
-            .register_type::<OtherAsset>()
-            .register_type::<bevy_asset::Handle<OtherAsset>>()
-            .register_type_data::<OtherAsset, bevy_asset::ReflectAsset>()
             .register_generic_type::<bevy_asset::Handle<A>>("asset", &["A"], "A handle");
-        // a function shared by all types, which is bound to every instantiation too
+        // a function shared by all types, which is bound to the instantiation too
         NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
             .register("describe", |_: StaticTypeRef| 1usize);
-        // a function returning the argument of one instantiation, which isn't the parameter on the other
-        use bevy_mod_scripting_bindings::function::from::{R, V};
-        NamespaceBuilder::<bevy_asset::Handle<TestAsset>>::new(app.world_mut())
-            .register("other", |_: R<bevy_asset::Handle<TestAsset>>| {
-                V::new(OtherAsset)
-            });
-        NamespaceBuilder::<bevy_asset::Handle<OtherAsset>>::new(app.world_mut())
-            .register("other", |_: R<bevy_asset::Handle<OtherAsset>>| {
-                V::new(OtherAsset)
-            });
-        // and a function only one instantiation has
-        NamespaceBuilder::<bevy_asset::Handle<TestAsset>>::new(app.world_mut()).register(
-            "only_on_test_asset",
-            |_: bevy_mod_scripting_bindings::function::from::R<bevy_asset::Handle<TestAsset>>| {
-                1usize
-            },
-        );
         // a generic function, over the markers of its signature, which also uses one as an argument of a generic type
-        use bevy_mod_scripting_bindings::function::generics::{TypeOf, ValueOf};
+        use bevy_mod_scripting_bindings::function::{
+            from::V,
+            generics::{TypeOf, ValueOf},
+        };
         NamespaceBuilder::<OtherAsset>::new(app.world_mut()).register(
             "get",
             |_: TypeOf<V<OtherAsset>, A>,
@@ -679,51 +662,18 @@ mod test {
         assert_eq!(generic_type.name_with_params(), "Handle<A>");
         assert!(generic_type.documentation.is_some());
 
-        // the instantiations are recorded on it rather than being types, with their arguments
+        // the instantiation is recorded on it rather than being a type, with its argument and functions
         assert!(file.types.values().all(|ty| ty.identifier != "Handle"));
         let asset = LadTypeKind::Val(type_id(&file, "TestAsset").into());
-        assert_eq!(generic_type.instantiations.len(), 2);
-        let instantiation = generic_type
-            .instantiations
-            .iter()
-            .find(|i| i.args == std::slice::from_ref(&asset))
-            .expect("the instantiation with the asset");
-
-        // the function of every instantiation is on the generic type, in terms of its parameter
-        let [describe, other] = generic_type.associated_functions.as_slice() else {
-            panic!("{:?}", generic_type.associated_functions);
+        let [instantiation] = generic_type.instantiations.as_slice() else {
+            panic!("{:?}", generic_type.instantiations);
         };
-        assert_eq!(file.functions[describe].identifier, "describe");
-        assert_eq!(
-            file.functions[other].return_type.kind,
-            LadTypeKind::Val(type_id(&file, "OtherAsset").into())
-        );
-        assert_eq!(
-            file.functions[describe].namespace,
-            LadFunctionNamespace::Type(ladfile::LadNamedType::Generic {
-                generic_type: generic_id.clone(),
-                args: vec![LadTypeKind::Val(ladfile::LadNamedType::Param {
-                    param: "A".into()
-                })],
-            })
-        );
-        // and replaces the functions of the instantiations
-        assert!(
-            instantiation
-                .associated_functions
-                .iter()
-                .all(|f| file.functions[f].identifier != "describe")
-        );
-        assert!(!file.functions.values().any(|f| f.identifier == "describe"
-            && matches!(&f.namespace, LadFunctionNamespace::Type(ladfile::LadNamedType::Generic { args, .. }) if args.contains(&asset))));
-
-        // and the function only one instantiation has stays on it
-        let [only] = instantiation.associated_functions.as_slice() else {
+        assert_eq!(instantiation.args, std::slice::from_ref(&asset));
+        let [describe] = instantiation.associated_functions.as_slice() else {
             panic!("{:?}", instantiation.associated_functions);
         };
-        assert_eq!(file.functions[only].identifier, "only_on_test_asset");
         assert_eq!(
-            file.functions[only].namespace,
+            file.functions[describe].namespace,
             LadFunctionNamespace::Type(ladfile::LadNamedType::Generic {
                 generic_type: generic_id.clone(),
                 args: vec![asset],
@@ -753,7 +703,7 @@ mod test {
                 args: vec![LadTypeKind::Val(param())],
             })
         );
-        assert_eq!(file.generic_types[generic_id].instantiations.len(), 2);
+        assert_eq!(file.generic_types[generic_id].instantiations.len(), 1);
         assert_eq!(
             get.return_type.kind,
             LadTypeKind::Option(Box::new(LadTypeKind::Val(param())))

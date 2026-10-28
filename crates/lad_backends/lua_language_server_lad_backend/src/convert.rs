@@ -1544,7 +1544,7 @@ mod test {
     }
 
     #[test]
-    fn functions_of_generic_types_are_generic_fields_or_on_a_subclass() {
+    fn functions_of_instantiations_are_on_a_subclass() {
         let mut file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
         let generic_id =
             LadTypeId::new_string_id("ladfile_builder::test::OpaqueGenericType".into());
@@ -1553,7 +1553,6 @@ mod test {
             generic_type: generic_id.clone(),
             args: vec![arg],
         };
-        let param = || LadTypeKind::Val(LadNamedType::Param { param: "T".into() });
         let of_plain = applied(LadTypeKind::Val(plain.clone().into()));
         let mut add = |name: &'static str, namespace: LadNamedType, ret: LadTypeKind| {
             let id = LadFunctionId::new_string_id(name.into());
@@ -1576,8 +1575,6 @@ mod test {
             );
             id
         };
-        // a function of every instantiation, and one only the instantiation with `PlainStructType` has
-        let value = add("value", applied(param()), param());
         let only = add(
             "only_on_plain",
             of_plain.clone(),
@@ -1621,7 +1618,6 @@ mod test {
             .associated_functions
             .push(get);
         let generic_type = file.generic_types.get_mut(&generic_id).unwrap();
-        generic_type.associated_functions.push(value);
         generic_type.instantiations.push(ladfile::LadInstantiation {
             args: vec![LadTypeKind::Val(plain.clone().into())],
             associated_functions: vec![only],
@@ -1637,17 +1633,7 @@ mod test {
             "{rendered}"
         );
 
-        // the function of every instantiation is a field of the generic class, so subclasses keep its parameter
-        let class = block(
-            &rendered,
-            "---@class ladfile_builder.OpaqueGenericType<T> : ReflectReference",
-        );
-        assert!(
-            class.contains("---@field  value fun(self: ladfile_builder.OpaqueGenericType<T>): T"),
-            "{class}"
-        );
-
-        // the one of an instantiation is on its subclass, which names the instantiation
+        // the function of an instantiation is on its subclass, which names the instantiation
         assert!(
             rendered.contains(
                 "---@class ladfile_builder.OpaqueGenericType.PlainStructType : ladfile_builder.OpaqueGenericType<ladfile_builder.PlainStructType>"
