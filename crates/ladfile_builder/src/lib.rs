@@ -27,9 +27,7 @@ use bevy_reflect::{
     NamedField, ReflectRef, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo,
     std_traits::ReflectDefault,
 };
-use generics::{
-    GenericTypeSpec, generalise_instantiation_functions, is_param_marker, marker_param,
-};
+use generics::{GenericTypeSpec, is_param_marker, marker_param};
 use ladfile::*;
 use std::{
     any::TypeId,
@@ -641,7 +639,6 @@ impl<'t> LadFileBuilder<'t> {
                 | LadFunctionNamespace::Namespace { .. } => {}
             }
         }
-        generalise_instantiation_functions(&mut file);
 
         // the types scripts import from each namespace, by the name `import_namespace` gives them
         let mut types_by_id: Vec<_> = file.types.iter().collect();
