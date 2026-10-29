@@ -1,9 +1,9 @@
-//! The classes of generic types, see [`generic_type_modules`].
+//! The classes of generic types (see [`generic_type_modules`]), and the untyped overloads of generic functions (see [`erase_generics`]).
 
 use indexmap::IndexMap;
 use ladfile::{
     LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstantiation, LadNamedType,
-    LadTypeKind,
+    LadTypeKind, ReflectionPrimitiveKind,
 };
 
 use crate::lua_declaration_file::{ClassField, FieldScope, LuaClass, LuaModule, LuaType};
@@ -281,4 +281,22 @@ pub(super) fn instantiation_class_name(
             None
         }
     }
+}
+
+/// The kind as it is at runtime, without the given parameters of a generic function: types are what they are passed as,
+/// i.e. a component registration, and values of a parameter are references.
+pub(super) fn erase_generics(kind: &LadTypeKind, generics: &[String]) -> LadTypeKind {
+    let is_generic = |named: &LadNamedType| matches!(named, LadNamedType::Param { param } if generics.contains(param));
+    let mut kind = kind.clone();
+    match &kind {
+        LadTypeKind::Type { of, erased } if is_generic(of) => return (**erased).clone(),
+        kind if kind.named().is_some_and(is_generic) => {
+            return LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference);
+        }
+        _ => {}
+    }
+    for child in kind.children_mut() {
+        *child = erase_generics(child, generics);
+    }
+    kind
 }

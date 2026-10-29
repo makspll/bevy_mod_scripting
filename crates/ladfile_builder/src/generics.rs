@@ -25,17 +25,52 @@ pub(crate) fn marker_param(type_path: &str) -> LadNamedType {
     }
 }
 
+/// The named type the kind itself mentions, i.e. `Image` in `&Image`, `Fields<Image>` or `Type<Image>`.
+fn mentioned_named_type(kind: &LadTypeKind) -> Option<&LadNamedType> {
+    match kind {
+        LadTypeKind::Fields { of, .. } | LadTypeKind::Type { of, .. } => Some(of),
+        kind => kind.named(),
+    }
+}
+
 /// Collects the generic types the kind applies to arguments, i.e. `Handle` for `Vec<Handle<T>>` or `Fields<Handle<T>>`.
 fn named_generic_types(kind: &LadTypeKind, named: &mut Vec<LadTypeId>) {
     kind.for_each(&mut |kind| {
-        let named_type = match kind {
-            LadTypeKind::Fields { of, .. } => Some(of),
-            kind => kind.named(),
-        };
-        if let Some(LadNamedType::Generic { generic_type, .. }) = named_type {
+        if let Some(LadNamedType::Generic { generic_type, .. }) = mentioned_named_type(kind) {
             named.push(generic_type.clone());
         }
     })
+}
+
+/// The parameters of a generic function: the markers its signature uses (see [`marker_param`]), renamed after the
+/// marker, i.e. `A` in `get_component(registration: Type<A>) -> Option<A>`.
+pub(crate) fn name_function_generics<'k>(
+    kinds: impl Iterator<Item = &'k mut LadTypeKind>,
+) -> Vec<String> {
+    let mut kinds: Vec<_> = kinds.collect();
+    let mut markers = Vec::new();
+    for kind in &kinds {
+        kind.for_each(&mut |kind| {
+            if let Some(LadNamedType::Param { param }) = mentioned_named_type(kind)
+                && !markers.contains(param)
+            {
+                markers.push(param.clone());
+            }
+        });
+    }
+    markers
+        .into_iter()
+        .map(|marker| {
+            let name = marker.rsplit("::").next().unwrap_or(&marker).to_owned();
+            let param = LadTypeKind::Val(LadNamedType::Param {
+                param: name.clone(),
+            });
+            for kind in &mut kinds {
+                kind.replace_param(&marker, &param);
+            }
+            name
+        })
+        .collect()
 }
 
 /// Collects the generic types the fields of the layout apply to arguments, see [`named_generic_types`].

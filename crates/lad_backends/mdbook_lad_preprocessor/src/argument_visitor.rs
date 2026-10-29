@@ -187,6 +187,12 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text(param);
     }
 
+    fn visit_type(&mut self, of: &ladfile::LadNamedType, _erased: &ladfile::LadTypeKind) {
+        self.buffer.text("Type<");
+        self.visit_named(of);
+        self.buffer.text(">");
+    }
+
     // as instantiations, linking to the page of the generic type
     fn visit_generic(&mut self, generic_type: &ladfile::LadTypeId, args: &[ladfile::LadTypeKind]) {
         match self.ladfile.generic_types.get(generic_type) {

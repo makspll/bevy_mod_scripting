@@ -27,7 +27,7 @@ use bevy_reflect::{
     NamedField, ReflectRef, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo,
     std_traits::ReflectDefault,
 };
-use generics::{GenericTypeSpec, is_param_marker, marker_param};
+use generics::{GenericTypeSpec, is_param_marker, marker_param, name_function_generics};
 use ladfile::*;
 use std::{
     any::TypeId,
@@ -469,7 +469,7 @@ impl<'t> LadFileBuilder<'t> {
         }
 
         // the call context is filled in by BMS, scripts never pass it
-        let arguments: Vec<_> = function_info
+        let mut arguments: Vec<_> = function_info
             .arg_info
             .iter()
             .filter(|arg| arg.type_id != TypeId::of::<FunctionCallContext>())
@@ -516,25 +516,34 @@ impl<'t> LadFileBuilder<'t> {
             LadFunctionNamespace::Global | LadFunctionNamespace::Namespace { .. } => false,
         };
 
+        let mut return_type = LadArgument {
+            name: return_docstring.as_ref().cloned().map(|(n, _)| n.into()),
+            documentation: return_docstring.map(|(_, v)| v.into()),
+            kind: function_info
+                .return_info
+                .type_info
+                .clone()
+                .map(|info| self.lad_type_kind_from_through_type(&info))
+                .unwrap_or_else(|| {
+                    LadTypeKind::Unknown(
+                        self.lad_id_from_type_id(function_info.return_info.type_id),
+                    )
+                }),
+        };
+        let generics = name_function_generics(
+            arguments
+                .iter_mut()
+                .chain([&mut return_type])
+                .map(|arg| &mut arg.kind),
+        );
+
         let lad_function = LadFunction {
             identifier: identifier.to_owned().into(),
             overload_index,
             arguments,
             receiver,
-            return_type: LadArgument {
-                name: return_docstring.as_ref().cloned().map(|(n, _)| n.into()),
-                documentation: return_docstring.map(|(_, v)| v.into()),
-                kind: function_info
-                    .return_info
-                    .type_info
-                    .clone()
-                    .map(|info| self.lad_type_kind_from_through_type(&info))
-                    .unwrap_or_else(|| {
-                        LadTypeKind::Unknown(
-                            self.lad_id_from_type_id(function_info.return_info.type_id),
-                        )
-                    }),
-            },
+            return_type,
+            generics,
             documentation: (!main_docstring.is_empty()).then_some(main_docstring.into()),
             namespace,
             metadata: LadFunctionMetadata {
@@ -1073,6 +1082,10 @@ impl<'t> LadFileBuilder<'t> {
             ThroughTypeInfo::Fields { type_info, variant } => LadTypeKind::Fields {
                 of: self.lad_named_type(type_info, register),
                 variant: variant.map(Cow::Borrowed),
+            },
+            ThroughTypeInfo::TypeOf { of, erased } => LadTypeKind::Type {
+                of: self.lad_named_type(of, register),
+                erased: nested(self, erased),
             },
             // functions are bound before they are added, any placeholders left are documented as what they are at runtime
             ThroughTypeInfo::Bound(BoundPlaceholder::Value | BoundPlaceholder::Handle) => {
@@ -1658,7 +1671,7 @@ mod test {
     variant_names!(
         LadTypeKind, ALL_LAD_KINDS, lad_kind_name:
         Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple,
-        TupleWithRest, Array, Primitive, Union, Unknown, Fields
+        TupleWithRest, Array, Primitive, Union, Unknown, Fields, Type
     );
 
     /// Records every kind found anywhere in the given kind
@@ -1681,6 +1694,7 @@ mod test {
                 head.iter().for_each(|kind| collect_kinds(kind, seen));
                 collect_kinds(rest, seen);
             }
+            LadTypeKind::Type { erased, .. } => collect_kinds(erased, seen),
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
             | LadTypeKind::Val(_)
@@ -1920,6 +1934,14 @@ mod test {
                 "bound handle",
                 BoundHandle::through_type_info().bind_placeholders(FieldAsset::type_info(), None),
                 Kind::Val(handle.into()),
+            ),
+            (
+                "type of a parameter",
+                bevy_mod_scripting_bindings::function::generics::TypeOf::<V<FieldValue>, A>::through_type_info(),
+                Kind::Type {
+                    of: marker_param(<A as bevy_reflect::TypePath>::type_path()),
+                    erased: Box::new(Kind::Val(value.clone().into())),
+                },
             ),
             (
                 "type info",

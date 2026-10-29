@@ -23,6 +23,18 @@ app.register_generic_type::<Time<A>>("time", &["T"], "A clock, i.e. `Time<Virtua
 
 The fields of type `A` are then documented as being of the parameter `T`, and the instantiations as `Time<T>` applied to their arguments. Only declare types whose parameter is part of what they are (`Handle`, `Time`, `ButtonInput`), not containers like `Arc<T>`.
 
+Functions which return values of the type they are given are declared generic in their signature, with the same marker:
+
+```rust,ignore
+fn get_component(
+    ctxt: FunctionCallContext,
+    entity: V<Entity>,
+    registration: TypeOf<V<ScriptComponentRegistration>, A>,
+) -> Result<Option<ValueOf<A>>, InteropError>
+```
+
+`TypeOf<R, A>` is a type passed as `R`, `ValueOf<A>` a reference to a value of it. They only change the documentation, i.e. `world.get_component(entity, Transform)` is a `Transform` in Lua.
+
 ## What to bind
 
 Every reflected type is already usable from scripts without any bindings:
