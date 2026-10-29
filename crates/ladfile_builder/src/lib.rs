@@ -630,6 +630,9 @@ impl<'t> LadFileBuilder<'t> {
                         ),
                     }
                 }
+                LadFunctionNamespace::Type(LadNamedType::Param { .. }) => warn!(
+                    "Function {function_id} is on a generic parameter, which has no functions of its own."
+                ),
                 // variants are not types, backends find their functions by namespace
                 LadFunctionNamespace::Global
                 | LadFunctionNamespace::Variant { .. }
@@ -995,8 +998,12 @@ impl<'t> LadFileBuilder<'t> {
     }
 
     /// The named type of a value or reference: an instantiation of a declared generic type is the generic type applied
-    /// to its arguments, i.e. `Handle<Image>`, any other type is its id. Also adds the types to the file if `register` is set.
+    /// to its arguments, i.e. `Handle<Image>`, in the layout of a generic type a marker is the parameter it stands for,
+    /// any other type is its id. Also adds the types to the file if `register` is set.
     fn lad_named_type(&mut self, type_info: &'static TypeInfo, register: bool) -> LadNamedType {
+        if is_param_marker(type_info.type_id()) {
+            return marker_param(type_info.type_path());
+        }
         if register {
             self.add_type_info(type_info);
         }
@@ -1023,14 +1030,9 @@ impl<'t> LadFileBuilder<'t> {
             Box::new(builder.lad_kind(inner, register))
         };
         match through_type {
-            // in the layout of a generic type, the markers are its parameters
-            ThroughTypeInfo::Ref(type_info)
-            | ThroughTypeInfo::Mut(type_info)
-            | ThroughTypeInfo::Val(type_info)
-            | ThroughTypeInfo::Opaque(type_info)
-                if is_param_marker(type_info.type_id()) =>
-            {
-                marker_param(type_info.type_path())
+            // in the layout of a generic type, the markers are its parameters, see `lad_named_type` for references to them
+            ThroughTypeInfo::Opaque(type_info) if is_param_marker(type_info.type_id()) => {
+                LadTypeKind::Val(marker_param(type_info.type_path()))
             }
             ThroughTypeInfo::Ref(type_info) => {
                 LadTypeKind::Ref(self.lad_named_type(type_info, register))
@@ -1656,7 +1658,7 @@ mod test {
     variant_names!(
         LadTypeKind, ALL_LAD_KINDS, lad_kind_name:
         Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple,
-        TupleWithRest, Array, Primitive, Union, Unknown, Fields, Param
+        TupleWithRest, Array, Primitive, Union, Unknown, Fields
     );
 
     /// Records every kind found anywhere in the given kind
@@ -1685,8 +1687,7 @@ mod test {
             | LadTypeKind::UntypedTuple
             | LadTypeKind::Primitive(_)
             | LadTypeKind::Unknown(_)
-            | LadTypeKind::Fields { .. }
-            | LadTypeKind::Param(_) => {}
+            | LadTypeKind::Fields { .. } => {}
         }
     }
 
@@ -2106,7 +2107,7 @@ mod test {
         else {
             panic!("expected a struct, got {:?}", generic_type.layout);
         };
-        let param = || LadTypeKind::Param("T".into());
+        let param = || LadTypeKind::Val(LadNamedType::Param { param: "T".into() });
         let kinds: Vec<_> = fields.iter().map(|f| (f.name.as_str(), &f.type_)).collect();
         assert_eq!(
             kinds,

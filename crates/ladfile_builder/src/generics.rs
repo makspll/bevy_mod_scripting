@@ -19,8 +19,10 @@ pub(crate) fn is_param_marker(type_id: TypeId) -> bool {
 
 /// The parameter a marker stands for, named by the marker's path (which no declared name is) until
 /// [`LadFileBuilder::make_or_get_generic_layout`] names it as declared.
-pub(crate) fn marker_param(type_path: &str) -> LadTypeKind {
-    LadTypeKind::Param(type_path.to_owned())
+pub(crate) fn marker_param(type_path: &str) -> LadNamedType {
+    LadNamedType::Param {
+        param: type_path.to_owned(),
+    }
 }
 
 /// Collects the generic types the kind applies to arguments, i.e. `Handle` for `Vec<Handle<T>>` or `Fields<Handle<T>>`.
@@ -182,7 +184,12 @@ impl LadFileBuilder<'_> {
             .iter()
             .zip(&self.generic_types[index].params)
         {
-            layout.replace_param(generic.type_path(), &LadTypeKind::Param(name.clone()));
+            layout.replace_param(
+                generic.type_path(),
+                &LadTypeKind::Val(LadNamedType::Param {
+                    param: name.clone(),
+                }),
+            );
         }
         self.generic_types[index].layout = Some(layout.clone());
         layout
@@ -267,7 +274,7 @@ impl LadFileBuilder<'_> {
         register: bool,
     ) -> LadTypeKind {
         if is_param_marker(arg.type_id()) {
-            return marker_param(arg.type_path());
+            return LadTypeKind::Val(marker_param(arg.type_path()));
         }
         // reflection only gives the arguments as type ids
         let type_info = self.type_registry.get_type_info(arg.type_id());
