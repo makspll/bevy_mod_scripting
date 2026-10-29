@@ -1,7 +1,9 @@
 //! The classes of generic types (see [`generic_type_modules`]), and the untyped overloads of generic functions (see [`erase_generics`]).
 
+use indexmap::IndexMap;
 use ladfile::{
-    LadFile, LadGenericType, LadInstantiation, LadNamedType, LadTypeKind, ReflectionPrimitiveKind,
+    LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstantiation, LadNamedType,
+    LadTypeKind, ReflectionPrimitiveKind,
 };
 
 use crate::lua_declaration_file::{ClassField, FieldScope, LuaClass, LuaModule, LuaType};
@@ -97,7 +99,8 @@ fn variant_modules(
     (fields, modules)
 }
 
-/// The subclasses of the instantiations with functions of their own, i.e. `pause` on `time.Time.Virtual : time.Time<time.Virtual>`.
+/// The subclasses of the instantiations with functions of their own, i.e. `pause` on `time.Time.Virtual : time.Time<time.Virtual>`,
+/// and of their variants with functions, see [`instantiation_variant_functions`].
 fn instantiation_modules(
     ladfile: &LadFile,
     generic_type: &LadGenericType,
@@ -138,6 +141,56 @@ fn instantiation_modules(
                 }
             })
             .collect();
+        // variants with functions of their own get a class too, i.e. `asset.Handle.Image.Strong : asset.Handle.Strong<render.Image>`
+        let mut fields = vec![];
+        let mut variant_modules = vec![];
+        for (variant, functions) in
+            instantiation_variant_functions(ladfile, generic_type, instantiation)
+        {
+            let variant_class = variant_class_name(&class_name, variant);
+            fields.push(ClassField {
+                name: variant.to_string(),
+                ty: LuaType::Alias(variant_class.clone()),
+                scope: FieldScope::Public,
+                optional: false,
+                description: None,
+            });
+            let functions = functions
+                .into_iter()
+                .filter_map(|function| match lad_function_to_lua_function(ladfile, function) {
+                    Ok(mut lua_function) => {
+                        // the receiver is the variant itself
+                        if let Some(receiver) = lua_function.params.first_mut() {
+                            receiver.ty = LuaType::Alias(variant_class.clone());
+                        }
+                        Some(lua_function)
+                    }
+                    Err(err) => {
+                        log::warn!(
+                            "Error converting function {} for variant {variant_class}: {err}. Ignoring function.",
+                            function.identifier
+                        );
+                        None
+                    }
+                })
+                .collect();
+            variant_modules.push(LuaModule {
+                name: variant_class.clone(),
+                table: variant_class.replace('.', "_"),
+                namespace: generic_type.namespace.clone(),
+                class: Some(LuaClass {
+                    name: variant_class,
+                    parents: vec![LuaType::Generic {
+                        name: variant_class_name(name, variant),
+                        args: args.clone(),
+                    }],
+                    documentation: Some(format!("The `{variant}` variant of `{class_name}`.")),
+                    ..Default::default()
+                }),
+                functions,
+                ..Default::default()
+            });
+        }
         modules.push(LuaModule {
             name: class_name.clone(),
             table: class_name.replace('.', "_"),
@@ -148,6 +201,7 @@ fn instantiation_modules(
                     name: name.to_owned(),
                     args,
                 }],
+                fields,
                 generics: vec![],
                 documentation: generic_type.documentation.clone(),
                 ..Default::default()
@@ -155,12 +209,44 @@ fn instantiation_modules(
             functions,
             ..Default::default()
         });
+        modules.extend(variant_modules);
     }
     modules
 }
 
-/// The class of an instantiation of a generic type with functions of its own, i.e. `time.Time.Virtual` for `Time<Virtual>`,
-/// which extends the generic class applied to the arguments. Instantiations without functions of their own have none.
+/// The functions on the variants of the instantiation, by variant, i.e. `new` on `Strong` of `Handle<Image>`, see [`LadFunctionNamespace::Variant`].
+fn instantiation_variant_functions<'a>(
+    ladfile: &'a LadFile,
+    generic_type: &LadGenericType,
+    instantiation: &LadInstantiation,
+) -> IndexMap<&'a str, Vec<&'a LadFunction>> {
+    let mut by_variant = IndexMap::<_, Vec<_>>::new();
+    for function in ladfile.functions.values() {
+        if let LadFunctionNamespace::Variant {
+            type_id:
+                LadNamedType::Generic {
+                    generic_type: id,
+                    args,
+                },
+            variant,
+        } = &function.namespace
+            && args == &instantiation.args
+            && ladfile
+                .generic_types
+                .get(id)
+                .is_some_and(|g| std::ptr::eq(g, generic_type))
+        {
+            by_variant
+                .entry(variant.as_ref())
+                .or_default()
+                .push(function);
+        }
+    }
+    by_variant
+}
+
+/// The class of an instantiation of a generic type with functions of its own or on its variants, i.e. `time.Time.Virtual`
+/// for `Time<Virtual>`, which extends the generic class applied to the arguments. Instantiations without functions have none.
 ///
 /// It is named after the identifiers of the arguments, joined by `_` (`Time.Virtual`, `Foo.Image_Mesh`), unless they aren't
 /// types of the file or clash with a variant. Its table is the class name with `_` for `.`, a local table, as the generic class
@@ -170,7 +256,9 @@ pub(super) fn instantiation_class_name(
     generic_type: &LadGenericType,
     instantiation: &LadInstantiation,
 ) -> Option<String> {
-    if instantiation.associated_functions.is_empty() {
+    if instantiation.associated_functions.is_empty()
+        && instantiation_variant_functions(ladfile, generic_type, instantiation).is_empty()
+    {
         return None;
     }
     let generic_class = qualified(&generic_type.namespace, &generic_type.identifier);
