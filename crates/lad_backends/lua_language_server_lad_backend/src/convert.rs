@@ -1521,15 +1521,15 @@ mod test {
             args: vec![arg],
         };
         let of_plain = applied(LadTypeKind::Val(plain.clone().into()));
-        let mut add = |name: &'static str, namespace: LadNamedType, ret: LadTypeKind| {
+        let mut add = |name: &'static str, namespace: LadFunctionNamespace, ret: LadTypeKind| {
             let id = LadFunctionId::new_string_id(name.into());
             file.functions.insert(
                 id.clone(),
                 LadFunction {
-                    namespace: LadFunctionNamespace::Type(namespace.clone()),
+                    namespace,
                     identifier: name.into(),
                     overload_index: None,
-                    arguments: vec![arg("_self", LadTypeKind::Ref(namespace))],
+                    arguments: vec![arg("_self", LadTypeKind::Ref(of_plain.clone()))],
                     return_type: arg("return", ret),
                     documentation: None,
                     metadata: LadFunctionMetadata {
@@ -1543,8 +1543,16 @@ mod test {
         };
         let only = add(
             "only_on_plain",
-            of_plain.clone(),
+            LadFunctionNamespace::Type(of_plain.clone()),
             LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool),
+        );
+        add(
+            "new",
+            LadFunctionNamespace::Variant {
+                type_id: of_plain.clone(),
+                variant: "Some".into(),
+            },
+            LadTypeKind::Val(of_plain.clone()),
         );
         let generic_type = file.generic_types.get_mut(&generic_id).unwrap();
         generic_type.instantiations.push(ladfile::LadInstantiation {
@@ -1567,6 +1575,15 @@ mod test {
             ),
             "{rendered}"
         );
+        // so are the functions of its variants, on a subclass of the generic variant class
+        for expected in [
+            "---@field  Some ladfile_builder.OpaqueGenericType.PlainStructType.Some",
+            "---@class ladfile_builder.OpaqueGenericType.PlainStructType.Some : ladfile_builder.OpaqueGenericType.Some<ladfile_builder.PlainStructType>",
+            "---@param _self ladfile_builder.OpaqueGenericType.PlainStructType.Some",
+            "function ladfile_builder_OpaqueGenericType_PlainStructType_Some.new(",
+        ] {
+            assert!(rendered.contains(expected), "{expected}\n{rendered}");
+        }
         assert_eq!(
             lad_instance_to_lua_type(&file, &LadTypeKind::Val(of_plain))
                 .map(|ty| format!("{ty:?}"))
