@@ -1657,7 +1657,7 @@ mod test {
         // so are the functions of its variants, on a subclass of the generic variant class
         for expected in [
             "---@field  Some ladfile_builder.OpaqueGenericType.PlainStructType.Some",
-            "---@class ladfile_builder.OpaqueGenericType.PlainStructType.Some : ladfile_builder.OpaqueGenericType.Some<ladfile_builder.PlainStructType>",
+            "---@class ladfile_builder.OpaqueGenericType.PlainStructType.Some : ladfile_builder.OpaqueGenericType.Some<ladfile_builder.PlainStructType>,ladfile_builder.OpaqueGenericType.PlainStructType",
             "---@param _self ladfile_builder.OpaqueGenericType.PlainStructType.Some",
             "function ladfile_builder_OpaqueGenericType_PlainStructType_Some.new(",
         ] {
