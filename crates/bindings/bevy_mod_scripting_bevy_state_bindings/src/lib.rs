@@ -7,7 +7,11 @@ use bevy_app::{App, Plugin};
 use bevy_ecs::world::World;
 use bevy_mod_scripting_bindings::{
     InteropError, ReferencePart, ReflectReference, ScriptTypeRegistration, WorldExtensions,
-    function::{from::V, script_function::FunctionCallContext},
+    function::{
+        from::V,
+        generics::{A, TypeOf, ValueOf},
+        script_function::FunctionCallContext,
+    },
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_reflect::{
@@ -50,10 +54,10 @@ impl World {
     /// The state type is passed as its registration, see `world.get_type_by_name`.
     fn get_state(
         ctxt: FunctionCallContext,
-        state_type: V<ScriptTypeRegistration>,
-    ) -> Result<Option<ReflectReference>, InteropError> {
+        state_type: TypeOf<V<ScriptTypeRegistration>, A>,
+    ) -> Result<Option<ValueOf<A>>, InteropError> {
         let world = ctxt.world()?;
-        let state_type = state_type.into_inner();
+        let state_type = state_type.into_inner().into_inner();
         let state_path = format!(
             "bevy_state::state::resources::State<{}>",
             state_type.type_name()
@@ -73,7 +77,7 @@ impl World {
             resource.type_registration().type_id(),
         );
         reference.push_path(ReferencePart::IntegerAccess(0, false));
-        Ok(Some(reference))
+        Ok(Some(ValueOf::new(reference)))
     }
 
     /// Sets the state to change to in the next state transition, for the type of the given state value.
