@@ -290,7 +290,8 @@ pub(super) fn erase_generics(kind: &LadTypeKind, generics: &[String]) -> LadType
     let mut kind = kind.clone();
     match &kind {
         LadTypeKind::Type { of, erased } if is_generic(of) => return (**erased).clone(),
-        kind if kind.named().is_some_and(is_generic) => {
+        // values of a parameter, or of a type applied to one like `Handle<A>`, are references
+        kind if kind.named().is_some() && mentions_generic(kind, generics) => {
             return LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference);
         }
         _ => {}
@@ -299,4 +300,18 @@ pub(super) fn erase_generics(kind: &LadTypeKind, generics: &[String]) -> LadType
         *child = erase_generics(child, generics);
     }
     kind
+}
+
+/// Whether the kind uses one of the given parameters of a generic function.
+pub(super) fn mentions_generic(kind: &LadTypeKind, generics: &[String]) -> bool {
+    let mut mentions = false;
+    kind.for_each(&mut |kind| {
+        let named = match kind {
+            LadTypeKind::Type { of, .. } | LadTypeKind::Fields { of, .. } => Some(of),
+            kind => kind.named(),
+        };
+        mentions |=
+            matches!(named, Some(LadNamedType::Param { param }) if generics.contains(param));
+    });
+    mentions
 }
