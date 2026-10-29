@@ -803,7 +803,11 @@ fn enum_variant_modules(
                 namespace: lad_type.namespace.clone(),
                 class: Some(LuaClass {
                     name: class_name,
-                    parents: vec![LuaType::Alias(variant_parent.clone())],
+                    // a variant is accepted wherever its enum is
+                    parents: vec![
+                        LuaType::Alias(enum_name.clone()),
+                        LuaType::Alias(variant_parent.clone()),
+                    ],
                     fields: vec![],
                     generics: vec![],
                     documentation: Some(format!(
@@ -1388,7 +1392,7 @@ mod test {
         // variants without fields get a class like any other, taking no fields
         assert!(
             rendered.contains(
-                "---@class ladfile_builder.EnumType.Unit : ladfile_builder.EnumVariantRef"
+                "---@class ladfile_builder.EnumType.Unit : ladfile_builder.EnumType,ladfile_builder.EnumVariantRef"
             ),
             "{rendered}"
         );
@@ -1532,8 +1536,9 @@ mod test {
             "{class}"
         );
         assert!(
-            rendered
-                .contains("---@class ladfile_builder.OpaqueGenericType.Some<T> : EnumVariantRef"),
+            rendered.contains(
+                "---@class ladfile_builder.OpaqueGenericType.Some<T> : ladfile_builder.OpaqueGenericType<T>,EnumVariantRef"
+            ),
             "{rendered}"
         );
     }
@@ -1652,7 +1657,7 @@ mod test {
         // so are the functions of its variants, on a subclass of the generic variant class
         for expected in [
             "---@field  Some ladfile_builder.OpaqueGenericType.PlainStructType.Some",
-            "---@class ladfile_builder.OpaqueGenericType.PlainStructType.Some : ladfile_builder.OpaqueGenericType.Some<ladfile_builder.PlainStructType>",
+            "---@class ladfile_builder.OpaqueGenericType.PlainStructType.Some : ladfile_builder.OpaqueGenericType.Some<ladfile_builder.PlainStructType>,ladfile_builder.OpaqueGenericType.PlainStructType",
             "---@param _self ladfile_builder.OpaqueGenericType.PlainStructType.Some",
             "function ladfile_builder_OpaqueGenericType_PlainStructType_Some.new(",
         ] {

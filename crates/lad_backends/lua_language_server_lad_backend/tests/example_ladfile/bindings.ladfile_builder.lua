@@ -51,19 +51,19 @@ local EnumType = {}
 
 
 
----@class ladfile_builder.EnumType.Unit : EnumVariantRef
+---@class ladfile_builder.EnumType.Unit : ladfile_builder.EnumType,EnumVariantRef
 --- The `Unit` variant of `ladfile_builder.EnumType`.
 EnumType.Unit = {}
 
 
 
----@class ladfile_builder.EnumType.Struct : EnumVariantRef
+---@class ladfile_builder.EnumType.Struct : ladfile_builder.EnumType,EnumVariantRef
 --- The `Struct` variant of `ladfile_builder.EnumType`.
 EnumType.Struct = {}
 
 
 
----@class ladfile_builder.EnumType.TupleStruct : EnumVariantRef
+---@class ladfile_builder.EnumType.TupleStruct : ladfile_builder.EnumType,EnumVariantRef
 --- The `TupleStruct` variant of `ladfile_builder.EnumType`.
 EnumType.TupleStruct = {}
 
