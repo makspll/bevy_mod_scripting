@@ -180,10 +180,14 @@ fn instantiation_modules(
                 namespace: generic_type.namespace.clone(),
                 class: Some(LuaClass {
                     name: variant_class,
-                    parents: vec![LuaType::Generic {
-                        name: variant_class_name(name, variant),
-                        args: args.clone(),
-                    }],
+                    // a variant is accepted wherever its instantiation is
+                    parents: vec![
+                        LuaType::Generic {
+                            name: variant_class_name(name, variant),
+                            args: args.clone(),
+                        },
+                        LuaType::Alias(class_name.clone()),
+                    ],
                     documentation: Some(format!("The `{variant}` variant of `{class_name}`.")),
                     ..Default::default()
                 }),
