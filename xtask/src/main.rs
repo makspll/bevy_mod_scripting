@@ -20,6 +20,9 @@ use xtask::{
     workspace_dir,
 };
 
+/// The `lua-language-server` release the Lua tests are type-checked with
+const LUALS_VERSION: &str = "3.19.2";
+
 /// Enumerates the binaries available in the project and their paths
 #[derive(
     Debug,
@@ -192,6 +195,13 @@ impl App {
                     cmd.arg("--device-tests");
                 }
             }
+            Xtasks::CheckLuaTypes { bless } => {
+                cmd.arg("check-lua-types");
+
+                if bless {
+                    cmd.arg("--bless");
+                }
+            }
             Xtasks::Example { example } => {
                 cmd.arg("example").arg(example);
             }
@@ -273,7 +283,11 @@ impl App {
             init_args: self.subcmd.ci_init_args(),
             cache_key: format!("{}{target}-{os}", self.subcmd.as_ref().to_lowercase()),
             run_on_forks: !matches!(self.subcmd, Xtasks::Bencher { .. } | Xtasks::Bench { .. }),
-            requires_gpu: matches!(self.subcmd, Xtasks::Docs { .. }),
+            // both run the docgen example
+            requires_gpu: matches!(
+                self.subcmd,
+                Xtasks::Docs { .. } | Xtasks::CheckLuaTypes { .. }
+            ),
             requires_android_emulator: matches!(
                 self.subcmd,
                 Xtasks::Test {
@@ -408,6 +422,8 @@ enum InitTool {
     Bencher,
     /// `mdbook` and `mdbook-mermaid`, used by the `docs` xtask
     Mdbook,
+    /// `lua-language-server`, used by the `check_lua_types` xtask. Linux only.
+    Luals,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
@@ -528,6 +544,14 @@ enum Xtasks {
     /// Rewrites the expected outputs of the LAD tests: the LAD file, then the Lua declarations and mdbook pages generated from it,
     /// and checks them. Needs `mdbook` on the PATH (`cargo xtask init`).
     BlessLad,
+    /// Type-checks the Lua script tests with `lua-language-server` against the generated declarations (`docgen -- testlib`),
+    /// and fails if the number of diagnostics of any code grew past `xtask/luals_baseline.json`.
+    /// Needs `lua-language-server` (`cargo xtask init --tools luals`).
+    CheckLuaTypes {
+        /// Rewrite the baseline with the current counts
+        #[clap(long)]
+        bless: bool,
+    },
     /// Perform a full check as it would be done in CI, except not parallelised
     CiCheck,
     /// Generate a json job matrix, containing, describing maximally parallelised jobs for running in CI/CD.
@@ -600,6 +624,7 @@ impl Xtasks {
             // the preprocessor tests build a book with `mdbook`
             Xtasks::Docs { .. } | Xtasks::Test { .. } => &[InitTool::Mdbook],
             Xtasks::Bencher { .. } | Xtasks::Bench { .. } => &[InitTool::Bencher],
+            Xtasks::CheckLuaTypes { .. } => &[InitTool::Luals],
             _ => &[],
         };
 
@@ -654,6 +679,7 @@ impl Xtasks {
                 mobile: None,
             } => Self::test(app_settings, package, name),
             Xtasks::BlessLad => Self::bless_lad(app_settings),
+            Xtasks::CheckLuaTypes { bless } => Self::check_lua_types(app_settings, bless),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init {
                 dont_update_ide,
@@ -685,8 +711,12 @@ impl Xtasks {
                         // these only need to run on one OS, the others are covered by the OS specific
                         // checks and tests. Benchmarks are the exception, each OS publishes to its own
                         // bencher testbed on main
-                        let step_should_run_on_main_os =
-                            matches!(row.subcmd, Xtasks::Build { .. } | Xtasks::Docs { .. });
+                        let step_should_run_on_main_os = matches!(
+                            row.subcmd,
+                            Xtasks::Build { .. }
+                                | Xtasks::Docs { .. }
+                                | Xtasks::CheckLuaTypes { .. }
+                        );
 
                         if !os.is_main_os() && step_should_run_on_main_os {
                             continue;
@@ -1476,6 +1506,140 @@ impl Xtasks {
         Ok(())
     }
 
+    /// Where [`Self::install_luals`] unpacks `lua-language-server`, next to the other cargo installed tools
+    fn luals_dir() -> PathBuf {
+        let cargo_home = std::env::var_os("CARGO_HOME")
+            .map(PathBuf::from)
+            .or_else(|| std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".cargo")))
+            .unwrap_or_else(|| PathBuf::from(".cargo"));
+        cargo_home.join("luals").join(LUALS_VERSION)
+    }
+
+    fn install_luals(app_settings: &GlobalArgs) -> Result<()> {
+        let dir = Self::luals_dir();
+        if dir.join("bin").join("lua-language-server").exists() {
+            return Ok(());
+        }
+        if !cfg!(all(target_os = "linux", target_arch = "x86_64")) {
+            bail!("installing lua-language-server is only supported on x86_64 linux");
+        }
+        std::fs::create_dir_all(&dir)?;
+        let script = format!(
+            "curl -sSfL https://github.com/LuaLS/lua-language-server/releases/download/{LUALS_VERSION}/lua-language-server-{LUALS_VERSION}-linux-x64.tar.gz | tar xz -C '{}'",
+            dir.display()
+        );
+        run_system_command(
+            app_settings,
+            "sh",
+            "Failed to install lua-language-server",
+            vec!["-c", script.as_str()],
+            None,
+            false,
+        )?;
+        Ok(())
+    }
+
+    /// Counts the diagnostics `lua-language-server` reports for the Lua script tests, by diagnostic code,
+    /// against the declarations generated by the docgen example.
+    fn check_lua_types(app_settings: GlobalArgs, bless: bool) -> Result<()> {
+        info!("Running docgen example to generate declarations");
+        let mut docgen_settings = app_settings.clone();
+        docgen_settings.features = docs_features();
+        Self::example_with_args(docgen_settings, "docgen", &["testlib"])?;
+
+        let workspace = workspace_dir(&app_settings)?;
+        let work = std::env::temp_dir().join("bms_luals_check");
+        std::fs::create_dir_all(&work)?;
+        let config = work.join("luarc.json");
+        std::fs::write(
+            &config,
+            serde_json::to_string_pretty(&serde_json::json!({
+                "runtime.version": "Lua 5.4",
+                "workspace.library": [workspace.join("assets").join("definitions")],
+                "workspace.checkThirdParty": false,
+            }))?,
+        )?;
+        let report = work.join("report.json");
+        let _ = std::fs::remove_file(&report);
+
+        let luals = Self::luals_dir().join("bin").join("lua-language-server");
+        let args: Vec<OsString> = vec![
+            "--check".into(),
+            workspace.join("assets").join("tests").into(),
+            "--configpath".into(),
+            config.into(),
+            "--logpath".into(),
+            work.join("log").into(),
+            "--metapath".into(),
+            work.join("meta").into(),
+            "--checklevel=Warning".into(),
+            "--check_format=json".into(),
+            "--check_out_path".into(),
+            report.clone().into(),
+        ];
+        // exits with 1 when there are diagnostics
+        let status = Command::new(&luals)
+            .args(args)
+            .current_dir(&workspace)
+            .status()
+            .with_context(|| {
+                format!("Failed to run {luals:?}, install it with `cargo xtask init --tools luals`")
+            })?;
+        if !matches!(status.code(), Some(0 | 1)) {
+            bail!("lua-language-server failed: {status}");
+        }
+
+        // the report is only written when there are diagnostics
+        let diagnostics: HashMap<String, Vec<serde_json::Value>> = if report.exists() {
+            serde_json::from_slice(&std::fs::read(&report)?)?
+        } else {
+            Default::default()
+        };
+        let mut counts = std::collections::BTreeMap::<String, usize>::new();
+        for diagnostic in diagnostics.values().flatten() {
+            let code = diagnostic["code"].as_str().unwrap_or("unknown");
+            *counts.entry(code.to_owned()).or_default() += 1;
+        }
+
+        let baseline_path = workspace.join("xtask").join("luals_baseline.json");
+        if bless {
+            std::fs::write(
+                &baseline_path,
+                serde_json::to_string_pretty(&counts)? + "\n",
+            )?;
+            info!("Wrote {baseline_path:?}: {counts:?}");
+            return Ok(());
+        }
+
+        let baseline: std::collections::BTreeMap<String, usize> =
+            serde_json::from_slice(&std::fs::read(&baseline_path)?)
+                .with_context(|| format!("reading {baseline_path:?}"))?;
+        let mut grew = vec![];
+        let mut shrank = false;
+        for code in counts.keys().chain(baseline.keys()).unique() {
+            let (now, before) = (
+                counts.get(code).copied().unwrap_or(0),
+                baseline.get(code).copied().unwrap_or(0),
+            );
+            shrank |= now < before;
+            if now > before {
+                grew.push(format!("{code}: {before} -> {now}"));
+            }
+        }
+        if !grew.is_empty() {
+            bail!(
+                "Lua tests have more type errors than the baseline: {}",
+                grew.join(", ")
+            );
+        }
+        if shrank {
+            info!(
+                "Fewer type errors than the baseline, lower it with `cargo xtask check-lua-types --bless`"
+            );
+        }
+        Ok(())
+    }
+
     fn ci_matrix(app_settings: GlobalArgs, full: bool, device_tests: bool) -> Result<Vec<App>> {
         // split up the tests we want to run into different jobs
         // everything that can be parallelised should be
@@ -1609,6 +1773,12 @@ impl Xtasks {
             },
         });
 
+        // the declarations the Lua tests are type-checked against
+        output.push(App {
+            global_args: default_args.clone(),
+            subcmd: Xtasks::CheckLuaTypes { bless: false },
+        });
+
         // benchmarks publish to bencher, so they only run for the full matrix. Pull requests run them on demand,
         // see the `Run benchmarks on PR` workflow
         if full {
@@ -1719,6 +1889,10 @@ impl Xtasks {
                 None,
                 false,
             )?;
+        }
+
+        if wants(InitTool::Luals) {
+            Self::install_luals(&app_settings)?;
         }
 
         let rustup_components_args = [
