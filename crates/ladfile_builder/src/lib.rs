@@ -25,7 +25,10 @@ use bevy_reflect::{
     NamedField, ReflectRef, TypeInfo, TypeRegistry, Typed, UnnamedField, enums::VariantInfo,
     std_traits::ReflectDefault,
 };
-use generics::{GenericTypeSpec, is_param_marker, marker_param, name_function_generics};
+use generics::{
+    GenericTypeSpec, instantiate_path, is_param_marker, marker_param, name_function_generics,
+    named_type_infos,
+};
 use ladfile::*;
 use std::{
     any::TypeId,
@@ -363,7 +366,8 @@ impl<'t> LadFileBuilder<'t> {
     /// Adds a function shared between all types as seen on the given type, see [`FunctionInfo::bind_to_type`].
     ///
     /// If the function is generic over the type it is called on, i.e. `load(asset_type: TypeOf<StaticTypeRef, A>) -> Handle<A>`,
-    /// the parameter is the given type: `Handle<Image>` on `Image`.
+    /// the parameter is the given type: `Handle<Image>` on `Image`. Such a function is only added if every type its signature
+    /// applies the parameter to is registered with the given type, i.e. not on `Vec3`, as `Handle<Vec3>` isn't a type.
     pub fn add_function_info_bound_to(
         &mut self,
         function_info: &FunctionInfo,
@@ -379,6 +383,24 @@ impl<'t> LadFileBuilder<'t> {
             _ => None,
         };
         let bound = function_info.bind_to_type(type_info);
+        if let Some((marker, with)) = instantiated {
+            let mut named = Vec::new();
+            for through_type in bound
+                .arg_info
+                .iter()
+                .filter_map(|arg| arg.type_info.as_ref())
+                .chain(bound.return_info.type_info.as_ref())
+            {
+                named_type_infos(through_type, &mut named);
+            }
+            let instantiable = named.iter().all(|named| {
+                instantiate_path(named.type_path(), marker.type_path(), with.type_path())
+                    .is_none_or(|path| self.type_registry.get_with_type_path(&path).is_some())
+            });
+            if !instantiable {
+                return self;
+            }
+        }
         let function_id = self.lad_function_id_from_info(&bound);
         let namespace = LadFunctionNamespace::Type(self.lad_named_type_of(type_info.type_id()));
         self.insert_function(function_id, namespace, &bound, instantiated)
@@ -1591,8 +1613,11 @@ mod test {
 
         #[derive(Asset, Reflect)]
         struct TestAsset;
+        #[derive(Reflect)]
+        struct NotAnAsset;
 
         let mut type_registry = TypeRegistry::default();
+        type_registry.register::<NotAnAsset>();
         type_registry.register::<TestAsset>();
         type_registry.register::<Handle<TestAsset>>();
         type_registry.register_type_data::<TestAsset, ReflectAsset>();
@@ -1607,9 +1632,12 @@ mod test {
             .add_generic_type::<Handle<A>>("test", &["A"], "")
             .unwrap();
         let asset = builder.lad_id_from_type_id(TypeId::of::<TestAsset>());
+        // `Handle<NotAnAsset>` isn't registered, so the function isn't documented on it
         let lad_file = builder
+            .add_function_info_bound_to(&info, NotAnAsset::type_info())
             .add_function_info_bound_to(&info, TestAsset::type_info())
             .build();
+        assert_eq!(lad_file.functions.len(), 1);
         let function = lad_file
             .functions
             .values()

@@ -61,11 +61,6 @@ pub fn is_asset_type(registry: &TypeRegistry, type_id: TypeId) -> bool {
         .is_some()
 }
 
-/// Whether the function only applies to asset types, i.e. takes or returns a `Handle<A>`.
-pub fn is_asset_function(info: &crate::docgen::info::FunctionInfo) -> bool {
-    info.mentions_type(TypeId::of::<bevy_asset::Handle<super::generics::A>>())
-}
-
 /// A table of the fields of the type a shared function is bound to.
 ///
 /// Fields are keyed by name, or for tuple-like types by their index.

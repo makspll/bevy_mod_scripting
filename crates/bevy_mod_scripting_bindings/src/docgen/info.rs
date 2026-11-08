@@ -9,7 +9,7 @@ use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{Reflect, TypeInfo};
 use std::{any::TypeId, borrow::Cow};
 
-use super::typed_through::{ThroughTypeInfo, TypedThrough};
+use super::typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedThrough};
 
 /// for things you can call and provide some introspection capability.
 #[diagnostic::on_unimplemented(
@@ -130,13 +130,13 @@ impl FunctionInfo {
             .any(|t| t.as_ref().is_some_and(ThroughTypeInfo::has_placeholders))
     }
 
-    /// Whether the signature mentions the given type, i.e. `Handle<A>` for functions which only apply to asset types.
-    pub fn mentions_type(&self, type_id: TypeId) -> bool {
+    /// Whether the signature contains the given placeholder, i.e. [`BoundPlaceholder::Handle`] for functions which only apply to asset types.
+    pub fn has_placeholder(&self, placeholder: BoundPlaceholder) -> bool {
         self.arg_info
             .iter()
             .map(|arg| &arg.type_info)
             .chain(std::iter::once(&self.return_info.type_info))
-            .any(|t| t.as_ref().is_some_and(|t| t.mentions_type(type_id)))
+            .any(|t| t.as_ref().is_some_and(|t| t.has_placeholder(placeholder)))
     }
 
     /// The signature of a function shared between all types, as seen on the given type.

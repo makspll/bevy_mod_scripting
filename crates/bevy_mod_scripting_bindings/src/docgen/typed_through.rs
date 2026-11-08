@@ -161,6 +161,11 @@ impl ThroughTypeInfo {
         self.has_placeholder_where(|_| true)
     }
 
+    /// Whether this contains the given [`ThroughTypeInfo::Bound`] placeholder.
+    pub fn has_placeholder(&self, placeholder: BoundPlaceholder) -> bool {
+        self.has_placeholder_where(|p| p == placeholder)
+    }
+
     fn has_placeholder_where(&self, matches: impl Fn(BoundPlaceholder) -> bool + Copy) -> bool {
         match self {
             ThroughTypeInfo::Bound(placeholder) => matches(*placeholder),
@@ -168,28 +173,6 @@ impl ThroughTypeInfo {
                 .children()
                 .into_iter()
                 .any(|inner| inner.has_placeholder_where(matches)),
-        }
-    }
-
-    /// Whether this mentions the given type, i.e. `Handle<A>` in `Option<Handle<A>>`.
-    pub fn mentions_type(&self, type_id: TypeId) -> bool {
-        match self {
-            ThroughTypeInfo::Ref(info)
-            | ThroughTypeInfo::Mut(info)
-            | ThroughTypeInfo::Val(info)
-            | ThroughTypeInfo::Opaque(info)
-            | ThroughTypeInfo::Fields {
-                type_info: info, ..
-            }
-            | ThroughTypeInfo::TypeOf { of: info, .. }
-                if info.type_id() == type_id =>
-            {
-                true
-            }
-            other => other
-                .children()
-                .into_iter()
-                .any(|inner| inner.mentions_type(type_id)),
         }
     }
 }
