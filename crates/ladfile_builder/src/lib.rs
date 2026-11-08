@@ -128,7 +128,6 @@ impl<'t> LadFileBuilder<'t> {
                 namespace: String::new(),
                 path: type_ident,
                 generics: vec![],
-                generic_type: None,
                 documentation: Some(docs.into().to_string()),
                 associated_functions: vec![],
                 layout: LadTypeLayout::Opaque,
@@ -199,7 +198,6 @@ impl<'t> LadFileBuilder<'t> {
                 namespace: String::new(),
                 path,
                 generics: vec![],
-                generic_type: None,
                 documentation: Some(documentation.trim().to_owned()),
                 associated_functions: vec![],
                 layout: LadTypeLayout::Opaque,
@@ -233,6 +231,15 @@ impl<'t> LadFileBuilder<'t> {
     pub fn add_type_info(&mut self, type_info: &TypeInfo) -> &mut Self {
         // markers are registered to describe generic types, they are not types of their own
         if is_param_marker(type_info.type_id()) {
+            return self;
+        }
+        // instantiations of declared generic types are excluded here as types are in `build`, since they aren't types
+        if self.exclude_types_involving_unregistered_types
+            && self
+                .matches_against_declared_generic_shape(type_info)
+                .is_some()
+            && self.has_unknowns(type_info.type_id())
+        {
             return self;
         }
         let registration = self.type_registry.get(type_info.type_id());
@@ -275,8 +282,23 @@ impl<'t> LadFileBuilder<'t> {
             .or_else(|| crate_.clone())
             .unwrap_or_default();
 
+        let metadata = LadTypeMetadata {
+            is_component,
+            is_resource,
+            is_bundle,
+            is_asset,
+            is_reflect,
+            mapped_to_primitive_kind: primitive_kind_of(type_info.type_id()),
+            default: self.lad_default(type_info.type_id()),
+            misc: Default::default(),
+        };
         let type_id = self.lad_id_from_type_id(type_info.type_id());
         let generic_type = self.add_generic_type_of(type_info);
+        // instantiations of declared generic types aren't types of the file, they are recorded on the generic type
+        if let Some(generic_type) = generic_type {
+            self.record_instantiation(&generic_type, type_info, metadata);
+            return self;
+        }
         let lad_type = LadTypeDefinition {
             identifier: type_info
                 .type_path_table()
@@ -291,7 +313,6 @@ impl<'t> LadFileBuilder<'t> {
                     name: param.name().to_string(),
                 })
                 .collect(),
-            generic_type,
             documentation: type_info.docs().map(|s| s.to_string()),
             associated_functions: Vec::new(),
             crate_,
@@ -300,16 +321,7 @@ impl<'t> LadFileBuilder<'t> {
             layout: self.lad_layout_from_type_info(type_info),
             generated,
             insignificance,
-            metadata: LadTypeMetadata {
-                is_component,
-                is_resource,
-                is_bundle,
-                is_asset,
-                is_reflect,
-                mapped_to_primitive_kind: primitive_kind_of(type_info.type_id()),
-                default: self.lad_default(type_info.type_id()),
-                misc: Default::default(),
-            },
+            metadata,
         };
         self.file.types.insert(type_id, lad_type);
         self
@@ -344,10 +356,18 @@ impl<'t> LadFileBuilder<'t> {
         let namespace = match function_info.namespace {
             FunctionScope::Builtin | FunctionScope::Member => LadFunctionNamespace::Global,
             FunctionScope::OnType(type_id) => {
-                LadFunctionNamespace::Type(self.lad_id_from_type_id(type_id))
+                LadFunctionNamespace::Type(self.lad_named_type_of(type_id))
             }
         };
         self.insert_function(function_id, namespace, function_info)
+    }
+
+    /// The named type of a registered type, see [`Self::lad_named_type`], or its id if it isn't registered
+    fn lad_named_type_of(&mut self, type_id: TypeId) -> LadNamedType {
+        match self.type_registry.get_type_info(type_id) {
+            Some(type_info) => self.lad_named_type(type_info, false),
+            None => self.lad_id_from_type_id(type_id).into(),
+        }
     }
 
     /// Adds a function which is a member of a script namespace, i.e. `import_namespace("bms").log_info`.
@@ -414,11 +434,13 @@ impl<'t> LadFileBuilder<'t> {
         enum_type: TypeId,
         variant: &str,
     ) -> &mut Self {
-        let type_id = self.lad_id_from_type_id(enum_type);
-        let function_id =
-            LadFunctionId::new_string_id(format!("{type_id}::{variant}::{}", function_info.name));
+        let function_id = LadFunctionId::new_string_id(format!(
+            "{}::{variant}::{}",
+            self.lad_id_from_type_id(enum_type),
+            function_info.name
+        ));
         let namespace = LadFunctionNamespace::Variant {
-            type_id,
+            type_id: self.lad_named_type_of(enum_type),
             variant: variant.to_owned().into(),
         };
         self.insert_function(function_id, namespace, function_info)
@@ -584,20 +606,28 @@ impl<'t> LadFileBuilder<'t> {
         // associate functions on type namespaces with their types
         for (function_id, function) in file.functions.iter() {
             match &function.namespace {
-                LadFunctionNamespace::Type(type_id) => {
+                LadFunctionNamespace::Type(LadNamedType::Id(type_id)) => {
                     if let Some(t) = file.types.get_mut(type_id) {
-                        if t.generic_type.is_some() {
-                            warn!(
-                                "Function {} is on {}, an instantiation of a generic type, functions of which backends don't document yet.",
-                                function_id, type_id
-                            );
-                        }
                         t.associated_functions.push(function_id.clone());
                     } else {
                         warn!(
                             "Function {} is on type {}, but the type is not registered in the LAD file.",
                             function_id, type_id
                         );
+                    }
+                }
+                LadFunctionNamespace::Type(LadNamedType::Generic { generic_type, args }) => {
+                    match file
+                        .generic_types
+                        .get_mut(generic_type)
+                        .and_then(|g| g.instantiations.iter_mut().find(|i| &i.args == args))
+                    {
+                        Some(instantiation) => {
+                            instantiation.associated_functions.push(function_id.clone())
+                        }
+                        None => warn!(
+                            "Function {function_id} is on an instantiation of {generic_type}, but the instantiation is not in the LAD file."
+                        ),
                     }
                 }
                 // variants are not types, backends find their functions by namespace
@@ -608,7 +638,7 @@ impl<'t> LadFileBuilder<'t> {
         }
 
         // the types scripts import from each namespace, by the name `import_namespace` gives them
-        let mut types_by_id: Vec<_> = file.documented_types().collect();
+        let mut types_by_id: Vec<_> = file.types.iter().collect();
         types_by_id.sort_by_key(|(id, _)| *id);
         let mut namespace_types = Vec::new();
         for (type_id, lad_type) in types_by_id {
@@ -1039,7 +1069,7 @@ impl<'t> LadFileBuilder<'t> {
                 rest: nested(self, rest),
             },
             ThroughTypeInfo::Fields { type_info, variant } => LadTypeKind::Fields {
-                type_id: leaf(self, type_info),
+                of: self.lad_named_type(type_info, register),
                 variant: variant.map(Cow::Borrowed),
             },
             // functions are bound before they are added, any placeholders left are documented as what they are at runtime
@@ -1494,6 +1524,21 @@ mod test {
             .build();
 
         assert_eq!(lad_file.types.len(), 0);
+
+        // as is an instantiation of a declared generic type, which isn't a type
+        let lad_file = LadFileBuilder::new_empty(&type_registry)
+            .set_exclude_including_unregistered(true)
+            .add_generic_type::<StructType<A>>("test", &["T"], "")
+            .unwrap()
+            .add_type::<StructType<Blah>>()
+            .build();
+
+        assert_eq!(lad_file.types.len(), 0);
+        assert!(
+            lad_file.generic_types.is_empty(),
+            "{:?}",
+            lad_file.generic_types
+        );
     }
 
     #[test]
@@ -1857,7 +1902,7 @@ mod test {
                 "fields",
                 BoundFields::through_type_info().bind_placeholders(FieldValue::type_info(), None),
                 Kind::Fields {
-                    type_id: value.clone(),
+                    of: value.clone().into(),
                     variant: None,
                 },
             ),
@@ -1866,7 +1911,7 @@ mod test {
                 BoundFields::through_type_info()
                     .bind_placeholders(FieldValue::type_info(), Some("Variant")),
                 Kind::Fields {
-                    type_id: value.clone(),
+                    of: value.clone().into(),
                     variant: Some(Cow::Borrowed("Variant")),
                 },
             ),
@@ -2013,8 +2058,8 @@ mod test {
         assert_eq!(builder.generic_types.len(), 1);
     }
 
-    /// The generic type `OneParam<T>`, declared and instantiated as `OneParam<f32>`
-    fn one_param_file() -> (LadFile, LadTypeId) {
+    /// The generic type `OneParam<T>`, declared and instantiated as `OneParam<f32>`, and the layout reflection gives `OneParam<f32>`
+    fn one_param_file() -> (LadFile, LadTypeLayout) {
         let mut registry = TypeRegistry::default();
         registry.register::<OneParam<f32>>();
         registry.register::<Vec<f32>>();
@@ -2025,30 +2070,33 @@ mod test {
             .unwrap()
             .add_type::<OneParam<f32>>()
             .add_type::<TwoParams<usize, f32>>();
-        let instantiation = builder.lad_id_from_type_id(TypeId::of::<OneParam<f32>>());
-        (builder.build(), instantiation)
+        let reflected = builder.lad_layout_from_type_info(OneParam::<f32>::type_info());
+        (builder.build(), reflected)
     }
 
     #[test]
     fn generic_types_describe_their_layout_in_terms_of_their_parameter() {
-        let (file, instantiation) = one_param_file();
-        let instantiation = &file.types[&instantiation];
+        let (file, reflected) = one_param_file();
 
-        // instantiations match by path and number of parameters
-        let generic_id = instantiation
-            .generic_type
-            .clone()
-            .expect("an instantiation");
+        // instantiations match by path and number of parameters, and are recorded on the generic type rather than being types
         assert_eq!(file.generic_types.len(), 1);
-        assert!(
-            file.types
-                .values()
-                .filter(|t| t.identifier == "TwoParams")
-                .all(|t| t.generic_type.is_none())
+        let (generic_id, generic_type) = file.generic_types.iter().next().unwrap();
+        assert!(file.types.values().all(|t| t.identifier != "OneParam"));
+        assert!(file.types.values().any(|t| t.identifier == "TwoParams"));
+        let f32_kind = LadTypeKind::Primitive(ReflectionPrimitiveKind::F32);
+        let [instantiation] = generic_type.instantiations.as_slice() else {
+            panic!(
+                "expected one instantiation, got {:?}",
+                generic_type.instantiations
+            );
+        };
+        assert_eq!(instantiation.args, std::slice::from_ref(&f32_kind));
+        assert_eq!(
+            file.get_instantiation(generic_id, std::slice::from_ref(&f32_kind)),
+            Some(instantiation)
         );
 
         // the parameter is named by the registration, and the fields of its type are the parameter
-        let generic_type = &file.generic_types[&generic_id];
         assert_eq!(generic_type.params, ["T"]);
         assert_eq!(generic_type.identifier, "OneParam");
         assert_eq!(generic_type.documentation.as_deref(), Some("docs"));
@@ -2074,11 +2122,10 @@ mod test {
 
         // and the instantiation is the generic type with the parameter replaced by its argument, by name
         let mut declared = generic_type.layout.clone();
-        let f32_kind = LadTypeKind::Primitive(ReflectionPrimitiveKind::F32);
         declared.replace_param("U", &f32_kind);
         assert_eq!(declared, generic_type.layout);
         declared.replace_param("T", &f32_kind);
-        assert_eq!(field_kinds(&declared), field_kinds(&instantiation.layout));
+        assert_eq!(field_kinds(&declared), field_kinds(&reflected));
 
         // sets only expose the type id of their values, which the registry knows for the registered marker,
         // declared generic types are applied to the parameter, and undeclared ones can't be, so they stay instantiated with the marker

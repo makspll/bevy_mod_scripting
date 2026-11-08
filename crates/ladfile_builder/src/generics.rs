@@ -23,10 +23,14 @@ pub(crate) fn marker_param(type_path: &str) -> LadTypeKind {
     LadTypeKind::Param(type_path.to_owned())
 }
 
-/// Collects the generic types the kind applies to arguments, i.e. `Handle` for `Vec<Handle<T>>`.
+/// Collects the generic types the kind applies to arguments, i.e. `Handle` for `Vec<Handle<T>>` or `Fields<Handle<T>>`.
 fn named_generic_types(kind: &LadTypeKind, named: &mut Vec<LadTypeId>) {
     kind.for_each(&mut |kind| {
-        if let Some(LadNamedType::Generic { generic_type, .. }) = kind.named() {
+        let named_type = match kind {
+            LadTypeKind::Fields { of, .. } => Some(of),
+            kind => kind.named(),
+        };
+        if let Some(LadNamedType::Generic { generic_type, .. }) = named_type {
             named.push(generic_type.clone());
         }
     })
@@ -196,6 +200,7 @@ impl LadFileBuilder<'_> {
             params: spec.params.clone(),
             documentation: Some(spec.documentation.clone()),
             layout,
+            instantiations: Vec::new(),
         }
     }
 
@@ -208,6 +213,29 @@ impl LadFileBuilder<'_> {
             self.file.generic_types.insert(id.clone(), generic_type);
         }
         Some(id)
+    }
+
+    /// Records the instantiation on its generic type, with its arguments and metadata, as it isn't a type of the file.
+    pub(crate) fn record_instantiation(
+        &mut self,
+        generic_type: &LadTypeId,
+        type_info: &TypeInfo,
+        metadata: LadTypeMetadata,
+    ) {
+        let args: Vec<_> = type_info
+            .generics()
+            .iter()
+            .map(|arg| self.lad_generic_arg_kind(arg, false))
+            .collect();
+        if let Some(generic) = self.file.generic_types.get_mut(generic_type)
+            && !generic.instantiations.iter().any(|i| i.args == args)
+        {
+            generic.instantiations.push(LadInstantiation {
+                args,
+                associated_functions: Vec::new(),
+                metadata,
+            });
+        }
     }
 
     /// The index of the declared generic type the type is an instantiation of, matched by path and number of parameters
