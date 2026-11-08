@@ -69,11 +69,7 @@ pub fn register_test_functions(world: &mut App) {
                 World::enumerate_test_components()
                     .iter()
                     .find(|(n, _, _)| n.contains(&name))
-                    .map(|(_, _, c)| {
-                        ReflectReference::new_allocated(
-                            c.unwrap_or(Entity::from_raw_u32(9999).unwrap()),
-                        )
-                    })
+                    .map(|(_, _, c)| V(c.unwrap_or(Entity::from_raw_u32(9999).unwrap())))
             },
         )
         .register(
@@ -144,19 +140,14 @@ pub fn register_test_functions(world: &mut App) {
     // helpers of the script tests, `import_namespace("test_utils").noop()`
     NamespaceBuilder::<NamespaceMembers>::in_namespace(world, "test_utils")
         .register("_make_invalid_entity", |_s: FunctionCallContext| {
-            let entity = Entity::from_raw_u32(u32::MAX - 2).unwrap();
-            ReflectReference::new_allocated(entity)
+            V(Entity::from_raw_u32(u32::MAX - 2).unwrap())
         })
         .register("_make_placeholder_entity", |_s: FunctionCallContext| {
-            let entity = Entity::PLACEHOLDER;
-            ReflectReference::new_allocated(entity)
+            V(Entity::PLACEHOLDER)
         })
         .register(
             "_entity_from_index",
-            |_s: FunctionCallContext, index: u32| {
-                let entity = Entity::from_raw_u32(index).unwrap();
-                ReflectReference::new_allocated(entity)
-            },
+            |_s: FunctionCallContext, index: u32| V(Entity::from_raw_u32(index).unwrap()),
         )
         .register("global_hello_world", || Ok("hi!"))
         .register("random", |start: Option<u32>, end: Option<u32>| {

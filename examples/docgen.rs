@@ -1,4 +1,6 @@
 use bevy::prelude::PluginGroup;
+use bevy::render::{RenderPlugin, settings::WgpuSettings};
+use bevy::winit::WinitPlugin;
 use bevy::{DefaultPlugins, app::App, ecs::reflect::AppTypeRegistry};
 use bevy_mod_scripting::BMSPlugin;
 use bevy_mod_scripting_bindings::AppScriptNamespaceMembers;
@@ -9,11 +11,34 @@ use ladfile_builder::plugin::{
 };
 use script_integration_test_harness::test_functions::register_test_functions;
 use std::path::PathBuf;
+use test_utils::test_data::register_test_types;
+
+const TEST_HARNESS_GLOBALS: &str = "---@meta
+
+---Calls `f`, which must throw an error matching the regex `pattern`.
+---@param f fun()
+---@param pattern string
+function assert_throws(f, pattern) end
+";
+
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     // headless bevy, kinda, I want to include as many plugins as I can which actually
     // provide reflected type definitions, but exclude anything that runs rendering stuff.
-    app.add_plugins(DefaultPlugins);
+    // no window and no gpu backend, so this runs on CI and in containers
+    app.add_plugins(
+        DefaultPlugins
+            .build()
+            .disable::<WinitPlugin>()
+            .set(RenderPlugin {
+                render_creation: WgpuSettings {
+                    backends: None,
+                    ..Default::default()
+                }
+                .into(),
+                ..Default::default()
+            }),
+    );
 
     // this example is used to drive the generated docs on the official BMS book
     app.add_plugins(BMSPlugin.set::<ScriptingFilesGenerationPlugin>(
@@ -31,6 +56,14 @@ fn main() -> std::io::Result<()> {
     // also includes the functions available to the script integration tests, i.e. to get completions while writing tests
     if std::env::args().skip(1).any(|arg| arg == "testlib") {
         register_test_functions(&mut app);
+        register_test_types(&mut app);
+        // `assert_throws` is a raw Lua global of the test harness, so it is not part of the ladfile
+        std::fs::write(
+            PathBuf::from("assets")
+                .join("definitions")
+                .join("test_harness.lua"),
+            TEST_HARNESS_GLOBALS,
+        )?;
     }
 
     // there are two ways to generate the ladfile
