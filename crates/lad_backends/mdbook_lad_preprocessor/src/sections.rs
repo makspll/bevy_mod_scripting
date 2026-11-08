@@ -8,7 +8,7 @@ use ladfile::{
     LadNamedType, LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout, LadVariant,
     LadVisitable,
 };
-use mdbook_preprocessor::book::{BookItem, Chapter};
+use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
 use crate::{
     argument_visitor::MarkdownArgumentVisitor,
@@ -155,8 +155,10 @@ impl<'a> Section<'a> {
         }
     }
 
-    /// convert into a chapter, including children
-    pub(crate) fn into_chapter(self, parent: Option<&Chapter>) -> Chapter {
+    /// convert into a chapter numbered `number`, including children
+    ///
+    /// mdbook nests the sidebar by the numbers, so every chapter has one, the book's `lad.css` hides them.
+    pub(crate) fn into_chapter(self, parent: Option<&Chapter>, number: SectionNumber) -> Chapter {
         let mut builder = MarkdownBuilder::new();
         self.to_markdown(&mut builder);
 
@@ -174,21 +176,25 @@ impl<'a> Section<'a> {
             .unwrap_or_default()
             .with_extension("");
 
-        // generated pages are unnumbered, numbers like `19.1.29.0.37.` only crowd the sidebar
         let mut chapter = Chapter {
             name: self.display_title(),
             content: builder.build(),
             parent_names: vec![parent.name.clone()],
             path: Some(parent_path.join(self.file_name())),
             source_path: Some(parent_source_path.join(self.file_name())),
-            number: None,
+            number: Some(number.clone()),
             sub_items: vec![],
         };
 
         chapter.sub_items = self
             .children()
             .into_iter()
-            .map(|c| c.into_chapter(Some(&chapter)))
+            .enumerate()
+            .map(|(index, child)| {
+                let mut child_number = number.clone();
+                child_number.push(index as u32);
+                child.into_chapter(Some(&chapter), child_number)
+            })
             .map(BookItem::Chapter)
             .collect();
 
@@ -403,39 +409,43 @@ impl<'a> Section<'a> {
                 })
                 .collect(),
             // the pages of the types stay next to the page of the namespace, so they link to each other
-            // in the same way no matter the namespace
-            SectionData::Namespace { namespace } => self
-                .ladfile
-                .types
-                .iter()
-                .filter(|(_, lad_type)| lad_type.namespace == namespace)
-                .map(|(lad_type_id, lad_type)| {
-                    Section::new(
-                        self.parent_path.clone(),
-                        self.ladfile,
-                        SectionData::TypeDetail {
-                            lad_type,
-                            lad_type_id,
-                        },
+            // in the same way no matter the namespace. They are sorted like the namespace's table of types
+            SectionData::Namespace { namespace } => {
+                let mut types: Vec<_> = self
+                    .ladfile
+                    .types
+                    .iter()
+                    .filter(|(_, lad_type)| lad_type.namespace == namespace)
+                    .map(|(lad_type_id, lad_type)| {
+                        Section::new(
+                            self.parent_path.clone(),
+                            self.ladfile,
+                            SectionData::TypeDetail {
+                                lad_type,
+                                lad_type_id,
+                            },
+                        )
+                    })
+                    .chain(
+                        self.ladfile
+                            .generic_types
+                            .iter()
+                            .filter(|(_, generic_type)| generic_type.namespace == namespace)
+                            .map(|(generic_type_id, generic_type)| {
+                                Section::new(
+                                    self.parent_path.clone(),
+                                    self.ladfile,
+                                    SectionData::GenericTypeDetail {
+                                        generic_type_id,
+                                        generic_type,
+                                    },
+                                )
+                            }),
                     )
-                })
-                .chain(
-                    self.ladfile
-                        .generic_types
-                        .iter()
-                        .filter(|(_, generic_type)| generic_type.namespace == namespace)
-                        .map(|(generic_type_id, generic_type)| {
-                            Section::new(
-                                self.parent_path.clone(),
-                                self.ladfile,
-                                SectionData::GenericTypeDetail {
-                                    generic_type_id,
-                                    generic_type,
-                                },
-                            )
-                        }),
-                )
-                .collect(),
+                    .collect();
+                types.sort_by_cached_key(|page| page.display_title().to_lowercase());
+                types
+            }
             // functions are documented on the page they are listed on
             SectionData::FunctionSummary
             | SectionData::TypeDetail { .. }
@@ -1326,7 +1336,7 @@ mod test {
         );
         // generic types which were not declared are only known by their instantiations
         assert!(
-            titles.contains(&"GenericStructType<Usize>".to_owned()),
+            titles.contains(&"GenericStructType<usize>".to_owned()),
             "{titles:?}"
         );
 
@@ -1356,7 +1366,7 @@ mod test {
         );
         // names which were fine before are unchanged
         assert_eq!(
-            linkify_filename("GenericStructType<Usize>"),
+            linkify_filename("GenericStructType<usize>"),
             "genericstructtypeusize"
         );
         assert_eq!(linkify_filename("Bindings Summary"), "bindings_summary");
@@ -1427,15 +1437,15 @@ mod test {
         for expected in [
             "PlainStructType",
             "EnumType",
-            "GenericStructType<Usize>",
+            "GenericStructType<usize>",
             "OpaqueGenericType<T>",
         ] {
             assert!(in_crate.contains(&expected.to_owned()), "{in_crate:?}");
         }
-        assert!(!in_crate.contains(&"Bool".to_owned()), "{in_crate:?}");
+        assert!(!in_crate.contains(&"bool".to_owned()), "{in_crate:?}");
 
         let root = types(&namespaces[1]);
-        assert!(root.contains(&"Bool".to_owned()), "{root:?}");
+        assert!(root.contains(&"bool".to_owned()), "{root:?}");
         assert!(!root.contains(&"PlainStructType".to_owned()), "{root:?}");
     }
 
@@ -1460,7 +1470,7 @@ mod test {
             .insert(LadTypeId::new_string_id("same_name".into()), definition);
 
         let chapter = Section::new(PathBuf::from("lad"), &ladfile, SectionData::TypeSummary)
-            .into_chapter(None);
+            .into_chapter(None, SectionNumber::new(vec![1]));
         let mut paths_found = Vec::new();
         paths(&chapter, &mut paths_found);
 

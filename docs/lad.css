@@ -5,6 +5,13 @@
     --content-max-width: 900px;
 }
 
+/* the chapters generated below "Core Bindings" are numbered so mdbook nests them in the sidebar,
+   but numbers like `19.1.29.3.` only crowd it */
+.sidebar .chapter-item a[href*="core_bindings/"] > strong,
+.chapter li.chapter-item a[href*="core_bindings/"] > strong {
+    display: none;
+}
+
 /* tables span the page, left aligned, with a light header */
 .lad-page ~ .table-wrapper {
     overflow-x: auto;

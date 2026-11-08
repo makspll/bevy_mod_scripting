@@ -5,7 +5,7 @@ use std::sync::OnceLock;
 
 use mdbook_preprocessor::{
     Preprocessor, PreprocessorContext,
-    book::{Book, BookItem, Chapter},
+    book::{Book, BookItem, Chapter, SectionNumber},
     errors::{self, Error},
 };
 use sections::{Section, SectionData};
@@ -63,16 +63,19 @@ impl LADPreprocessor {
 
         log::debug!("Parent path: {parent_path:?}");
 
-        let mut new_chapter = Section::new(
+        // the chapter keeps the number it has in the summary, which the pages generated below it extend
+        let number = chapter
+            .number
+            .clone()
+            .unwrap_or_else(|| SectionNumber::new(vec![0]));
+        let new_chapter = Section::new(
             parent_path,
             &ladfile,
             SectionData::Summary {
                 title: Some(chapter_title),
             },
         )
-        .into_chapter(parent);
-        // the chapter keeps the number it has in the summary, the pages generated below it have none
-        new_chapter.number = chapter.number.clone();
+        .into_chapter(parent, number);
         log::debug!(
             "New chapter: {}",
             serde_json::to_string_pretty(&new_chapter).unwrap_or_default()

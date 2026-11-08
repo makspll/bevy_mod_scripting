@@ -6,6 +6,32 @@ use ladfile::{ArgumentVisitor, LadVisitable};
 
 use crate::markdown::MarkdownBuilder;
 
+/// The name of a primitive: the primitives of the language are spelled as such, i.e. `f32` and `bool`
+pub(crate) fn primitive_name(primitive_kind: &ladfile::ReflectionPrimitiveKind) -> String {
+    use ladfile::ReflectionPrimitiveKind as P;
+    let name = primitive_kind.to_string();
+    match primitive_kind {
+        P::Bool
+        | P::Char
+        | P::Str
+        | P::Isize
+        | P::I8
+        | P::I16
+        | P::I32
+        | P::I64
+        | P::I128
+        | P::Usize
+        | P::U8
+        | P::U16
+        | P::U32
+        | P::U64
+        | P::U128
+        | P::F32
+        | P::F64 => name.to_lowercase(),
+        _ => name,
+    }
+}
+
 pub(crate) struct MarkdownArgumentVisitor<'a> {
     ladfile: &'a ladfile::LadFile,
     buffer: MarkdownBuilder,
@@ -61,30 +87,8 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     type Output = ();
 
     fn visit_primitive(&mut self, primitive_kind: &ladfile::ReflectionPrimitiveKind) {
-        use ladfile::ReflectionPrimitiveKind as P;
         let page = primitive_kind.to_string();
-        // the primitives of the language are spelled as such, i.e. `f32` and `bool`
-        let name = match primitive_kind {
-            P::Bool
-            | P::Char
-            | P::Str
-            | P::Isize
-            | P::I8
-            | P::I16
-            | P::I32
-            | P::I64
-            | P::I128
-            | P::Usize
-            | P::U8
-            | P::U16
-            | P::U32
-            | P::U64
-            | P::U128
-            | P::F32
-            | P::F64 => page.to_lowercase(),
-            _ => page.clone(),
-        };
-        self.link_or_text(name, page);
+        self.link_or_text(primitive_name(primitive_kind), page);
     }
 
     fn visit_type_id(&mut self, type_id: &ladfile::LadTypeId) {
@@ -101,10 +105,17 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         let type_identifier = self
             .ladfile
             .get_type_identifier(type_id, self.raw_type_id_replacement);
-        // types without an identifier, i.e. `()`, are named by their id
-        let type_identifier = match type_identifier.is_empty() {
-            true => type_id.to_string(),
-            false => type_identifier.into_owned(),
+        let primitive = self
+            .ladfile
+            .types
+            .get(type_id)
+            .and_then(|lad_type| lad_type.metadata.mapped_to_primitive_kind.as_ref());
+        let type_identifier = match (primitive, type_identifier.is_empty()) {
+            // types standing for primitives are named like them, i.e. `f32`
+            (Some(primitive), _) => primitive_name(primitive),
+            // types without an identifier, i.e. `()`, are named by their id
+            (None, true) => type_id.to_string(),
+            (None, false) => type_identifier.into_owned(),
         };
         // instantiations of undeclared generic types, declared ones are named by their generic type, see `visit_generic`
         if let Some(generics) = generics {
@@ -280,7 +291,7 @@ mod test {
         visitor.visit_type_id(second_type_id);
         assert_eq!(
             visitor.buffer.build(),
-            "GenericStructType<[Usize](root/asd/Usize)>"
+            "GenericStructType<[usize](root/asd/usize)>"
         );
     }
 
@@ -298,7 +309,7 @@ mod test {
 
         let second_type_id = &generic_struct_id();
         visitor.visit_type_id(second_type_id);
-        assert_eq!(visitor.buffer.build(), "GenericStructType<Usize>");
+        assert_eq!(visitor.buffer.build(), "GenericStructType<usize>");
     }
 
     #[test]
@@ -333,7 +344,7 @@ mod test {
         visitor.visit_type_id(&generic_struct_id());
         assert_eq!(
             visitor.buffer.build(),
-            "GenericStructType<[Usize](root/asd/Usize)>"
+            "GenericStructType<[usize](root/asd/usize)>"
         );
     }
 
