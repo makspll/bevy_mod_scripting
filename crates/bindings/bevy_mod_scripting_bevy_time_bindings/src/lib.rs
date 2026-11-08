@@ -24,8 +24,16 @@ impl Plugin for BevyTimeBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
-        use bevy_mod_scripting_bindings::ScriptSystemSetAppExt;
-        app.register_script_system_set("time", "TimeSystems", bevy_time::TimeSystems);
+        use bevy_mod_scripting_bindings::{
+            ScriptSystemSetAppExt,
+            function::generics::{A, GenericTypesAppExt},
+        };
+        app.register_script_system_set("time", "TimeSystems", bevy_time::TimeSystems)
+            .register_generic_type::<bevy_time::Time<A>>(
+                "time",
+                &["T"],
+                "A clock, `T` is the kind of clock, i.e. `Virtual` or `Fixed`.",
+            );
         let world = app.world_mut();
         duration::register(world);
         time::register(world);

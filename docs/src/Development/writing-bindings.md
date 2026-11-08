@@ -11,6 +11,18 @@ Scripts reach types through the namespace of their category, i.e. `import_namesp
 - passes `namespace = "<category>"` to every `#[script_bindings]` attribute, except on `impl World` blocks and on functions shared by all types (`impl StaticTypeRef`), which would otherwise move those BMS types into the category
 - calls `set_crate_script_namespaces` from its plugin's `finish`, with the bevy crates it covers, so their types without bindings land in the same namespace
 
+## Generic types
+
+Reflection only sees instantiations of generic types (`Time<Virtual>`, `Time<Fixed>`), which would be documented as unrelated types. Declare the generic types of the crate from its plugin, instantiated with the marker `A` in place of their parameter, in the namespace of the category:
+
+```rust,ignore
+use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
+
+app.register_generic_type::<Time<A>>("time", &["T"], "A clock, i.e. `Time<Virtual>`.");
+```
+
+The fields of type `A` are then documented as being of the parameter `T`, and the instantiations as `Time<T>` applied to their arguments. Only declare types whose parameter is part of what they are (`Handle`, `Time`, `ButtonInput`), not containers like `Arc<T>`.
+
 ## What to bind
 
 Every reflected type is already usable from scripts without any bindings:

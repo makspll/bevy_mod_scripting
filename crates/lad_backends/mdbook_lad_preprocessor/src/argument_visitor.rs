@@ -186,6 +186,30 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
         self.buffer.text(">");
     }
+
+    fn visit_param(&mut self, param: &str) {
+        self.buffer.text(param);
+    }
+
+    // as instantiations, linking to the page of the generic type
+    fn visit_generic(&mut self, generic_type: &ladfile::LadTypeId, args: &[ladfile::LadTypeKind]) {
+        match self.ladfile.generic_types.get(generic_type) {
+            Some(generic) => {
+                self.link_or_text(generic.identifier.clone(), generic.name_with_params())
+            }
+            None => {
+                self.buffer.text(generic_type.to_string());
+            }
+        }
+        self.buffer.text('<');
+        for (i, arg) in args.iter().enumerate() {
+            if i > 0 {
+                self.buffer.text(", ");
+            }
+            self.visit(arg);
+        }
+        self.buffer.text('>');
+    }
 }
 
 #[cfg(test)]
@@ -282,7 +306,7 @@ mod test {
         let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadTypeKind::Ref(first_type_id.clone()));
+        visitor.visit(&LadTypeKind::Ref(first_type_id.clone().into()));
         assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
@@ -293,7 +317,7 @@ mod test {
         let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadTypeKind::Mut(first_type_id.clone()));
+        visitor.visit(&LadTypeKind::Mut(first_type_id.clone().into()));
         assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
@@ -304,7 +328,7 @@ mod test {
         let first_type_id = &plain_struct_id();
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
-        visitor.visit(&LadTypeKind::Val(first_type_id.clone()));
+        visitor.visit(&LadTypeKind::Val(first_type_id.clone().into()));
         assert_eq!(visitor.buffer.build(), "PlainStructType");
     }
 
@@ -356,10 +380,10 @@ mod test {
         visitor.visit(&LadTypeKind::HashMap(
             Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool)),
             Box::new(LadTypeKind::Union(vec![
-                LadTypeKind::Val(first_type_id.clone()),
+                LadTypeKind::Val(first_type_id.clone().into()),
                 LadTypeKind::Union(vec![
-                    LadTypeKind::Val(first_type_id.clone()),
-                    LadTypeKind::Val(first_type_id.clone()),
+                    LadTypeKind::Val(first_type_id.clone().into()),
+                    LadTypeKind::Val(first_type_id.clone().into()),
                 ]),
             ])),
         ));
