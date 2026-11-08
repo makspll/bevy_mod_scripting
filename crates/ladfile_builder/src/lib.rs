@@ -357,7 +357,31 @@ impl<'t> LadFileBuilder<'t> {
                 LadFunctionNamespace::Type(self.lad_named_type_of(type_id))
             }
         };
-        self.insert_function(function_id, namespace, function_info)
+        self.insert_function(function_id, namespace, function_info, None)
+    }
+
+    /// Adds a function shared between all types as seen on the given type, see [`FunctionInfo::bind_to_type`].
+    ///
+    /// If the function is generic over the type it is called on, i.e. `load(asset_type: TypeOf<StaticTypeRef, A>) -> Handle<A>`,
+    /// the parameter is the given type: `Handle<Image>` on `Image`.
+    pub fn add_function_info_bound_to(
+        &mut self,
+        function_info: &FunctionInfo,
+        type_info: &'static TypeInfo,
+    ) -> &mut Self {
+        let receiver = function_info
+            .arg_info
+            .iter()
+            .find(|arg| arg.type_id != TypeId::of::<FunctionCallContext>())
+            .and_then(|arg| arg.type_info.as_ref());
+        let instantiated = match receiver {
+            Some(ThroughTypeInfo::TypeOf { of, .. }) => Some((*of, type_info)),
+            _ => None,
+        };
+        let bound = function_info.bind_to_type(type_info);
+        let function_id = self.lad_function_id_from_info(&bound);
+        let namespace = LadFunctionNamespace::Type(self.lad_named_type_of(type_info.type_id()));
+        self.insert_function(function_id, namespace, &bound, instantiated)
     }
 
     /// The named type of a registered type, see [`Self::lad_named_type`], or its id if it isn't registered
@@ -387,6 +411,7 @@ impl<'t> LadFileBuilder<'t> {
             function_id,
             LadFunctionNamespace::Namespace { namespace },
             function_info,
+            None,
         )
     }
 
@@ -441,14 +466,16 @@ impl<'t> LadFileBuilder<'t> {
             type_id: self.lad_named_type_of(enum_type),
             variant: variant.to_owned().into(),
         };
-        self.insert_function(function_id, namespace, function_info)
+        self.insert_function(function_id, namespace, function_info, None)
     }
 
+    /// `instantiated` fixes a parameter of a generic function, given by its marker, to a type, see [`Self::add_function_info_bound_to`].
     fn insert_function(
         &mut self,
         function_id: LadFunctionId,
         namespace: LadFunctionNamespace,
         function_info: &FunctionInfo,
+        instantiated: Option<(&'static TypeInfo, &'static TypeInfo)>,
     ) -> &mut Self {
         let default_docstring = Cow::Owned("".into());
         let (main_docstring, arg_docstrings, return_docstring) =
@@ -529,14 +556,14 @@ impl<'t> LadFileBuilder<'t> {
                 }),
         };
         // parameters fixed by binding the function to a type, i.e. `Handle<A>` is `Handle<Image>` on `Image`
-        for param in &function_info.instantiated_params {
-            let with = LadTypeKind::Val(self.lad_named_type(param.with, true));
+        if let Some((marker, with)) = instantiated {
+            let with = LadTypeKind::Val(self.lad_named_type(with, true));
             for kind in arguments
                 .iter_mut()
                 .chain([&mut return_type])
                 .map(|arg| &mut arg.kind)
             {
-                kind.replace_param(param.marker.type_path(), &with);
+                kind.replace_param(marker.type_path(), &with);
             }
         }
         let generics = name_function_generics(
@@ -1573,16 +1600,16 @@ mod test {
         // a function generic over the type it is called on, bound to the asset type
         let load =
             |_: TypeOf<StaticTypeRef, A>, _path: String| -> ValueOf<Handle<A>> { unreachable!() };
-        let info = load
-            .get_function_info(Cow::Borrowed("load"), FunctionScope::Builtin)
-            .bind_to_type(TestAsset::type_info());
+        let info = load.get_function_info(Cow::Borrowed("load"), FunctionScope::Builtin);
 
         let mut builder = LadFileBuilder::new_empty(&type_registry);
         builder
             .add_generic_type::<Handle<A>>("test", &["A"], "")
             .unwrap();
         let asset = builder.lad_id_from_type_id(TypeId::of::<TestAsset>());
-        let lad_file = builder.add_function_info(&info).build();
+        let lad_file = builder
+            .add_function_info_bound_to(&info, TestAsset::type_info())
+            .build();
         let function = lad_file
             .functions
             .values()

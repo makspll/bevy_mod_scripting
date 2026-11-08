@@ -35,19 +35,6 @@ pub struct FunctionInfo {
     pub return_info: FunctionReturnInfo,
     /// Documentation for the function.
     pub docs: Option<Cow<'static, str>>,
-    /// The parameters of a generic function fixed to a type, i.e. `A` of `load` bound to `Image`, see [`Self::bind_to_type`].
-    #[reflect(ignore)]
-    pub instantiated_params: Vec<InstantiatedParam>,
-}
-
-/// A parameter of a generic function fixed to a type.
-#[derive(Clone, DebugWithTypeInfo)]
-#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-pub struct InstantiatedParam {
-    /// The marker standing for the parameter, see [`crate::function::generics::A`]
-    pub marker: &'static TypeInfo,
-    /// The type it is fixed to
-    pub with: &'static TypeInfo,
 }
 
 impl Default for FunctionInfo {
@@ -66,7 +53,6 @@ impl FunctionInfo {
             arg_info: Vec::new(),
             return_info: FunctionReturnInfo::default(),
             docs: None,
-            instantiated_params: Vec::new(),
         }
     }
 
@@ -78,7 +64,6 @@ impl FunctionInfo {
             arg_info: Vec::new(),
             return_info: FunctionReturnInfo::default(),
             docs: None,
-            instantiated_params: Vec::new(),
         }
     }
 
@@ -158,7 +143,6 @@ impl FunctionInfo {
     ///
     /// The first argument passed by scripts is the type itself, which is bound automatically and so removed,
     /// the function is moved into the type's namespace, and its placeholders are bound to the type.
-    /// If the type is a parameter of the function, i.e. `TypeOf<StaticTypeRef, A>`, the parameter is fixed to the type.
     pub fn bind_to_type(&self, type_info: &'static TypeInfo) -> Self {
         let mut info = self.clone();
         if let Some(receiver) = info
@@ -166,13 +150,7 @@ impl FunctionInfo {
             .iter()
             .position(|arg| arg.type_id != TypeId::of::<FunctionCallContext>())
         {
-            let receiver = info.arg_info.remove(receiver);
-            if let Some(ThroughTypeInfo::TypeOf { of, .. }) = receiver.type_info {
-                info.instantiated_params.push(InstantiatedParam {
-                    marker: of,
-                    with: type_info,
-                });
-            }
+            info.arg_info.remove(receiver);
         }
         for (idx, arg) in info.arg_info.iter_mut().enumerate() {
             arg.arg_index = idx;

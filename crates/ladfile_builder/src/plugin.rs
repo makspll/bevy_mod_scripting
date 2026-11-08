@@ -217,7 +217,7 @@ fn add_registered_type(
             if !is_asset && is_asset_function(&function.info) {
                 continue;
             }
-            builder.add_function_info(&function.info.bind_to_type(type_info));
+            builder.add_function_info_bound_to(&function.info, type_info);
         }
     }
 
