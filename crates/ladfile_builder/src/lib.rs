@@ -15,9 +15,7 @@ use bevy_mod_scripting_bindings::{
         typed_through::{BoundPlaceholder, ThroughTypeInfo, primitive_kind_of, primitive_type_id},
     },
     function::{
-        bound::{asset_handle_type_info, is_asset_type},
-        namespace::FunctionScope,
-        script_function::FunctionCallContext,
+        bound::is_asset_type, namespace::FunctionScope, script_function::FunctionCallContext,
     },
     into_through_type_info_with_registry,
 };
@@ -530,6 +528,17 @@ impl<'t> LadFileBuilder<'t> {
                     )
                 }),
         };
+        // parameters fixed by binding the function to a type, i.e. `Handle<A>` is `Handle<Image>` on `Image`
+        for param in &function_info.instantiated_params {
+            let with = LadTypeKind::Val(self.lad_named_type(param.with, true));
+            for kind in arguments
+                .iter_mut()
+                .chain([&mut return_type])
+                .map(|arg| &mut arg.kind)
+            {
+                kind.replace_param(param.marker.type_path(), &with);
+            }
+        }
         let generics = name_function_generics(
             arguments
                 .iter_mut()
@@ -1088,24 +1097,13 @@ impl<'t> LadFileBuilder<'t> {
                 erased: nested(self, erased),
             },
             // functions are bound before they are added, any placeholders left are documented as what they are at runtime
-            ThroughTypeInfo::Bound(BoundPlaceholder::Value | BoundPlaceholder::Handle) => {
+            ThroughTypeInfo::Bound(BoundPlaceholder::Value) => {
                 LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference)
             }
             ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => self.lad_kind(
                 &HashMap::<String, ScriptValue>::through_type_info(),
                 register,
             ),
-            ThroughTypeInfo::AssetHandle(asset_type_info) => {
-                if register {
-                    self.add_type_info(asset_type_info);
-                }
-                match asset_handle_type_info(self.type_registry, asset_type_info.type_id()) {
-                    Some(handle_type_info) => {
-                        LadTypeKind::Val(self.lad_named_type(handle_type_info, register))
-                    }
-                    None => LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference),
-                }
-            }
         }
     }
 }
@@ -1559,7 +1557,10 @@ mod test {
     #[test]
     fn bound_handles_are_documented_as_the_handle_of_the_asset_type() {
         use bevy_asset::{Asset, Handle, ReflectAsset};
-        use bevy_mod_scripting_bindings::function::bound::BoundHandle;
+        use bevy_mod_scripting_bindings::{
+            StaticTypeRef,
+            function::generics::{TypeOf, ValueOf},
+        };
 
         #[derive(Asset, Reflect)]
         struct TestAsset;
@@ -1569,37 +1570,29 @@ mod test {
         type_registry.register::<Handle<TestAsset>>();
         type_registry.register_type_data::<TestAsset, ReflectAsset>();
 
-        let load = |_path: String| -> BoundHandle { unreachable!() };
+        // a function generic over the type it is called on, bound to the asset type
+        let load =
+            |_: TypeOf<StaticTypeRef, A>, _path: String| -> ValueOf<Handle<A>> { unreachable!() };
         let info = load
             .get_function_info(Cow::Borrowed("load"), FunctionScope::Builtin)
-            .bind_placeholders(TestAsset::type_info(), None);
+            .bind_to_type(TestAsset::type_info());
 
-        let return_kind = |declare: bool| {
-            let mut builder = LadFileBuilder::new_empty(&type_registry);
-            if declare {
-                builder
-                    .add_generic_type::<Handle<A>>("test", &["A"], "")
-                    .unwrap();
-            }
-            let asset = builder.lad_id_from_type_id(TypeId::of::<TestAsset>());
-            let lad_file = builder.add_function_info(&info).build();
-            let function = lad_file
-                .functions
-                .values()
-                .next()
-                .expect("the function is added");
-            (function.return_type.kind.clone(), asset)
-        };
+        let mut builder = LadFileBuilder::new_empty(&type_registry);
+        builder
+            .add_generic_type::<Handle<A>>("test", &["A"], "")
+            .unwrap();
+        let asset = builder.lad_id_from_type_id(TypeId::of::<TestAsset>());
+        let lad_file = builder.add_function_info(&info).build();
+        let function = lad_file
+            .functions
+            .values()
+            .next()
+            .expect("the function is added");
 
-        // the handle type is the instantiation, or the declared generic type applied to the asset type
-        let (kind, _) = return_kind(false);
-        assert!(
-            matches!(&kind, LadTypeKind::Val(LadNamedType::Id(handle)) if handle.to_string().contains("Handle<")),
-            "expected the handle type, got {kind:?}"
-        );
-        let (kind, asset) = return_kind(true);
+        // the parameter is fixed to the asset type, so the handle is the generic type applied to it
+        assert!(function.generics.is_empty(), "{:?}", function.generics);
         assert_eq!(
-            kind,
+            function.return_type.kind,
             LadTypeKind::Val(LadNamedType::Generic {
                 generic_type: LadTypeId::new_string_id("bevy_asset::handle::Handle".into()),
                 args: vec![LadTypeKind::Val(asset.into())],
@@ -1863,7 +1856,7 @@ mod test {
             VariadicTuple,
             docgen::TypedThrough,
             function::{
-                bound::{BoundFields, BoundHandle},
+                bound::BoundFields,
                 from::{M, R, Union, V},
             },
         };
@@ -1871,7 +1864,6 @@ mod test {
 
         let mut builder = LadFileBuilder::new_empty(registry);
         let value = builder.lad_id_from_type_id(TypeId::of::<FieldValue>());
-        let handle = builder.lad_id_from_type_id(TypeId::of::<bevy_asset::Handle<FieldAsset>>());
 
         let cases = vec![
             (
@@ -1929,11 +1921,6 @@ mod test {
                     of: value.clone().into(),
                     variant: Some(Cow::Borrowed("Variant")),
                 },
-            ),
-            (
-                "bound handle",
-                BoundHandle::through_type_info().bind_placeholders(FieldAsset::type_info(), None),
-                Kind::Val(handle.into()),
             ),
             (
                 "type of a parameter",

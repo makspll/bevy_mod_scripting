@@ -11,9 +11,10 @@ use bevy_mod_scripting_bindings::{
     AppScriptNamespaceMembers, EnumVariantRef, FunctionInfo, ScriptFunctionRegistry,
     ScriptNamespaceMembers, StaticTypeRef,
     builtins::builtin_docs,
-    docgen::typed_through::BoundPlaceholder,
     function::{
-        bound::is_asset_type, generics::AppGenericTypes, script_function::AppScriptFunctionRegistry,
+        bound::{is_asset_function, is_asset_type},
+        generics::AppGenericTypes,
+        script_function::AppScriptFunctionRegistry,
     },
     into_through_type_info_with_registry,
 };
@@ -213,7 +214,7 @@ fn add_registered_type(
             if functions.contains(type_id, function.name().clone()) {
                 continue;
             }
-            if !is_asset && function.info.has_placeholder(BoundPlaceholder::Handle) {
+            if !is_asset && is_asset_function(&function.info) {
                 continue;
             }
             builder.add_function_info(&function.info.bind_to_type(type_info));

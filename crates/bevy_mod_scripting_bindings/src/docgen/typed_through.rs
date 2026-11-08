@@ -73,10 +73,6 @@ pub enum ThroughTypeInfo {
     ///
     /// See [`ThroughTypeInfo::bind_placeholders`].
     Bound(BoundPlaceholder),
-    /// A handle to an asset of the given type, i.e. `Handle<Image>`.
-    ///
-    /// The handle type is only known to the type registry, see [`crate::function::bound::asset_handle_type_info`].
-    AssetHandle(&'static TypeInfo),
     /// A type itself rather than a value of it, i.e. the component type `get_component` takes, see [`crate::function::generics::TypeOf`]
     TypeOf {
         /// The type, usually a marker standing for a parameter of a generic function
@@ -94,8 +90,6 @@ pub enum BoundPlaceholder {
     Value,
     /// A table of the fields of the bound type, see [`ThroughTypeInfo::Fields`]
     Fields,
-    /// A handle to an asset of the bound type, see [`ThroughTypeInfo::AssetHandle`]
-    Handle,
 }
 
 impl ThroughTypeInfo {
@@ -120,8 +114,7 @@ impl ThroughTypeInfo {
             | ThroughTypeInfo::Primitive(_)
             | ThroughTypeInfo::UntypedTuple
             | ThroughTypeInfo::Fields { .. }
-            | ThroughTypeInfo::Bound(_)
-            | ThroughTypeInfo::AssetHandle(_) => vec![],
+            | ThroughTypeInfo::Bound(_) => vec![],
         }
     }
 
@@ -142,9 +135,6 @@ impl ThroughTypeInfo {
             ThroughTypeInfo::Bound(BoundPlaceholder::Value) => ThroughTypeInfo::Val(type_info),
             ThroughTypeInfo::Bound(BoundPlaceholder::Fields) => {
                 ThroughTypeInfo::Fields { type_info, variant }
-            }
-            ThroughTypeInfo::Bound(BoundPlaceholder::Handle) => {
-                ThroughTypeInfo::AssetHandle(type_info)
             }
             ThroughTypeInfo::Option(inner) => ThroughTypeInfo::Option(bind(inner)),
             ThroughTypeInfo::Vec(inner) => ThroughTypeInfo::Vec(bind(inner)),
@@ -171,11 +161,6 @@ impl ThroughTypeInfo {
         self.has_placeholder_where(|_| true)
     }
 
-    /// Whether this contains the given [`ThroughTypeInfo::Bound`] placeholder.
-    pub fn has_placeholder(&self, placeholder: BoundPlaceholder) -> bool {
-        self.has_placeholder_where(|p| p == placeholder)
-    }
-
     fn has_placeholder_where(&self, matches: impl Fn(BoundPlaceholder) -> bool + Copy) -> bool {
         match self {
             ThroughTypeInfo::Bound(placeholder) => matches(*placeholder),
@@ -183,6 +168,28 @@ impl ThroughTypeInfo {
                 .children()
                 .into_iter()
                 .any(|inner| inner.has_placeholder_where(matches)),
+        }
+    }
+
+    /// Whether this mentions the given type, i.e. `Handle<A>` in `Option<Handle<A>>`.
+    pub fn mentions_type(&self, type_id: TypeId) -> bool {
+        match self {
+            ThroughTypeInfo::Ref(info)
+            | ThroughTypeInfo::Mut(info)
+            | ThroughTypeInfo::Val(info)
+            | ThroughTypeInfo::Opaque(info)
+            | ThroughTypeInfo::Fields {
+                type_info: info, ..
+            }
+            | ThroughTypeInfo::TypeOf { of: info, .. }
+                if info.type_id() == type_id =>
+            {
+                true
+            }
+            other => other
+                .children()
+                .into_iter()
+                .any(|inner| inner.mentions_type(type_id)),
         }
     }
 }
@@ -554,9 +561,9 @@ mod test {
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
         Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
-        UntypedTuple, TupleWithRest, Union, Fields, Bound, AssetHandle, TypeOf
+        UntypedTuple, TupleWithRest, Union, Fields, Bound, TypeOf
     );
-    variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields, Handle);
+    variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields);
 
     /// Every variant, i.e. `ThroughTypeInfo::Vec`
     fn all_variants() -> BTreeSet<String> {
@@ -700,19 +707,17 @@ mod test {
         "ThroughTypeInfo::TupleWithRest",
         "ThroughTypeInfo::Fields",
         "ThroughTypeInfo::Bound",
-        "ThroughTypeInfo::AssetHandle",
         // the parameters of generic functions are declared in their signature
         "ThroughTypeInfo::TypeOf",
         "BoundPlaceholder::Value",
         "BoundPlaceholder::Fields",
-        "BoundPlaceholder::Handle",
         // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses a value instead
         "ThroughTypeInfo::Opaque",
     ];
 
     #[test]
     fn static_conversion_produces_every_variant() {
-        use crate::function::bound::{BoundFields, BoundHandle, BoundValue};
+        use crate::function::bound::{BoundFields, BoundValue};
 
         let mut seen = BTreeSet::new();
         let mut collect = |info: ThroughTypeInfo| collect_variants(&info, &mut seen);
@@ -741,7 +746,6 @@ mod test {
         for placeholder in [
             BoundValue::through_type_info(),
             BoundFields::through_type_info(),
-            BoundHandle::through_type_info(),
         ] {
             collect(placeholder.bind_placeholders(Value::type_info(), None));
             collect(placeholder);

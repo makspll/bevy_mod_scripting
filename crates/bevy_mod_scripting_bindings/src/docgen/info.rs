@@ -9,7 +9,7 @@ use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{Reflect, TypeInfo};
 use std::{any::TypeId, borrow::Cow};
 
-use super::typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedThrough};
+use super::typed_through::{ThroughTypeInfo, TypedThrough};
 
 /// for things you can call and provide some introspection capability.
 #[diagnostic::on_unimplemented(
@@ -35,6 +35,19 @@ pub struct FunctionInfo {
     pub return_info: FunctionReturnInfo,
     /// Documentation for the function.
     pub docs: Option<Cow<'static, str>>,
+    /// The parameters of a generic function fixed to a type, i.e. `A` of `load` bound to `Image`, see [`Self::bind_to_type`].
+    #[reflect(ignore)]
+    pub instantiated_params: Vec<InstantiatedParam>,
+}
+
+/// A parameter of a generic function fixed to a type.
+#[derive(Clone, DebugWithTypeInfo)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+pub struct InstantiatedParam {
+    /// The marker standing for the parameter, see [`crate::function::generics::A`]
+    pub marker: &'static TypeInfo,
+    /// The type it is fixed to
+    pub with: &'static TypeInfo,
 }
 
 impl Default for FunctionInfo {
@@ -53,6 +66,7 @@ impl FunctionInfo {
             arg_info: Vec::new(),
             return_info: FunctionReturnInfo::default(),
             docs: None,
+            instantiated_params: Vec::new(),
         }
     }
 
@@ -64,6 +78,7 @@ impl FunctionInfo {
             arg_info: Vec::new(),
             return_info: FunctionReturnInfo::default(),
             docs: None,
+            instantiated_params: Vec::new(),
         }
     }
 
@@ -130,19 +145,20 @@ impl FunctionInfo {
             .any(|t| t.as_ref().is_some_and(ThroughTypeInfo::has_placeholders))
     }
 
-    /// Whether the signature contains the given placeholder, i.e. [`BoundPlaceholder::Handle`] for functions which only apply to asset types.
-    pub fn has_placeholder(&self, placeholder: BoundPlaceholder) -> bool {
+    /// Whether the signature mentions the given type, i.e. `Handle<A>` for functions which only apply to asset types.
+    pub fn mentions_type(&self, type_id: TypeId) -> bool {
         self.arg_info
             .iter()
             .map(|arg| &arg.type_info)
             .chain(std::iter::once(&self.return_info.type_info))
-            .any(|t| t.as_ref().is_some_and(|t| t.has_placeholder(placeholder)))
+            .any(|t| t.as_ref().is_some_and(|t| t.mentions_type(type_id)))
     }
 
     /// The signature of a function shared between all types, as seen on the given type.
     ///
     /// The first argument passed by scripts is the type itself, which is bound automatically and so removed,
     /// the function is moved into the type's namespace, and its placeholders are bound to the type.
+    /// If the type is a parameter of the function, i.e. `TypeOf<StaticTypeRef, A>`, the parameter is fixed to the type.
     pub fn bind_to_type(&self, type_info: &'static TypeInfo) -> Self {
         let mut info = self.clone();
         if let Some(receiver) = info
@@ -150,7 +166,13 @@ impl FunctionInfo {
             .iter()
             .position(|arg| arg.type_id != TypeId::of::<FunctionCallContext>())
         {
-            info.arg_info.remove(receiver);
+            let receiver = info.arg_info.remove(receiver);
+            if let Some(ThroughTypeInfo::TypeOf { of, .. }) = receiver.type_info {
+                info.instantiated_params.push(InstantiatedParam {
+                    marker: of,
+                    with: type_info,
+                });
+            }
         }
         for (idx, arg) in info.arg_info.iter_mut().enumerate() {
             arg.arg_index = idx;
