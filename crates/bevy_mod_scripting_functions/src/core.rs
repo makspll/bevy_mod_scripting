@@ -25,6 +25,7 @@ use bevy_mod_scripting_bindings::{
         bound::BoundFields,
         from::{R, V},
         from_ref::FromScriptErased,
+        generics::{A, TypeOf, ValueOf},
         into_ref::IntoScriptErased,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
@@ -170,12 +171,12 @@ impl World {
     fn get_component(
         ctxt: FunctionCallContext,
         entity: V<Entity>,
-        registration: V<ScriptComponentRegistration>,
-    ) -> Result<Option<ReflectReference>, InteropError> {
+        registration: TypeOf<V<ScriptComponentRegistration>, A>,
+    ) -> Result<Option<ValueOf<A>>, InteropError> {
         profiling::function_scope!("get_component");
         let world = ctxt.world()?;
-        let val = world.get_component(*entity, registration.into_inner())?;
-        Ok(val)
+        let val = world.get_component(*entity, registration.into_inner().into_inner())?;
+        Ok(val.map(ValueOf::new))
     }
 
     /// Checks if the given entity has the given component.
@@ -221,12 +222,12 @@ impl World {
     /// * `resource`: The resource, if it exists.
     fn get_resource(
         ctxt: FunctionCallContext,
-        registration: V<ScriptResourceRegistration>,
-    ) -> Result<Option<ReflectReference>, InteropError> {
+        registration: TypeOf<V<ScriptResourceRegistration>, A>,
+    ) -> Result<Option<ValueOf<A>>, InteropError> {
         profiling::function_scope!("get_resource");
         let world = ctxt.world()?;
         let val = world.get_resource(registration.resource_id())?;
-        Ok(val)
+        Ok(val.map(ValueOf::new))
     }
 
     /// Checks if the world has the given resource.
@@ -481,12 +482,16 @@ impl World {
     fn insert_component(
         ctxt: FunctionCallContext,
         entity: V<Entity>,
-        registration: V<ScriptComponentRegistration>,
-        value: ReflectReference,
+        registration: TypeOf<V<ScriptComponentRegistration>, A>,
+        value: ValueOf<A>,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("insert_component");
         let world = ctxt.world()?;
-        world.insert_component(*entity, registration.into_inner(), value)
+        world.insert_component(
+            *entity,
+            registration.into_inner().into_inner(),
+            value.into_inner(),
+        )
     }
 
     /// Inserts the given bundle value into the provided entity, all of its components at once.
@@ -2111,10 +2116,10 @@ impl NamespaceMembers {
     /// * `reference`: The constructed type.
     fn construct(
         ctxt: FunctionCallContext,
-        registration: AnyTypeRegistrationV,
+        registration: TypeOf<AnyTypeRegistrationV, A>,
         payload: BoundFields,
-    ) -> Result<ReflectReference, InteropError> {
-        let registration = registration.into_type_registration();
+    ) -> Result<ValueOf<A>, InteropError> {
+        let registration = registration.into_inner().into_type_registration();
         construct_reference(
             &ctxt.world()?,
             registration.type_registration().type_info(),
@@ -2122,6 +2127,7 @@ impl NamespaceMembers {
             payload,
             ctxt.convert_to_0_indexed(),
         )
+        .map(ValueOf::new)
     }
 
     /// Creates a new script system builder, which can be used to add new systems to the world.

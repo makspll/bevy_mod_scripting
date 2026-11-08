@@ -605,6 +605,9 @@ mod test {
     #[derive(bevy_asset::Asset, Reflect)]
     struct TestAsset;
 
+    #[derive(bevy_asset::Asset, Reflect)]
+    struct OtherAsset;
+
     /// A struct with a field for each container, which scripts see as the values they hold
     #[derive(Reflect)]
     struct Containers {
@@ -635,6 +638,15 @@ mod test {
         // a function shared by all types, which is bound to the instantiation too
         NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
             .register("describe", |_: StaticTypeRef| 1usize);
+        // a generic function, over the markers of its signature
+        use bevy_mod_scripting_bindings::function::{
+            from::V,
+            generics::{TypeOf, ValueOf},
+        };
+        NamespaceBuilder::<OtherAsset>::new(app.world_mut())
+            .register("get", |_: TypeOf<V<OtherAsset>, A>| -> Option<ValueOf<A>> {
+                None
+            });
         let file = generate_from(app);
 
         // the marker is registered, but not a type of its own
@@ -664,6 +676,26 @@ mod test {
                 generic_type: generic_id.clone(),
                 args: vec![asset],
             })
+        );
+
+        // the generic function's parameters are named after the markers, its type argument keeps how it is passed
+        let get = file
+            .functions
+            .values()
+            .find(|f| f.identifier == "get")
+            .expect("the generic function");
+        let param = || ladfile::LadNamedType::Param { param: "A".into() };
+        assert_eq!(get.generics, ["A"]);
+        assert_eq!(
+            get.arguments[0].kind,
+            LadTypeKind::Type {
+                of: param(),
+                erased: Box::new(LadTypeKind::Val(type_id(&file, "OtherAsset").into())),
+            }
+        );
+        assert_eq!(
+            get.return_type.kind,
+            LadTypeKind::Option(Box::new(LadTypeKind::Val(param())))
         );
     }
 

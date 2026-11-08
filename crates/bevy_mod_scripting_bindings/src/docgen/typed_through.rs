@@ -77,6 +77,13 @@ pub enum ThroughTypeInfo {
     ///
     /// The handle type is only known to the type registry, see [`crate::function::bound::asset_handle_type_info`].
     AssetHandle(&'static TypeInfo),
+    /// A type itself rather than a value of it, i.e. the component type `get_component` takes, see [`crate::function::generics::TypeOf`]
+    TypeOf {
+        /// The type, usually a marker standing for a parameter of a generic function
+        of: &'static TypeInfo,
+        /// How the type is passed at runtime, i.e. as a component registration
+        erased: Box<ThroughTypeInfo>,
+    },
 }
 
 /// The parts of a shared function's signature which depend on the type it is bound to.
@@ -99,7 +106,8 @@ impl ThroughTypeInfo {
             | ThroughTypeInfo::Vec(inner)
             | ThroughTypeInfo::HashSet(inner)
             | ThroughTypeInfo::Array(inner, _)
-            | ThroughTypeInfo::InteropResult(inner) => vec![&**inner],
+            | ThroughTypeInfo::InteropResult(inner)
+            | ThroughTypeInfo::TypeOf { erased: inner, .. } => vec![&**inner],
             ThroughTypeInfo::HashMap(key, value) => vec![&**key, &**value],
             ThroughTypeInfo::Tuple(inner) | ThroughTypeInfo::Union(inner) => inner.iter().collect(),
             ThroughTypeInfo::TupleWithRest { head, rest } => {
@@ -150,6 +158,10 @@ impl ThroughTypeInfo {
                 rest: bind(rest),
             },
             ThroughTypeInfo::Union(inner) => ThroughTypeInfo::Union(bind_all(inner)),
+            ThroughTypeInfo::TypeOf { of, erased } => ThroughTypeInfo::TypeOf {
+                of,
+                erased: bind(erased),
+            },
             other => other.clone(),
         }
     }
@@ -542,7 +554,7 @@ mod test {
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
         Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
-        UntypedTuple, TupleWithRest, Union, Fields, Bound, AssetHandle
+        UntypedTuple, TupleWithRest, Union, Fields, Bound, AssetHandle, TypeOf
     );
     variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields, Handle);
 
@@ -689,6 +701,8 @@ mod test {
         "ThroughTypeInfo::Fields",
         "ThroughTypeInfo::Bound",
         "ThroughTypeInfo::AssetHandle",
+        // the parameters of generic functions are declared in their signature
+        "ThroughTypeInfo::TypeOf",
         "BoundPlaceholder::Value",
         "BoundPlaceholder::Fields",
         "BoundPlaceholder::Handle",
@@ -719,6 +733,10 @@ mod test {
         collect(VariadicTuple::through_type_info());
         collect(crate::ScriptQueryResult::through_type_info());
         collect(ThroughTypeInfo::Opaque(Value::type_info()));
+        collect(crate::function::generics::TypeOf::<
+            V<Value>,
+            crate::function::generics::A,
+        >::through_type_info());
         // placeholders, and what they turn into when bound
         for placeholder in [
             BoundValue::through_type_info(),

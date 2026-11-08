@@ -39,7 +39,7 @@
 {# newline #}
 {%- endif -%}
 {%- for generic in function.generics -%}
----@generic {{ generic.name }}
+---@generic {{ generic }}
 {# newline #}
 {%- endfor -%}
 {%- for param in function.params -%}
