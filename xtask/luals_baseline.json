@@ -2,7 +2,7 @@
   "assign-type-mismatch": 2,
   "inject-field": 14,
   "need-check-nil": 112,
-  "param-type-mismatch": 160,
-  "undefined-field": 79,
+  "param-type-mismatch": 159,
+  "undefined-field": 51,
   "undefined-global": 3
 }

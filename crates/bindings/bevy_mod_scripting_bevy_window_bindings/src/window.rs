@@ -7,6 +7,7 @@ use bevy_mod_scripting_bindings::{
     InteropError, ReflectReference, ScriptQueryBuilder, WorldExtensions, WorldGuard,
     function::{
         from::{M, R, V},
+        generics::ValueOf,
         script_function::FunctionCallContext,
     },
 };
@@ -77,13 +78,12 @@ impl Window {
     }
 
     /// The primary window, or nil if there is none.
-    fn primary(ctxt: FunctionCallContext) -> Result<Option<ReflectReference>, InteropError> {
+    fn primary(ctxt: FunctionCallContext) -> Result<Option<ValueOf<Window>>, InteropError> {
         let world = ctxt.world()?;
         match primary_window_entity(&world)? {
-            Some(entity) => Ok(Some(ReflectReference::new_component_ref::<Window>(
-                entity,
-                world.clone(),
-            )?)),
+            Some(entity) => Ok(Some(ValueOf::new(ReflectReference::new_component_ref::<
+                Window,
+            >(entity, world.clone())?))),
             None => Ok(None),
         }
     }
