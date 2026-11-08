@@ -5,7 +5,7 @@
 
 use std::any::TypeId;
 
-use bevy_mod_scripting_bindings::function::generics::A;
+use bevy_mod_scripting_bindings::{docgen::typed_through::ThroughTypeInfo, function::generics::A};
 use bevy_platform::collections::HashSet;
 use bevy_reflect::{GenericInfo, TypeInfo, Typed};
 use ladfile::*;
@@ -23,6 +23,43 @@ pub(crate) fn marker_param(type_path: &str) -> LadNamedType {
     LadNamedType::Param {
         param: type_path.to_owned(),
     }
+}
+
+/// The types a description names, i.e. `Handle<A>` in `Option<Handle<A>>`.
+pub(crate) fn named_type_infos(through_type: &ThroughTypeInfo, named: &mut Vec<&'static TypeInfo>) {
+    match through_type {
+        ThroughTypeInfo::Ref(type_info)
+        | ThroughTypeInfo::Mut(type_info)
+        | ThroughTypeInfo::Val(type_info)
+        | ThroughTypeInfo::Opaque(type_info)
+        | ThroughTypeInfo::Fields { type_info, .. }
+        | ThroughTypeInfo::TypeOf { of: type_info, .. } => named.push(type_info),
+        _ => {}
+    }
+    for child in through_type.children() {
+        named_type_infos(child, named);
+    }
+}
+
+/// The path of the type with the marker replaced by the given type, i.e. `Handle<Image>` for `Handle<A>`,
+/// or `None` if the path doesn't mention the marker (or is the marker itself).
+pub(crate) fn instantiate_path(path: &str, marker: &str, with: &str) -> Option<String> {
+    let mut instantiated = String::with_capacity(path.len());
+    let mut rest = path;
+    let mut mentioned = false;
+    while let Some(index) = rest.find(marker) {
+        let after = &rest[index + marker.len()..];
+        // only the whole path, not `generics::AType`
+        let is_whole = index > 0
+            && !after.starts_with(|c: char| c.is_alphanumeric() || c == '_')
+            && rest[..index].ends_with(['<', ',', ' ']);
+        instantiated.push_str(&rest[..index]);
+        instantiated.push_str(if is_whole { with } else { marker });
+        mentioned |= is_whole;
+        rest = after;
+    }
+    instantiated.push_str(rest);
+    mentioned.then_some(instantiated)
 }
 
 /// The named type the kind itself mentions, i.e. `Image` in `&Image`, `Fields<Image>` or `Type<Image>`.

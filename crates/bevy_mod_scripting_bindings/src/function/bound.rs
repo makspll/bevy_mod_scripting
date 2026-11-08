@@ -54,26 +54,11 @@ macro_rules! impl_bound_reference {
 pub struct BoundValue(pub ReflectReference);
 impl_bound_reference!(BoundValue, Value);
 
-/// A handle to an asset of the type a shared function is bound to, i.e. `Handle<Image>` for `Image`.
-pub struct BoundHandle(pub ReflectReference);
-impl_bound_reference!(BoundHandle, Handle);
-
 /// Whether the type is registered as an asset, i.e. with `App::register_asset_reflect`.
 pub fn is_asset_type(registry: &TypeRegistry, type_id: TypeId) -> bool {
     registry
         .get_type_data::<bevy_asset::ReflectAsset>(type_id)
         .is_some()
-}
-
-/// The registered `Handle<T>` type for the asset type `T`, if `T` is registered as an asset.
-pub fn asset_handle_type_info(
-    registry: &TypeRegistry,
-    asset_type_id: TypeId,
-) -> Option<&'static bevy_reflect::TypeInfo> {
-    registry
-        .get_type_data::<bevy_asset::ReflectAsset>(asset_type_id)
-        .and_then(|asset| registry.get(asset.handle_type_id()))
-        .map(|registration| registration.type_info())
 }
 
 /// A table of the fields of the type a shared function is bound to.
