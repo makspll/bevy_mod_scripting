@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a06f9fcc.js";
+            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-5705454a.js"></script>
+        <script src="../../toc-9b670661.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -194,22 +194,10 @@
 <tr><td><a href="././assetindex.html"><code>AssetIndex</code></a></td><td>A generational runtime-only identifier for a specific [`Asset`] stored in [`Assets`]. This is optim...</td></tr>
 <tr><td><a href="././assetpath.html"><code>AssetPath</code></a></td><td>Represents a path to an asset in a “virtual filesystem”.   Asset paths consist of three main parts:...</td></tr>
 <tr><td><a href="././renderassetusages.html"><code>RenderAssetUsages</code></a></td><td>Defines where the asset will be used.   If an asset is set to the `RENDER_WORLD` but not the `MAIN_WORLD`...</td></tr>
-<tr><td><a href="././arcmutexvalueimage.html"><code>ArcMutexValue&lt;Image&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
-<tr><td><a href="././arcmutexvaluetextureatlaslayout.html"><code>ArcMutexValue&lt;TextureAtlasLayout&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
-<tr><td><a href="././arcmutexvaluemesh.html"><code>ArcMutexValue&lt;Mesh&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
-<tr><td><a href="././arcmutexvaluescriptasset.html"><code>ArcMutexValue&lt;ScriptAsset&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
-<tr><td><a href="././arcmutexvalueshaderbuffer.html"><code>ArcMutexValue&lt;ShaderBuffer&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
-<tr><td><a href="././arcmutexvaluecolormaterial.html"><code>ArcMutexValue&lt;ColorMaterial&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
-<tr><td><a href="././arcmutexvaluespritemeshmaterial.html"><code>ArcMutexValue&lt;SpriteMeshMaterial&gt;</code></a></td><td>Stores an [`Arc&lt;Mutex&lt;AssetOrHandle<t>&gt;&gt;`].   This intermediary type exists largely to enable reflect(opaque).</t></td></tr>
-<tr><td><a href="././handletemplateimage.html"><code>HandleTemplate&lt;Image&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
-<tr><td><a href="././handletemplatetextureatlaslayout.html"><code>HandleTemplate&lt;TextureAtlasLayout&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
-<tr><td><a href="././handletemplatemesh.html"><code>HandleTemplate&lt;Mesh&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
-<tr><td><a href="././handletemplatescriptasset.html"><code>HandleTemplate&lt;ScriptAsset&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
-<tr><td><a href="././handletemplateshaderbuffer.html"><code>HandleTemplate&lt;ShaderBuffer&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
-<tr><td><a href="././handletemplatecolormaterial.html"><code>HandleTemplate&lt;ColorMaterial&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
-<tr><td><a href="././handletemplatespritemeshmaterial.html"><code>HandleTemplate&lt;SpriteMeshMaterial&gt;</code></a></td><td>A [`Template`] that produces a [`Handle`].   # How asset paths are resolved in templates   When a t...</td></tr>
-<tr><td><a href="././assetidscriptasset.html"><code>AssetId&lt;ScriptAsset&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
+<tr><td><a href="././arcmutexvaluet.html"><code>ArcMutexValue&lt;T&gt;</code></a></td><td>A shared value of an asset of type `T`.</td></tr>
 <tr><td><a href="././handlea.html"><code>Handle&lt;A&gt;</code></a></td><td>A handle to an asset of type `A`.</td></tr>
+<tr><td><a href="././handletemplatet.html"><code>HandleTemplate&lt;T&gt;</code></a></td><td>A template for a handle to an asset of type `T`.</td></tr>
+<tr><td><a href="././assetida.html"><code>AssetId&lt;A&gt;</code></a></td><td>The id of an asset of type `A`.</td></tr>
 </tbody>
 </table>
 </div>

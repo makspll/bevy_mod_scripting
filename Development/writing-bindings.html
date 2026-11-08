@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-a06f9fcc.js";
+            window.path_to_searchindex_js = "../searchindex-b057c527.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705454a.js"></script>
+        <script src="../toc-9b670661.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -191,6 +191,19 @@ They live in <code>crates/bindings/bevy_mod_scripting_bevy_&lt;category&gt;_bind
 <li>passes <code>namespace = "&lt;category&gt;"</code> to every <code>#[script_bindings]</code> attribute, except on <code>impl World</code> blocks and on functions shared by all types (<code>impl StaticTypeRef</code>), which would otherwise move those BMS types into the category</li>
 <li>calls <code>set_crate_script_namespaces</code> from its plugin’s <code>finish</code>, with the bevy crates it covers, so their types without bindings land in the same namespace</li>
 </ul>
+<h2 id="generic-types"><a class="header" href="#generic-types">Generic types</a></h2>
+<p>Reflection only sees instantiations of generic types (<code>Time&lt;Virtual&gt;</code>, <code>Time&lt;Fixed&gt;</code>), which would be documented as unrelated types. Declare the generic types of the crate from its plugin, instantiated with the marker <code>A</code> in place of their parameter, in the namespace of the category:</p>
+<pre><code class="language-rust ignore">use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
+
+app.register_generic_type::&lt;Time&lt;A&gt;&gt;("time", &amp;["T"], "A clock, i.e. `Time&lt;Virtual&gt;`.");</code></pre>
+<p>The fields of type <code>A</code> are then documented as being of the parameter <code>T</code>, and the instantiations as <code>Time&lt;T&gt;</code> applied to their arguments. Only declare types whose parameter is part of what they are (<code>Handle</code>, <code>Time</code>, <code>ButtonInput</code>), not containers like <code>Arc&lt;T&gt;</code>.</p>
+<p>Functions which return values of the type they are given are declared generic in their signature, with the same marker:</p>
+<pre><code class="language-rust ignore">fn get_component(
+    ctxt: FunctionCallContext,
+    entity: V&lt;Entity&gt;,
+    registration: TypeOf&lt;V&lt;ScriptComponentRegistration&gt;, A&gt;,
+) -&gt; Result&lt;Option&lt;ValueOf&lt;A&gt;&gt;, InteropError&gt;</code></pre>
+<p><code>TypeOf&lt;R, A&gt;</code> is a type passed as <code>R</code>, <code>ValueOf&lt;A&gt;</code> a reference to a value of it. They only change the documentation, i.e. <code>world.get_component(entity, Transform)</code> is a <code>Transform</code> in Lua.</p>
 <h2 id="what-to-bind"><a class="header" href="#what-to-bind">What to bind</a></h2>
 <p>Every reflected type is already usable from scripts without any bindings:</p>
 <ul>

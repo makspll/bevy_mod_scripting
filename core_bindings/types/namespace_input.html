@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a06f9fcc.js";
+            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-5705454a.js"></script>
+        <script src="../../toc-9b670661.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -195,15 +195,13 @@
 <tr><td><a href="././keycode.html"><code>KeyCode</code></a></td><td>The key code of a [`KeyboardInput`].   ## Usage   It is used as the generic `T` value of an [`ButtonInput`...</td></tr>
 <tr><td><a href="././mousebutton.html"><code>MouseButton</code></a></td><td>A button on a mouse device.   ## Usage   It is used as the generic `T` value of an [`ButtonInput`] to create a `bevy`  resource.   ## Updating   The resource is updated inside of the [`mouse_button_input_system`]...</td></tr>
 <tr><td><a href="././inputfocus.html"><code>InputFocus</code></a></td><td>Resource representing which entity has input focus, if any. Input events (other than pointer-like i...</td></tr>
-<tr><td><a href="././buttoninputgamepadbutton.html"><code>ButtonInput&lt;GamepadButton&gt;</code></a></td><td>A “press-able” input of type `T`.   ## Usage   This type can be used as a resource to keep the curr...</td></tr>
-<tr><td><a href="././buttoninputkeycode.html"><code>ButtonInput&lt;KeyCode&gt;</code></a></td><td>A “press-able” input of type `T`.   ## Usage   This type can be used as a resource to keep the curr...</td></tr>
-<tr><td><a href="././buttoninputmousebutton.html"><code>ButtonInput&lt;MouseButton&gt;</code></a></td><td>A “press-able” input of type `T`.   ## Usage   This type can be used as a resource to keep the curr...</td></tr>
 <tr><td><a href="././gamepadaxis.html"><code>GamepadAxis</code></a></td><td>Represents gamepad input types that are mapped in the range [-1.0, 1.0].   ## Usage   This is used to determine which axis has changed its value when receiving a  gamepad axis event. It is also used in the [`Gamepad`]...</td></tr>
 <tr><td><a href="././gamepadbutton.html"><code>GamepadButton</code></a></td><td>Represents gamepad input types that are mapped in the range [0.0, 1.0].   ## Usage   This is used to determine which button has changed its value when receiving gamepad button events.  It is also used in the [`Gamepad`]...</td></tr>
 <tr><td><a href="././gamepadinput.html"><code>GamepadInput</code></a></td><td>Encapsulation over [`GamepadAxis`] and [`GamepadButton`].</td></tr>
 <tr><td><a href="././nativekeycode.html"><code>NativeKeyCode</code></a></td><td>Contains the platform-native physical key identifier   The exact values vary from platform to platf...</td></tr>
 <tr><td><a href="././focuscause.html"><code>FocusCause</code></a></td><td>The cause for a [`FocusGained`]   Sometimes widgets would like to know how their focus was gained so they can act accordingly.   For example, a text input may want to select all text when navigated into, but not when pressed.</td></tr>
-<tr><td><a href="././axisgamepadinput.html"><code>Axis&lt;GamepadInput&gt;</code></a></td><td>Stores the position data of the input devices of type `T`.   The values are stored as `f32`s, using...</td></tr>
+<tr><td><a href="././axist.html"><code>Axis&lt;T&gt;</code></a></td><td>The position of the inputs of type `T` on an axis, i.e. `GamepadInput`.</td></tr>
+<tr><td><a href="././buttoninputt.html"><code>ButtonInput&lt;T&gt;</code></a></td><td>The pressed state of the inputs of type `T`, i.e. `KeyCode`.</td></tr>
 </tbody>
 </table>
 </div>

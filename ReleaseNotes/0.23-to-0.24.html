@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-a06f9fcc.js";
+            window.path_to_searchindex_js = "../searchindex-b057c527.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705454a.js"></script>
+        <script src="../toc-9b670661.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -254,10 +254,20 @@ let reference = ReflectReference::new_allocated(value);</code></pre>
 </ul>
 <h3 id="documentation-tooling"><a class="header" href="#documentation-tooling">Documentation tooling</a></h3>
 <ul>
-<li>The Lua language server files are split per namespace (<code>bindings.d.lua</code>, <code>bindings.&lt;namespace&gt;.d.lua</code>, point <code>workspace.library</code> at the directory), classes are named after their namespace (<code>math.Vec3</code>), and generic types are declared once (<code>Handle&lt;Image&gt;</code>, needs LuaLS 3.17+).</li>
+<li>The Lua language server files are split per namespace (<code>bindings.d.lua</code>, <code>bindings.&lt;namespace&gt;.d.lua</code>, point <code>workspace.library</code> at the directory), classes are named after their namespace (<code>math.Vec3</code>), and generic types are declared once (<code>Handle&lt;Image&gt;</code>, needs LuaLS 3.17+), with their fields in terms of their parameters (<code>---@field context T</code>) and, for enums, a generic class per variant (<code>Handle.Strong&lt;A&gt;</code>). The mdbook pages of generic types show their layout and functions, the ones of a single instantiation titled by it (<code>Time&lt;Virtual&gt;.pause</code>).</li>
 <li><code>cargo xtask docgen</code> is replaced by <code>cargo xtask docs</code> (all binding features, <code>--test-bindings</code> for the script test functions). <code>cargo xtask bless-lad</code> updates the LAD test fixtures.</li>
 <li><code>ThroughTypeInfo</code> is flat (<code>ThroughTypeInfo::Vec(..)</code>, <code>ThroughTypeInfo::Ref(type_info)</code>), <code>ThroughTypeInfo::TypeInfo</code> is <code>Opaque</code>. <code>#[derive(TypedThrough)]</code> documents a type as opaque, <code>#[typed_through(value)]</code> as a value.</li>
 <li>LAD: <code>LadFieldOrVariableKind</code> → <code>LadTypeKind</code>; <code>globals</code> is removed, builtin functions are <code>LadFunctionNamespace::Global</code> (the mdbook “Globals” and “Functions” pages are one “Builtins” page), namespaces have <code>values</code> (<code>add_instance*</code> → <code>add_namespace_value_of</code> / <code>add_namespace_instance</code>); new <code>namespaces</code>, <code>generic_types</code>, <code>LadTypeDefinition::generic_type</code>, <code>LadFunction::receiver</code>, <code>LadFunctionMetadata::operator</code> (replaces <code>is_operator</code>); arguments are always named and never include the call context; <code>polymorphizied_types</code> is removed. <code>ArgumentVisitor</code> has an <code>Output</code> type and <code>visit_*</code> methods.</li>
+<li>Generic types:
+<ul>
+<li>They are declared with <code>app.register_generic_type::&lt;Handle&lt;A&gt;&gt;("asset", &amp;["A"], docs)</code> (<code>GenericTypesAppExt</code>, stored in <code>AppGenericTypes</code>, which <code>generate_lad_file</code> now takes) or <code>LadFileBuilder::add_generic_type</code>, the marker <code>A</code> standing in for the parameter (<code>bindings::function::generics::A</code>). The bindings crates declare their own (<code>Handle</code>, <code>AssetId</code>, <code>Time</code>, <code>ButtonInput</code>, …).</li>
+<li>Their layout is in terms of the parameter (<code>LadGenericType::layout</code>, a parameter being <code>LadNamedType::Param</code>, i.e. <code>{ "ref": { "param": "T" } }</code>, instantiated with <code>replace_param</code>).</li>
+<li><code>Ref</code>/<code>Mut</code>/<code>Val</code> hold a <code>LadNamedType</code>: a type id as before, or a declared generic type applied to arguments (<code>{ "generic_type": "bevy_asset::handle::Handle", "args": [...] }</code>), which is how instantiations are named everywhere (<code>ArgumentVisitor::visit_generic</code>).</li>
+<li>Instantiations of declared generic types aren’t types of the file anymore: they are recorded on the generic type (<code>LadGenericType::instantiations</code>, with their arguments, metadata and functions, see <code>LadFile::get_instantiation</code>). <code>LadFunctionNamespace::Type</code>/<code>Variant</code> and <code>LadTypeKind::Fields</code> name types by <code>LadNamedType</code>. <code>LadTypeDefinition::generic_type</code>, <code>LadFile::get_generic_instance</code> and <code>LadFile::documented_types</code> are removed.</li>
+<li>The functions of an instantiation are in <code>LadInstantiation::associated_functions</code>. In Lua they are on a subclass of the generic class (<code>time.Time.Virtual : time.Time&lt;time.Virtual&gt;</code>), as are the functions of its variants (<code>asset.Handle.Image.Strong : asset.Handle.Strong&lt;render.Image&gt;</code>), and the mdbook page of the generic type lists them, titled by the instantiation (<code>Time&lt;Virtual&gt;.pause</code>).</li>
+</ul>
+</li>
+<li>Generic functions are declared in their signature with <code>TypeOf&lt;R, A&gt;</code> (a type, passed as <code>R</code>) and <code>ValueOf&lt;A&gt;</code> (a value of it, a reference at runtime), see <code>bindings::function::generics</code>. <code>world.get_component</code>, <code>get_resource</code>, <code>insert_component</code>, <code>bms.construct</code> and the asset functions of <code>world</code> (<code>load_asset</code>, <code>get_asset</code>, <code>add_asset</code>, …, taking a <code>ValueOf&lt;Handle&lt;A&gt;&gt;</code>) use them, so in Lua <code>world.get_component(entity, Transform)</code> is a <code>transform.Transform?</code> and <code>world.load_asset(path, Image)</code> an <code>asset.Handle&lt;render.Image&gt;</code> (<code>---@generic A</code>, with an <code>---@overload</code> for untyped registrations). LAD: <code>LadFunction::generics</code>, <code>LadTypeKind::Type { of, erased }</code> (<code>ArgumentVisitor::visit_type</code>), and <code>ThroughTypeInfo::TypeOf</code>.</li>
 </ul>
 
                     </main>
