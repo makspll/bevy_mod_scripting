@@ -1,42 +1,5 @@
 use std::borrow::Cow;
 
-/// Takes the first n characters from the markdown, without splitting any formatting.
-pub(crate) fn markdown_substring(markdown: &str, length: usize) -> String {
-    if markdown.len() <= length {
-        return markdown.to_string();
-    }
-    let mut end = length;
-    for &(open, close) in &[("`", "`"), ("**", "**"), ("*", "*"), ("_", "_"), ("[", "]")] {
-        // Count markers in the already cut substring.
-        let count = markdown[..end].matches(open).count();
-        // Check if an opening marker starts right at the cutoff.
-        let extra = if markdown[end..].starts_with(open) {
-            1
-        } else {
-            0
-        };
-        if (count + extra) % 2 == 1 {
-            let search_start = if extra == 1 { end + open.len() } else { end };
-            if let Some(pos) = markdown[search_start..].find(close) {
-                end = search_start + pos + close.len();
-                // Special handling for links: if the marker is "[" then check if a '(' follows.
-                if open == "[" && markdown.len() > end && markdown[end..].starts_with('(') {
-                    let paren_search_start = end + 1;
-                    if let Some(paren_pos) = markdown[paren_search_start..].find(')') {
-                        end = paren_search_start + paren_pos + 1;
-                    }
-                }
-            } else {
-                return markdown.to_string();
-            }
-        }
-    }
-
-    let trimmed = markdown[..end].to_string();
-    // append ...
-    format!("{trimmed}...")
-}
-
 /// Escapes Markdown reserved characters in the given text.
 fn escape_markdown(text: &str, escape: bool) -> String {
     if !escape {
@@ -468,6 +431,13 @@ impl MarkdownBuilder {
         self
     }
 
+    /// Adds a raw markdown block, separated from what follows it, so i.e. an HTML block doesn't swallow the next paragraph
+    pub fn block(&mut self, text: impl Into<String>) -> &mut Self {
+        self.append(&text.into());
+        self.separate();
+        self
+    }
+
     /// Adds a paragraph element.
     pub fn text(&mut self, text: impl Into<String>) -> &mut Self {
         Markdown::Paragraph {
@@ -758,29 +728,5 @@ mod tests {
         let trimmed_indentation_markdown = trimmed_indentation_markdown.trim();
 
         pretty_assertions::assert_eq!(trimmed_indentation_expected, trimmed_indentation_markdown);
-    }
-
-    #[test]
-    fn test_markdown_substring_works() {
-        // Test markdown_substring with simple 5–7 character inputs.
-        let cases = vec![
-            // Inline code: "a`bcd`" → with len 3, substring "a`b" is extended to the full inline segment.
-            ("a`bcd`", 3, "a`bcd`..."),
-            // Bold: "a**b**" → with len 3, substring "a**" is extended to "a**b**".
-            ("a**b**", 3, "a**b**..."),
-            // Italic: "a*b*" → with len 1, substring "["a*", extended to "a*b*".
-            ("a*b*", 1, "a*b*..."),
-            // Underscore: "a_b_" → with len 1, extended to "a_b_".
-            ("a_b_", 1, "a_b_..."),
-            // Link-like: "[x](y)" → with len 1, extended to the next closing bracket.
-            ("[x](y)", 1, "[x](y)..."),
-        ];
-        for (input, len, expected) in cases {
-            assert_eq!(
-                expected,
-                markdown_substring(input, len),
-                "Failed for input: {input}"
-            );
-        }
     }
 }

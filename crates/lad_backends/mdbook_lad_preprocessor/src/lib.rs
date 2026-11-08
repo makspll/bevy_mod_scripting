@@ -5,11 +5,12 @@ use std::sync::OnceLock;
 
 use mdbook_preprocessor::{
     Preprocessor, PreprocessorContext,
-    book::{Book, BookItem, Chapter},
+    book::{Book, BookItem, Chapter, SectionNumber},
     errors::{self, Error},
 };
 use sections::{Section, SectionData};
 mod argument_visitor;
+mod docstrings;
 mod markdown;
 mod sections;
 
@@ -41,13 +42,11 @@ impl LADPreprocessor {
 
     /// Process a chapter that is a LAD file.
     ///
-    /// `parent` is the optional parent chapter reference,
-    /// and `chapter_index` is the index of the chapter among its siblings.
+    /// `parent` is the optional parent chapter reference.
     fn process_lad_chapter(
         _context: &PreprocessorContext,
         chapter: &Chapter,
         parent: Option<&Chapter>,
-        chapter_index: usize,
     ) -> Result<Chapter, Error> {
         let chapter_title = chapter.name.trim_end_matches(".lad.json").to_owned();
         let ladfile = ladfile::parse_lad_file(&chapter.content)
@@ -64,6 +63,11 @@ impl LADPreprocessor {
 
         log::debug!("Parent path: {parent_path:?}");
 
+        // the chapter keeps the number it has in the summary, which the pages generated below it extend
+        let number = chapter
+            .number
+            .clone()
+            .unwrap_or_else(|| SectionNumber::new(vec![0]));
         let new_chapter = Section::new(
             parent_path,
             &ladfile,
@@ -71,7 +75,7 @@ impl LADPreprocessor {
                 title: Some(chapter_title),
             },
         )
-        .into_chapter(parent, chapter_index);
+        .into_chapter(parent, number);
         log::debug!(
             "New chapter: {}",
             serde_json::to_string_pretty(&new_chapter).unwrap_or_default()
@@ -110,7 +114,6 @@ impl Preprocessor for LADPreprocessor {
                                 context,
                                 chapter,
                                 Some(parent),
-                                idx,
                             ) {
                                 Ok(new_chapter) => return Some((idx, new_chapter)),
                                 Err(e) => {
@@ -138,16 +141,8 @@ impl Preprocessor for LADPreprocessor {
                 if !LADPreprocessor::is_lad_file(chapter) {
                     return;
                 }
-                let new_chapter = match LADPreprocessor::process_lad_chapter(
-                    context,
-                    chapter,
-                    None,
-                    chapter
-                        .number
-                        .clone()
-                        .and_then(|n| n.last().map(|v| (*v) as usize))
-                        .unwrap_or_default(),
-                ) {
+                let new_chapter = match LADPreprocessor::process_lad_chapter(context, chapter, None)
+                {
                     Ok(new_chapter) => new_chapter,
                     Err(e) => {
                         errors.push(e);

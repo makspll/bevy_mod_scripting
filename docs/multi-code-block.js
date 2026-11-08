@@ -26,7 +26,12 @@
         if (!hljs.getLanguage(as)) {
             return;
         }
-        code.innerHTML = hljs.highlight(code.textContent, { language: as }).value;
+        // mdbook bundles highlight.js 10.1, which takes the language first, 10.7+ takes options instead
+        const legacy = parseFloat(hljs.versionString || "0") < 10.7;
+        const result = legacy
+            ? hljs.highlight(as, code.textContent)
+            : hljs.highlight(code.textContent, { language: as });
+        code.innerHTML = result.value;
         code.classList.add("hljs");
     }
 

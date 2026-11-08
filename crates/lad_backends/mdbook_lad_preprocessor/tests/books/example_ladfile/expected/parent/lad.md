@@ -1,5 +1,7 @@
 # LAD
 
+<div class="lad-page"></div>
+
 ## Contents
 
 This is an automatically generated file, you'll find links to the contents below
