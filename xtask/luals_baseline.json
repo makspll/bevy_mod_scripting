@@ -1,0 +1,8 @@
+{
+  "assign-type-mismatch": 2,
+  "inject-field": 14,
+  "need-check-nil": 112,
+  "param-type-mismatch": 160,
+  "undefined-field": 79,
+  "undefined-global": 3
+}

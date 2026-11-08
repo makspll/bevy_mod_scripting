@@ -58,12 +58,9 @@ fn main() -> std::io::Result<()> {
         register_test_functions(&mut app);
         register_test_types(&mut app);
         // `assert_throws` is a raw Lua global of the test harness, so it is not part of the ladfile
-        std::fs::write(
-            PathBuf::from("assets")
-                .join("definitions")
-                .join("test_harness.lua"),
-            TEST_HARNESS_GLOBALS,
-        )?;
+        let definitions = PathBuf::from("assets").join("definitions");
+        std::fs::create_dir_all(&definitions)?;
+        std::fs::write(definitions.join("test_harness.lua"), TEST_HARNESS_GLOBALS)?;
     }
 
     // there are two ways to generate the ladfile
