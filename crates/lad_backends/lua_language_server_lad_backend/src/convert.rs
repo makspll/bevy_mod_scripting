@@ -1,7 +1,7 @@
 mod generics;
 
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
-use generics::generic_type_modules;
+use generics::{generic_type_modules, instantiation_class_name};
 use indexmap::{IndexMap, IndexSet};
 use ladfile::{
     ArgumentVisitor, LadFile, LadFunction, LadNamedType, LadTypeId, LadTypeKind,
@@ -274,7 +274,7 @@ fn type_to_lua_class(
             }
 
             if lad_type.metadata.is_reflect && name != "ReflectReference" {
-                parents.push(String::from("ReflectReference"))
+                parents.push(LuaType::Alias(String::from("ReflectReference")))
             }
             // if metadata.is_component {
             //     parents.push(String::from("ScriptComponentRegistration"))
@@ -627,6 +627,16 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
                 "{generic_type} is not a generic type of the file"
             ));
         };
+        // instantiations with functions of their own have a class of their own, extending this one
+        if let Some(class) =
+            self.ladfile
+                .get_instantiation(generic_type, args)
+                .and_then(|instantiation| {
+                    instantiation_class_name(self.ladfile, generic, instantiation)
+                })
+        {
+            return Ok(LuaType::Alias(class));
+        }
         Ok(LuaType::Generic {
             name: qualified(&generic.namespace, &generic.identifier),
             args: args
@@ -767,7 +777,7 @@ fn enum_variant_modules(
                 namespace: lad_type.namespace.clone(),
                 class: Some(LuaClass {
                     name: class_name,
-                    parents: vec![variant_parent.clone()],
+                    parents: vec![LuaType::Alias(variant_parent.clone())],
                     fields: vec![],
                     generics: vec![],
                     documentation: Some(format!(
@@ -1475,7 +1485,7 @@ mod test {
             ladfile::LadVariant::TupleStruct {
                 name: "Some".into(),
                 fields: vec![ladfile::LadField {
-                    type_: LadTypeKind::Param("T".into()),
+                    type_: LadTypeKind::Val(LadNamedType::Param { param: "T".into() }),
                     has_default: false,
                 }],
             },
@@ -1497,6 +1507,91 @@ mod test {
             rendered
                 .contains("---@class ladfile_builder.OpaqueGenericType.Some<T> : EnumVariantRef"),
             "{rendered}"
+        );
+    }
+
+    #[test]
+    fn functions_of_instantiations_are_on_a_subclass() {
+        let mut file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
+        let generic_id =
+            LadTypeId::new_string_id("ladfile_builder::test::OpaqueGenericType".into());
+        let plain = type_id(&file, "PlainStructType");
+        let applied = |arg: LadTypeKind| LadNamedType::Generic {
+            generic_type: generic_id.clone(),
+            args: vec![arg],
+        };
+        let of_plain = applied(LadTypeKind::Val(plain.clone().into()));
+        let mut add = |name: &'static str, namespace: LadFunctionNamespace, ret: LadTypeKind| {
+            let id = LadFunctionId::new_string_id(name.into());
+            file.functions.insert(
+                id.clone(),
+                LadFunction {
+                    namespace,
+                    identifier: name.into(),
+                    overload_index: None,
+                    arguments: vec![arg("_self", LadTypeKind::Ref(of_plain.clone()))],
+                    return_type: arg("return", ret),
+                    documentation: None,
+                    metadata: LadFunctionMetadata {
+                        operator: None,
+                        misc: Default::default(),
+                    },
+                    receiver: true,
+                },
+            );
+            id
+        };
+        let only = add(
+            "only_on_plain",
+            LadFunctionNamespace::Type(of_plain.clone()),
+            LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool),
+        );
+        add(
+            "new",
+            LadFunctionNamespace::Variant {
+                type_id: of_plain.clone(),
+                variant: "Some".into(),
+            },
+            LadTypeKind::Val(of_plain.clone()),
+        );
+        let generic_type = file.generic_types.get_mut(&generic_id).unwrap();
+        generic_type.instantiations.push(ladfile::LadInstantiation {
+            args: vec![LadTypeKind::Val(plain.clone().into())],
+            associated_functions: vec![only],
+            metadata: file.types[&plain].metadata.clone(),
+        });
+        let rendered = render(&file);
+
+        // the function of an instantiation is on its subclass, which names the instantiation
+        assert!(
+            rendered.contains(
+                "---@class ladfile_builder.OpaqueGenericType.PlainStructType : ladfile_builder.OpaqueGenericType<ladfile_builder.PlainStructType>"
+            ),
+            "{rendered}"
+        );
+        assert!(
+            rendered.contains(
+                "function ladfile_builder_OpaqueGenericType_PlainStructType.only_on_plain("
+            ),
+            "{rendered}"
+        );
+        // so are the functions of its variants, on a subclass of the generic variant class
+        for expected in [
+            "---@field  Some ladfile_builder.OpaqueGenericType.PlainStructType.Some",
+            "---@class ladfile_builder.OpaqueGenericType.PlainStructType.Some : ladfile_builder.OpaqueGenericType.Some<ladfile_builder.PlainStructType>",
+            "---@param _self ladfile_builder.OpaqueGenericType.PlainStructType.Some",
+            "function ladfile_builder_OpaqueGenericType_PlainStructType_Some.new(",
+        ] {
+            assert!(rendered.contains(expected), "{expected}\n{rendered}");
+        }
+        assert_eq!(
+            lad_instance_to_lua_type(&file, &LadTypeKind::Val(of_plain))
+                .map(|ty| format!("{ty:?}"))
+                .unwrap(),
+            format!(
+                "{:?}",
+                LuaType::Alias("ladfile_builder.OpaqueGenericType.PlainStructType".into())
+            )
         );
     }
 

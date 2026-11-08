@@ -377,13 +377,11 @@ pub enum LadTypeKind {
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
     },
-    /// A value of the type the parameter of a generic type stands for, in the layout of the generic type, see [`LadGenericType::layout`].
-    Param(String),
 }
 
 /// A type with a name, which values, references and mutable references are of, see [`LadTypeKind::Val`].
 ///
-/// Either a type of the file, or a generic type applied to arguments, never a container.
+/// Either a type of the file, a generic type applied to arguments, or a parameter of a generic type, never a container.
 /// Plain ids serialize as before, i.e. `{ "val": "glam::Vec3" }`.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
@@ -397,6 +395,12 @@ pub enum LadNamedType {
         /// Its arguments, in the order of its parameters
         args: Vec<LadTypeKind>,
     },
+    /// The type a parameter of a generic type stands for, in the layout and functions of the generic type,
+    /// i.e. `{ "ref": { "param": "T" } }` for `&T`, see [`LadGenericType::layout`]
+    Param {
+        /// The name of the parameter, i.e. `T`
+        param: String,
+    },
 }
 
 impl From<LadTypeId> for LadNamedType {
@@ -406,18 +410,18 @@ impl From<LadTypeId> for LadNamedType {
 }
 
 impl LadNamedType {
-    /// The id of the type, if it is a type of the file rather than a generic type applied to arguments
+    /// The id of the type, if it is a type of the file rather than a generic type applied to arguments or a parameter
     pub fn type_id(&self) -> Option<&LadTypeId> {
         match self {
             LadNamedType::Id(type_id) => Some(type_id),
-            LadNamedType::Generic { .. } => None,
+            LadNamedType::Generic { .. } | LadNamedType::Param { .. } => None,
         }
     }
 
-    /// The arguments of a generic type, none for a type of the file
+    /// The arguments of a generic type, none for a type of the file or a parameter
     pub fn args(&self) -> &[LadTypeKind] {
         match self {
-            LadNamedType::Id(_) => &[],
+            LadNamedType::Id(_) | LadNamedType::Param { .. } => &[],
             LadNamedType::Generic { args, .. } => args,
         }
     }
@@ -441,10 +445,9 @@ impl LadTypeKind {
             | LadTypeKind::Mut(named)
             | LadTypeKind::Val(named)
             | LadTypeKind::Fields { of: named, .. } => named.args().iter().collect(),
-            LadTypeKind::Unknown(_)
-            | LadTypeKind::Primitive(_)
-            | LadTypeKind::UntypedTuple
-            | LadTypeKind::Param(_) => vec![],
+            LadTypeKind::Unknown(_) | LadTypeKind::Primitive(_) | LadTypeKind::UntypedTuple => {
+                vec![]
+            }
         }
     }
 
@@ -475,8 +478,7 @@ impl LadTypeKind {
             | LadTypeKind::Unknown(_)
             | LadTypeKind::Primitive(_)
             | LadTypeKind::UntypedTuple
-            | LadTypeKind::Fields { .. }
-            | LadTypeKind::Param(_) => vec![],
+            | LadTypeKind::Fields { .. } => vec![],
         }
     }
 
@@ -499,16 +501,31 @@ impl LadTypeKind {
     }
 
     /// Replaces the generic parameter with the given name in this kind with the given argument, i.e. `Vec<T>` with `Vec<Image>`.
+    ///
+    /// References keep being references, `&T` is `&Image`, unless the argument can't be referenced, i.e. a primitive.
     pub fn replace_param(&mut self, name: &str, arg: &LadTypeKind) {
-        if let LadTypeKind::Param(param) = self
-            && param == name
-        {
-            *self = arg.clone();
-            return;
+        let is_param =
+            |named: &LadNamedType| matches!(named, LadNamedType::Param { param } if param == name);
+        match self {
+            LadTypeKind::Ref(named) | LadTypeKind::Mut(named) | LadTypeKind::Val(named)
+                if is_param(named) =>
+            {
+                match arg.named() {
+                    Some(arg) => *named = arg.clone(),
+                    None => *self = arg.clone(),
+                }
+            }
+            // the fields of an argument without fields stay the fields of the parameter
+            LadTypeKind::Fields { of, .. } if is_param(of) => {
+                if let Some(arg) = arg.named() {
+                    *of = arg.clone();
+                }
+            }
+            _ => self
+                .children_mut()
+                .into_iter()
+                .for_each(|kind| kind.replace_param(name, arg)),
         }
-        self.children_mut()
-            .into_iter()
-            .for_each(|kind| kind.replace_param(name, arg));
     }
 }
 
@@ -554,11 +571,12 @@ pub trait ArgumentVisitor {
     /// A generic type applied to arguments, i.e. `Handle<Image>`
     fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[LadTypeKind]) -> Self::Output;
 
-    /// A type with a name, by default [`Self::visit_type_id`] or [`Self::visit_generic`]
+    /// A type with a name, by default [`Self::visit_type_id`], [`Self::visit_generic`] or [`Self::visit_param`]
     fn visit_named(&mut self, named: &LadNamedType) -> Self::Output {
         match named {
             LadNamedType::Id(type_id) => self.visit_type_id(type_id),
             LadNamedType::Generic { generic_type, args } => self.visit_generic(generic_type, args),
+            LadNamedType::Param { param } => self.visit_param(param),
         }
     }
 
@@ -639,7 +657,6 @@ pub trait ArgumentVisitor {
             LadTypeKind::TupleWithRest { head, rest } => self.visit_tuple_with_rest(head, rest),
             LadTypeKind::Union(inner) => self.visit_union(inner),
             LadTypeKind::Fields { of, variant } => self.visit_fields(of, variant.as_deref()),
-            LadTypeKind::Param(param) => self.visit_param(param),
         }
     }
 }
@@ -994,7 +1011,7 @@ pub struct LadGenericType {
     /// The names of the generic parameters, i.e. `["A"]`.
     pub params: Vec<String>,
 
-    /// The layout of the type, in terms of its parameters, i.e. `{ context: T }` for `Time<T>`, see [`LadTypeKind::Param`].
+    /// The layout of the type, in terms of its parameters, i.e. `{ context: T }` for `Time<T>`, see [`LadNamedType::Param`].
     ///
     /// The layout of an instantiation is this one with the parameters replaced by its arguments.
     /// Whether a field mentioning a parameter has a default depends on the argument, see the instantiation for that.
@@ -1015,7 +1032,8 @@ pub struct LadGenericType {
 pub struct LadInstantiation {
     /// The arguments, in the order of the parameters of the generic type
     pub args: Vec<LadTypeKind>,
-    /// The functions on the instantiation, i.e. its constructor, see [`LadFunctionNamespace::Type`]
+    /// The functions on the instantiation, i.e. `pause` on `Time<Virtual>`, like `impl Time<Virtual>` in Rust,
+    /// see [`LadFunctionNamespace::Type`]
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub associated_functions: Vec<LadFunctionId>,
     /// Additional metadata about the instantiation, i.e. whether it is a component

@@ -283,7 +283,7 @@ pub struct LuaOperator {
 pub struct LuaClass {
     pub name: String,
     pub exact: bool,
-    pub parents: Vec<String>,
+    pub parents: Vec<LuaType>,
     pub fields: Vec<ClassField>,
     pub generics: Vec<String>,
     pub operators: Vec<LuaOperator>,

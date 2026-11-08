@@ -4,7 +4,7 @@
 {# newline #}
 {%- for module in modules -%} {# module #}
 {%- if module.class -%} {# class #}
----@class {% if module.class.exact %}(exact) {% endif %}{{ module.class.name }}{% if module.class.generics %}<{{ module.class.generics | join(sep=", ") }}>{% endif %} {%- if module.class.parents %} : {% endif -%}{%- for parent in module.class.parents -%}{{parent}}{%- if not loop.last-%},{%- endif -%}{%- endfor %}
+---@class {% if module.class.exact %}(exact) {% endif %}{{ module.class.name }}{% if module.class.generics %}<{{ module.class.generics | join(sep=", ") }}>{% endif %} {%- if module.class.parents %} : {% endif -%}{%- for parent in module.class.parents -%}{{ self::lua_type(ty=parent) }}{%- if not loop.last-%},{%- endif -%}{%- endfor %}
 {{ self::multiline_description(description=module.class.documentation) -}}
 {%- for field in module.class.fields -%}
 {{- self::class_field(field=field) -}}

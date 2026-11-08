@@ -645,7 +645,9 @@
           {
             "name": "value",
             "type": {
-              "param": "T"
+              "val": {
+                "param": "T"
+              }
             }
           }
         ]
