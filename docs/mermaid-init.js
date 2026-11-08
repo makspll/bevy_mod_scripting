@@ -21,8 +21,12 @@
 
     // Simplest way to make mermaid re-render the diagrams in the new theme is via refreshing the page
 
+    // the theme buttons are `mdbook-theme-<theme>` since mdbook 0.5, and `<theme>` before
+    const themeButton = (theme) =>
+        document.getElementById(`mdbook-theme-${theme}`) || document.getElementById(theme);
+
     for (const darkTheme of darkThemes) {
-        document.getElementById(darkTheme).addEventListener('click', () => {
+        themeButton(darkTheme)?.addEventListener('click', () => {
             if (lastThemeWasLight) {
                 window.location.reload();
             }
@@ -30,7 +34,7 @@
     }
 
     for (const lightTheme of lightThemes) {
-        document.getElementById(lightTheme).addEventListener('click', () => {
+        themeButton(lightTheme)?.addEventListener('click', () => {
             if (!lastThemeWasLight) {
                 window.location.reload();
             }

@@ -238,11 +238,24 @@ pub(crate) fn render_docs(
     });
     for line in lines {
         if let Some(info) = code_fence(line) {
-            code = match code {
-                Some(_) => None,
-                None => Some(info.trim().to_owned()),
-            };
-            out.push(line.to_owned());
+            let info = info.trim();
+            match code {
+                Some(_) => {
+                    code = None;
+                    out.push(line.to_owned());
+                }
+                None => {
+                    code = Some(info.to_owned());
+                    // rust examples need their crates, which the playground mdbook would run them on doesn't have
+                    let is_rust = info.is_empty() || info.split(',').any(|i| i.trim() == "rust");
+                    let fence = &line.trim_start()[..3];
+                    out.push(match (is_rust, info.contains("noplayground")) {
+                        (true, false) if info.is_empty() => format!("{fence}rust,noplayground"),
+                        (true, false) => format!("{fence}{info},noplayground"),
+                        _ => line.to_owned(),
+                    });
+                }
+            }
             continue;
         }
         match &code {
@@ -356,7 +369,7 @@ mod test {
             "# Examples\n```\n# use bevy::prelude::*;\nlet a = 1; // [not a link]\n```\n## More";
         assert_eq!(
             render_docs(doc, &links(), ".", 2),
-            "### Examples\n```\nlet a = 1; // [not a link]\n```\n#### More"
+            "### Examples\n```rust,noplayground\nlet a = 1; // [not a link]\n```\n#### More"
         );
     }
 

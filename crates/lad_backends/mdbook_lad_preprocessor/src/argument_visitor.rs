@@ -101,6 +101,11 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         let type_identifier = self
             .ladfile
             .get_type_identifier(type_id, self.raw_type_id_replacement);
+        // types without an identifier, i.e. `()`, are named by their id
+        let type_identifier = match type_identifier.is_empty() {
+            true => type_id.to_string(),
+            false => type_identifier.into_owned(),
+        };
         // instantiations of undeclared generic types, declared ones are named by their generic type, see `visit_generic`
         if let Some(generics) = generics {
             self.buffer.text(type_identifier);

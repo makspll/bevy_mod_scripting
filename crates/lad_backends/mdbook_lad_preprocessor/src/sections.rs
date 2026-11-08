@@ -135,9 +135,11 @@ fn function_title(variant: Option<&str>, function: &LadFunction) -> String {
 ///
 /// Type names can contain anything, i.e. the paths of unregistered types, `::`, `<`, `,`... but windows,
 /// for example, does not allow `:` in filenames. Extensions are added by callers, so `.` is not kept either.
+/// The unit type `()` is spelled out, as nothing of it would be left.
 pub fn linkify_filename(name: impl Into<String>) -> String {
     name.into()
         .to_lowercase()
+        .replace("()", "unit")
         .replace(' ', "_")
         .chars()
         .filter(|c| c.is_alphanumeric() || matches!(c, '_' | '-'))
