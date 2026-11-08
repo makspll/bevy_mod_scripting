@@ -61,8 +61,30 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     type Output = ();
 
     fn visit_primitive(&mut self, primitive_kind: &ladfile::ReflectionPrimitiveKind) {
-        let prim_id = primitive_kind.to_string();
-        self.link_or_text(prim_id.clone(), prim_id);
+        use ladfile::ReflectionPrimitiveKind as P;
+        let page = primitive_kind.to_string();
+        // the primitives of the language are spelled as such, i.e. `f32` and `bool`
+        let name = match primitive_kind {
+            P::Bool
+            | P::Char
+            | P::Str
+            | P::Isize
+            | P::I8
+            | P::I16
+            | P::I32
+            | P::I64
+            | P::I128
+            | P::Usize
+            | P::U8
+            | P::U16
+            | P::U32
+            | P::U64
+            | P::U128
+            | P::F32
+            | P::F64 => page.to_lowercase(),
+            _ => page.clone(),
+        };
+        self.link_or_text(name, page);
     }
 
     fn visit_type_id(&mut self, type_id: &ladfile::LadTypeId) {
@@ -90,7 +112,10 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
                 self.visit_type_id(&generic.type_id);
             }
             self.buffer.text('>');
-        } else if let Some(linkifier) = &self.linkifier {
+        } else if let Some(linkifier) = &self.linkifier
+            // types which aren't in the file have no page
+            && self.ladfile.types.contains_key(type_id)
+        {
             // link the type, by building a string of the type linked to first
             let mut sub_visitor = MarkdownArgumentVisitor::new(self.ladfile);
             sub_visitor.raw_type_id_replacement = self.raw_type_id_replacement;
@@ -125,7 +150,9 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     }
 
     fn visit_hash_set(&mut self, inner: &ladfile::LadTypeKind) {
+        self.buffer.text("HashSet<");
         self.visit(inner);
+        self.buffer.text(">");
     }
 
     fn visit_tuple(&mut self, inner: &[ladfile::LadTypeKind]) {
@@ -139,7 +166,9 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text(")");
     }
 
-    fn visit_untyped_tuple(&mut self) {}
+    fn visit_untyped_tuple(&mut self) {
+        self.buffer.text("...");
+    }
 
     fn visit_tuple_with_rest(
         &mut self,
@@ -284,7 +313,7 @@ mod test {
         visitor.visit(&instantiation);
         assert_eq!(
             visitor.buffer.build(),
-            "[OpaqueGenericType](root/asd/OpaqueGenericType<T>)<[Usize](root/asd/Usize)>"
+            "[OpaqueGenericType](root/asd/OpaqueGenericType<T>)<[usize](root/asd/Usize)>"
         );
 
         // and the generic type is printed with its parameters
@@ -345,7 +374,7 @@ mod test {
         visitor.visit(&LadTypeKind::Option(Box::new(LadTypeKind::Primitive(
             ReflectionPrimitiveKind::Bool,
         ))));
-        assert_eq!(visitor.buffer.build(), "Optional<Bool>");
+        assert_eq!(visitor.buffer.build(), "Optional<bool>");
     }
 
     #[test]
@@ -357,7 +386,7 @@ mod test {
         visitor.visit(&LadTypeKind::Vec(Box::new(LadTypeKind::Primitive(
             ReflectionPrimitiveKind::Bool,
         ))));
-        assert_eq!(visitor.buffer.build(), "Vec<Bool>");
+        assert_eq!(visitor.buffer.build(), "Vec<bool>");
     }
 
     #[test]
@@ -371,7 +400,7 @@ mod test {
             Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::String)),
         ));
 
-        assert_eq!(visitor.buffer.build(), "HashMap<Bool, String>");
+        assert_eq!(visitor.buffer.build(), "HashMap<bool, String>");
     }
 
     #[test]
@@ -393,7 +422,7 @@ mod test {
         ));
         assert_eq!(
             visitor.buffer.build(),
-            "HashMap<Bool, PlainStructType | PlainStructType | PlainStructType>"
+            "HashMap<bool, PlainStructType | PlainStructType | PlainStructType>"
         );
     }
 
@@ -407,14 +436,14 @@ mod test {
             LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool),
             LadTypeKind::Primitive(ReflectionPrimitiveKind::String),
         ]));
-        assert_eq!(visitor.buffer.build(), "(Bool, String)");
+        assert_eq!(visitor.buffer.build(), "(bool, String)");
 
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
         visitor.visit(&LadTypeKind::TupleWithRest {
             head: vec![LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool)],
             rest: Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::String)),
         });
-        assert_eq!(visitor.buffer.build(), "(Bool, ...String)");
+        assert_eq!(visitor.buffer.build(), "(bool, ...String)");
     }
 
     #[test]
@@ -427,7 +456,7 @@ mod test {
             Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool)),
             5,
         ));
-        assert_eq!(visitor.buffer.build(), "[Bool; 5]");
+        assert_eq!(visitor.buffer.build(), "[bool; 5]");
     }
 
     #[test]

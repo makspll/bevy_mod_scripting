@@ -1,10 +1,20 @@
 # Builtins
 
+<div class="lad-page"></div>
+
 The only globals of scripts. Everything else is imported from a namespace, see the namespace pages under Types, i.e. `import_namespace("bms").world`.
 
-For function details and documentation, click on the function link\.
+## Functions
 
-| Function | Summary |
+| Name | Summary |
 | --- | --- |
-| [hello\_world](./builtins/hello_world.md) | No Documentation 🚧 |
+| [`hello_world`](#hello_world) |  |
+
+### `hello_world` {#hello_world .lad-function}
+
+<div class="lad-signature">
+
+**hello\_world**(arg1: [usize](./types/usize.md)) -> [usize](./types/usize.md)
+
+</div>
 
