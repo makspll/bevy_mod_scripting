@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,55 +183,56 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="math"><a class="header" href="#math">math</a></h1>
+<div class="lad-page"></div>
+
 <p>The types and functions in the <code>math</code> namespace, as returned by <code>import_namespace("math")</code>.</p>
-<h2 id="available-types"><a class="header" href="#available-types">Available Types</a></h2>
-<p>All registered reflect-able types which can be constructed and directly manipulated by scripts.</p>
+<h2 id="types"><a class="header" href="#types">Types</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Type</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="././easefunction.html"><code>EaseFunction</code></a></td><td>Curve functions over the [unit interval], commonly used for easing transitions.   `EaseFunction` can be used on its own to interpolate between `0.0` and `1.0`.  It can also be combined with [`EasingCurve`]...</td></tr>
-<tr><td><a href="././dir2.html"><code>Dir2</code></a></td><td>A normalized vector pointing in a direction in 2D space</td></tr>
-<tr><td><a href="././dir3.html"><code>Dir3</code></a></td><td>A normalized vector pointing in a direction in 3D space</td></tr>
-<tr><td><a href="././rect.html"><code>Rect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
-<tr><td><a href="././rot2.html"><code>Rot2</code></a></td><td>A 2D rotation.   # Example   ```  # use approx::assert_relative_eq;  # use bevy_math::{Rot2, Vec2};  use std::f32::consts::PI;   // Create rotations from counterclockwise angles in radians or degrees  let rotation1 = Rot2::radians(PI / 2.0);  let rotation2 = Rot2::degrees(45.0);   // Get the angle back as radians or degrees  assert_eq!(rotation1.as_degrees(), 90.0);  assert_eq!(rotation2.as_radians(), PI / 4.0);   // “Add” rotations together using `*`  #[cfg(feature = “approx”)]  assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));   // Rotate vectors  #[cfg(feature = “approx”)]  assert_...</td></tr>
-<tr><td><a href="././annulus.html"><code>Annulus</code></a></td><td>A primitive shape formed by the region between two circles, also known as a ring.</td></tr>
-<tr><td><a href="././circle.html"><code>Circle</code></a></td><td>A circle primitive, representing the set of points some distance from the origin</td></tr>
-<tr><td><a href="././rectangle.html"><code>Rectangle</code></a></td><td>A rectangle primitive, which is like a square, except that the width and height can be different</td></tr>
-<tr><td><a href="././regularpolygon.html"><code>RegularPolygon</code></a></td><td>A polygon centered on the origin where all vertices lie on a circle, equally far apart.</td></tr>
-<tr><td><a href="././capsule3d.html"><code>Capsule3d</code></a></td><td>A 3D capsule primitive centered on the origin  A three-dimensional capsule is defined as a surface ...</td></tr>
-<tr><td><a href="././cuboid.html"><code>Cuboid</code></a></td><td>A cuboid primitive, which is like a cube, except that the x, y, and z dimensions are not  required ...</td></tr>
-<tr><td><a href="././cylinder.html"><code>Cylinder</code></a></td><td>A cylinder primitive centered on the origin</td></tr>
-<tr><td><a href="././plane3d.html"><code>Plane3d</code></a></td><td>A bounded plane in 3D space. It forms a surface starting from the origin with a defined height and ...</td></tr>
-<tr><td><a href="././sphere.html"><code>Sphere</code></a></td><td>A sphere primitive, representing the set of all points some distance from the origin</td></tr>
-<tr><td><a href="././torus.html"><code>Torus</code></a></td><td>A torus primitive, often representing a ring or donut shape  The set of points some distance from a...</td></tr>
-<tr><td><a href="././ray2d.html"><code>Ray2d</code></a></td><td>An infinite half-line starting at `origin` and going in `direction` in 2D space.</td></tr>
-<tr><td><a href="././ray3d.html"><code>Ray3d</code></a></td><td>An infinite half-line starting at `origin` and going in `direction` in 3D space.</td></tr>
-<tr><td><a href="././dvec2.html"><code>DVec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././dvec3.html"><code>DVec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././ivec2.html"><code>IVec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././ivec3.html"><code>IVec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././mat3.html"><code>Mat3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././mat4.html"><code>Mat4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././quat.html"><code>Quat</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././uvec2.html"><code>UVec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././uvec3.html"><code>UVec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././vec2.html"><code>Vec2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././vec3.html"><code>Vec3</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././vec3a.html"><code>Vec3A</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././vec4.html"><code>Vec4</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././jumpat.html"><code>JumpAt</code></a></td><td>Configuration options for the [`EaseFunction::Steps`] curves. This closely replicates the  [CSS ste...</td></tr>
-<tr><td><a href="././compassoctant.html"><code>CompassOctant</code></a></td><td>A compass enum with 8 directions.  ```text           N (North)           ▲      NW   │   NE         ╲ │ ╱  W (West) ┼─────► E (East)         ╱ │ ╲      SW   │   SE           ▼           S (South)  `...</td></tr>
-<tr><td><a href="././urect.html"><code>URect</code></a></td><td>A rectangle defined by two opposite corners.   The rectangle is axis aligned, and defined by its mi...</td></tr>
 <tr><td><a href="././aabb2d.html"><code>Aabb2d</code></a></td><td>A 2D axis-aligned bounding box, or bounding rectangle</td></tr>
 <tr><td><a href="././aabb3d.html"><code>Aabb3d</code></a></td><td>A 3D axis-aligned bounding box</td></tr>
-<tr><td><a href="././affine2.html"><code>Affine2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././affine3a.html"><code>Affine3A</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././eulerrot.html"><code>EulerRot</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././mat2.html"><code>Mat2</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././mat3a.html"><code>Mat3A</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././affine2.html"><code>Affine2</code></a></td><td></td></tr>
+<tr><td><a href="././affine3a.html"><code>Affine3A</code></a></td><td></td></tr>
+<tr><td><a href="././annulus.html"><code>Annulus</code></a></td><td>A primitive shape formed by the region between two circles, also known as a ring.</td></tr>
+<tr><td><a href="././capsule3d.html"><code>Capsule3d</code></a></td><td>A 3D capsule primitive centered on the origin A three-dimensional capsule is defined as a surface at a distance…</td></tr>
+<tr><td><a href="././circle.html"><code>Circle</code></a></td><td>A circle primitive, representing the set of points some distance from the origin</td></tr>
+<tr><td><a href="././compassoctant.html"><code>CompassOctant</code></a></td><td>A compass enum with 8 directions.</td></tr>
+<tr><td><a href="././cuboid.html"><code>Cuboid</code></a></td><td>A cuboid primitive, which is like a cube, except that the x, y, and z dimensions are not required to be the same.</td></tr>
+<tr><td><a href="././cylinder.html"><code>Cylinder</code></a></td><td>A cylinder primitive centered on the origin</td></tr>
+<tr><td><a href="././dir2.html"><code>Dir2</code></a></td><td>A normalized vector pointing in a direction in 2D space</td></tr>
+<tr><td><a href="././dir3.html"><code>Dir3</code></a></td><td>A normalized vector pointing in a direction in 3D space</td></tr>
+<tr><td><a href="././dvec2.html"><code>DVec2</code></a></td><td></td></tr>
+<tr><td><a href="././dvec3.html"><code>DVec3</code></a></td><td></td></tr>
+<tr><td><a href="././easefunction.html"><code>EaseFunction</code></a></td><td>Curve functions over the unit interval, commonly used for easing transitions.</td></tr>
+<tr><td><a href="././eulerrot.html"><code>EulerRot</code></a></td><td></td></tr>
+<tr><td><a href="././ivec2.html"><code>IVec2</code></a></td><td></td></tr>
+<tr><td><a href="././ivec3.html"><code>IVec3</code></a></td><td></td></tr>
+<tr><td><a href="././jumpat.html"><code>JumpAt</code></a></td><td>Configuration options for the <code>EaseFunction::Steps</code> curves. This closely replicates the CSS step function specification.</td></tr>
+<tr><td><a href="././mat2.html"><code>Mat2</code></a></td><td></td></tr>
+<tr><td><a href="././mat3.html"><code>Mat3</code></a></td><td></td></tr>
+<tr><td><a href="././mat3a.html"><code>Mat3A</code></a></td><td></td></tr>
+<tr><td><a href="././mat4.html"><code>Mat4</code></a></td><td></td></tr>
+<tr><td><a href="././plane3d.html"><code>Plane3d</code></a></td><td>A bounded plane in 3D space. It forms a surface starting from the origin with a defined height and width.</td></tr>
+<tr><td><a href="././quat.html"><code>Quat</code></a></td><td></td></tr>
+<tr><td><a href="././ray2d.html"><code>Ray2d</code></a></td><td>An infinite half-line starting at <code>origin</code> and going in <code>direction</code> in 2D space.</td></tr>
+<tr><td><a href="././ray3d.html"><code>Ray3d</code></a></td><td>An infinite half-line starting at <code>origin</code> and going in <code>direction</code> in 3D space.</td></tr>
+<tr><td><a href="././rect.html"><code>Rect</code></a></td><td>A rectangle defined by two opposite corners.</td></tr>
+<tr><td><a href="././rectangle.html"><code>Rectangle</code></a></td><td>A rectangle primitive, which is like a square, except that the width and height can be different</td></tr>
+<tr><td><a href="././regularpolygon.html"><code>RegularPolygon</code></a></td><td>A polygon centered on the origin where all vertices lie on a circle, equally far apart.</td></tr>
+<tr><td><a href="././rot2.html"><code>Rot2</code></a></td><td>A 2D rotation.</td></tr>
+<tr><td><a href="././sphere.html"><code>Sphere</code></a></td><td>A sphere primitive, representing the set of all points some distance from the origin</td></tr>
+<tr><td><a href="././torus.html"><code>Torus</code></a></td><td>A torus primitive, often representing a ring or donut shape The set of points some distance from a circle centered at…</td></tr>
+<tr><td><a href="././urect.html"><code>URect</code></a></td><td>A rectangle defined by two opposite corners.</td></tr>
+<tr><td><a href="././uvec2.html"><code>UVec2</code></a></td><td></td></tr>
+<tr><td><a href="././uvec3.html"><code>UVec3</code></a></td><td></td></tr>
+<tr><td><a href="././vec2.html"><code>Vec2</code></a></td><td></td></tr>
+<tr><td><a href="././vec3.html"><code>Vec3</code></a></td><td></td></tr>
+<tr><td><a href="././vec3a.html"><code>Vec3A</code></a></td><td></td></tr>
+<tr><td><a href="././vec4.html"><code>Vec4</code></a></td><td></td></tr>
 </tbody>
 </table>
 </div>
@@ -243,7 +245,7 @@
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/easefunction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/aabb2d.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -257,7 +259,7 @@
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/easefunction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/aabb2d.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -286,9 +288,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

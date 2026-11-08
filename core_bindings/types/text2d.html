@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,31 +183,19 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="text2d"><a class="header" href="#text2d"><code>Text2d</code></a></h1>
-<h3 id="text2d-1"><a class="header" href="#text2d-1">Text2d</a></h3>
-<ol>
-<li><a href="./string.html">String</a></li>
-</ol>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
+<p class="lad-badges"><span class="lad-badge">Component</span></p>
+
 <p>The top-level 2D text component.</p>
 <p>Adding <code>Text2d</code> to an entity will pull in required components for setting up 2d text.
 <a href="https://github.com/bevyengine/bevy/blob/latest/examples/2d/text2d.rs">Example usage.</a></p>
 <p>The string in this component is the first ‘text span’ in a hierarchy of text spans that are collected into
-a [<code>ComputedTextBlock</code>]. See <code>TextSpan</code> for the component used by children of entities with [<code>Text2d</code>].</p>
-<p>With <code>Text2d</code> the <code>justify</code> field of [<code>TextLayout</code>] only affects the internal alignment of a block of text and not its
-relative position, which is controlled by the [<code>Anchor</code>] component.
+a <code>ComputedTextBlock</code>. See <code>TextSpan</code> for the component used by children of entities with <a href="./text2d.html"><code>Text2d</code></a>.</p>
+<p>With <code>Text2d</code> the <code>justify</code> field of <a href="./textlayout.html"><code>TextLayout</code></a> only affects the internal alignment of a block of text and not its
+relative position, which is controlled by the <a href="./anchor.html"><code>Anchor</code></a> component.
 This means that for a block of text consisting of only one line that doesn’t wrap, the <code>justify</code> field will have no effect.</p>
-<pre><code># use bevy_asset::Handle;
-# use bevy_color::Color;
-# use bevy_color::palettes::basic::BLUE;
-# use bevy_ecs::world::World;
-# use bevy_text::{Font, FontSize, Justify, TextLayout, TextFont, TextColor, TextSpan};
-# use bevy_sprite::Text2d;
-#
-# let font_handle: Handle&lt;Font&gt; = Default::default();
-# let mut world = World::default();
-#
-// Basic usage.
+<pre><code class="language-rust noplayground">// Basic usage.
 world.spawn(Text2d::new("hello world!"));
 
 // With non-default style.
@@ -230,34 +219,70 @@ world.spawn((
 world.spawn(Text2d::new("hello ")).with_children(|parent| {
     parent.spawn(TextSpan::new("world"));
     parent.spawn((TextSpan::new("!"), TextColor(BLUE.into())));
-});
-</code></pre>
+});</code></pre>
 <p>Viewport-based <code>FontSize</code> variants for <code>Text2d</code> are resolved based on the primary window’s logical size.</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Index</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./text2d/set.html">set</a></td><td>Replaces the text.</td></tr>
-<tr><td><a href="./text2d/as_str.html">as_str</a></td><td>The text as a string.</td></tr>
-<tr><td><a href="./text2d/new.html">new</a></td><td>Creates a new 2d text component holding `text`.</td></tr>
+<tr><td><code>0</code></td><td><a href="./string.html">String</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new"><code>new</code></a></td><td>Creates a new 2d text component holding <code>text</code>.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(text: <a href="./string.html">String</a>) -&gt; <a href="./text2d.html">Text2d</a></p>
+</div>
+
+<p>Creates a new 2d text component holding <code>text</code>.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#as_str"><code>as_str</code></a></td><td>The text as a string.</td></tr>
+<tr><td><a href="#set"><code>set</code></a></td><td>Replaces the text.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="as_str" class="lad-function"><a class="header" href="#as_str"><code>as_str</code></a></h3>
+<div class="lad-signature">
+<p><strong>as_str</strong>(self: <a href="./text2d.html">Text2d</a>) -&gt; <a href="./string.html">String</a></p>
+</div>
+
+<p>The text as a string.</p>
+<h3 id="set" class="lad-function"><a class="header" href="#set"><code>set</code></a></h3>
+<div class="lad-signature">
+<p><strong>set</strong>(self: <a href="./text2d.html">Text2d</a>, text: <a href="./string.html">String</a>)</p>
+</div>
+
+<p>Replaces the text.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/namespace_text.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/text.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/text2d/set.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/textfont.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -267,11 +292,11 @@ world.spawn(Text2d::new("hello ")).with_children(|parent| {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/namespace_text.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/text.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/text2d/set.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/textfont.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -300,9 +325,9 @@ world.spawn(Text2d::new("hello ")).with_children(|parent| {
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,48 +183,109 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="justify"><a class="header" href="#justify"><code>Justify</code></a></h1>
-<h3 id="left"><a class="header" href="#left">Left</a></h3>
-<h3 id="center"><a class="header" href="#center">Center</a></h3>
-<h3 id="right"><a class="header" href="#right">Right</a></h3>
-<h3 id="justified"><a class="header" href="#justified">Justified</a></h3>
-<h3 id="start"><a class="header" href="#start">Start</a></h3>
-<h3 id="end"><a class="header" href="#end">End</a></h3>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>Describes the horizontal alignment of multiple lines of text relative to each other.</p>
 <p>This only affects the internal positioning of the lines of text within a text entity and
 does not affect the text entity’s position.</p>
 <p><em>Has no affect on a single line text entity</em>, unless used together with a
-<a href="super::bounds::TextBounds"><code>TextBounds</code></a> component with an explicit <code>width</code> value.</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<code>TextBounds</code> component with an explicit <code>width</code> value.</p>
+<h2 id="variants"><a class="header" href="#variants">Variants</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Variant</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./justify/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
-<tr><td><a href="./justify/centernew.html">Center.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./justify/endnew.html">End.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./justify/justifiednew.html">Justified.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./justify/leftnew.html">Left.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./justify/rightnew.html">Right.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./justify/startnew.html">Start.new</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><code>Left</code></td></tr>
+<tr><td><code>Center</code></td></tr>
+<tr><td><code>Right</code></td></tr>
+<tr><td><code>Justified</code></td></tr>
+<tr><td><code>Start</code></td></tr>
+<tr><td><code>End</code></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./justify.html">Justify</a>&gt;) -&gt; <a href="./justify.html">Justify</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h2 id="variant-functions"><a class="header" href="#variant-functions">Variant Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#centernew"><code>Center.new</code></a></td><td></td></tr>
+<tr><td><a href="#endnew"><code>End.new</code></a></td><td></td></tr>
+<tr><td><a href="#justifiednew"><code>Justified.new</code></a></td><td></td></tr>
+<tr><td><a href="#leftnew"><code>Left.new</code></a></td><td></td></tr>
+<tr><td><a href="#rightnew"><code>Right.new</code></a></td><td></td></tr>
+<tr><td><a href="#startnew"><code>Start.new</code></a></td><td></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="centernew" class="lad-function"><a class="header" href="#centernew"><code>Center.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./justify.html">Justify</a>::Center&gt;) -&gt; <a href="./justify.html">Justify</a></p>
+</div>
+
+<h3 id="endnew" class="lad-function"><a class="header" href="#endnew"><code>End.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./justify.html">Justify</a>::End&gt;) -&gt; <a href="./justify.html">Justify</a></p>
+</div>
+
+<h3 id="justifiednew" class="lad-function"><a class="header" href="#justifiednew"><code>Justified.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./justify.html">Justify</a>::Justified&gt;) -&gt; <a href="./justify.html">Justify</a></p>
+</div>
+
+<h3 id="leftnew" class="lad-function"><a class="header" href="#leftnew"><code>Left.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./justify.html">Justify</a>::Left&gt;) -&gt; <a href="./justify.html">Justify</a></p>
+</div>
+
+<h3 id="rightnew" class="lad-function"><a class="header" href="#rightnew"><code>Right.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./justify.html">Justify</a>::Right&gt;) -&gt; <a href="./justify.html">Justify</a></p>
+</div>
+
+<h3 id="startnew" class="lad-function"><a class="header" href="#startnew"><code>Start.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./justify.html">Justify</a>::Start&gt;) -&gt; <a href="./justify.html">Justify</a></p>
+</div>
+
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/genericfontfamily/uiserifnew.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/genericfontfamily.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/justify/new.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/linebreak.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -233,11 +295,11 @@ does not affect the text entity’s position.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/genericfontfamily/uiserifnew.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/genericfontfamily.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/justify/new.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/linebreak.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -266,9 +328,9 @@ does not affect the text entity’s position.</p>
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

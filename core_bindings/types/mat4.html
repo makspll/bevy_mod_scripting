@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,59 +183,216 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="mat4"><a class="header" href="#mat4"><code>Mat4</code></a></h1>
-<h3 id="mat4-1"><a class="header" href="#mat4-1">Mat4</a></h3>
-<ul>
-<li><strong>x_axis</strong>:<a href="./vec4.html">Vec4</a></li>
-<li><strong>y_axis</strong>:<a href="./vec4.html">Vec4</a></li>
-<li><strong>z_axis</strong>:<a href="./vec4.html">Vec4</a></li>
-<li><strong>w_axis</strong>:<a href="./vec4.html">Vec4</a></li>
-</ul>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
-<p>No Documentation 🚧</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<div class="lad-page"></div>
+
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./mat4/transpose.html">transpose</a></td><td>The matrix with rows and columns swapped.</td></tr>
-<tr><td><a href="./mat4/row.html">row</a></td><td>The row at `index`, starting from `0`. Errors if `index` is out of range.</td></tr>
-<tr><td><a href="./mat4/add.html">add</a></td><td>Adds two matrices component-wise.</td></tr>
-<tr><td><a href="./mat4/inverse.html">inverse</a></td><td>The matrix that undoes this one.</td></tr>
-<tr><td><a href="./mat4/from_scale_rotation_translation.html">from_scale_rotation_translation</a></td><td>A matrix that scales by `scale`, then rotates by `rotation`, then moves by `translation`.</td></tr>
-<tr><td><a href="./mat4/from_cols.html">from_cols</a></td><td>A matrix with the given columns.</td></tr>
-<tr><td><a href="./mat4/transform_vector3.html">transform_vector3</a></td><td>Transforms a direction in 3D, ignoring translation.</td></tr>
-<tr><td><a href="./mat4/identity.html">identity</a></td><td>The identity matrix, which leaves vectors unchanged.</td></tr>
-<tr><td><a href="./mat4/from_rotation_translation.html">from_rotation_translation</a></td><td>A matrix that rotates by `rotation`, then moves by `translation`.</td></tr>
-<tr><td><a href="./mat4/transform_point3.html">transform_point3</a></td><td>Transforms a point in 3D, including translation and the projection divide.</td></tr>
-<tr><td><a href="./mat4/eq.html">eq</a></td><td>Whether both matrices have exactly the same components.</td></tr>
-<tr><td><a href="./mat4/mul.html">mul</a></td><td>Multiplies by a matrix, or transforms a vector, or scales every component by a number.</td></tr>
-<tr><td><a href="./mat4/div.html">div</a></td><td>Divides every component by a number.</td></tr>
-<tr><td><a href="./mat4/col.html">col</a></td><td>The column at `index`, starting from `0`. Errors if `index` is out of range.</td></tr>
-<tr><td><a href="./mat4/from_scale.html">from_scale</a></td><td>A matrix that scales every axis by the matching component of `scale`.</td></tr>
-<tr><td><a href="./mat4/determinant.html">determinant</a></td><td>The determinant of the matrix.</td></tr>
-<tr><td><a href="./mat4/from_quat.html">from_quat</a></td><td>The rotation matrix of a rotation.</td></tr>
-<tr><td><a href="./mat4/sub.html">sub</a></td><td>Subtracts two matrices component-wise.</td></tr>
-<tr><td><a href="./mat4/project_point3.html">project_point3</a></td><td>Transforms a point in 3D by a projection matrix, including the perspective divide.</td></tr>
-<tr><td><a href="./mat4/from_translation.html">from_translation</a></td><td>A matrix that moves points by `translation`.</td></tr>
-<tr><td><a href="./mat4/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
+<tr><td><code>x_axis</code></td><td><a href="./vec4.html">Vec4</a></td></tr>
+<tr><td><code>y_axis</code></td><td><a href="./vec4.html">Vec4</a></td></tr>
+<tr><td><code>z_axis</code></td><td><a href="./vec4.html">Vec4</a></td></tr>
+<tr><td><code>w_axis</code></td><td><a href="./vec4.html">Vec4</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#from_cols"><code>from_cols</code></a></td><td>A matrix with the given columns.</td></tr>
+<tr><td><a href="#from_quat"><code>from_quat</code></a></td><td>The rotation matrix of a rotation.</td></tr>
+<tr><td><a href="#from_rotation_translation"><code>from_rotation_translation</code></a></td><td>A matrix that rotates by <code>rotation</code>, then moves by <code>translation</code>.</td></tr>
+<tr><td><a href="#from_scale"><code>from_scale</code></a></td><td>A matrix that scales every axis by the matching component of <code>scale</code>.</td></tr>
+<tr><td><a href="#from_scale_rotation_translation"><code>from_scale_rotation_translation</code></a></td><td>A matrix that scales by <code>scale</code>, then rotates by <code>rotation</code>, then moves by <code>translation</code>.</td></tr>
+<tr><td><a href="#from_translation"><code>from_translation</code></a></td><td>A matrix that moves points by <code>translation</code>.</td></tr>
+<tr><td><a href="#identity"><code>identity</code></a></td><td>The identity matrix, which leaves vectors unchanged.</td></tr>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="from_cols" class="lad-function"><a class="header" href="#from_cols"><code>from_cols</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_cols</strong>(x: <a href="./vec4.html">Vec4</a>, y: <a href="./vec4.html">Vec4</a>, z: <a href="./vec4.html">Vec4</a>, w: <a href="./vec4.html">Vec4</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>A matrix with the given columns.</p>
+<h3 id="from_quat" class="lad-function"><a class="header" href="#from_quat"><code>from_quat</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_quat</strong>(q: <a href="./quat.html">Quat</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>The rotation matrix of a rotation.</p>
+<h3 id="from_rotation_translation" class="lad-function"><a class="header" href="#from_rotation_translation"><code>from_rotation_translation</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_rotation_translation</strong>(rotation: <a href="./quat.html">Quat</a>, translation: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>A matrix that rotates by <code>rotation</code>, then moves by <code>translation</code>.</p>
+<h3 id="from_scale" class="lad-function"><a class="header" href="#from_scale"><code>from_scale</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_scale</strong>(scale: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>A matrix that scales every axis by the matching component of <code>scale</code>.</p>
+<h3 id="from_scale_rotation_translation" class="lad-function"><a class="header" href="#from_scale_rotation_translation"><code>from_scale_rotation_translation</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_scale_rotation_translation</strong>(scale: <a href="./vec3.html">Vec3</a>, rotation: <a href="./quat.html">Quat</a>, translation: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>A matrix that scales by <code>scale</code>, then rotates by <code>rotation</code>, then moves by <code>translation</code>.</p>
+<h3 id="from_translation" class="lad-function"><a class="header" href="#from_translation"><code>from_translation</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_translation</strong>(translation: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>A matrix that moves points by <code>translation</code>.</p>
+<h3 id="identity" class="lad-function"><a class="header" href="#identity"><code>identity</code></a></h3>
+<div class="lad-signature">
+<p><strong>identity</strong>() -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>The identity matrix, which leaves vectors unchanged.</p>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./mat4.html">Mat4</a>&gt;) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#col"><code>col</code></a></td><td>The column at <code>index</code>, starting from <code>0</code>. Errors if <code>index</code> is out of range.</td></tr>
+<tr><td><a href="#determinant"><code>determinant</code></a></td><td>The determinant of the matrix.</td></tr>
+<tr><td><a href="#inverse"><code>inverse</code></a></td><td>The matrix that undoes this one.</td></tr>
+<tr><td><a href="#project_point3"><code>project_point3</code></a></td><td>Transforms a point in 3D by a projection matrix, including the perspective divide.</td></tr>
+<tr><td><a href="#row"><code>row</code></a></td><td>The row at <code>index</code>, starting from <code>0</code>. Errors if <code>index</code> is out of range.</td></tr>
+<tr><td><a href="#transform_point3"><code>transform_point3</code></a></td><td>Transforms a point in 3D, including translation and the projection divide.</td></tr>
+<tr><td><a href="#transform_vector3"><code>transform_vector3</code></a></td><td>Transforms a direction in 3D, ignoring translation.</td></tr>
+<tr><td><a href="#transpose"><code>transpose</code></a></td><td>The matrix with rows and columns swapped.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="col" class="lad-function"><a class="header" href="#col"><code>col</code></a></h3>
+<div class="lad-signature">
+<p><strong>col</strong>(self: <a href="./mat4.html">Mat4</a>, index: <a href="./usize.html">usize</a>) -&gt; <a href="./vec4.html">Vec4</a></p>
+</div>
+
+<p>The column at <code>index</code>, starting from <code>0</code>. Errors if <code>index</code> is out of range.</p>
+<h3 id="determinant" class="lad-function"><a class="header" href="#determinant"><code>determinant</code></a></h3>
+<div class="lad-signature">
+<p><strong>determinant</strong>(self: <a href="./mat4.html">Mat4</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The determinant of the matrix.</p>
+<h3 id="inverse" class="lad-function"><a class="header" href="#inverse"><code>inverse</code></a></h3>
+<div class="lad-signature">
+<p><strong>inverse</strong>(self: <a href="./mat4.html">Mat4</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>The matrix that undoes this one.</p>
+<h3 id="project_point3" class="lad-function"><a class="header" href="#project_point3"><code>project_point3</code></a></h3>
+<div class="lad-signature">
+<p><strong>project_point3</strong>(self: <a href="./mat4.html">Mat4</a>, point: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./vec3.html">Vec3</a></p>
+</div>
+
+<p>Transforms a point in 3D by a projection matrix, including the perspective divide.</p>
+<h3 id="row" class="lad-function"><a class="header" href="#row"><code>row</code></a></h3>
+<div class="lad-signature">
+<p><strong>row</strong>(self: <a href="./mat4.html">Mat4</a>, index: <a href="./usize.html">usize</a>) -&gt; <a href="./vec4.html">Vec4</a></p>
+</div>
+
+<p>The row at <code>index</code>, starting from <code>0</code>. Errors if <code>index</code> is out of range.</p>
+<h3 id="transform_point3" class="lad-function"><a class="header" href="#transform_point3"><code>transform_point3</code></a></h3>
+<div class="lad-signature">
+<p><strong>transform_point3</strong>(self: <a href="./mat4.html">Mat4</a>, point: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./vec3.html">Vec3</a></p>
+</div>
+
+<p>Transforms a point in 3D, including translation and the projection divide.</p>
+<h3 id="transform_vector3" class="lad-function"><a class="header" href="#transform_vector3"><code>transform_vector3</code></a></h3>
+<div class="lad-signature">
+<p><strong>transform_vector3</strong>(self: <a href="./mat4.html">Mat4</a>, vector: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./vec3.html">Vec3</a></p>
+</div>
+
+<p>Transforms a direction in 3D, ignoring translation.</p>
+<h3 id="transpose" class="lad-function"><a class="header" href="#transpose"><code>transpose</code></a></h3>
+<div class="lad-signature">
+<p><strong>transpose</strong>(self: <a href="./mat4.html">Mat4</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>The matrix with rows and columns swapped.</p>
+<h2 id="operators"><a class="header" href="#operators">Operators</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#add"><code>add</code></a></td><td>Adds two matrices component-wise.</td></tr>
+<tr><td><a href="#div"><code>div</code></a></td><td>Divides every component by a number.</td></tr>
+<tr><td><a href="#eq"><code>eq</code></a></td><td>Whether both matrices have exactly the same components.</td></tr>
+<tr><td><a href="#mul"><code>mul</code></a></td><td>Multiplies by a matrix, or transforms a vector, or scales every component by a number.</td></tr>
+<tr><td><a href="#sub"><code>sub</code></a></td><td>Subtracts two matrices component-wise.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="add" class="lad-function"><a class="header" href="#add"><code>add</code></a></h3>
+<div class="lad-signature">
+<p><strong>add</strong>(self: <a href="./mat4.html">Mat4</a>, other: <a href="./mat4.html">Mat4</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>Adds two matrices component-wise.</p>
+<h3 id="div" class="lad-function"><a class="header" href="#div"><code>div</code></a></h3>
+<div class="lad-signature">
+<p><strong>div</strong>(self: <a href="./mat4.html">Mat4</a>, rhs: <a href="./f32.html">f32</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>Divides every component by a number.</p>
+<h3 id="eq" class="lad-function"><a class="header" href="#eq"><code>eq</code></a></h3>
+<div class="lad-signature">
+<p><strong>eq</strong>(self: <a href="./mat4.html">Mat4</a>, other: <a href="./mat4.html">Mat4</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether both matrices have exactly the same components.</p>
+<h3 id="mul" class="lad-function"><a class="header" href="#mul"><code>mul</code></a></h3>
+<div class="lad-signature">
+<p><strong>mul</strong>(self: <a href="./mat4.html">Mat4</a>, rhs: <a href="./mat4.html">Mat4</a> | <a href="./vec4.html">Vec4</a> | <a href="./f32.html">f32</a>) -&gt; <a href="./mat4.html">Mat4</a> | <a href="./vec4.html">Vec4</a></p>
+</div>
+
+<p>Multiplies by a matrix, or transforms a vector, or scales every component by a number.</p>
+<h3 id="sub" class="lad-function"><a class="header" href="#sub"><code>sub</code></a></h3>
+<div class="lad-signature">
+<p><strong>sub</strong>(self: <a href="./mat4.html">Mat4</a>, other: <a href="./mat4.html">Mat4</a>) -&gt; <a href="./mat4.html">Mat4</a></p>
+</div>
+
+<p>Subtracts two matrices component-wise.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/mat3/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/mat3a.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/mat4/transpose.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/plane3d.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -244,11 +402,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/mat3/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/mat3a.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/mat4/transpose.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/plane3d.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -277,9 +435,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

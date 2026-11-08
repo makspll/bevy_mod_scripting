@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,48 +183,110 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="linearrgba"><a class="header" href="#linearrgba"><code>LinearRgba</code></a></h1>
-<h3 id="linearrgba-1"><a class="header" href="#linearrgba-1">LinearRgba</a></h3>
-<ul>
-<li><strong>red</strong>:<a href="./f32.html">F32</a></li>
-<li><strong>green</strong>:<a href="./f32.html">F32</a></li>
-<li><strong>blue</strong>:<a href="./f32.html">F32</a></li>
-<li><strong>alpha</strong>:<a href="./f32.html">F32</a></li>
-</ul>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>Linear RGB color with alpha.</p>
 <p>SDR colors are in <code>[0.0, 1.0]</code>. Values above <code>1.0</code> are HDR intensities.</p>
- 
 <div>
- </div>
+</div>
 
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./linearrgba/to_color.html">to_color</a></td><td>The color as a [`Color`](bevy_color::Color).</td></tr>
-<tr><td><a href="./linearrgba/new.html">new</a></td><td>A color from linear red, green, blue and alpha, each from `0` to `1`.  ```multi-lang-example,lua local LinearRgba = import_namespace(“color”).LinearRgba local c = LinearRgba.new(1.0, 0.0, 0.0, 1.0) assert(c.red == 1.0) ```  ```multi-lang-example,rune let LinearRgba = import_...</td></tr>
-<tr><td><a href="./linearrgba/eq.html">eq</a></td><td>Whether both colors have the same red, green, blue and alpha.</td></tr>
-<tr><td><a href="./linearrgba/rgb.html">rgb</a></td><td>A fully opaque color from linear red, green and blue, each from `0` to `1`.</td></tr>
-<tr><td><a href="./linearrgba/mul.html">mul</a></td><td>A copy with red, green and blue multiplied by `factor`, keeping alpha. Useful for making emissive co...</td></tr>
+<tr><td><code>red</code></td><td><a href="./f32.html">f32</a></td></tr>
+<tr><td><code>green</code></td><td><a href="./f32.html">f32</a></td></tr>
+<tr><td><code>blue</code></td><td><a href="./f32.html">f32</a></td></tr>
+<tr><td><code>alpha</code></td><td><a href="./f32.html">f32</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new"><code>new</code></a></td><td>A color from linear red, green, blue and alpha, each from <code>0</code> to <code>1</code>.</td></tr>
+<tr><td><a href="#rgb"><code>rgb</code></a></td><td>A fully opaque color from linear red, green and blue, each from <code>0</code> to <code>1</code>.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(red: <a href="./f32.html">f32</a>, green: <a href="./f32.html">f32</a>, blue: <a href="./f32.html">f32</a>, alpha: <a href="./f32.html">f32</a>) -&gt; <a href="./linearrgba.html">LinearRgba</a></p>
+</div>
+
+<p>A color from linear red, green, blue and alpha, each from <code>0</code> to <code>1</code>.</p>
+<pre><code class="language-multi-lang-example lua">local LinearRgba = import_namespace("color").LinearRgba
+local c = LinearRgba.new(1.0, 0.0, 0.0, 1.0)
+assert(c.red == 1.0)
+</code></pre>
+<pre><code class="language-multi-lang-example rune">let LinearRgba = import_namespace("color").LinearRgba;
+let c = LinearRgba.new(1.0, 0.0, 0.0, 1.0);
+assert!(c.red == 1.0);
+</code></pre>
+<h3 id="rgb" class="lad-function"><a class="header" href="#rgb"><code>rgb</code></a></h3>
+<div class="lad-signature">
+<p><strong>rgb</strong>(red: <a href="./f32.html">f32</a>, green: <a href="./f32.html">f32</a>, blue: <a href="./f32.html">f32</a>) -&gt; <a href="./linearrgba.html">LinearRgba</a></p>
+</div>
+
+<p>A fully opaque color from linear red, green and blue, each from <code>0</code> to <code>1</code>.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#to_color"><code>to_color</code></a></td><td>The color as a <code>Color</code>.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="to_color" class="lad-function"><a class="header" href="#to_color"><code>to_color</code></a></h3>
+<div class="lad-signature">
+<p><strong>to_color</strong>(self: <a href="./linearrgba.html">LinearRgba</a>) -&gt; <a href="./color.html">Color</a></p>
+</div>
+
+<p>The color as a <a href="./color.html"><code>Color</code></a>.</p>
+<h2 id="operators"><a class="header" href="#operators">Operators</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#eq"><code>eq</code></a></td><td>Whether both colors have the same red, green, blue and alpha.</td></tr>
+<tr><td><a href="#mul"><code>mul</code></a></td><td>A copy with red, green and blue multiplied by <code>factor</code>, keeping alpha. Useful for making emissive colors brighter.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="eq" class="lad-function"><a class="header" href="#eq"><code>eq</code></a></h3>
+<div class="lad-signature">
+<p><strong>eq</strong>(self: <a href="./linearrgba.html">LinearRgba</a>, other: <a href="./linearrgba.html">LinearRgba</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether both colors have the same red, green, blue and alpha.</p>
+<h3 id="mul" class="lad-function"><a class="header" href="#mul"><code>mul</code></a></h3>
+<div class="lad-signature">
+<p><strong>mul</strong>(self: <a href="./linearrgba.html">LinearRgba</a>, factor: <a href="./f32.html">f32</a>) -&gt; <a href="./linearrgba.html">LinearRgba</a></p>
+</div>
+
+<p>A copy with red, green and blue multiplied by <code>factor</code>, keeping alpha. Useful for making emissive colors brighter.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/lcha/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/lcha.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/linearrgba/to_color.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/okhsla.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -233,11 +296,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/lcha/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/lcha.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/linearrgba/to_color.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/okhsla.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -266,9 +329,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

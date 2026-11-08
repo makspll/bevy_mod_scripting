@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,34 +183,30 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="childof"><a class="header" href="#childof"><code>ChildOf</code></a></h1>
-<h3 id="childof-1"><a class="header" href="#childof-1">ChildOf</a></h3>
-<ol>
-<li><a href="./entity.html">Entity</a></li>
-</ol>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
+<p class="lad-badges"><span class="lad-badge">Component</span></p>
+
 <p>Stores the parent entity of this child entity with this component.</p>
-<p>This is a <a href="crate::relationship::Relationship"><code>Relationship</code></a> component, and creates the canonical
+<p>This is a <code>Relationship</code> component, and creates the canonical
 “parent / child” hierarchy. This is the “source of truth” component, and it pairs with
-the [<code>Children</code>] <a href="crate::relationship::RelationshipTarget"><code>RelationshipTarget</code></a>.</p>
+the <code>Children</code> <code>RelationshipTarget</code>.</p>
 <p>This relationship should be used for things like:</p>
 <ol>
 <li>Organizing entities in a scene</li>
 <li>Propagating configuration or data inherited from a parent, such as “visibility” or “world-space global transforms”.</li>
 <li>Ensuring a hierarchy is despawned when an entity is despawned.</li>
 </ol>
-<p>[<code>ChildOf</code>] contains a single “target” [<code>Entity</code>]. When [<code>ChildOf</code>] is inserted on a “source” entity,
-the “target” entity will automatically (and immediately, via a component hook) have a [<code>Children</code>]
-component inserted, and the “source” entity will be added to that [<code>Children</code>] instance.</p>
-<p>If the [<code>ChildOf</code>] component is replaced with a different “target” entity, the old target’s [<code>Children</code>]
+<p><a href="./childof.html"><code>ChildOf</code></a> contains a single “target” <a href="./entity.html"><code>Entity</code></a>. When <a href="./childof.html"><code>ChildOf</code></a> is inserted on a “source” entity,
+the “target” entity will automatically (and immediately, via a component hook) have a <code>Children</code>
+component inserted, and the “source” entity will be added to that <code>Children</code> instance.</p>
+<p>If the <a href="./childof.html"><code>ChildOf</code></a> component is replaced with a different “target” entity, the old target’s <code>Children</code>
 will be automatically (and immediately, via a component hook) be updated to reflect that change.</p>
-<p>Likewise, when the [<code>ChildOf</code>] component is removed, the “source” entity will be removed from the old
-target’s [<code>Children</code>]. If this results in [<code>Children</code>] being empty, [<code>Children</code>] will be automatically removed.</p>
+<p>Likewise, when the <a href="./childof.html"><code>ChildOf</code></a> component is removed, the “source” entity will be removed from the old
+target’s <code>Children</code>. If this results in <code>Children</code> being empty, <code>Children</code> will be automatically removed.</p>
 <p>When a parent is despawned, all children (and their descendants) will <em>also</em> be despawned.</p>
-<p>You can create parent-child relationships in a variety of ways. The most direct way is to insert a [<code>ChildOf</code>] component:</p>
-<pre><code># use bevy_ecs::prelude::*;
-# let mut world = World::new();
-let root = world.spawn_empty().id();
+<p>You can create parent-child relationships in a variety of ways. The most direct way is to insert a <a href="./childof.html"><code>ChildOf</code></a> component:</p>
+<pre><code class="language-rust noplayground">let root = world.spawn_empty().id();
 let child1 = world.spawn(ChildOf(root)).id();
 let child2 = world.spawn(ChildOf(root)).id();
 let grandchild = world.spawn(ChildOf(child1)).id();
@@ -223,12 +220,9 @@ assert_eq!(&amp;**world.entity(root).get::&lt;Children&gt;().unwrap(), &amp;[chi
 world.entity_mut(root).despawn();
 assert!(world.get_entity(root).is_err());
 assert!(world.get_entity(child1).is_err());
-assert!(world.get_entity(grandchild).is_err());
-</code></pre>
-<p>However if you are spawning many children, you might want to use the [<code>EntityWorldMut::with_children</code>] helper instead:</p>
-<pre><code># use bevy_ecs::prelude::*;
-# let mut world = World::new();
-let mut child1 = None;
+assert!(world.get_entity(grandchild).is_err());</code></pre>
+<p>However if you are spawning many children, you might want to use the <code>EntityWorldMut::with_children</code> helper instead:</p>
+<pre><code class="language-rust noplayground">let mut child1 = None;
 let mut child2 = None;
 let mut grandchild = None;
 let root = world.spawn_empty().with_children(|p| {
@@ -239,32 +233,69 @@ let root = world.spawn_empty().with_children(|p| {
 }).id();
 
 assert_eq!(&amp;**world.entity(root).get::&lt;Children&gt;().unwrap(), &amp;[child1.unwrap(), child2.unwrap()]);
-assert_eq!(&amp;**world.entity(child1.unwrap()).get::&lt;Children&gt;().unwrap(), &amp;[grandchild.unwrap()]);
-</code></pre>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+assert_eq!(&amp;**world.entity(child1.unwrap()).get::&lt;Children&gt;().unwrap(), &amp;[grandchild.unwrap()]);</code></pre>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Index</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./childof/parent.html">parent</a></td><td>The parent entity.</td></tr>
-<tr><td><a href="./childof/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
+<tr><td><code>0</code></td><td><a href="./entity.html">Entity</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./childof.html">ChildOf</a>&gt;) -&gt; <a href="./childof.html">ChildOf</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#parent"><code>parent</code></a></td><td>The parent entity.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="parent" class="lad-function"><a class="header" href="#parent"><code>parent</code></a></h3>
+<div class="lad-signature">
+<p><strong>parent</strong>(self: <a href="./childof.html">ChildOf</a>) -&gt; <a href="./entity.html">Entity</a></p>
+</div>
+
+<p>The parent entity.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/entity/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/addevent.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/childof/parent.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/componentid.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -274,11 +305,11 @@ assert_eq!(&amp;**world.entity(child1.unwrap()).get::&lt;Children&gt;().unwrap()
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/entity/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/addevent.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/childof/parent.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/componentid.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -307,9 +338,9 @@ assert_eq!(&amp;**world.entity(child1.unwrap()).get::&lt;Children&gt;().unwrap()
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,52 +183,115 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="gamepadaxis"><a class="header" href="#gamepadaxis"><code>GamepadAxis</code></a></h1>
-<h3 id="leftstickx"><a class="header" href="#leftstickx">LeftStickX</a></h3>
-<h3 id="leftsticky"><a class="header" href="#leftsticky">LeftStickY</a></h3>
-<h3 id="leftz"><a class="header" href="#leftz">LeftZ</a></h3>
-<h3 id="rightstickx"><a class="header" href="#rightstickx">RightStickX</a></h3>
-<h3 id="rightsticky"><a class="header" href="#rightsticky">RightStickY</a></h3>
-<h3 id="rightz"><a class="header" href="#rightz">RightZ</a></h3>
-<h3 id="other"><a class="header" href="#other">Other</a></h3>
-<ol>
-<li><a href="./u32.html">U32</a></li>
-</ol>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
-<p>Represents gamepad input types that are mapped in the range [-1.0, 1.0].</p>
-<h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
+<div class="lad-page"></div>
+
+<p>Represents gamepad input types that are mapped in the range -1.0, 1.0.</p>
+<h4 id="usage"><a class="header" href="#usage">Usage</a></h4>
 <p>This is used to determine which axis has changed its value when receiving a
-gamepad axis event. It is also used in the [<code>Gamepad</code>] component.</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+gamepad axis event. It is also used in the <a href="./gamepad.html"><code>Gamepad</code></a> component.</p>
+<h2 id="variants"><a class="header" href="#variants">Variants</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Variant</th><th>Fields</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./gamepadaxis/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
-<tr><td><a href="./gamepadaxis/leftstickxnew.html">LeftStickX.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./gamepadaxis/leftstickynew.html">LeftStickY.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./gamepadaxis/leftznew.html">LeftZ.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./gamepadaxis/othernew.html">Other.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./gamepadaxis/rightstickxnew.html">RightStickX.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./gamepadaxis/rightstickynew.html">RightStickY.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./gamepadaxis/rightznew.html">RightZ.new</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><code>LeftStickX</code></td><td></td></tr>
+<tr><td><code>LeftStickY</code></td><td></td></tr>
+<tr><td><code>LeftZ</code></td><td></td></tr>
+<tr><td><code>RightStickX</code></td><td></td></tr>
+<tr><td><code>RightStickY</code></td><td></td></tr>
+<tr><td><code>RightZ</code></td><td></td></tr>
+<tr><td><code>Other</code></td><td>(<a href="./u32.html">u32</a>)</td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./gamepadaxis.html">GamepadAxis</a>&gt;) -&gt; <a href="./gamepadaxis.html">GamepadAxis</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h2 id="variant-functions"><a class="header" href="#variant-functions">Variant Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#leftstickxnew"><code>LeftStickX.new</code></a></td><td></td></tr>
+<tr><td><a href="#leftstickynew"><code>LeftStickY.new</code></a></td><td></td></tr>
+<tr><td><a href="#leftznew"><code>LeftZ.new</code></a></td><td></td></tr>
+<tr><td><a href="#othernew"><code>Other.new</code></a></td><td></td></tr>
+<tr><td><a href="#rightstickxnew"><code>RightStickX.new</code></a></td><td></td></tr>
+<tr><td><a href="#rightstickynew"><code>RightStickY.new</code></a></td><td></td></tr>
+<tr><td><a href="#rightznew"><code>RightZ.new</code></a></td><td></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="leftstickxnew" class="lad-function"><a class="header" href="#leftstickxnew"><code>LeftStickX.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./gamepadaxis.html">GamepadAxis</a>::LeftStickX&gt;) -&gt; <a href="./gamepadaxis.html">GamepadAxis</a></p>
+</div>
+
+<h3 id="leftstickynew" class="lad-function"><a class="header" href="#leftstickynew"><code>LeftStickY.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./gamepadaxis.html">GamepadAxis</a>::LeftStickY&gt;) -&gt; <a href="./gamepadaxis.html">GamepadAxis</a></p>
+</div>
+
+<h3 id="leftznew" class="lad-function"><a class="header" href="#leftznew"><code>LeftZ.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./gamepadaxis.html">GamepadAxis</a>::LeftZ&gt;) -&gt; <a href="./gamepadaxis.html">GamepadAxis</a></p>
+</div>
+
+<h3 id="othernew" class="lad-function"><a class="header" href="#othernew"><code>Other.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./gamepadaxis.html">GamepadAxis</a>::Other&gt;) -&gt; <a href="./gamepadaxis.html">GamepadAxis</a></p>
+</div>
+
+<h3 id="rightstickxnew" class="lad-function"><a class="header" href="#rightstickxnew"><code>RightStickX.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./gamepadaxis.html">GamepadAxis</a>::RightStickX&gt;) -&gt; <a href="./gamepadaxis.html">GamepadAxis</a></p>
+</div>
+
+<h3 id="rightstickynew" class="lad-function"><a class="header" href="#rightstickynew"><code>RightStickY.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./gamepadaxis.html">GamepadAxis</a>::RightStickY&gt;) -&gt; <a href="./gamepadaxis.html">GamepadAxis</a></p>
+</div>
+
+<h3 id="rightznew" class="lad-function"><a class="header" href="#rightznew"><code>RightZ.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./gamepadaxis.html">GamepadAxis</a>::RightZ&gt;) -&gt; <a href="./gamepadaxis.html">GamepadAxis</a></p>
+</div>
+
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/inputfocus/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/gamepad.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/gamepadaxis/new.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/gamepadbutton.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -237,11 +301,11 @@ gamepad axis event. It is also used in the [<code>Gamepad</code>] component.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/inputfocus/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/gamepad.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/gamepadaxis/new.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/gamepadbutton.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -270,9 +334,9 @@ gamepad axis event. It is also used in the [<code>Gamepad</code>] component.</p>
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

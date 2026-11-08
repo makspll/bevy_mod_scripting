@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,45 +183,38 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="virtual"><a class="header" href="#virtual"><code>Virtual</code></a></h1>
-<h3 id="virtual-1"><a class="header" href="#virtual-1">Virtual</a></h3>
-<ul>
-<li><strong>max_delta</strong>:<a href="./duration.html">Duration</a></li>
-<li><strong>paused</strong>:<a href="./bool.html">Bool</a></li>
-<li><strong>relative_speed</strong>:<a href="./f64.html">F64</a></li>
-<li><strong>effective_speed</strong>:<a href="./f64.html">F64</a></li>
-</ul>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>The virtual game clock representing game time.</p>
-<p>A specialization of the [<code>Time</code>] structure. <strong>For method documentation, see
-[<code>Time&lt;Virtual&gt;#impl-Time&lt;Virtual&gt;</code>].</strong></p>
+<p>A specialization of the <a href="./timet.html"><code>Time</code></a> structure. <strong>For method documentation, see
+<a href="./timet.html"><code>Time&lt;Virtual&gt;#impl-Time&lt;Virtual&gt;</code></a>.</strong></p>
 <p>Normally used as <code>Time&lt;Virtual&gt;</code>. It is automatically inserted as a resource
-by <a href="crate::TimePlugin"><code>TimePlugin</code></a> and updated based on
-<a href="Real"><code>Time&lt;Real&gt;</code></a>. The virtual clock is automatically set as the default
-generic [<code>Time</code>] resource for the update.</p>
+by <code>TimePlugin</code> and updated based on
+<a href="./real.html"><code>Time&lt;Real&gt;</code></a>. The virtual clock is automatically set as the default
+generic <a href="./timet.html"><code>Time</code></a> resource for the update.</p>
 <p>The virtual clock differs from real time clock in that it can be paused, sped up
 and slowed down. It also limits how much it can advance in a single update
 in order to prevent unexpected behavior in cases where updates do not happen
 at regular intervals (e.g. coming back after the program was suspended a long time).</p>
-<p>The virtual clock can be paused by calling <a href="Time::pause"><code>pause()</code></a>,
-unpaused by calling <a href="Time::unpause"><code>unpause()</code></a>, or toggled by calling
-<a href="Time::toggle"><code>toggle()</code></a>. When the game clock is
-paused <a href="Time::delta"><code>delta()</code></a> will be zero on each update, and
-<a href="Time::elapsed"><code>elapsed()</code></a> will not grow.
-<a href="Time::effective_speed"><code>effective_speed()</code></a> will return <code>0.0</code>. Calling
-<a href="Time::pause"><code>pause()</code></a> will not affect value the <a href="Time::delta"><code>delta()</code></a>
+<p>The virtual clock can be paused by calling <a href="./timet.html"><code>pause()</code></a>,
+unpaused by calling <a href="./timet.html"><code>unpause()</code></a>, or toggled by calling
+<a href="./timet.html"><code>toggle()</code></a>. When the game clock is
+paused <a href="./timet.html"><code>delta()</code></a> will be zero on each update, and
+<a href="./timet.html"><code>elapsed()</code></a> will not grow.
+<a href="./timet.html"><code>effective_speed()</code></a> will return <code>0.0</code>. Calling
+<a href="./timet.html"><code>pause()</code></a> will not affect value the <a href="./timet.html"><code>delta()</code></a>
 value for the update currently being processed.</p>
 <p>The speed of the virtual clock can be changed by calling
-<a href="Time::set_relative_speed"><code>set_relative_speed()</code></a>. A value of <code>2.0</code> means
+<a href="./timet.html"><code>set_relative_speed()</code></a>. A value of <code>2.0</code> means
 that virtual clock should advance twice as fast as real time, meaning that
-<a href="Time::delta"><code>delta()</code></a> values will be double of what
-<a href="Time::delta"><code>Time&lt;Real&gt;::delta()</code></a> reports and
-<a href="Time::elapsed"><code>elapsed()</code></a> will go twice as fast as
-<a href="Time::elapsed"><code>Time&lt;Real&gt;::elapsed()</code></a>. Calling
-<a href="Time::set_relative_speed"><code>set_relative_speed()</code></a> will not affect the
-<a href="Time::delta"><code>delta()</code></a> value for the update currently being processed.</p>
+<a href="./timet.html"><code>delta()</code></a> values will be double of what
+<a href="./timet.html"><code>Time&lt;Real&gt;::delta()</code></a> reports and
+<a href="./timet.html"><code>elapsed()</code></a> will go twice as fast as
+<a href="./timet.html"><code>Time&lt;Real&gt;::elapsed()</code></a>. Calling
+<a href="./timet.html"><code>set_relative_speed()</code></a> will not affect the
+<a href="./timet.html"><code>delta()</code></a> value for the update currently being processed.</p>
 <p>The maximum amount of delta time that can be added by a single update can be
-set by <a href="Time::set_max_delta"><code>set_max_delta()</code></a>. This value serves a dual
+set by <a href="./timet.html"><code>set_max_delta()</code></a>. This value serves a dual
 purpose in the virtual clock.</p>
 <p>If the game temporarily freezes due to any reason, such as disk access, a
 blocking system call, or operating system level suspend, reporting the full
@@ -228,7 +222,7 @@ elapsed delta time is likely to cause bugs in game logic. Usually if a
 laptop is suspended for an hour, it doesn’t make sense to try to simulate
 the game logic for the elapsed hour when resuming. Instead it is better to
 lose the extra time and pretend a shorter duration of time passed. Setting
-<a href="Time::max_delta"><code>max_delta()</code></a> to a relatively short time means that the
+<a href="./timet.html"><code>max_delta()</code></a> to a relatively short time means that the
 impact on game logic will be minimal.</p>
 <p>If the game lags for some reason, meaning that it will take a longer time to
 compute a frame than the real time that passes during the computation, then
@@ -240,36 +234,61 @@ maximum time that can be added at once, we also limit the amount of virtual
 time the game needs to compute for each frame. This means that the game will
 run slow, and it will run slower than real time, but it will not freeze and
 it will recover as soon as computation becomes fast again.</p>
-<p>You should set <a href="Time::max_delta"><code>max_delta()</code></a> to a value that is
+<p>You should set <a href="./timet.html"><code>max_delta()</code></a> to a value that is
 approximately the minimum FPS your game should have even if heavily lagged
 for a moment. The actual FPS when lagged will be somewhat lower than this,
 depending on how much more time it takes to compute a frame compared to real
 time. You should also consider how stable your FPS is, as the limit will
 also dictate how big of an FPS drop you can accept without losing time and
 falling behind real time.</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./virtual/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
+<tr><td><code>max_delta</code></td><td><a href="./duration.html">Duration</a></td></tr>
+<tr><td><code>paused</code></td><td><a href="./bool.html">bool</a></td></tr>
+<tr><td><code>relative_speed</code></td><td><a href="./f64.html">f64</a></td></tr>
+<tr><td><code>effective_speed</code></td><td><a href="./f64.html">f64</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./virtual.html">Virtual</a>&gt;) -&gt; <a href="./virtual.html">Virtual</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/timermode/repeatingnew.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/timermode.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/virtual/new.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/namespace_transform.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -279,11 +298,11 @@ falling behind real time.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/timermode/repeatingnew.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/timermode.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/virtual/new.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/namespace_transform.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -312,9 +331,9 @@ falling behind real time.</p>
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

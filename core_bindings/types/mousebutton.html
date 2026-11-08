@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,59 +183,169 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="mousebutton"><a class="header" href="#mousebutton"><code>MouseButton</code></a></h1>
-<h3 id="left"><a class="header" href="#left">Left</a></h3>
-<h3 id="right"><a class="header" href="#right">Right</a></h3>
-<h3 id="middle"><a class="header" href="#middle">Middle</a></h3>
-<h3 id="back"><a class="header" href="#back">Back</a></h3>
-<h3 id="forward"><a class="header" href="#forward">Forward</a></h3>
-<h3 id="other"><a class="header" href="#other">Other</a></h3>
-<ol>
-<li><a href="./u16.html">U16</a></li>
-</ol>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>A button on a mouse device.</p>
-<h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
-<p>It is used as the generic <code>T</code> value of an [<code>ButtonInput</code>] to create a <code>bevy</code>
+<h4 id="usage"><a class="header" href="#usage">Usage</a></h4>
+<p>It is used as the generic <code>T</code> value of an <a href="./buttoninputt.html"><code>ButtonInput</code></a> to create a <code>bevy</code>
 resource.</p>
-<h2 id="updating"><a class="header" href="#updating">Updating</a></h2>
-<p>The resource is updated inside of the [<code>mouse_button_input_system</code>].</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<h4 id="updating"><a class="header" href="#updating">Updating</a></h4>
+<p>The resource is updated inside of the <code>mouse_button_input_system</code>.</p>
+<h2 id="variants"><a class="header" href="#variants">Variants</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Variant</th><th>Fields</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./mousebutton/any_pressed.html">any_pressed</a></td><td>Whether any of the mouse buttons is held down.</td></tr>
-<tr><td><a href="./mousebutton/get_just_pressed.html">get_just_pressed</a></td><td>The mouse buttons which were pressed during the last update.</td></tr>
-<tr><td><a href="./mousebutton/any_just_pressed.html">any_just_pressed</a></td><td>Whether any of the mouse buttons was pressed during the last update.</td></tr>
-<tr><td><a href="./mousebutton/just_pressed.html">just_pressed</a></td><td>Whether the mouse button was pressed during the last update.</td></tr>
-<tr><td><a href="./mousebutton/just_released.html">just_released</a></td><td>Whether the mouse button was released during the last update.</td></tr>
-<tr><td><a href="./mousebutton/pressed.html">pressed</a></td><td>Whether the mouse button is held down, false if the input resource is missing.</td></tr>
-<tr><td><a href="./mousebutton/get_pressed.html">get_pressed</a></td><td>The mouse buttons which are held down.</td></tr>
-<tr><td><a href="./mousebutton/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
-<tr><td><a href="./mousebutton/backnew.html">Back.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./mousebutton/forwardnew.html">Forward.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./mousebutton/leftnew.html">Left.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./mousebutton/middlenew.html">Middle.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./mousebutton/othernew.html">Other.new</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./mousebutton/rightnew.html">Right.new</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><code>Left</code></td><td></td></tr>
+<tr><td><code>Right</code></td><td></td></tr>
+<tr><td><code>Middle</code></td><td></td></tr>
+<tr><td><code>Back</code></td><td></td></tr>
+<tr><td><code>Forward</code></td><td></td></tr>
+<tr><td><code>Other</code></td><td>(<a href="./u16.html">u16</a>)</td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#any_just_pressed"><code>any_just_pressed</code></a></td><td>Whether any of the mouse buttons was pressed during the last update.</td></tr>
+<tr><td><a href="#any_pressed"><code>any_pressed</code></a></td><td>Whether any of the mouse buttons is held down.</td></tr>
+<tr><td><a href="#get_just_pressed"><code>get_just_pressed</code></a></td><td>The mouse buttons which were pressed during the last update.</td></tr>
+<tr><td><a href="#get_pressed"><code>get_pressed</code></a></td><td>The mouse buttons which are held down.</td></tr>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="any_just_pressed" class="lad-function"><a class="header" href="#any_just_pressed"><code>any_just_pressed</code></a></h3>
+<div class="lad-signature">
+<p><strong>any_just_pressed</strong>(buttons: Vec&lt;<a href="./mousebutton.html">MouseButton</a>&gt;) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether any of the mouse buttons was pressed during the last update.</p>
+<h3 id="any_pressed" class="lad-function"><a class="header" href="#any_pressed"><code>any_pressed</code></a></h3>
+<div class="lad-signature">
+<p><strong>any_pressed</strong>(buttons: Vec&lt;<a href="./mousebutton.html">MouseButton</a>&gt;) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether any of the mouse buttons is held down.</p>
+<h3 id="get_just_pressed" class="lad-function"><a class="header" href="#get_just_pressed"><code>get_just_pressed</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_just_pressed</strong>() -&gt; Vec&lt;<a href="./mousebutton.html">MouseButton</a>&gt;</p>
+</div>
+
+<p>The mouse buttons which were pressed during the last update.</p>
+<h3 id="get_pressed" class="lad-function"><a class="header" href="#get_pressed"><code>get_pressed</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_pressed</strong>() -&gt; Vec&lt;<a href="./mousebutton.html">MouseButton</a>&gt;</p>
+</div>
+
+<p>The mouse buttons which are held down.</p>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./mousebutton.html">MouseButton</a>&gt;) -&gt; <a href="./mousebutton.html">MouseButton</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#just_pressed"><code>just_pressed</code></a></td><td>Whether the mouse button was pressed during the last update.</td></tr>
+<tr><td><a href="#just_released"><code>just_released</code></a></td><td>Whether the mouse button was released during the last update.</td></tr>
+<tr><td><a href="#pressed"><code>pressed</code></a></td><td>Whether the mouse button is held down, false if the input resource is missing.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="just_pressed" class="lad-function"><a class="header" href="#just_pressed"><code>just_pressed</code></a></h3>
+<div class="lad-signature">
+<p><strong>just_pressed</strong>(button: <a href="./mousebutton.html">MouseButton</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether the mouse button was pressed during the last update.</p>
+<h3 id="just_released" class="lad-function"><a class="header" href="#just_released"><code>just_released</code></a></h3>
+<div class="lad-signature">
+<p><strong>just_released</strong>(button: <a href="./mousebutton.html">MouseButton</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether the mouse button was released during the last update.</p>
+<h3 id="pressed" class="lad-function"><a class="header" href="#pressed"><code>pressed</code></a></h3>
+<div class="lad-signature">
+<p><strong>pressed</strong>(button: <a href="./mousebutton.html">MouseButton</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether the mouse button is held down, false if the input resource is missing.</p>
+<h2 id="variant-functions"><a class="header" href="#variant-functions">Variant Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#backnew"><code>Back.new</code></a></td><td></td></tr>
+<tr><td><a href="#forwardnew"><code>Forward.new</code></a></td><td></td></tr>
+<tr><td><a href="#leftnew"><code>Left.new</code></a></td><td></td></tr>
+<tr><td><a href="#middlenew"><code>Middle.new</code></a></td><td></td></tr>
+<tr><td><a href="#othernew"><code>Other.new</code></a></td><td></td></tr>
+<tr><td><a href="#rightnew"><code>Right.new</code></a></td><td></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="backnew" class="lad-function"><a class="header" href="#backnew"><code>Back.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./mousebutton.html">MouseButton</a>::Back&gt;) -&gt; <a href="./mousebutton.html">MouseButton</a></p>
+</div>
+
+<h3 id="forwardnew" class="lad-function"><a class="header" href="#forwardnew"><code>Forward.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./mousebutton.html">MouseButton</a>::Forward&gt;) -&gt; <a href="./mousebutton.html">MouseButton</a></p>
+</div>
+
+<h3 id="leftnew" class="lad-function"><a class="header" href="#leftnew"><code>Left.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./mousebutton.html">MouseButton</a>::Left&gt;) -&gt; <a href="./mousebutton.html">MouseButton</a></p>
+</div>
+
+<h3 id="middlenew" class="lad-function"><a class="header" href="#middlenew"><code>Middle.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./mousebutton.html">MouseButton</a>::Middle&gt;) -&gt; <a href="./mousebutton.html">MouseButton</a></p>
+</div>
+
+<h3 id="othernew" class="lad-function"><a class="header" href="#othernew"><code>Other.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./mousebutton.html">MouseButton</a>::Other&gt;) -&gt; <a href="./mousebutton.html">MouseButton</a></p>
+</div>
+
+<h3 id="rightnew" class="lad-function"><a class="header" href="#rightnew"><code>Right.new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(variant: <a href="./enumvariantref.html">EnumVariantRef</a>, payload: Fields&lt;<a href="./mousebutton.html">MouseButton</a>::Right&gt;) -&gt; <a href="./mousebutton.html">MouseButton</a></p>
+</div>
+
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/keycode/wakeupnew.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/keycode.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/mousebutton/any_pressed.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/nativekeycode.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -244,11 +355,11 @@ resource.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/keycode/wakeupnew.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/keycode.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/mousebutton/any_pressed.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/nativekeycode.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -277,9 +388,9 @@ resource.</p>
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

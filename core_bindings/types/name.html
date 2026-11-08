@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,43 +183,103 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="name"><a class="header" href="#name"><code>Name</code></a></h1>
-<h3 id="name-1"><a class="header" href="#name-1">Name</a></h3>
-<ol>
-<li><a href="./hashedstr.html">HashedStr</a></li>
-</ol>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
+<p class="lad-badges"><span class="lad-badge">Component</span></p>
+
 <p>Component used to identify an entity. Stores a hash for faster comparisons.</p>
 <p>The hash is eagerly re-computed upon each update to the name.</p>
-<p>[<code>Name</code>] should not be treated as a globally unique identifier for entities,
-as multiple entities can have the same name.  [<code>Entity</code>] should be
+<p><a href="./name.html"><code>Name</code></a> should not be treated as a globally unique identifier for entities,
+as multiple entities can have the same name.  <a href="./entity.html"><code>Entity</code></a> should be
 used instead as the default unique identifier.</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Index</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./name/set.html">set</a></td><td>Changes the name.</td></tr>
-<tr><td><a href="./name/new.html">new</a></td><td>Creates a new [`Name`](bevy_ecs::name::Name) component, used to identify entities.  ```multi-lang-example,lua local Name = import_namespace(“ecs”).Name local name = Name.new(“player”) assert(name:as_str() == “player”) ```  ```multi-lang-example,rune let Name = import_namespace(“ecs”).Name; let name = Name.new(“player”); assert!(name.as_str() == “player”); ```</td></tr>
-<tr><td><a href="./name/as_str.html">as_str</a></td><td>The name as a string.</td></tr>
-<tr><td><a href="./name/eq.html">eq</a></td><td>Whether the name is the same as another name or a string.  In Lua, `==` only compares a name with an...</td></tr>
+<tr><td><code>0</code></td><td><a href="./hashedstr.html">HashedStr</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new"><code>new</code></a></td><td>Creates a new <code>Name</code> component, used to identify entities.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(name: <a href="./string.html">String</a>) -&gt; <a href="./name.html">Name</a></p>
+</div>
+
+<p>Creates a new <a href="./name.html"><code>Name</code></a> component, used to identify entities.</p>
+<pre><code class="language-multi-lang-example lua">local Name = import_namespace("ecs").Name
+local name = Name.new("player")
+assert(name:as_str() == "player")
+</code></pre>
+<pre><code class="language-multi-lang-example rune">let Name = import_namespace("ecs").Name;
+let name = Name.new("player");
+assert!(name.as_str() == "player");
+</code></pre>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#as_str"><code>as_str</code></a></td><td>The name as a string.</td></tr>
+<tr><td><a href="#set"><code>set</code></a></td><td>Changes the name.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="as_str" class="lad-function"><a class="header" href="#as_str"><code>as_str</code></a></h3>
+<div class="lad-signature">
+<p><strong>as_str</strong>(self: <a href="./name.html">Name</a>) -&gt; <a href="./string.html">String</a></p>
+</div>
+
+<p>The name as a string.</p>
+<h3 id="set" class="lad-function"><a class="header" href="#set"><code>set</code></a></h3>
+<div class="lad-signature">
+<p><strong>set</strong>(self: <a href="./name.html">Name</a>, name: <a href="./string.html">String</a>)</p>
+</div>
+
+<p>Changes the name.</p>
+<h2 id="operators"><a class="header" href="#operators">Operators</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#eq"><code>eq</code></a></td><td>Whether the name is the same as another name or a string.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="eq" class="lad-function"><a class="header" href="#eq"><code>eq</code></a></h3>
+<div class="lad-signature">
+<p><strong>eq</strong>(self: <a href="./name.html">Name</a>, other: <a href="./name.html">Name</a> | <a href="./string.html">String</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether the name is the same as another name or a string.</p>
+<p>In Lua, <code>==</code> only compares a name with another name, use <code>name:eq("text")</code> for strings.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/childof/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/insertevent.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/name/set.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/removeevent.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -228,11 +289,11 @@ used instead as the default unique identifier.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/childof/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/insertevent.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/name/set.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/removeevent.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -261,9 +322,9 @@ used instead as the default unique identifier.</p>
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

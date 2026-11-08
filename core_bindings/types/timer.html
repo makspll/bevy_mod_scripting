@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,75 +183,238 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="timer"><a class="header" href="#timer"><code>Timer</code></a></h1>
-<h3 id="timer-1"><a class="header" href="#timer-1">Timer</a></h3>
-<ul>
-<li><strong>stopwatch</strong>:<a href="./stopwatch.html">Stopwatch</a></li>
-<li><strong>duration</strong>:<a href="./duration.html">Duration</a></li>
-<li><strong>mode</strong>:<a href="./timermode.html">TimerMode</a></li>
-<li><strong>finished</strong>:<a href="./bool.html">Bool</a></li>
-<li><strong>times_finished_this_tick</strong>:<a href="./u32.html">U32</a></li>
-</ul>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>Tracks elapsed time. Enters the finished state once <code>duration</code> is reached.</p>
-<p>Note that in order to advance the timer <a href="Timer::tick"><code>tick</code></a> <strong>MUST</strong> be called.</p>
-<h1 id="timer-modes"><a class="header" href="#timer-modes">Timer modes</a></h1>
-<p>There are two timer modes ([<code>TimerMode</code>]):</p>
+<p>Note that in order to advance the timer <a href="./timer.html"><code>tick</code></a> <strong>MUST</strong> be called.</p>
+<h3 id="timer-modes"><a class="header" href="#timer-modes">Timer modes</a></h3>
+<p>There are two timer modes (<a href="./timermode.html"><code>TimerMode</code></a>):</p>
 <ul>
 <li>Non repeating timers will stop tracking and stay in the finished state until reset.</li>
 <li>Repeating timers will only be in the finished state on each tick <code>duration</code> is reached or
 exceeded, and can still be reset at any given point.</li>
 </ul>
-<h1 id="pausing-timers"><a class="header" href="#pausing-timers">Pausing timers</a></h1>
-<p>You can pause a timer using [<code>Timer::pause</code>]. Paused timers will not have elapsed time increased.</p>
-<h1 id="elapsing-multiple-times-a-frame"><a class="header" href="#elapsing-multiple-times-a-frame">Elapsing multiple times a frame</a></h1>
+<h3 id="pausing-timers"><a class="header" href="#pausing-timers">Pausing timers</a></h3>
+<p>You can pause a timer using <a href="./timer.html"><code>Timer::pause</code></a>. Paused timers will not have elapsed time increased.</p>
+<h3 id="elapsing-multiple-times-a-frame"><a class="header" href="#elapsing-multiple-times-a-frame">Elapsing multiple times a frame</a></h3>
 <p>Repeating timers might elapse multiple times per frame if the time is advanced by more than the timer duration.
-You can check how many times a timer elapsed each tick with [<code>Timer::times_finished_this_tick</code>].
+You can check how many times a timer elapsed each tick with <a href="./timer.html"><code>Timer::times_finished_this_tick</code></a>.
 For non-repeating timers, this will always be 0 or 1.</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./timer/unpause.html">unpause</a></td><td>Resumes a paused timer.</td></tr>
-<tr><td><a href="./timer/fraction.html">fraction</a></td><td>How much of the duration has passed, from `0` to `1`.</td></tr>
-<tr><td><a href="./timer/reset.html">reset</a></td><td>Sets the timer back to zero elapsed time, keeping its duration and mode.</td></tr>
-<tr><td><a href="./timer/finished.html">finished</a></td><td>Whether the timer has run for its full duration.</td></tr>
-<tr><td><a href="./timer/set_mode.html">set_mode</a></td><td>Sets whether the timer runs once, or repeats.</td></tr>
-<tr><td><a href="./timer/set_duration.html">set_duration</a></td><td>Sets the duration the timer runs for.</td></tr>
-<tr><td><a href="./timer/remaining_secs.html">remaining_secs</a></td><td>The time left until the timer finishes, in seconds.</td></tr>
-<tr><td><a href="./timer/fraction_remaining.html">fraction_remaining</a></td><td>How much of the duration is left, from `0` to `1`.</td></tr>
-<tr><td><a href="./timer/paused.html">paused</a></td><td>Whether the timer is paused.</td></tr>
-<tr><td><a href="./timer/mode.html">mode</a></td><td>Whether the timer runs once, or repeats.</td></tr>
-<tr><td><a href="./timer/elapsed_secs.html">elapsed_secs</a></td><td>The time the timer has run for, in seconds.</td></tr>
-<tr><td><a href="./timer/almost_finish.html">almost_finish</a></td><td>Makes the timer finish on its next tick.</td></tr>
-<tr><td><a href="./timer/duration.html">duration</a></td><td>The duration the timer runs for.</td></tr>
-<tr><td><a href="./timer/pause.html">pause</a></td><td>Stops the timer from advancing until it is unpaused.</td></tr>
-<tr><td><a href="./timer/times_finished_this_tick.html">times_finished_this_tick</a></td><td>How many times the timer finished during the last tick, which can be more than once for a short time...</td></tr>
-<tr><td><a href="./timer/remaining.html">remaining</a></td><td>The time left until the timer finishes.</td></tr>
-<tr><td><a href="./timer/from_seconds.html">from_seconds</a></td><td>A timer which runs for `secs` seconds, in `mode`. Errors if `secs` is negative or not finite.  ```multi-lang-example,lua local Timer = import_namespace(“time”).Timer local TimerMode = import_namespace(“time”).TimerMode local timer = Timer.from_seconds(2, TimerMode.Repeating) timer:tick(1) assert(not timer:finished()) timer:tick(1.5) assert(timer:finished()) ```  ```multi-lang-example,rune let Timer = import_...</td></tr>
-<tr><td><a href="./timer/new.html">new</a></td><td>A timer which runs for `duration`, in `mode`.</td></tr>
-<tr><td><a href="./timer/elapsed.html">elapsed</a></td><td>The time the timer has run for.</td></tr>
-<tr><td><a href="./timer/tick.html">tick</a></td><td>Advances the timer by `delta`, given in seconds or as a duration. Errors if the time is negative.</td></tr>
-<tr><td><a href="./timer/just_finished.html">just_finished</a></td><td>Whether the timer finished during the last tick.</td></tr>
-<tr><td><a href="./timer/set_elapsed.html">set_elapsed</a></td><td>Sets the time the timer has run for.</td></tr>
+<tr><td><code>stopwatch</code></td><td><a href="./stopwatch.html">Stopwatch</a></td></tr>
+<tr><td><code>duration</code></td><td><a href="./duration.html">Duration</a></td></tr>
+<tr><td><code>mode</code></td><td><a href="./timermode.html">TimerMode</a></td></tr>
+<tr><td><code>finished</code></td><td><a href="./bool.html">bool</a></td></tr>
+<tr><td><code>times_finished_this_tick</code></td><td><a href="./u32.html">u32</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#from_seconds"><code>from_seconds</code></a></td><td>A timer which runs for <code>secs</code> seconds, in <code>mode</code>. Errors if <code>secs</code> is negative or not finite.</td></tr>
+<tr><td><a href="#new"><code>new</code></a></td><td>A timer which runs for <code>duration</code>, in <code>mode</code>.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="from_seconds" class="lad-function"><a class="header" href="#from_seconds"><code>from_seconds</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_seconds</strong>(secs: <a href="./f32.html">f32</a>, mode: <a href="./timermode.html">TimerMode</a>) -&gt; <a href="./timer.html">Timer</a></p>
+</div>
+
+<p>A timer which runs for <code>secs</code> seconds, in <code>mode</code>. Errors if <code>secs</code> is negative or not finite.</p>
+<pre><code class="language-multi-lang-example lua">local Timer = import_namespace("time").Timer
+local TimerMode = import_namespace("time").TimerMode
+local timer = Timer.from_seconds(2, TimerMode.Repeating)
+timer:tick(1)
+assert(not timer:finished())
+timer:tick(1.5)
+assert(timer:finished())
+</code></pre>
+<pre><code class="language-multi-lang-example rune">let Timer = import_namespace("time").Timer;
+let TimerMode = import_namespace("time").TimerMode;
+let timer = Timer.from_seconds(2.0, TimerMode.Repeating);
+timer.tick(1.0);
+assert!(!timer.finished());
+timer.tick(1.5);
+assert!(timer.finished());
+</code></pre>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(duration: <a href="./duration.html">Duration</a>, mode: <a href="./timermode.html">TimerMode</a>) -&gt; <a href="./timer.html">Timer</a></p>
+</div>
+
+<p>A timer which runs for <code>duration</code>, in <code>mode</code>.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#almost_finish"><code>almost_finish</code></a></td><td>Makes the timer finish on its next tick.</td></tr>
+<tr><td><a href="#duration"><code>duration</code></a></td><td>The duration the timer runs for.</td></tr>
+<tr><td><a href="#elapsed"><code>elapsed</code></a></td><td>The time the timer has run for.</td></tr>
+<tr><td><a href="#elapsed_secs"><code>elapsed_secs</code></a></td><td>The time the timer has run for, in seconds.</td></tr>
+<tr><td><a href="#finished"><code>finished</code></a></td><td>Whether the timer has run for its full duration.</td></tr>
+<tr><td><a href="#fraction"><code>fraction</code></a></td><td>How much of the duration has passed, from <code>0</code> to <code>1</code>.</td></tr>
+<tr><td><a href="#fraction_remaining"><code>fraction_remaining</code></a></td><td>How much of the duration is left, from <code>0</code> to <code>1</code>.</td></tr>
+<tr><td><a href="#just_finished"><code>just_finished</code></a></td><td>Whether the timer finished during the last tick.</td></tr>
+<tr><td><a href="#mode"><code>mode</code></a></td><td>Whether the timer runs once, or repeats.</td></tr>
+<tr><td><a href="#pause"><code>pause</code></a></td><td>Stops the timer from advancing until it is unpaused.</td></tr>
+<tr><td><a href="#paused"><code>paused</code></a></td><td>Whether the timer is paused.</td></tr>
+<tr><td><a href="#remaining"><code>remaining</code></a></td><td>The time left until the timer finishes.</td></tr>
+<tr><td><a href="#remaining_secs"><code>remaining_secs</code></a></td><td>The time left until the timer finishes, in seconds.</td></tr>
+<tr><td><a href="#reset"><code>reset</code></a></td><td>Sets the timer back to zero elapsed time, keeping its duration and mode.</td></tr>
+<tr><td><a href="#set_duration"><code>set_duration</code></a></td><td>Sets the duration the timer runs for.</td></tr>
+<tr><td><a href="#set_elapsed"><code>set_elapsed</code></a></td><td>Sets the time the timer has run for.</td></tr>
+<tr><td><a href="#set_mode"><code>set_mode</code></a></td><td>Sets whether the timer runs once, or repeats.</td></tr>
+<tr><td><a href="#tick"><code>tick</code></a></td><td>Advances the timer by <code>delta</code>, given in seconds or as a duration. Errors if the time is negative.</td></tr>
+<tr><td><a href="#times_finished_this_tick"><code>times_finished_this_tick</code></a></td><td>How many times the timer finished during the last tick, which can be more than once for a short timer.</td></tr>
+<tr><td><a href="#unpause"><code>unpause</code></a></td><td>Resumes a paused timer.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="almost_finish" class="lad-function"><a class="header" href="#almost_finish"><code>almost_finish</code></a></h3>
+<div class="lad-signature">
+<p><strong>almost_finish</strong>(self: <a href="./timer.html">Timer</a>)</p>
+</div>
+
+<p>Makes the timer finish on its next tick.</p>
+<h3 id="duration" class="lad-function"><a class="header" href="#duration"><code>duration</code></a></h3>
+<div class="lad-signature">
+<p><strong>duration</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./duration.html">Duration</a></p>
+</div>
+
+<p>The duration the timer runs for.</p>
+<h3 id="elapsed" class="lad-function"><a class="header" href="#elapsed"><code>elapsed</code></a></h3>
+<div class="lad-signature">
+<p><strong>elapsed</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./duration.html">Duration</a></p>
+</div>
+
+<p>The time the timer has run for.</p>
+<h3 id="elapsed_secs" class="lad-function"><a class="header" href="#elapsed_secs"><code>elapsed_secs</code></a></h3>
+<div class="lad-signature">
+<p><strong>elapsed_secs</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The time the timer has run for, in seconds.</p>
+<h3 id="finished" class="lad-function"><a class="header" href="#finished"><code>finished</code></a></h3>
+<div class="lad-signature">
+<p><strong>finished</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether the timer has run for its full duration.</p>
+<h3 id="fraction" class="lad-function"><a class="header" href="#fraction"><code>fraction</code></a></h3>
+<div class="lad-signature">
+<p><strong>fraction</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>How much of the duration has passed, from <code>0</code> to <code>1</code>.</p>
+<h3 id="fraction_remaining" class="lad-function"><a class="header" href="#fraction_remaining"><code>fraction_remaining</code></a></h3>
+<div class="lad-signature">
+<p><strong>fraction_remaining</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>How much of the duration is left, from <code>0</code> to <code>1</code>.</p>
+<h3 id="just_finished" class="lad-function"><a class="header" href="#just_finished"><code>just_finished</code></a></h3>
+<div class="lad-signature">
+<p><strong>just_finished</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether the timer finished during the last tick.</p>
+<h3 id="mode" class="lad-function"><a class="header" href="#mode"><code>mode</code></a></h3>
+<div class="lad-signature">
+<p><strong>mode</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./timermode.html">TimerMode</a></p>
+</div>
+
+<p>Whether the timer runs once, or repeats.</p>
+<h3 id="pause" class="lad-function"><a class="header" href="#pause"><code>pause</code></a></h3>
+<div class="lad-signature">
+<p><strong>pause</strong>(self: <a href="./timer.html">Timer</a>)</p>
+</div>
+
+<p>Stops the timer from advancing until it is unpaused.</p>
+<h3 id="paused" class="lad-function"><a class="header" href="#paused"><code>paused</code></a></h3>
+<div class="lad-signature">
+<p><strong>paused</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether the timer is paused.</p>
+<h3 id="remaining" class="lad-function"><a class="header" href="#remaining"><code>remaining</code></a></h3>
+<div class="lad-signature">
+<p><strong>remaining</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./duration.html">Duration</a></p>
+</div>
+
+<p>The time left until the timer finishes.</p>
+<h3 id="remaining_secs" class="lad-function"><a class="header" href="#remaining_secs"><code>remaining_secs</code></a></h3>
+<div class="lad-signature">
+<p><strong>remaining_secs</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The time left until the timer finishes, in seconds.</p>
+<h3 id="reset" class="lad-function"><a class="header" href="#reset"><code>reset</code></a></h3>
+<div class="lad-signature">
+<p><strong>reset</strong>(self: <a href="./timer.html">Timer</a>)</p>
+</div>
+
+<p>Sets the timer back to zero elapsed time, keeping its duration and mode.</p>
+<h3 id="set_duration" class="lad-function"><a class="header" href="#set_duration"><code>set_duration</code></a></h3>
+<div class="lad-signature">
+<p><strong>set_duration</strong>(self: <a href="./timer.html">Timer</a>, duration: <a href="./duration.html">Duration</a>)</p>
+</div>
+
+<p>Sets the duration the timer runs for.</p>
+<h3 id="set_elapsed" class="lad-function"><a class="header" href="#set_elapsed"><code>set_elapsed</code></a></h3>
+<div class="lad-signature">
+<p><strong>set_elapsed</strong>(self: <a href="./timer.html">Timer</a>, elapsed: <a href="./duration.html">Duration</a>)</p>
+</div>
+
+<p>Sets the time the timer has run for.</p>
+<h3 id="set_mode" class="lad-function"><a class="header" href="#set_mode"><code>set_mode</code></a></h3>
+<div class="lad-signature">
+<p><strong>set_mode</strong>(self: <a href="./timer.html">Timer</a>, mode: <a href="./timermode.html">TimerMode</a>)</p>
+</div>
+
+<p>Sets whether the timer runs once, or repeats.</p>
+<h3 id="tick" class="lad-function"><a class="header" href="#tick"><code>tick</code></a></h3>
+<div class="lad-signature">
+<p><strong>tick</strong>(self: <a href="./timer.html">Timer</a>, delta: <a href="./f32.html">f32</a> | <a href="./duration.html">Duration</a>)</p>
+</div>
+
+<p>Advances the timer by <code>delta</code>, given in seconds or as a duration. Errors if the time is negative.</p>
+<h3 id="times_finished_this_tick" class="lad-function"><a class="header" href="#times_finished_this_tick"><code>times_finished_this_tick</code></a></h3>
+<div class="lad-signature">
+<p><strong>times_finished_this_tick</strong>(self: <a href="./timer.html">Timer</a>) -&gt; <a href="./u32.html">u32</a></p>
+</div>
+
+<p>How many times the timer finished during the last tick, which can be more than once for a short timer.</p>
+<h3 id="unpause" class="lad-function"><a class="header" href="#unpause"><code>unpause</code></a></h3>
+<div class="lad-signature">
+<p><strong>unpause</strong>(self: <a href="./timer.html">Timer</a>)</p>
+</div>
+
+<p>Resumes a paused timer.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/stopwatch/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/timet.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/timer/unpause.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/timermode.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -260,11 +424,11 @@ For non-repeating timers, this will always be 0 or 1.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/stopwatch/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/timet.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/timer/unpause.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/timermode.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -293,9 +457,9 @@ For non-repeating timers, this will always be 0 or 1.</p>
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

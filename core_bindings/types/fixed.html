@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,85 +183,103 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="fixed"><a class="header" href="#fixed"><code>Fixed</code></a></h1>
-<h3 id="fixed-1"><a class="header" href="#fixed-1">Fixed</a></h3>
-<ul>
-<li><strong>timestep</strong>:<a href="./duration.html">Duration</a></li>
-<li><strong>overstep</strong>:<a href="./duration.html">Duration</a></li>
-</ul>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>The fixed timestep game clock following virtual time.</p>
-<p>A specialization of the [<code>Time</code>] structure. <strong>For method documentation, see
-[<code>Time&lt;Fixed&gt;#impl-Time&lt;Fixed&gt;</code>].</strong></p>
+<p>A specialization of the <a href="./timet.html"><code>Time</code></a> structure. <strong>For method documentation, see
+<a href="./timet.html"><code>Time&lt;Fixed&gt;#impl-Time&lt;Fixed&gt;</code></a>.</strong></p>
 <p>It is automatically inserted as a resource by
-<a href="crate::TimePlugin"><code>TimePlugin</code></a> and updated based on
-<a href="Virtual"><code>Time&lt;Virtual&gt;</code></a>. The fixed clock is automatically set as the
-generic [<code>Time</code>] resource during <a href="bevy_app::FixedUpdate"><code>FixedUpdate</code></a>
+<code>TimePlugin</code> and updated based on
+<a href="./virtual.html"><code>Time&lt;Virtual&gt;</code></a>. The fixed clock is automatically set as the
+generic <a href="./timet.html"><code>Time</code></a> resource during <code>FixedUpdate</code>
 schedule processing.</p>
 <p>The fixed timestep clock advances in fixed-size increments, which is
 extremely useful for writing logic (like physics) that should have
 consistent behavior, regardless of framerate.</p>
-<p>The default <a href="Time::timestep"><code>timestep()</code></a> is 64 hertz, or 15625
+<p>The default <a href="./timet.html"><code>timestep()</code></a> is 64 hertz, or 15625
 microseconds. This value was chosen because using 60 hertz has the potential
 for a pathological interaction with the monitor refresh rate where the game
 alternates between running two fixed timesteps and zero fixed timesteps per
 frame (for example when running two fixed timesteps takes longer than a
 frame). Additionally, the value is a power of two which losslessly converts
-into [<code>f32</code>] and [<code>f64</code>].</p>
-<p>To run a system on a fixed timestep, add it to one of the [<code>FixedMain</code>]
-schedules, most commonly <a href="bevy_app::FixedUpdate"><code>FixedUpdate</code></a>.</p>
+into <code>f32</code> and <code>f64</code>.</p>
+<p>To run a system on a fixed timestep, add it to one of the <code>FixedMain</code>
+schedules, most commonly <code>FixedUpdate</code>.</p>
 <p>This schedule is run a number of times between
-<a href="bevy_app::PreUpdate"><code>PreUpdate</code></a> and <a href="bevy_app::Update"><code>Update</code></a>
-according to the accumulated <a href="Time::overstep"><code>overstep()</code></a> time divided by
-the <a href="Time::timestep"><code>timestep()</code></a>. This means the schedule may run 0, 1 or
+<code>PreUpdate</code> and <code>Update</code>
+according to the accumulated <a href="./timet.html"><code>overstep()</code></a> time divided by
+the <a href="./timet.html"><code>timestep()</code></a>. This means the schedule may run 0, 1 or
 more times during a single update (which typically corresponds to a rendered
 frame).</p>
-<p><code>Time&lt;Fixed&gt;</code> and the generic [<code>Time</code>] resource will report a
-<a href="Time::delta"><code>delta()</code></a> equal to <a href="Time::timestep"><code>timestep()</code></a> and always
-grow <a href="Time::elapsed"><code>elapsed()</code></a> by one <a href="Time::timestep"><code>timestep()</code></a> per
+<p><code>Time&lt;Fixed&gt;</code> and the generic <a href="./timet.html"><code>Time</code></a> resource will report a
+<a href="./timet.html"><code>delta()</code></a> equal to <a href="./timet.html"><code>timestep()</code></a> and always
+grow <a href="./timet.html"><code>elapsed()</code></a> by one <a href="./timet.html"><code>timestep()</code></a> per
 iteration.</p>
-<p>The fixed timestep clock follows the <a href="Virtual"><code>Time&lt;Virtual&gt;</code></a> clock, which
-means it is affected by <a href="Time::pause"><code>pause()</code></a>,
-<a href="Time::set_relative_speed"><code>set_relative_speed()</code></a> and
-<a href="Time::set_max_delta"><code>set_max_delta()</code></a> from virtual time. If the virtual
-clock is paused, the <a href="bevy_app::FixedUpdate"><code>FixedUpdate</code></a> schedule will
-not run. It is guaranteed that the <a href="Time::elapsed"><code>elapsed()</code></a> time in
+<p>The fixed timestep clock follows the <a href="./virtual.html"><code>Time&lt;Virtual&gt;</code></a> clock, which
+means it is affected by <a href="./timet.html"><code>pause()</code></a>,
+<a href="./timet.html"><code>set_relative_speed()</code></a> and
+<a href="./timet.html"><code>set_max_delta()</code></a> from virtual time. If the virtual
+clock is paused, the <code>FixedUpdate</code> schedule will
+not run. It is guaranteed that the <a href="./timet.html"><code>elapsed()</code></a> time in
 <code>Time&lt;Fixed&gt;</code> is always between the previous <code>elapsed()</code> and the current
 <code>elapsed()</code> value in <code>Time&lt;Virtual&gt;</code>, so the values are compatible.</p>
 <p>Changing the timestep size while the game is running should not normally be
 done, as having a regular interval is the point of this schedule, but it may
 be necessary for effects like “bullet-time” if the normal granularity of the
 fixed timestep is too big for the slowed down time. In this case,
-<a href="Time::set_timestep"><code>set_timestep()</code></a> and be called to set a new value. The
+<a href="./timet.html"><code>set_timestep()</code></a> and be called to set a new value. The
 new value will be used immediately for the next run of the
-<a href="bevy_app::FixedUpdate"><code>FixedUpdate</code></a> schedule, meaning that it will affect
-the <a href="Time::delta"><code>delta()</code></a> value for the very next
-<a href="bevy_app::FixedUpdate"><code>FixedUpdate</code></a>, even if it is still during the same
-frame. Any <a href="Time::overstep"><code>overstep()</code></a> present in the accumulator will be
-processed according to the new <a href="Time::timestep"><code>timestep()</code></a> value.</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<code>FixedUpdate</code> schedule, meaning that it will affect
+the <a href="./timet.html"><code>delta()</code></a> value for the very next
+<code>FixedUpdate</code>, even if it is still during the same
+frame. Any <a href="./timet.html"><code>overstep()</code></a> present in the accumulator will be
+processed according to the new <a href="./timet.html"><code>timestep()</code></a> value.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./fixed/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
+<tr><td><code>timestep</code></td><td><a href="./duration.html">Duration</a></td></tr>
+<tr><td><code>overstep</code></td><td><a href="./duration.html">Duration</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./fixed.html">Fixed</a>&gt;) -&gt; <a href="./fixed.html">Fixed</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/duration/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/duration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/fixed/new.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/instant.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -270,11 +289,11 @@ processed according to the new <a href="Time::timestep"><code>timestep()</code><
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/duration/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/duration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/fixed/new.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/instant.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -303,9 +322,9 @@ processed according to the new <a href="Time::timestep"><code>timestep()</code><
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

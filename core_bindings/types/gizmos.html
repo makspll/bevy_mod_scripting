@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,9 +183,8 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="gizmos"><a class="header" href="#gizmos"><code>Gizmos</code></a></h1>
-<h3 id="gizmos-1"><a class="header" href="#gizmos-1">Gizmos</a></h3>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>Immediate mode debug drawing: lines and shapes drawn this frame.</p>
 <p>Every function draws straight away, the shapes are shown for the current frame only.
 Needs the gizmo plugin, without it the functions fail with an error.</p>
@@ -198,35 +198,142 @@ let Gizmos = import_namespace("gizmos").Gizmos;
 let Vec3 = import_namespace("math").Vec3;
 Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());
 </code></pre>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./gizmos/rect_2d.html">rect_2d</a></td><td>Draws a rectangle of the given size centred on the position in 2D.</td></tr>
-<tr><td><a href="./gizmos/line.html">line</a></td><td>Draws a line between two points.</td></tr>
-<tr><td><a href="./gizmos/rect.html">rect</a></td><td>Draws a rectangle of the given size centred on the position, lying in the XY plane.</td></tr>
-<tr><td><a href="./gizmos/linestrip.html">linestrip</a></td><td>Draws connected lines through the points, in order.</td></tr>
-<tr><td><a href="./gizmos/circle.html">circle</a></td><td>Draws a circle around the position, lying in the XY plane so it faces +Z.</td></tr>
-<tr><td><a href="./gizmos/linestrip_2d.html">linestrip_2d</a></td><td>Draws connected lines through the points in 2D, in order.</td></tr>
-<tr><td><a href="./gizmos/sphere.html">sphere</a></td><td>Draws a wireframe sphere around the position.</td></tr>
-<tr><td><a href="./gizmos/circle_2d.html">circle_2d</a></td><td>Draws a circle around the position in 2D.</td></tr>
-<tr><td><a href="./gizmos/arrow_2d.html">arrow_2d</a></td><td>Draws an arrow from the start to the end point in 2D.</td></tr>
-<tr><td><a href="./gizmos/ray.html">ray</a></td><td>Draws a line from the origin along the vector.</td></tr>
-<tr><td><a href="./gizmos/ray_2d.html">ray_2d</a></td><td>Draws a line from the origin along the vector in 2D.</td></tr>
-<tr><td><a href="./gizmos/line_2d.html">line_2d</a></td><td>Draws a line between two points in 2D.</td></tr>
-<tr><td><a href="./gizmos/axes.html">axes</a></td><td>Draws the red, green and blue axes of the transform, scaled by the length.</td></tr>
-<tr><td><a href="./gizmos/cross.html">cross</a></td><td>Draws a cross of the given half size along the three axes, centred on the position.</td></tr>
-<tr><td><a href="./gizmos/cuboid.html">cuboid</a></td><td>Draws a unit cube, with the transform applied to it.</td></tr>
-<tr><td><a href="./gizmos/arrow.html">arrow</a></td><td>Draws an arrow from the start to the end point.</td></tr>
-<tr><td><a href="./gizmos/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
+<tr><td><a href="#arrow"><code>arrow</code></a></td><td>Draws an arrow from the start to the end point.</td></tr>
+<tr><td><a href="#arrow_2d"><code>arrow_2d</code></a></td><td>Draws an arrow from the start to the end point in 2D.</td></tr>
+<tr><td><a href="#axes"><code>axes</code></a></td><td>Draws the red, green and blue axes of the transform, scaled by the length.</td></tr>
+<tr><td><a href="#circle"><code>circle</code></a></td><td>Draws a circle around the position, lying in the XY plane so it faces +Z.</td></tr>
+<tr><td><a href="#circle_2d"><code>circle_2d</code></a></td><td>Draws a circle around the position in 2D.</td></tr>
+<tr><td><a href="#cross"><code>cross</code></a></td><td>Draws a cross of the given half size along the three axes, centred on the position.</td></tr>
+<tr><td><a href="#cuboid"><code>cuboid</code></a></td><td>Draws a unit cube, with the transform applied to it.</td></tr>
+<tr><td><a href="#line"><code>line</code></a></td><td>Draws a line between two points.</td></tr>
+<tr><td><a href="#line_2d"><code>line_2d</code></a></td><td>Draws a line between two points in 2D.</td></tr>
+<tr><td><a href="#linestrip"><code>linestrip</code></a></td><td>Draws connected lines through the points, in order.</td></tr>
+<tr><td><a href="#linestrip_2d"><code>linestrip_2d</code></a></td><td>Draws connected lines through the points in 2D, in order.</td></tr>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#ray"><code>ray</code></a></td><td>Draws a line from the origin along the vector.</td></tr>
+<tr><td><a href="#ray_2d"><code>ray_2d</code></a></td><td>Draws a line from the origin along the vector in 2D.</td></tr>
+<tr><td><a href="#rect"><code>rect</code></a></td><td>Draws a rectangle of the given size centred on the position, lying in the XY plane.</td></tr>
+<tr><td><a href="#rect_2d"><code>rect_2d</code></a></td><td>Draws a rectangle of the given size centred on the position in 2D.</td></tr>
+<tr><td><a href="#sphere"><code>sphere</code></a></td><td>Draws a wireframe sphere around the position.</td></tr>
 </tbody>
 </table>
 </div>
+<h3 id="arrow" class="lad-function"><a class="header" href="#arrow"><code>arrow</code></a></h3>
+<div class="lad-signature">
+<p><strong>arrow</strong>(start: <a href="./vec3.html">Vec3</a>, end: <a href="./vec3.html">Vec3</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws an arrow from the start to the end point.</p>
+<h3 id="arrow_2d" class="lad-function"><a class="header" href="#arrow_2d"><code>arrow_2d</code></a></h3>
+<div class="lad-signature">
+<p><strong>arrow_2d</strong>(start: <a href="./vec2.html">Vec2</a>, end: <a href="./vec2.html">Vec2</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws an arrow from the start to the end point in 2D.</p>
+<h3 id="axes" class="lad-function"><a class="header" href="#axes"><code>axes</code></a></h3>
+<div class="lad-signature">
+<p><strong>axes</strong>(transform: <a href="./transform.html">Transform</a>, length: <a href="./f32.html">f32</a>)</p>
+</div>
+
+<p>Draws the red, green and blue axes of the transform, scaled by the length.</p>
+<h3 id="circle" class="lad-function"><a class="header" href="#circle"><code>circle</code></a></h3>
+<div class="lad-signature">
+<p><strong>circle</strong>(position: <a href="./vec3.html">Vec3</a>, radius: <a href="./f32.html">f32</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a circle around the position, lying in the XY plane so it faces +Z.</p>
+<h3 id="circle_2d" class="lad-function"><a class="header" href="#circle_2d"><code>circle_2d</code></a></h3>
+<div class="lad-signature">
+<p><strong>circle_2d</strong>(position: <a href="./vec2.html">Vec2</a>, radius: <a href="./f32.html">f32</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a circle around the position in 2D.</p>
+<h3 id="cross" class="lad-function"><a class="header" href="#cross"><code>cross</code></a></h3>
+<div class="lad-signature">
+<p><strong>cross</strong>(position: <a href="./vec3.html">Vec3</a>, half_size: <a href="./f32.html">f32</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a cross of the given half size along the three axes, centred on the position.</p>
+<h3 id="cuboid" class="lad-function"><a class="header" href="#cuboid"><code>cuboid</code></a></h3>
+<div class="lad-signature">
+<p><strong>cuboid</strong>(transform: <a href="./transform.html">Transform</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a unit cube, with the transform applied to it.</p>
+<h3 id="line" class="lad-function"><a class="header" href="#line"><code>line</code></a></h3>
+<div class="lad-signature">
+<p><strong>line</strong>(start: <a href="./vec3.html">Vec3</a>, end: <a href="./vec3.html">Vec3</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a line between two points.</p>
+<h3 id="line_2d" class="lad-function"><a class="header" href="#line_2d"><code>line_2d</code></a></h3>
+<div class="lad-signature">
+<p><strong>line_2d</strong>(start: <a href="./vec2.html">Vec2</a>, end: <a href="./vec2.html">Vec2</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a line between two points in 2D.</p>
+<h3 id="linestrip" class="lad-function"><a class="header" href="#linestrip"><code>linestrip</code></a></h3>
+<div class="lad-signature">
+<p><strong>linestrip</strong>(points: Vec&lt;<a href="./vec3.html">Vec3</a>&gt;, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws connected lines through the points, in order.</p>
+<h3 id="linestrip_2d" class="lad-function"><a class="header" href="#linestrip_2d"><code>linestrip_2d</code></a></h3>
+<div class="lad-signature">
+<p><strong>linestrip_2d</strong>(points: Vec&lt;<a href="./vec2.html">Vec2</a>&gt;, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws connected lines through the points in 2D, in order.</p>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./gizmos.html">Gizmos</a>&gt;) -&gt; <a href="./gizmos.html">Gizmos</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h3 id="ray" class="lad-function"><a class="header" href="#ray"><code>ray</code></a></h3>
+<div class="lad-signature">
+<p><strong>ray</strong>(origin: <a href="./vec3.html">Vec3</a>, vector: <a href="./vec3.html">Vec3</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a line from the origin along the vector.</p>
+<h3 id="ray_2d" class="lad-function"><a class="header" href="#ray_2d"><code>ray_2d</code></a></h3>
+<div class="lad-signature">
+<p><strong>ray_2d</strong>(origin: <a href="./vec2.html">Vec2</a>, vector: <a href="./vec2.html">Vec2</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a line from the origin along the vector in 2D.</p>
+<h3 id="rect" class="lad-function"><a class="header" href="#rect"><code>rect</code></a></h3>
+<div class="lad-signature">
+<p><strong>rect</strong>(position: <a href="./vec3.html">Vec3</a>, size: <a href="./vec2.html">Vec2</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a rectangle of the given size centred on the position, lying in the XY plane.</p>
+<h3 id="rect_2d" class="lad-function"><a class="header" href="#rect_2d"><code>rect_2d</code></a></h3>
+<div class="lad-signature">
+<p><strong>rect_2d</strong>(position: <a href="./vec2.html">Vec2</a>, size: <a href="./vec2.html">Vec2</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a rectangle of the given size centred on the position in 2D.</p>
+<h3 id="sphere" class="lad-function"><a class="header" href="#sphere"><code>sphere</code></a></h3>
+<div class="lad-signature">
+<p><strong>sphere</strong>(position: <a href="./vec3.html">Vec3</a>, radius: <a href="./f32.html">f32</a>, color: <a href="./color.html">Color</a>)</p>
+</div>
+
+<p>Draws a wireframe sphere around the position.</p>
 
                     </main>
 
@@ -236,7 +343,7 @@ Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/gizmos/rect_2d.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/namespace_input.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -250,7 +357,7 @@ Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/gizmos/rect_2d.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/namespace_input.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -279,9 +386,9 @@ Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

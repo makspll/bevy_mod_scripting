@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,88 +183,432 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="vec2"><a class="header" href="#vec2"><code>Vec2</code></a></h1>
-<h3 id="vec2-1"><a class="header" href="#vec2-1">Vec2</a></h3>
-<ul>
-<li><strong>x</strong>:<a href="./f32.html">F32</a></li>
-<li><strong>y</strong>:<a href="./f32.html">F32</a></li>
-</ul>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
-<p>No Documentation 🚧</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<div class="lad-page"></div>
+
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./vec2/unit_x.html">unit_x</a></td><td>The unit vector along the x axis.</td></tr>
-<tr><td><a href="./vec2/new.html">new</a></td><td>Creates a new vector.  ```multi-lang-example,lua local Vec2 = import_namespace(“math”).Vec2 local v = Vec2.new(3, 4) assert(v:length() == 5) ```  ```multi-lang-example,rune let Vec2 = import_...</td></tr>
-<tr><td><a href="./vec2/rdiv.html">rdiv</a></td><td>Divides a number by every component, for `n / v`.</td></tr>
-<tr><td><a href="./vec2/to_angle.html">to_angle</a></td><td>The angle of this vector in radians, measured counterclockwise from the x axis.</td></tr>
-<tr><td><a href="./vec2/abs.html">abs</a></td><td>The absolute value of every component.</td></tr>
-<tr><td><a href="./vec2/project_onto.html">project_onto</a></td><td>The projection of this vector onto `other`.</td></tr>
-<tr><td><a href="./vec2/reflect.html">reflect</a></td><td>Reflects this vector off a surface with the given `normal`, which must be of length `1`.</td></tr>
-<tr><td><a href="./vec2/as_dvec2.html">as_dvec2</a></td><td>Converts to a double precision vector.</td></tr>
-<tr><td><a href="./vec2/dot.html">dot</a></td><td>The dot product of two vectors.</td></tr>
-<tr><td><a href="./vec2/clamp_length.html">clamp_length</a></td><td>Scales the vector so that its length is between `min` and `max`.</td></tr>
-<tr><td><a href="./vec2/floor.html">floor</a></td><td>Rounds every component down.</td></tr>
-<tr><td><a href="./vec2/length.html">length</a></td><td>The length of the vector.</td></tr>
-<tr><td><a href="./vec2/as_uvec2.html">as_uvec2</a></td><td>Converts to an unsigned integer vector, rounding towards zero, negative values become `0`.</td></tr>
-<tr><td><a href="./vec2/zero.html">zero</a></td><td>A vector with all components set to `0`.</td></tr>
-<tr><td><a href="./vec2/distance.html">distance</a></td><td>The distance between two points.</td></tr>
-<tr><td><a href="./vec2/add.html">add</a></td><td>Adds a vector or a number to every component.</td></tr>
-<tr><td><a href="./vec2/round.html">round</a></td><td>Rounds every component to the nearest integer.</td></tr>
-<tr><td><a href="./vec2/try_normalize.html">try_normalize</a></td><td>The vector scaled to a length of `1`, or nil if that’s not possible.</td></tr>
-<tr><td><a href="./vec2/reject_from.html">reject_from</a></td><td>The part of this vector perpendicular to `other`.</td></tr>
-<tr><td><a href="./vec2/perp.html">perp</a></td><td>The vector rotated by 90 degrees counterclockwise.</td></tr>
-<tr><td><a href="./vec2/normalize_or_zero.html">normalize_or_zero</a></td><td>The vector scaled to a length of `1`, or zero if that’s not possible.</td></tr>
-<tr><td><a href="./vec2/sub.html">sub</a></td><td>Subtracts a vector or a number from every component.</td></tr>
-<tr><td><a href="./vec2/max_element.html">max_element</a></td><td>The largest component.</td></tr>
-<tr><td><a href="./vec2/splat.html">splat</a></td><td>A vector with all components set to `v`.</td></tr>
-<tr><td><a href="./vec2/extend.html">extend</a></td><td>A [`Vec3`](bevy_math::Vec3) with the given `z`.</td></tr>
-<tr><td><a href="./vec2/div.html">div</a></td><td>Divides component-wise by a vector, or by a number.</td></tr>
-<tr><td><a href="./vec2/from_angle.html">from_angle</a></td><td>The unit vector of the given angle in radians, measured counterclockwise from the x axis.</td></tr>
-<tr><td><a href="./vec2/unit_y.html">unit_y</a></td><td>The unit vector along the y axis.</td></tr>
-<tr><td><a href="./vec2/min.html">min</a></td><td>The smaller of each pair of components.</td></tr>
-<tr><td><a href="./vec2/length_squared.html">length_squared</a></td><td>The squared length of the vector, faster than [`length`](Self::length) when comparing lengths.</td></tr>
-<tr><td><a href="./vec2/distance_squared.html">distance_squared</a></td><td>The squared distance between two points.</td></tr>
-<tr><td><a href="./vec2/min_element.html">min_element</a></td><td>The smallest component.</td></tr>
-<tr><td><a href="./vec2/angle_to.html">angle_to</a></td><td>The signed angle in radians to rotate this vector onto `other`.</td></tr>
-<tr><td><a href="./vec2/rsub.html">rsub</a></td><td>Subtracts every component from a number, for `n - v`.</td></tr>
-<tr><td><a href="./vec2/mul.html">mul</a></td><td>Multiplies component-wise by a vector, or scales by a number.</td></tr>
-<tr><td><a href="./vec2/lerp.html">lerp</a></td><td>Linearly interpolates towards `other`, `t = 0` gives this vector and `t = 1` gives `other`.</td></tr>
-<tr><td><a href="./vec2/ceil.html">ceil</a></td><td>Rounds every component up.</td></tr>
-<tr><td><a href="./vec2/neg.html">neg</a></td><td>Negates every component.</td></tr>
-<tr><td><a href="./vec2/clamp.html">clamp</a></td><td>Clamps every component between the components of `min` and `max`.</td></tr>
-<tr><td><a href="./vec2/perp_dot.html">perp_dot</a></td><td>The 2D cross product, positive if `other` is counterclockwise from this vector.</td></tr>
-<tr><td><a href="./vec2/max.html">max</a></td><td>The larger of each pair of components.</td></tr>
-<tr><td><a href="./vec2/signum.html">signum</a></td><td>The sign of every component: `1`, `-1`, or NaN.</td></tr>
-<tr><td><a href="./vec2/clamp_length_max.html">clamp_length_max</a></td><td>Scales the vector down so that its length is at most `max`.</td></tr>
-<tr><td><a href="./vec2/one.html">one</a></td><td>A vector with all components set to `1`.</td></tr>
-<tr><td><a href="./vec2/as_ivec2.html">as_ivec2</a></td><td>Converts to an integer vector, rounding towards zero.</td></tr>
-<tr><td><a href="./vec2/rem.html">rem</a></td><td>The component-wise remainder of dividing by a vector, or by a number.</td></tr>
-<tr><td><a href="./vec2/move_towards.html">move_towards</a></td><td>Moves towards `target` by at most `max_distance`, without overshooting.</td></tr>
-<tr><td><a href="./vec2/fract.html">fract</a></td><td>The fractional part of every component, i.e. `x - floor(x)`.</td></tr>
-<tr><td><a href="./vec2/to_array.html">to_array</a></td><td>The components as a list.</td></tr>
-<tr><td><a href="./vec2/rotate.html">rotate</a></td><td>Rotates `other` by the angle of this vector, and scales it by its length.</td></tr>
-<tr><td><a href="./vec2/eq.html">eq</a></td><td>Whether all components are equal.</td></tr>
-<tr><td><a href="./vec2/normalize.html">normalize</a></td><td>The vector scaled to a length of `1`. Errors if the vector is zero, or not finite.</td></tr>
+<tr><td><code>x</code></td><td><a href="./f32.html">f32</a></td></tr>
+<tr><td><code>y</code></td><td><a href="./f32.html">f32</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#from_angle"><code>from_angle</code></a></td><td>The unit vector of the given angle in radians, measured counterclockwise from the x axis.</td></tr>
+<tr><td><a href="#new"><code>new</code></a></td><td>Creates a new vector.</td></tr>
+<tr><td><a href="#one"><code>one</code></a></td><td>A vector with all components set to <code>1</code>.</td></tr>
+<tr><td><a href="#splat"><code>splat</code></a></td><td>A vector with all components set to <code>v</code>.</td></tr>
+<tr><td><a href="#unit_x"><code>unit_x</code></a></td><td>The unit vector along the x axis.</td></tr>
+<tr><td><a href="#unit_y"><code>unit_y</code></a></td><td>The unit vector along the y axis.</td></tr>
+<tr><td><a href="#zero"><code>zero</code></a></td><td>A vector with all components set to <code>0</code>.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="from_angle" class="lad-function"><a class="header" href="#from_angle"><code>from_angle</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_angle</strong>(angle: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The unit vector of the given angle in radians, measured counterclockwise from the x axis.</p>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(x: <a href="./f32.html">f32</a>, y: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Creates a new vector.</p>
+<pre><code class="language-multi-lang-example lua">local Vec2 = import_namespace("math").Vec2
+local v = Vec2.new(3, 4)
+assert(v:length() == 5)
+</code></pre>
+<pre><code class="language-multi-lang-example rune">let Vec2 = import_namespace("math").Vec2;
+let v = Vec2.new(3.0, 4.0);
+assert!(v.length() == 5.0);
+</code></pre>
+<h3 id="one" class="lad-function"><a class="header" href="#one"><code>one</code></a></h3>
+<div class="lad-signature">
+<p><strong>one</strong>() -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>A vector with all components set to <code>1</code>.</p>
+<h3 id="splat" class="lad-function"><a class="header" href="#splat"><code>splat</code></a></h3>
+<div class="lad-signature">
+<p><strong>splat</strong>(v: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>A vector with all components set to <code>v</code>.</p>
+<h3 id="unit_x" class="lad-function"><a class="header" href="#unit_x"><code>unit_x</code></a></h3>
+<div class="lad-signature">
+<p><strong>unit_x</strong>() -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The unit vector along the x axis.</p>
+<h3 id="unit_y" class="lad-function"><a class="header" href="#unit_y"><code>unit_y</code></a></h3>
+<div class="lad-signature">
+<p><strong>unit_y</strong>() -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The unit vector along the y axis.</p>
+<h3 id="zero" class="lad-function"><a class="header" href="#zero"><code>zero</code></a></h3>
+<div class="lad-signature">
+<p><strong>zero</strong>() -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>A vector with all components set to <code>0</code>.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#abs"><code>abs</code></a></td><td>The absolute value of every component.</td></tr>
+<tr><td><a href="#angle_to"><code>angle_to</code></a></td><td>The signed angle in radians to rotate this vector onto <code>other</code>.</td></tr>
+<tr><td><a href="#as_dvec2"><code>as_dvec2</code></a></td><td>Converts to a double precision vector.</td></tr>
+<tr><td><a href="#as_ivec2"><code>as_ivec2</code></a></td><td>Converts to an integer vector, rounding towards zero.</td></tr>
+<tr><td><a href="#as_uvec2"><code>as_uvec2</code></a></td><td>Converts to an unsigned integer vector, rounding towards zero, negative values become <code>0</code>.</td></tr>
+<tr><td><a href="#ceil"><code>ceil</code></a></td><td>Rounds every component up.</td></tr>
+<tr><td><a href="#clamp"><code>clamp</code></a></td><td>Clamps every component between the components of <code>min</code> and <code>max</code>.</td></tr>
+<tr><td><a href="#clamp_length"><code>clamp_length</code></a></td><td>Scales the vector so that its length is between <code>min</code> and <code>max</code>.</td></tr>
+<tr><td><a href="#clamp_length_max"><code>clamp_length_max</code></a></td><td>Scales the vector down so that its length is at most <code>max</code>.</td></tr>
+<tr><td><a href="#distance"><code>distance</code></a></td><td>The distance between two points.</td></tr>
+<tr><td><a href="#distance_squared"><code>distance_squared</code></a></td><td>The squared distance between two points.</td></tr>
+<tr><td><a href="#dot"><code>dot</code></a></td><td>The dot product of two vectors.</td></tr>
+<tr><td><a href="#extend"><code>extend</code></a></td><td>A <code>Vec3</code> with the given <code>z</code>.</td></tr>
+<tr><td><a href="#floor"><code>floor</code></a></td><td>Rounds every component down.</td></tr>
+<tr><td><a href="#fract"><code>fract</code></a></td><td>The fractional part of every component, i.e. <code>x - floor(x)</code>.</td></tr>
+<tr><td><a href="#length"><code>length</code></a></td><td>The length of the vector.</td></tr>
+<tr><td><a href="#length_squared"><code>length_squared</code></a></td><td>The squared length of the vector, faster than <code>length</code> when comparing lengths.</td></tr>
+<tr><td><a href="#lerp"><code>lerp</code></a></td><td>Linearly interpolates towards <code>other</code>, <code>t = 0</code> gives this vector and <code>t = 1</code> gives <code>other</code>.</td></tr>
+<tr><td><a href="#max"><code>max</code></a></td><td>The larger of each pair of components.</td></tr>
+<tr><td><a href="#max_element"><code>max_element</code></a></td><td>The largest component.</td></tr>
+<tr><td><a href="#min"><code>min</code></a></td><td>The smaller of each pair of components.</td></tr>
+<tr><td><a href="#min_element"><code>min_element</code></a></td><td>The smallest component.</td></tr>
+<tr><td><a href="#move_towards"><code>move_towards</code></a></td><td>Moves towards <code>target</code> by at most <code>max_distance</code>, without overshooting.</td></tr>
+<tr><td><a href="#normalize"><code>normalize</code></a></td><td>The vector scaled to a length of <code>1</code>. Errors if the vector is zero, or not finite.</td></tr>
+<tr><td><a href="#normalize_or_zero"><code>normalize_or_zero</code></a></td><td>The vector scaled to a length of <code>1</code>, or zero if that’s not possible.</td></tr>
+<tr><td><a href="#perp"><code>perp</code></a></td><td>The vector rotated by 90 degrees counterclockwise.</td></tr>
+<tr><td><a href="#perp_dot"><code>perp_dot</code></a></td><td>The 2D cross product, positive if <code>other</code> is counterclockwise from this vector.</td></tr>
+<tr><td><a href="#project_onto"><code>project_onto</code></a></td><td>The projection of this vector onto <code>other</code>.</td></tr>
+<tr><td><a href="#rdiv"><code>rdiv</code></a></td><td>Divides a number by every component, for <code>n / v</code>.</td></tr>
+<tr><td><a href="#reflect"><code>reflect</code></a></td><td>Reflects this vector off a surface with the given <code>normal</code>, which must be of length <code>1</code>.</td></tr>
+<tr><td><a href="#reject_from"><code>reject_from</code></a></td><td>The part of this vector perpendicular to <code>other</code>.</td></tr>
+<tr><td><a href="#rotate"><code>rotate</code></a></td><td>Rotates <code>other</code> by the angle of this vector, and scales it by its length.</td></tr>
+<tr><td><a href="#round"><code>round</code></a></td><td>Rounds every component to the nearest integer.</td></tr>
+<tr><td><a href="#rsub"><code>rsub</code></a></td><td>Subtracts every component from a number, for <code>n - v</code>.</td></tr>
+<tr><td><a href="#signum"><code>signum</code></a></td><td>The sign of every component: <code>1</code>, <code>-1</code>, or NaN.</td></tr>
+<tr><td><a href="#to_angle"><code>to_angle</code></a></td><td>The angle of this vector in radians, measured counterclockwise from the x axis.</td></tr>
+<tr><td><a href="#to_array"><code>to_array</code></a></td><td>The components as a list.</td></tr>
+<tr><td><a href="#try_normalize"><code>try_normalize</code></a></td><td>The vector scaled to a length of <code>1</code>, or nil if that’s not possible.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="abs" class="lad-function"><a class="header" href="#abs"><code>abs</code></a></h3>
+<div class="lad-signature">
+<p><strong>abs</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The absolute value of every component.</p>
+<h3 id="angle_to" class="lad-function"><a class="header" href="#angle_to"><code>angle_to</code></a></h3>
+<div class="lad-signature">
+<p><strong>angle_to</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The signed angle in radians to rotate this vector onto <code>other</code>.</p>
+<h3 id="as_dvec2" class="lad-function"><a class="header" href="#as_dvec2"><code>as_dvec2</code></a></h3>
+<div class="lad-signature">
+<p><strong>as_dvec2</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./dvec2.html">DVec2</a></p>
+</div>
+
+<p>Converts to a double precision vector.</p>
+<h3 id="as_ivec2" class="lad-function"><a class="header" href="#as_ivec2"><code>as_ivec2</code></a></h3>
+<div class="lad-signature">
+<p><strong>as_ivec2</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./ivec2.html">IVec2</a></p>
+</div>
+
+<p>Converts to an integer vector, rounding towards zero.</p>
+<h3 id="as_uvec2" class="lad-function"><a class="header" href="#as_uvec2"><code>as_uvec2</code></a></h3>
+<div class="lad-signature">
+<p><strong>as_uvec2</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./uvec2.html">UVec2</a></p>
+</div>
+
+<p>Converts to an unsigned integer vector, rounding towards zero, negative values become <code>0</code>.</p>
+<h3 id="ceil" class="lad-function"><a class="header" href="#ceil"><code>ceil</code></a></h3>
+<div class="lad-signature">
+<p><strong>ceil</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Rounds every component up.</p>
+<h3 id="clamp" class="lad-function"><a class="header" href="#clamp"><code>clamp</code></a></h3>
+<div class="lad-signature">
+<p><strong>clamp</strong>(self: <a href="./vec2.html">Vec2</a>, min: <a href="./vec2.html">Vec2</a>, max: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Clamps every component between the components of <code>min</code> and <code>max</code>.</p>
+<h3 id="clamp_length" class="lad-function"><a class="header" href="#clamp_length"><code>clamp_length</code></a></h3>
+<div class="lad-signature">
+<p><strong>clamp_length</strong>(self: <a href="./vec2.html">Vec2</a>, min: <a href="./f32.html">f32</a>, max: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Scales the vector so that its length is between <code>min</code> and <code>max</code>.</p>
+<h3 id="clamp_length_max" class="lad-function"><a class="header" href="#clamp_length_max"><code>clamp_length_max</code></a></h3>
+<div class="lad-signature">
+<p><strong>clamp_length_max</strong>(self: <a href="./vec2.html">Vec2</a>, max: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Scales the vector down so that its length is at most <code>max</code>.</p>
+<h3 id="distance" class="lad-function"><a class="header" href="#distance"><code>distance</code></a></h3>
+<div class="lad-signature">
+<p><strong>distance</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The distance between two points.</p>
+<h3 id="distance_squared" class="lad-function"><a class="header" href="#distance_squared"><code>distance_squared</code></a></h3>
+<div class="lad-signature">
+<p><strong>distance_squared</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The squared distance between two points.</p>
+<h3 id="dot" class="lad-function"><a class="header" href="#dot"><code>dot</code></a></h3>
+<div class="lad-signature">
+<p><strong>dot</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The dot product of two vectors.</p>
+<h3 id="extend" class="lad-function"><a class="header" href="#extend"><code>extend</code></a></h3>
+<div class="lad-signature">
+<p><strong>extend</strong>(self: <a href="./vec2.html">Vec2</a>, z: <a href="./f32.html">f32</a>) -&gt; <a href="./vec3.html">Vec3</a></p>
+</div>
+
+<p>A <a href="./vec3.html"><code>Vec3</code></a> with the given <code>z</code>.</p>
+<h3 id="floor" class="lad-function"><a class="header" href="#floor"><code>floor</code></a></h3>
+<div class="lad-signature">
+<p><strong>floor</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Rounds every component down.</p>
+<h3 id="fract" class="lad-function"><a class="header" href="#fract"><code>fract</code></a></h3>
+<div class="lad-signature">
+<p><strong>fract</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The fractional part of every component, i.e. <code>x - floor(x)</code>.</p>
+<h3 id="length" class="lad-function"><a class="header" href="#length"><code>length</code></a></h3>
+<div class="lad-signature">
+<p><strong>length</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The length of the vector.</p>
+<h3 id="length_squared" class="lad-function"><a class="header" href="#length_squared"><code>length_squared</code></a></h3>
+<div class="lad-signature">
+<p><strong>length_squared</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The squared length of the vector, faster than <code>length</code> when comparing lengths.</p>
+<h3 id="lerp" class="lad-function"><a class="header" href="#lerp"><code>lerp</code></a></h3>
+<div class="lad-signature">
+<p><strong>lerp</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>, t: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Linearly interpolates towards <code>other</code>, <code>t = 0</code> gives this vector and <code>t = 1</code> gives <code>other</code>.</p>
+<h3 id="max" class="lad-function"><a class="header" href="#max"><code>max</code></a></h3>
+<div class="lad-signature">
+<p><strong>max</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The larger of each pair of components.</p>
+<h3 id="max_element" class="lad-function"><a class="header" href="#max_element"><code>max_element</code></a></h3>
+<div class="lad-signature">
+<p><strong>max_element</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The largest component.</p>
+<h3 id="min" class="lad-function"><a class="header" href="#min"><code>min</code></a></h3>
+<div class="lad-signature">
+<p><strong>min</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The smaller of each pair of components.</p>
+<h3 id="min_element" class="lad-function"><a class="header" href="#min_element"><code>min_element</code></a></h3>
+<div class="lad-signature">
+<p><strong>min_element</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The smallest component.</p>
+<h3 id="move_towards" class="lad-function"><a class="header" href="#move_towards"><code>move_towards</code></a></h3>
+<div class="lad-signature">
+<p><strong>move_towards</strong>(self: <a href="./vec2.html">Vec2</a>, target: <a href="./vec2.html">Vec2</a>, max_distance: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Moves towards <code>target</code> by at most <code>max_distance</code>, without overshooting.</p>
+<h3 id="normalize" class="lad-function"><a class="header" href="#normalize"><code>normalize</code></a></h3>
+<div class="lad-signature">
+<p><strong>normalize</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The vector scaled to a length of <code>1</code>. Errors if the vector is zero, or not finite.</p>
+<h3 id="normalize_or_zero" class="lad-function"><a class="header" href="#normalize_or_zero"><code>normalize_or_zero</code></a></h3>
+<div class="lad-signature">
+<p><strong>normalize_or_zero</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The vector scaled to a length of <code>1</code>, or zero if that’s not possible.</p>
+<h3 id="perp" class="lad-function"><a class="header" href="#perp"><code>perp</code></a></h3>
+<div class="lad-signature">
+<p><strong>perp</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The vector rotated by 90 degrees counterclockwise.</p>
+<h3 id="perp_dot" class="lad-function"><a class="header" href="#perp_dot"><code>perp_dot</code></a></h3>
+<div class="lad-signature">
+<p><strong>perp_dot</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The 2D cross product, positive if <code>other</code> is counterclockwise from this vector.</p>
+<h3 id="project_onto" class="lad-function"><a class="header" href="#project_onto"><code>project_onto</code></a></h3>
+<div class="lad-signature">
+<p><strong>project_onto</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The projection of this vector onto <code>other</code>.</p>
+<h3 id="rdiv" class="lad-function"><a class="header" href="#rdiv"><code>rdiv</code></a></h3>
+<div class="lad-signature">
+<p><strong>rdiv</strong>(self: <a href="./vec2.html">Vec2</a>, lhs: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Divides a number by every component, for <code>n / v</code>.</p>
+<h3 id="reflect" class="lad-function"><a class="header" href="#reflect"><code>reflect</code></a></h3>
+<div class="lad-signature">
+<p><strong>reflect</strong>(self: <a href="./vec2.html">Vec2</a>, normal: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Reflects this vector off a surface with the given <code>normal</code>, which must be of length <code>1</code>.</p>
+<h3 id="reject_from" class="lad-function"><a class="header" href="#reject_from"><code>reject_from</code></a></h3>
+<div class="lad-signature">
+<p><strong>reject_from</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The part of this vector perpendicular to <code>other</code>.</p>
+<h3 id="rotate" class="lad-function"><a class="header" href="#rotate"><code>rotate</code></a></h3>
+<div class="lad-signature">
+<p><strong>rotate</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Rotates <code>other</code> by the angle of this vector, and scales it by its length.</p>
+<h3 id="round" class="lad-function"><a class="header" href="#round"><code>round</code></a></h3>
+<div class="lad-signature">
+<p><strong>round</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Rounds every component to the nearest integer.</p>
+<h3 id="rsub" class="lad-function"><a class="header" href="#rsub"><code>rsub</code></a></h3>
+<div class="lad-signature">
+<p><strong>rsub</strong>(self: <a href="./vec2.html">Vec2</a>, lhs: <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Subtracts every component from a number, for <code>n - v</code>.</p>
+<h3 id="signum" class="lad-function"><a class="header" href="#signum"><code>signum</code></a></h3>
+<div class="lad-signature">
+<p><strong>signum</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The sign of every component: <code>1</code>, <code>-1</code>, or NaN.</p>
+<h3 id="to_angle" class="lad-function"><a class="header" href="#to_angle"><code>to_angle</code></a></h3>
+<div class="lad-signature">
+<p><strong>to_angle</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The angle of this vector in radians, measured counterclockwise from the x axis.</p>
+<h3 id="to_array" class="lad-function"><a class="header" href="#to_array"><code>to_array</code></a></h3>
+<div class="lad-signature">
+<p><strong>to_array</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; Vec&lt;<a href="./f32.html">f32</a>&gt;</p>
+</div>
+
+<p>The components as a list.</p>
+<h3 id="try_normalize" class="lad-function"><a class="header" href="#try_normalize"><code>try_normalize</code></a></h3>
+<div class="lad-signature">
+<p><strong>try_normalize</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; Optional&lt;<a href="./vec2.html">Vec2</a>&gt;</p>
+</div>
+
+<p>The vector scaled to a length of <code>1</code>, or nil if that’s not possible.</p>
+<h2 id="operators"><a class="header" href="#operators">Operators</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#add"><code>add</code></a></td><td>Adds a vector or a number to every component.</td></tr>
+<tr><td><a href="#div"><code>div</code></a></td><td>Divides component-wise by a vector, or by a number.</td></tr>
+<tr><td><a href="#eq"><code>eq</code></a></td><td>Whether all components are equal.</td></tr>
+<tr><td><a href="#mul"><code>mul</code></a></td><td>Multiplies component-wise by a vector, or scales by a number.</td></tr>
+<tr><td><a href="#neg"><code>neg</code></a></td><td>Negates every component.</td></tr>
+<tr><td><a href="#rem"><code>rem</code></a></td><td>The component-wise remainder of dividing by a vector, or by a number.</td></tr>
+<tr><td><a href="#sub"><code>sub</code></a></td><td>Subtracts a vector or a number from every component.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="add" class="lad-function"><a class="header" href="#add"><code>add</code></a></h3>
+<div class="lad-signature">
+<p><strong>add</strong>(self: <a href="./vec2.html">Vec2</a>, rhs: <a href="./vec2.html">Vec2</a> | <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Adds a vector or a number to every component.</p>
+<h3 id="div" class="lad-function"><a class="header" href="#div"><code>div</code></a></h3>
+<div class="lad-signature">
+<p><strong>div</strong>(self: <a href="./vec2.html">Vec2</a>, rhs: <a href="./vec2.html">Vec2</a> | <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Divides component-wise by a vector, or by a number.</p>
+<h3 id="eq" class="lad-function"><a class="header" href="#eq"><code>eq</code></a></h3>
+<div class="lad-signature">
+<p><strong>eq</strong>(self: <a href="./vec2.html">Vec2</a>, other: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether all components are equal.</p>
+<h3 id="mul" class="lad-function"><a class="header" href="#mul"><code>mul</code></a></h3>
+<div class="lad-signature">
+<p><strong>mul</strong>(self: <a href="./vec2.html">Vec2</a>, rhs: <a href="./vec2.html">Vec2</a> | <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Multiplies component-wise by a vector, or scales by a number.</p>
+<h3 id="neg" class="lad-function"><a class="header" href="#neg"><code>neg</code></a></h3>
+<div class="lad-signature">
+<p><strong>neg</strong>(self: <a href="./vec2.html">Vec2</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Negates every component.</p>
+<h3 id="rem" class="lad-function"><a class="header" href="#rem"><code>rem</code></a></h3>
+<div class="lad-signature">
+<p><strong>rem</strong>(self: <a href="./vec2.html">Vec2</a>, rhs: <a href="./vec2.html">Vec2</a> | <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>The component-wise remainder of dividing by a vector, or by a number.</p>
+<h3 id="sub" class="lad-function"><a class="header" href="#sub"><code>sub</code></a></h3>
+<div class="lad-signature">
+<p><strong>sub</strong>(self: <a href="./vec2.html">Vec2</a>, rhs: <a href="./vec2.html">Vec2</a> | <a href="./f32.html">f32</a>) -&gt; <a href="./vec2.html">Vec2</a></p>
+</div>
+
+<p>Subtracts a vector or a number from every component.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/uvec3/max_element.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/uvec3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/vec2/unit_x.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/vec3.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -273,11 +618,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/uvec3/max_element.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/uvec3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/vec2/unit_x.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/vec3.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -306,9 +651,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

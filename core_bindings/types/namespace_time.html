@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,24 +183,25 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="time"><a class="header" href="#time">time</a></h1>
+<div class="lad-page"></div>
+
 <p>The types and functions in the <code>time</code> namespace, as returned by <code>import_namespace("time")</code>.</p>
-<h2 id="available-types"><a class="header" href="#available-types">Available Types</a></h2>
-<p>All registered reflect-able types which can be constructed and directly manipulated by scripts.</p>
+<h2 id="types"><a class="header" href="#types">Types</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Type</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="././instant.html"><code>Instant</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././stopwatch.html"><code>Stopwatch</code></a></td><td>A Stopwatch is a struct that tracks elapsed time when started.   Note that in order to advance the ...</td></tr>
-<tr><td><a href="././timer.html"><code>Timer</code></a></td><td>Tracks elapsed time. Enters the finished state once `duration` is reached.   Note that in order to ...</td></tr>
-<tr><td><a href="././duration.html"><code>Duration</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././fixed.html"><code>Fixed</code></a></td><td>The fixed timestep game clock following virtual time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<fixed>#impl-Time<fixed>`]...</fixed></fixed></td></tr>
-<tr><td><a href="././real.html"><code>Real</code></a></td><td>Real time clock representing elapsed wall clock time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<real>#impl-Time<real>`]...</real></real></td></tr>
-<tr><td><a href="././timermode.html"><code>TimerMode</code></a></td><td>Specifies [`Timer`] behavior.</td></tr>
-<tr><td><a href="././virtual.html"><code>Virtual</code></a></td><td>The virtual game clock representing game time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<virtual>#impl-Time<virtual>`].**...</virtual></virtual></td></tr>
-<tr><td><a href="././timet.html"><code>Time&lt;T&gt;</code></a></td><td>A clock, `T` is the kind of clock, i.e. `Virtual` or `Fixed`.</td></tr>
+<tr><td><a href="././duration.html"><code>Duration</code></a></td><td></td></tr>
+<tr><td><a href="././fixed.html"><code>Fixed</code></a></td><td>The fixed timestep game clock following virtual time.</td></tr>
+<tr><td><a href="././instant.html"><code>Instant</code></a></td><td></td></tr>
+<tr><td><a href="././real.html"><code>Real</code></a></td><td>Real time clock representing elapsed wall clock time.</td></tr>
+<tr><td><a href="././stopwatch.html"><code>Stopwatch</code></a></td><td>A Stopwatch is a struct that tracks elapsed time when started.</td></tr>
+<tr><td><a href="././timet.html"><code>Time&lt;T&gt;</code></a></td><td>A clock, <code>T</code> is the kind of clock, i.e. <code>Virtual</code> or <code>Fixed</code>.</td></tr>
+<tr><td><a href="././timer.html"><code>Timer</code></a></td><td>Tracks elapsed time. Enters the finished state once <code>duration</code> is reached.</td></tr>
+<tr><td><a href="././timermode.html"><code>TimerMode</code></a></td><td>Specifies <code>Timer</code> behavior.</td></tr>
+<tr><td><a href="././virtual.html"><code>Virtual</code></a></td><td>The virtual game clock representing game time.</td></tr>
 </tbody>
 </table>
 </div>
@@ -219,11 +221,11 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/remsize/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/textspan.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/instant.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/duration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -233,11 +235,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/remsize/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/textspan.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/instant.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/duration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -266,9 +268,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

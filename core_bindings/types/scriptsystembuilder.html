@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,45 +183,223 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="scriptsystembuilder"><a class="header" href="#scriptsystembuilder"><code>ScriptSystemBuilder</code></a></h1>
-<p>Opaque Type. 🔒</p>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>A builder for systems living in scripts</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
+
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./scriptsystembuilder/run_if.html">run_if</a></td><td>Only runs the system if the condition holds, see `bms.conditions`. All conditions must hold for the ...</td></tr>
-<tr><td><a href="./scriptsystembuilder/before_script_system.html">before_script_system</a></td><td>Specifies the system is to run *before* the script system with the given callback label of the given...</td></tr>
-<tr><td><a href="./scriptsystembuilder/query.html">query</a></td><td>Adds a query to the system builder.</td></tr>
-<tr><td><a href="./scriptsystembuilder/before.html">before</a></td><td>Specifies the system is to run *before* the given system.  Note: this is an experimental feature, an...</td></tr>
-<tr><td><a href="./scriptsystembuilder/exclusive.html">exclusive</a></td><td>Specifies the system is to run exclusively, meaning it can access anything, but will not run in para...</td></tr>
-<tr><td><a href="./scriptsystembuilder/in_set.html">in_set</a></td><td>Puts the system in the given set, ordering the set orders the system. Sets are registered by scripts...</td></tr>
-<tr><td><a href="./scriptsystembuilder/resource.html">resource</a></td><td>Requests the system have access to the given resource. The resource will be added to the list of arg...</td></tr>
-<tr><td><a href="./scriptsystembuilder/after.html">after</a></td><td>Specifies the system is to run *after* the given system  Note: this is an experimental feature, and ...</td></tr>
-<tr><td><a href="./scriptsystembuilder/resource_read.html">resource_read</a></td><td>Requests the system have read only access to the given resource. The resource will be added to the l...</td></tr>
-<tr><td><a href="./scriptsystembuilder/after_set.html">after_set</a></td><td>Specifies the system is to run *after* the given set. Sets are registered by scripts with `register_new_system_set`, game sets are found with `get_...</td></tr>
-<tr><td><a href="./scriptsystembuilder/after_script_system.html">after_script_system</a></td><td>Specifies the system is to run *after* the script system with the given callback label of the given ...</td></tr>
-<tr><td><a href="./scriptsystembuilder/before_set.html">before_set</a></td><td>Specifies the system is to run *before* the given set. Sets are registered by scripts with `register_new_system_set`, game sets are found with `get_...</td></tr>
-<tr><td><a href="./scriptsystembuilder/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>&gt;) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#after"><code>after</code></a></td><td>Specifies the system is to run <em>after</em> the given system</td></tr>
+<tr><td><a href="#after_script_system"><code>after_script_system</code></a></td><td>Specifies the system is to run <em>after</em> the script system with the given callback label of the given script.</td></tr>
+<tr><td><a href="#after_set"><code>after_set</code></a></td><td>Specifies the system is to run <em>after</em> the given set.</td></tr>
+<tr><td><a href="#before"><code>before</code></a></td><td>Specifies the system is to run <em>before</em> the given system.</td></tr>
+<tr><td><a href="#before_script_system"><code>before_script_system</code></a></td><td>Specifies the system is to run <em>before</em> the script system with the given callback label of the given script.</td></tr>
+<tr><td><a href="#before_set"><code>before_set</code></a></td><td>Specifies the system is to run <em>before</em> the given set.</td></tr>
+<tr><td><a href="#exclusive"><code>exclusive</code></a></td><td>Specifies the system is to run exclusively, meaning it can access anything, but will not run in parallel with other…</td></tr>
+<tr><td><a href="#in_set"><code>in_set</code></a></td><td>Puts the system in the given set, ordering the set orders the system.</td></tr>
+<tr><td><a href="#query"><code>query</code></a></td><td>Adds a query to the system builder.</td></tr>
+<tr><td><a href="#resource"><code>resource</code></a></td><td>Requests the system have access to the given resource.</td></tr>
+<tr><td><a href="#resource_read"><code>resource_read</code></a></td><td>Requests the system have read only access to the given resource.</td></tr>
+<tr><td><a href="#run_if"><code>run_if</code></a></td><td>Only runs the system if the condition holds, see <code>bms.conditions</code>. All conditions must hold for the system to run.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="after" class="lad-function"><a class="header" href="#after"><code>after</code></a></h3>
+<div class="lad-signature">
+<p><strong>after</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, system: <a href="./reflectsystem.html">ReflectSystem</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Specifies the system is to run <em>after</em> the given system</p>
+<p>Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the dependency to.</li>
+<li><code>system</code>: The system to run after.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the dependency added.</p>
+<h3 id="after_script_system" class="lad-function"><a class="header" href="#after_script_system"><code>after_script_system</code></a></h3>
+<div class="lad-signature">
+<p><strong>after_script_system</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, label: <a href="./string.html">String</a>, attachment: <a href="./scriptattachment.html">ScriptAttachment</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Specifies the system is to run <em>after</em> the script system with the given callback label of the given script.
+That system must have been added before this one.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the dependency to.</li>
+<li><code>label</code>: The callback label of the other script system.</li>
+<li><code>attachment</code>: The script the other script system belongs to.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the dependency added.</p>
+<h3 id="after_set" class="lad-function"><a class="header" href="#after_set"><code>after_set</code></a></h3>
+<div class="lad-signature">
+<p><strong>after_set</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, set: <a href="./reflectsystemset.html">ReflectSystemSet</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Specifies the system is to run <em>after</em> the given set.
+Sets are registered by scripts with <code>register_new_system_set</code>, game sets are found with <code>get_system_set_by_name</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the dependency to.</li>
+<li><code>set</code>: The system set.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the dependency added.</p>
+<h3 id="before" class="lad-function"><a class="header" href="#before"><code>before</code></a></h3>
+<div class="lad-signature">
+<p><strong>before</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, system: <a href="./reflectsystem.html">ReflectSystem</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Specifies the system is to run <em>before</em> the given system.</p>
+<p>Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the dependency to.</li>
+<li><code>system</code>: The system to run before.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the dependency added.</p>
+<h3 id="before_script_system" class="lad-function"><a class="header" href="#before_script_system"><code>before_script_system</code></a></h3>
+<div class="lad-signature">
+<p><strong>before_script_system</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, label: <a href="./string.html">String</a>, attachment: <a href="./scriptattachment.html">ScriptAttachment</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Specifies the system is to run <em>before</em> the script system with the given callback label of the given script.
+That system must have been added before this one.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the dependency to.</li>
+<li><code>label</code>: The callback label of the other script system.</li>
+<li><code>attachment</code>: The script the other script system belongs to.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the dependency added.</p>
+<h3 id="before_set" class="lad-function"><a class="header" href="#before_set"><code>before_set</code></a></h3>
+<div class="lad-signature">
+<p><strong>before_set</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, set: <a href="./reflectsystemset.html">ReflectSystemSet</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Specifies the system is to run <em>before</em> the given set.
+Sets are registered by scripts with <code>register_new_system_set</code>, game sets are found with <code>get_system_set_by_name</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the dependency to.</li>
+<li><code>set</code>: The system set.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the dependency added.</p>
+<h3 id="exclusive" class="lad-function"><a class="header" href="#exclusive"><code>exclusive</code></a></h3>
+<div class="lad-signature">
+<p><strong>exclusive</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Specifies the system is to run exclusively, meaning it can access anything, but will not run in parallel with other systems.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to make exclusive.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder that is now exclusive.</p>
+<h3 id="in_set" class="lad-function"><a class="header" href="#in_set"><code>in_set</code></a></h3>
+<div class="lad-signature">
+<p><strong>in_set</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, set: <a href="./reflectsystemset.html">ReflectSystemSet</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Puts the system in the given set, ordering the set orders the system.
+Sets are registered by scripts with <code>register_new_system_set</code>, game sets are found with <code>get_system_set_by_name</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to put in the set.</li>
+<li><code>set</code>: The system set.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder in the set.</p>
+<h3 id="query" class="lad-function"><a class="header" href="#query"><code>query</code></a></h3>
+<div class="lad-signature">
+<p><strong>query</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, query: <a href="./scriptquerybuilder.html">ScriptQueryBuilder</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Adds a query to the system builder.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the query to.</li>
+<li><code>query</code>: The query to add.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the query added.</p>
+<h3 id="resource" class="lad-function"><a class="header" href="#resource"><code>resource</code></a></h3>
+<div class="lad-signature">
+<p><strong>resource</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, resource: <a href="./scriptresourceregistration.html">ScriptResourceRegistration</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Requests the system have access to the given resource. The resource will be added to the
+list of arguments of the callback in the order they’re provided.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the resource to.</li>
+<li><code>resource</code>: The resource to add.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the resource added.</p>
+<h3 id="resource_read" class="lad-function"><a class="header" href="#resource_read"><code>resource_read</code></a></h3>
+<div class="lad-signature">
+<p><strong>resource_read</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, resource: <a href="./scriptresourceregistration.html">ScriptResourceRegistration</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Requests the system have read only access to the given resource. The resource will be added to the
+list of arguments of the callback in the order they’re provided.</p>
+<p>Script systems reading a resource can run in parallel with each other, unlike ones writing it.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the resource to.</li>
+<li><code>resource</code>: The resource to add.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the resource added.</p>
+<h3 id="run_if" class="lad-function"><a class="header" href="#run_if"><code>run_if</code></a></h3>
+<div class="lad-signature">
+<p><strong>run_if</strong>(builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>, condition: <a href="./scriptruncondition.html">ScriptRunCondition</a>) -&gt; <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a></p>
+</div>
+
+<p>Only runs the system if the condition holds, see <code>bms.conditions</code>. All conditions must hold for the system to run.</p>
+<p>Conditions are evaluated without calling into the script.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>builder</code>: The system builder to add the condition to.</li>
+<li><code>condition</code>: The condition.</li>
+</ul>
+<p><strong>Returns</strong>: The system builder with the condition added.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/scriptruncondition/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/scriptruncondition.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/scriptsystembuilder/run_if.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/scripttyperegistration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -230,11 +409,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/scriptruncondition/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/scriptruncondition.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/scriptsystembuilder/run_if.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/scripttyperegistration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -263,9 +442,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

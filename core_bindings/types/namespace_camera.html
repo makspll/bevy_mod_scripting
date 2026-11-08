@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,34 +183,33 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="camera"><a class="header" href="#camera">camera</a></h1>
+<div class="lad-page"></div>
+
 <p>The types and functions in the <code>camera</code> namespace, as returned by <code>import_namespace("camera")</code>.</p>
-<h2 id="available-types"><a class="header" href="#available-types">Available Types</a></h2>
-<p>All registered reflect-able types which can be constructed and directly manipulated by scripts.</p>
+<h2 id="types"><a class="header" href="#types">Types</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Type</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="././camera.html"><code>Camera</code></a></td><td>The defining [`Component`] for camera entities,  storing information about how and what to render through this camera.   The [`Camera`]...</td></tr>
-<tr><td><a href="././orthographicprojection.html"><code>OrthographicProjection</code></a></td><td>Project a 3D space onto a 2D surface using parallel lines, i.e., unlike [`PerspectiveProjection`],  the size of objects remains the same regardless of their distance to the camera.   The volume contained in the projection is called the *view frustum*. Since the viewport is rectangular  and projection lines are parallel, the view frustum takes the shape of a cuboid.   Note that the scale of the projection and the apparent size of objects are inversely proportional.  As the size of the projection increases, the size of objects decreases.   # Examples   Configure the orthographic projection to one world unit per 100 window pixels:   ```  # use bevy_camera::{OrthographicProjection, Projection, ScalingMode};  let projection = Projection::Orthographic(OrthographicProjection {      scaling_mode: ScalingMode::WindowSize,      scale: 0.01,      ..OrthographicProjection::default_2d()  });  ```</td></tr>
-<tr><td><a href="././inheritedvisibility.html"><code>InheritedVisibility</code></a></td><td>Whether or not an entity is visible in the hierarchy.   This is a computed component that users sho...</td></tr>
-<tr><td><a href="././viewvisibility.html"><code>ViewVisibility</code></a></td><td>Algorithmically computed indication of whether an entity is visible and should be extracted for  re...</td></tr>
-<tr><td><a href="././visibility.html"><code>Visibility</code></a></td><td>User indication of whether an entity is visible. Propagates down the entity hierarchy.   If an enti...</td></tr>
-<tr><td><a href="././renderlayers.html"><code>RenderLayers</code></a></td><td>Defines which rendering layers an entity belongs to.   A camera renders an entity only when their r...</td></tr>
-<tr><td><a href="././cameraoutputmode.html"><code>CameraOutputMode</code></a></td><td>Control how this [`Camera`] outputs once rendering is completed.</td></tr>
-<tr><td><a href="././computedcameravalues.html"><code>ComputedCameraValues</code></a></td><td>Holds internally computed [`Camera`] values.</td></tr>
-<tr><td><a href="././imagerendertarget.html"><code>ImageRenderTarget</code></a></td><td>A render target that renders to an [`Image`].</td></tr>
-<tr><td><a href="././manualtextureviewhandle.html"><code>ManualTextureViewHandle</code></a></td><td>A unique id that corresponds to a specific `ManualTextureView` in the `ManualTextureViews` collecti...</td></tr>
-<tr><td><a href="././rendertarget.html"><code>RenderTarget</code></a></td><td>The “target” that a [`Camera`] will render to. For example, this could be a `Window`  swapchain or an [`Image`]...</td></tr>
-<tr><td><a href="././rendertargetinfo.html"><code>RenderTargetInfo</code></a></td><td>Information about the current [`RenderTarget`].</td></tr>
-<tr><td><a href="././subcameraview.html"><code>SubCameraView</code></a></td><td>Settings to define a camera sub view.   When [`Camera::sub_camera_view`] is `Some`, only the sub-section of the  image defined by `size` and `offset` (relative to the `full_size` of the  whole image) is projected to the cameras viewport.   Take the example of the following multi-monitor setup:  ```css  ┌───┬───┐  │ A │ B │  ├───┼───┤  │ C │ D │  └───┴───┘  ```  If each monitor is 1920x1080, the whole image will have a resolution of  3840x2160. For each monitor we can use a single camera with a viewport of  the same size as the monitor it corresponds to. To ensure that the image is  cohesive, we can use a different sub view on each camera:  - Camera A: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 0,0  - Camera B: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 1920,0  - Camera C: `full_size` = 3840x2160, `size` = 1920x1080, `offset` = 0,1080  - Camera D: `full_size` = 3840x2160, `size` = 1920x1080, `offset` =    1920,1080   However since only the ratio between the values is important, they could all  be divided by 120 and still produce the same image. Camera D would for  example have the following values:  `full_size` = 32x18, `size` = 16x9, `offset` = 16,9</td></tr>
-<tr><td><a href="././viewport.html"><code>Viewport</code></a></td><td>Render viewport configuration for the [`Camera`] component.   The viewport defines the area on the render target to which the camera renders its image.  You can overlay multiple cameras in a single window using viewports to create effects like  split screen, minimaps, and character viewers.   
-<div class="warning">   Note that the physical position is in actual screen coordinates and not virtual pixels for window targets.    You should use the scaling factor reported by the window, which on some OS’s defaults to a value other than 1.  Please see the example code (which assumes a single camera and window)   ```no_run  # use bevy_camera::{Camera, Projection, Viewport};  # use bevy_transform::prelude::Transform;  # use bevy_ecs::prelude::*;  # use bevy_math::UVec2;  # use bevy_window::Window;  # use bevy_utils::default;   fn update_viewport(     mut camera_query: Query&lt;(&amp;mut Camera, &amp;mut Transform, &amp;mut Projection)&gt;,     windows: Query&lt;&amp;Window&gt;  ) {      let Ok((mut camera, _, _)) = camera_query.single_mut() else { return; };       let window = windows.single().expect(“Window not found”);      let scale = window.resolution.scale_factor();       camera.viewport = Some(Viewport {          physical_position: (UVec2::new(10, 10).as_vec2() * scale).as_uvec2(),          physical_size: (UVec2::new(100, 100).as_vec2() * scale).as_uvec2(),          ..default()      });  }  ```   </div>
-</td></tr>
-<tr><td><a href="././clearcolorconfig.html"><code>ClearColorConfig</code></a></td><td>For a camera, specifies the color used to clear the viewport  [before rendering](crate::camera::Camera::clear_color)  or when [writing to the final render target texture](crate::camera::Camera::output_mode)...</td></tr>
-<tr><td><a href="././msaawriteback.html"><code>MsaaWriteback</code></a></td><td>Controls when MSAA writeback occurs for a camera.   MSAA writeback copies the previous camera’s out...</td></tr>
-<tr><td><a href="././scalingmode.html"><code>ScalingMode</code></a></td><td>Scaling mode for [`OrthographicProjection`].   The effect of these scaling modes are combined with the [`OrthographicProjection::scale`]...</td></tr>
+<tr><td><a href="././camera.html"><code>Camera</code></a></td><td>The defining <code>Component</code> for camera entities, storing information about how and what to render through this camera.</td></tr>
+<tr><td><a href="././cameraoutputmode.html"><code>CameraOutputMode</code></a></td><td>Control how this <code>Camera</code> outputs once rendering is completed.</td></tr>
+<tr><td><a href="././clearcolorconfig.html"><code>ClearColorConfig</code></a></td><td>For a camera, specifies the color used to clear the viewport before rendering or when writing to the final render…</td></tr>
+<tr><td><a href="././computedcameravalues.html"><code>ComputedCameraValues</code></a></td><td>Holds internally computed <code>Camera</code> values.</td></tr>
+<tr><td><a href="././imagerendertarget.html"><code>ImageRenderTarget</code></a></td><td>A render target that renders to an <code>Image</code>.</td></tr>
+<tr><td><a href="././inheritedvisibility.html"><code>InheritedVisibility</code></a></td><td>Whether or not an entity is visible in the hierarchy.</td></tr>
+<tr><td><a href="././manualtextureviewhandle.html"><code>ManualTextureViewHandle</code></a></td><td>A unique id that corresponds to a specific <code>ManualTextureView</code> in the <code>ManualTextureViews</code> collection.</td></tr>
+<tr><td><a href="././msaawriteback.html"><code>MsaaWriteback</code></a></td><td>Controls when MSAA writeback occurs for a camera.</td></tr>
+<tr><td><a href="././orthographicprojection.html"><code>OrthographicProjection</code></a></td><td>Project a 3D space onto a 2D surface using parallel lines, i.e., unlike <code>PerspectiveProjection</code>, the size of objects…</td></tr>
+<tr><td><a href="././renderlayers.html"><code>RenderLayers</code></a></td><td>Defines which rendering layers an entity belongs to.</td></tr>
+<tr><td><a href="././rendertarget.html"><code>RenderTarget</code></a></td><td>The “target” that a <code>Camera</code> will render to. For example, this could be a <code>Window</code> swapchain or an <code>Image</code>.</td></tr>
+<tr><td><a href="././rendertargetinfo.html"><code>RenderTargetInfo</code></a></td><td>Information about the current <code>RenderTarget</code>.</td></tr>
+<tr><td><a href="././scalingmode.html"><code>ScalingMode</code></a></td><td>Scaling mode for <code>OrthographicProjection</code>.</td></tr>
+<tr><td><a href="././subcameraview.html"><code>SubCameraView</code></a></td><td>Settings to define a camera sub view.</td></tr>
+<tr><td><a href="././viewport.html"><code>Viewport</code></a></td><td>Render viewport configuration for the <code>Camera</code> component.</td></tr>
+<tr><td><a href="././viewvisibility.html"><code>ViewVisibility</code></a></td><td>Algorithmically computed indication of whether an entity is visible and should be extracted for rendering.</td></tr>
+<tr><td><a href="././visibility.html"><code>Visibility</code></a></td><td>User indication of whether an entity is visible. Propagates down the entity hierarchy.</td></tr>
 </tbody>
 </table>
 </div>
@@ -229,7 +229,7 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/bms/unpack_args.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/variadictuple.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -243,7 +243,7 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/bms/unpack_args.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/variadictuple.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
@@ -276,9 +276,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

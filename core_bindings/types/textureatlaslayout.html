@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,48 +183,124 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="textureatlaslayout"><a class="header" href="#textureatlaslayout"><code>TextureAtlasLayout</code></a></h1>
-<h3 id="textureatlaslayout-1"><a class="header" href="#textureatlaslayout-1">TextureAtlasLayout</a></h3>
-<ul>
-<li><strong>size</strong>:<a href="./uvec2.html">UVec2</a></li>
-<li><strong>textures</strong>:Vec&lt;<a href="./urect.html">URect</a>&gt;</li>
-</ul>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
-<p>Stores a map used to lookup the position of a texture in a [<code>TextureAtlas</code>].
+<div class="lad-page"></div>
+
+<p class="lad-badges"><span class="lad-badge">Asset</span></p>
+
+<p>Stores a map used to lookup the position of a texture in a <a href="./textureatlas.html"><code>TextureAtlas</code></a>.
 This can be used to either use and look up a specific section of a texture, or animate frame-by-frame as a sprite sheet.</p>
 <p>Optionally it can store a mapping from sub texture handles to the related area index (see
-<a href="crate::TextureAtlasBuilder"><code>TextureAtlasBuilder</code></a>).</p>
+<code>TextureAtlasBuilder</code>).</p>
 <p><a href="https://github.com/bevyengine/bevy/blob/latest/examples/2d/sprite_sheet.rs">Example usage animating sprite.</a>
 <a href="https://github.com/bevyengine/bevy/blob/latest/examples/2d/sprite_animation.rs">Example usage animating sprite in response to an event.</a>
 <a href="https://github.com/bevyengine/bevy/blob/latest/examples/2d/texture_atlas.rs">Example usage loading sprite sheet.</a></p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./textureatlaslayout/len.html">len</a></td><td>The number of tiles in the layout.</td></tr>
-<tr><td><a href="./textureatlaslayout/from_grid.html">from_grid</a></td><td>A layout of equal tiles in a grid, numbered left to right and then top to bottom. Padding and offset...</td></tr>
-<tr><td><a href="./textureatlaslayout/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
-<tr><td><a href="./textureatlaslayout/get_asset.html">get_asset</a></td><td>The asset a handle points to, or nil if it isn’t loaded or added yet.  Changes to the returned value...</td></tr>
-<tr><td><a href="./textureatlaslayout/load.html">load</a></td><td>Starts loading an asset of this type from a path, returning a handle to it right away.</td></tr>
-<tr><td><a href="./textureatlaslayout/add_asset.html">add_asset</a></td><td>Adds a value of this type as a new asset, returning a strong handle to it.</td></tr>
+<tr><td><code>size</code></td><td><a href="./uvec2.html">UVec2</a></td></tr>
+<tr><td><code>textures</code></td><td>Vec&lt;<a href="./urect.html">URect</a>&gt;</td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#add_asset"><code>add_asset</code></a></td><td>Adds a value of this type as a new asset, returning a strong handle to it.</td></tr>
+<tr><td><a href="#from_grid"><code>from_grid</code></a></td><td>A layout of equal tiles in a grid, numbered left to right and then top to bottom.</td></tr>
+<tr><td><a href="#get_asset"><code>get_asset</code></a></td><td>The asset a handle points to, or nil if it isn’t loaded or added yet.</td></tr>
+<tr><td><a href="#load"><code>load</code></a></td><td>Starts loading an asset of this type from a path, returning a handle to it right away.</td></tr>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="add_asset" class="lad-function"><a class="header" href="#add_asset"><code>add_asset</code></a></h3>
+<div class="lad-signature">
+<p><strong>add_asset</strong>(value: <a href="./textureatlaslayout.html">TextureAtlasLayout</a>) -&gt; <a href="./handlea.html">Handle</a>&lt;<a href="./textureatlaslayout.html">TextureAtlasLayout</a>&gt;</p>
+</div>
+
+<p>Adds a value of this type as a new asset, returning a strong handle to it.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>value</code>: The asset value.</li>
+</ul>
+<p><strong>Returns</strong>: A handle to the new asset.</p>
+<h3 id="from_grid" class="lad-function"><a class="header" href="#from_grid"><code>from_grid</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_grid</strong>(tile_size: <a href="./uvec2.html">UVec2</a>, columns: <a href="./u32.html">u32</a>, rows: <a href="./u32.html">u32</a>, padding: Optional&lt;<a href="./uvec2.html">UVec2</a>&gt;, offset: Optional&lt;<a href="./uvec2.html">UVec2</a>&gt;) -&gt; <a href="./textureatlaslayout.html">TextureAtlasLayout</a></p>
+</div>
+
+<p>A layout of equal tiles in a grid, numbered left to right and then top to bottom. Padding and offset are in pixels, and default to none.</p>
+<h3 id="get_asset" class="lad-function"><a class="header" href="#get_asset"><code>get_asset</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_asset</strong>(handle: <a href="./handlea.html">Handle</a>&lt;<a href="./textureatlaslayout.html">TextureAtlasLayout</a>&gt;) -&gt; Optional&lt;<a href="./textureatlaslayout.html">TextureAtlasLayout</a>&gt;</p>
+</div>
+
+<p>The asset a handle points to, or nil if it isn’t loaded or added yet.</p>
+<p>Changes to the returned value change the asset.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>handle</code>: The handle to the asset.</li>
+</ul>
+<p><strong>Returns</strong>: The asset, or nil.</p>
+<h3 id="load" class="lad-function"><a class="header" href="#load"><code>load</code></a></h3>
+<div class="lad-signature">
+<p><strong>load</strong>(path: <a href="./string.html">String</a>) -&gt; <a href="./handlea.html">Handle</a>&lt;<a href="./textureatlaslayout.html">TextureAtlasLayout</a>&gt;</p>
+</div>
+
+<p>Starts loading an asset of this type from a path, returning a handle to it right away.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>path</code>: The asset path, relative to the assets folder.</li>
+</ul>
+<p><strong>Returns</strong>: A handle to the asset, which is loaded in the background.</p>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./textureatlaslayout.html">TextureAtlasLayout</a>&gt;) -&gt; <a href="./textureatlaslayout.html">TextureAtlasLayout</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h2 id="operators"><a class="header" href="#operators">Operators</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#len"><code>len</code></a></td><td>The number of tiles in the layout.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="len" class="lad-function"><a class="header" href="#len"><code>len</code></a></h3>
+<div class="lad-signature">
+<p><strong>len</strong>(self: <a href="./textureatlaslayout.html">TextureAtlasLayout</a>) -&gt; <a href="./usize.html">usize</a></p>
+</div>
+
+<p>The number of tiles in the layout.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/namespace_sprite.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/spritescalingmode.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/textureatlaslayout/len.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/textureslicer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -233,11 +310,11 @@ This can be used to either use and look up a specific section of a texture, or a
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/namespace_sprite.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/spritescalingmode.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/textureatlaslayout/len.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/textureslicer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -266,9 +343,9 @@ This can be used to either use and look up a specific section of a texture, or a
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

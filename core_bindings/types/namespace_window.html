@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,31 +183,32 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="window"><a class="header" href="#window">window</a></h1>
+<div class="lad-page"></div>
+
 <p>The types and functions in the <code>window</code> namespace, as returned by <code>import_namespace("window")</code>.</p>
-<h2 id="available-types"><a class="header" href="#available-types">Available Types</a></h2>
-<p>All registered reflect-able types which can be constructed and directly manipulated by scripts.</p>
+<h2 id="types"><a class="header" href="#types">Types</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Type</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="././window.html"><code>Window</code></a></td><td>The defining [`Component`] for window entities,  storing information about how it should appear and behave.   Each window corresponds to an entity, and is uniquely identified by the value of their [`Entity`]...</td></tr>
-<tr><td><a href="././windowresolution.html"><code>WindowResolution</code></a></td><td>Controls the size of a [`Window`]   ## Physical, logical and requested sizes   There are three sizes associated with a window:  - the physical size,    which represents the actual height and width in physical pixels    the window occupies on the monitor,  - the logical size,    which represents the size that should be used to scale elements    inside the window, measured in logical pixels,  - the requested size,    measured in logical pixels, which is the value submitted    to the API when creating the window, or requesting that it be resized.   ## Scale factor   The reason logical size and physical size are separated and can be different  is to account for the cases where:  - several monitors have different pixel densities,  - the user has set up a pixel density preference in its operating system,  - the Bevy `App` has specified a specific scale factor between both.   The factor between physical size and logical size can be retrieved with  [`WindowResolution::scale_factor`]...</td></tr>
+<tr><td><a href="././compositealphamode.html"><code>CompositeAlphaMode</code></a></td><td>Specifies how the alpha channel of the textures should be handled during compositing, for a <code>Window</code>.</td></tr>
+<tr><td><a href="././enabledbuttons.html"><code>EnabledButtons</code></a></td><td>Specifies which <code>Window</code> control buttons should be enabled.</td></tr>
+<tr><td><a href="././internalwindowstate.html"><code>InternalWindowState</code></a></td><td>Stores internal <code>Window</code> state that isn’t directly accessible.</td></tr>
+<tr><td><a href="././monitorselection.html"><code>MonitorSelection</code></a></td><td>References a screen monitor.</td></tr>
+<tr><td><a href="././presentmode.html"><code>PresentMode</code></a></td><td>Presentation mode for a <code>Window</code>.</td></tr>
+<tr><td><a href="././screenedge.html"><code>ScreenEdge</code></a></td><td>The edges of a screen. Corresponds to <code>winit::platform::ios::ScreenEdge</code>.</td></tr>
 <tr><td><a href="././videomode.html"><code>VideoMode</code></a></td><td>Represents a video mode that a monitor supports</td></tr>
-<tr><td><a href="././compositealphamode.html"><code>CompositeAlphaMode</code></a></td><td>Specifies how the alpha channel of the textures should be handled during compositing, for a [`Window`]...</td></tr>
-<tr><td><a href="././enabledbuttons.html"><code>EnabledButtons</code></a></td><td>Specifies which [`Window`] control buttons should be enabled.   ## Platform-specific   **`iOS`**, **`Android`**, and the **`Web`** do not have window control buttons.   On some **`Linux`** environments these values have no effect.</td></tr>
-<tr><td><a href="././internalwindowstate.html"><code>InternalWindowState</code></a></td><td>Stores internal [`Window`] state that isn’t directly accessible.</td></tr>
-<tr><td><a href="././monitorselection.html"><code>MonitorSelection</code></a></td><td>References a screen monitor.   Used when centering a [`Window`] on a monitor.</td></tr>
-<tr><td><a href="././presentmode.html"><code>PresentMode</code></a></td><td>Presentation mode for a [`Window`].   The presentation mode specifies when a frame is presented to the window. The [`Fifo`]...</td></tr>
-<tr><td><a href="././screenedge.html"><code>ScreenEdge</code></a></td><td>The edges of a screen. Corresponds to [`winit::platform::ios::ScreenEdge`].   # Platform-specific   - Only used on iOS.   [`winit::platform::ios::ScreenEdge`]...</td></tr>
-<tr><td><a href="././videomodeselection.html"><code>VideoModeSelection</code></a></td><td>References an exclusive fullscreen video mode.   Used when setting [`WindowMode::Fullscreen`] on a window.</td></tr>
-<tr><td><a href="././windowlevel.html"><code>WindowLevel</code></a></td><td>Specifies where a [`Window`] should appear relative to other overlapping windows (on top or under) .   Levels are groups of windows with respect to their z-position.   The relative ordering between windows in different window levels is fixed.  The z-order of windows within the same window level may change dynamically on user interaction.   ## Platform-specific   - **iOS / Android / Web / Wayland:** Unsupported.</td></tr>
-<tr><td><a href="././windowmode.html"><code>WindowMode</code></a></td><td>Defines the way a [`Window`] is displayed.</td></tr>
-<tr><td><a href="././windowposition.html"><code>WindowPosition</code></a></td><td>Defines where a [`Window`] should be placed on the screen.</td></tr>
-<tr><td><a href="././windowref.html"><code>WindowRef</code></a></td><td>Reference to a [`Window`], whether it be a direct link to a specific entity or  a more vague defaulting choice.</td></tr>
-<tr><td><a href="././windowresizeconstraints.html"><code>WindowResizeConstraints</code></a></td><td>The size limits on a [`Window`].   These values are measured in logical pixels (see [`WindowResolution`...</td></tr>
-<tr><td><a href="././windowtheme.html"><code>WindowTheme</code></a></td><td>The [`Window`] theme variant to use.</td></tr>
+<tr><td><a href="././videomodeselection.html"><code>VideoModeSelection</code></a></td><td>References an exclusive fullscreen video mode.</td></tr>
+<tr><td><a href="././window.html"><code>Window</code></a></td><td>The defining <code>Component</code> for window entities, storing information about how it should appear and behave.</td></tr>
+<tr><td><a href="././windowlevel.html"><code>WindowLevel</code></a></td><td>Specifies where a <code>Window</code> should appear relative to other overlapping windows (on top or under) .</td></tr>
+<tr><td><a href="././windowmode.html"><code>WindowMode</code></a></td><td>Defines the way a <code>Window</code> is displayed.</td></tr>
+<tr><td><a href="././windowposition.html"><code>WindowPosition</code></a></td><td>Defines where a <code>Window</code> should be placed on the screen.</td></tr>
+<tr><td><a href="././windowref.html"><code>WindowRef</code></a></td><td>Reference to a <code>Window</code>, whether it be a direct link to a specific entity or a more vague defaulting choice.</td></tr>
+<tr><td><a href="././windowresizeconstraints.html"><code>WindowResizeConstraints</code></a></td><td>The size limits on a <code>Window</code>.</td></tr>
+<tr><td><a href="././windowresolution.html"><code>WindowResolution</code></a></td><td>Controls the size of a <code>Window</code></td></tr>
+<tr><td><a href="././windowtheme.html"><code>WindowTheme</code></a></td><td>The <code>Window</code> theme variant to use.</td></tr>
 </tbody>
 </table>
 </div>
@@ -226,11 +228,11 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/blendstate/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/blendstate.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/window.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/compositealphamode.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -240,11 +242,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/blendstate/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/blendstate.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/window.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/compositealphamode.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -273,9 +275,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

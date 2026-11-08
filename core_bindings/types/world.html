@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,79 +183,615 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="world"><a class="header" href="#world"><code>World</code></a></h1>
-<p>Opaque Type. 🔒</p>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
+<div class="lad-page"></div>
+
 <p>The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bevy App.</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
+
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./world/exit.html">exit</a></td><td>Quits the program.</td></tr>
-<tr><td><a href="./world/has_component.html">has_component</a></td><td>Checks if the given entity has the given component.</td></tr>
-<tr><td><a href="./world/query.html">query</a></td><td>Creates a new `ScriptQueryBuilder` which can be used to query the ECS.  Returns: * `query`: The new query builder.</td></tr>
-<tr><td><a href="./world/get_children.html">get_children</a></td><td>Retrieves the children of the given entity.</td></tr>
-<tr><td><a href="./world/despawn.html">despawn</a></td><td>Despawns the given entity.</td></tr>
-<tr><td><a href="./world/has_resource.html">has_resource</a></td><td>Checks if the world has the given resource.</td></tr>
-<tr><td><a href="./world/insert_bundle.html">insert_bundle</a></td><td>Inserts the given bundle value into the provided entity, all of its components at once.  The bundle ...</td></tr>
-<tr><td><a href="./world/is_loaded.html">is_loaded</a></td><td>Whether the asset and all of its dependencies are loaded.</td></tr>
-<tr><td><a href="./world/add_asset.html">add_asset</a></td><td>Adds a value as a new asset of its type, returning a strong handle to it.</td></tr>
-<tr><td><a href="./world/asset_path.html">asset_path</a></td><td>The path the asset was loaded from, or nil if the handle is invalid or the asset was not loaded from...</td></tr>
-<tr><td><a href="./world/push_children.html">push_children</a></td><td>Pushes the given children entities into the provided parent entity.</td></tr>
-<tr><td><a href="./world/remove_resource.html">remove_resource</a></td><td>Removes the given resource from the world.</td></tr>
-<tr><td><a href="./world/insert_children.html">insert_children</a></td><td>Inserts the given children entities into the provided parent entity.</td></tr>
-<tr><td><a href="./world/remove_component.html">remove_component</a></td><td>Removes the given component from the entity.</td></tr>
-<tr><td><a href="./world/get_enum_variant.html">get_enum_variant</a></td><td>Retrieves the variant of an enum by name.  This is the same as accessing `MyEnum.Variant`, but works...</td></tr>
-<tr><td><a href="./world/find_entity_by_name.html">find_entity_by_name</a></td><td>The first entity with the given [`Name`](bevy_ecs::name::Name), or nil if there is none.</td></tr>
-<tr><td><a href="./world/virtual_time.html">virtual_time</a></td><td>The clock which can be paused and slowed down, it is the one games usually move objects with.</td></tr>
-<tr><td><a href="./world/register_new_component.html">register_new_component</a></td><td>Registers a new component type with the world.  The component will behave like any other native comp...</td></tr>
-<tr><td><a href="./world/load_state.html">load_state</a></td><td>The loading state of the asset: `“NotLoaded”`, `“Loading”`, `“Loaded”` or `“Failed”`.</td></tr>
-<tr><td><a href="./world/spawn_bundle.html">spawn_bundle</a></td><td>Spawns a new entity with the given bundle value and returns it.</td></tr>
-<tr><td><a href="./world/has_entity.html">has_entity</a></td><td>Checks if the given entity exists.</td></tr>
-<tr><td><a href="./world/get_asset.html">get_asset</a></td><td>Retrieves an asset by its handle and asset type registration.</td></tr>
-<tr><td><a href="./world/get_component.html">get_component</a></td><td>Tries to retrieve the given component type on an entity.</td></tr>
-<tr><td><a href="./world/set_next_state.html">set_next_state</a></td><td>Sets the state to change to in the next state transition, for the type of the given state value.  Er...</td></tr>
-<tr><td><a href="./world/get_schedule_by_name.html">get_schedule_by_name</a></td><td>Retrieves the schedule with the given name, Also ensures the schedule is initialized before returnin...</td></tr>
-<tr><td><a href="./world/write_message.html">write_message</a></td><td>Writes a buffered message. The message type must be registered and have `#[reflect(Message)]`.</td></tr>
-<tr><td><a href="./world/get_parent.html">get_parent</a></td><td>Retrieves the parent of the given entity.</td></tr>
-<tr><td><a href="./world/load_asset.html">load_asset</a></td><td>Starts loading an asset of the given type from a path, returning a handle to it right away.</td></tr>
-<tr><td><a href="./world/get_resource.html">get_resource</a></td><td>Retrieves the resource with the given registration.</td></tr>
-<tr><td><a href="./world/gamepads.html">gamepads</a></td><td>The entities of the connected gamepads.</td></tr>
-<tr><td><a href="./world/get_state.html">get_state</a></td><td>The current value of the state of the given type, or nil if the app has no such state.  The state ty...</td></tr>
-<tr><td><a href="./world/fixed_time.html">fixed_time</a></td><td>The clock of the fixed update step, which advances in steps of the fixed timestep.</td></tr>
-<tr><td><a href="./world/add_default_component.html">add_default_component</a></td><td>Adds the given resource to the world.</td></tr>
-<tr><td><a href="./world/real_time.html">real_time</a></td><td>The clock of the real world, which always advances at the system’s pace.</td></tr>
-<tr><td><a href="./world/add_observer.html">add_observer</a></td><td>Adds an observer which runs the callback `callback` of the calling script whenever an event of the g...</td></tr>
-<tr><td><a href="./world/register_new_system_set.html">register_new_system_set</a></td><td>Registers a new system set, which script systems can be put in and ordered against.  The set is remo...</td></tr>
-<tr><td><a href="./world/time.html">time</a></td><td>The default clock: in Update it advances by the frame time, in FixedUpdate by the fixed timestep.</td></tr>
-<tr><td><a href="./world/trigger_event.html">trigger_event</a></td><td>Triggers an observer-style event: either a Rust event type with `#[reflect(Event)]`, or an event registered with `register_new_event`.  Observers run immediately, and the commands they queue are applied before this function returns.</td></tr>
-<tr><td><a href="./world/spawn.html">spawn</a></td><td>Spawns a new entity and returns it</td></tr>
-<tr><td><a href="./world/get_type_by_name.html">get_type_by_name</a></td><td>Returns either a `ScriptComponentRegistration`, `ScriptResourceRegistration` or `ScriptBundleRegistration`...</td></tr>
-<tr><td><a href="./world/register_new_event.html">register_new_event</a></td><td>Registers a new script event.  Script events carry an arbitrary payload, and can be observed with `add_observer` and triggered with `trigger_...</td></tr>
-<tr><td><a href="./world/insert_component.html">insert_component</a></td><td>Inserts the given component value into the provided entity</td></tr>
-<tr><td><a href="./world/add_system.html">add_system</a></td><td>Adds the given system to the world.</td></tr>
-<tr><td><a href="./world/despawn_recursive.html">despawn_recursive</a></td><td>Despawns the entity and all its descendants.</td></tr>
-<tr><td><a href="./world/get_system_set_by_name.html">get_system_set_by_name</a></td><td>Retrieves a system set by its full name, i.e. `transform.TransformSystems.Propagate` for a set of th...</td></tr>
-<tr><td><a href="./world/despawn_descendants.html">despawn_descendants</a></td><td>Despawn the descendants of the given entity.</td></tr>
-<tr><td><a href="./world/has_asset.html">has_asset</a></td><td>Checks if can get asset handle</td></tr>
+<tr><td><a href="#add_asset"><code>add_asset</code></a></td><td>Adds a value as a new asset of its type, returning a strong handle to it.</td></tr>
+<tr><td><a href="#add_default_component"><code>add_default_component</code></a></td><td>Adds the given resource to the world.</td></tr>
+<tr><td><a href="#add_observer"><code>add_observer</code></a></td><td>Adds an observer which runs the callback <code>callback</code> of the calling script whenever an event of the given type is…</td></tr>
+<tr><td><a href="#add_system"><code>add_system</code></a></td><td>Adds the given system to the world.</td></tr>
+<tr><td><a href="#asset_path"><code>asset_path</code></a></td><td>The path the asset was loaded from, or nil if the handle is invalid or the asset was not loaded from a path.</td></tr>
+<tr><td><a href="#despawn"><code>despawn</code></a></td><td>Despawns the given entity.</td></tr>
+<tr><td><a href="#despawn_descendants"><code>despawn_descendants</code></a></td><td>Despawn the descendants of the given entity.</td></tr>
+<tr><td><a href="#despawn_recursive"><code>despawn_recursive</code></a></td><td>Despawns the entity and all its descendants.</td></tr>
+<tr><td><a href="#exit"><code>exit</code></a></td><td>Quits the program.</td></tr>
+<tr><td><a href="#find_entity_by_name"><code>find_entity_by_name</code></a></td><td>The first entity with the given <code>Name</code>, or nil if there is none.</td></tr>
+<tr><td><a href="#fixed_time"><code>fixed_time</code></a></td><td>The clock of the fixed update step, which advances in steps of the fixed timestep.</td></tr>
+<tr><td><a href="#gamepads"><code>gamepads</code></a></td><td>The entities of the connected gamepads.</td></tr>
+<tr><td><a href="#get_asset"><code>get_asset</code></a></td><td>Retrieves an asset by its handle and asset type registration.</td></tr>
+<tr><td><a href="#get_children"><code>get_children</code></a></td><td>Retrieves the children of the given entity.</td></tr>
+<tr><td><a href="#get_component"><code>get_component</code></a></td><td>Tries to retrieve the given component type on an entity.</td></tr>
+<tr><td><a href="#get_enum_variant"><code>get_enum_variant</code></a></td><td>Retrieves the variant of an enum by name.</td></tr>
+<tr><td><a href="#get_parent"><code>get_parent</code></a></td><td>Retrieves the parent of the given entity.</td></tr>
+<tr><td><a href="#get_resource"><code>get_resource</code></a></td><td>Retrieves the resource with the given registration.</td></tr>
+<tr><td><a href="#get_schedule_by_name"><code>get_schedule_by_name</code></a></td><td>Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.</td></tr>
+<tr><td><a href="#get_state"><code>get_state</code></a></td><td>The current value of the state of the given type, or nil if the app has no such state.</td></tr>
+<tr><td><a href="#get_system_set_by_name"><code>get_system_set_by_name</code></a></td><td>Retrieves a system set by its full name, i.e.</td></tr>
+<tr><td><a href="#get_type_by_name"><code>get_type_by_name</code></a></td><td>Returns either a <code>ScriptComponentRegistration</code>, <code>ScriptResourceRegistration</code> or <code>ScriptBundleRegistration</code> depending on…</td></tr>
+<tr><td><a href="#has_asset"><code>has_asset</code></a></td><td>Checks if can get asset handle</td></tr>
+<tr><td><a href="#has_component"><code>has_component</code></a></td><td>Checks if the given entity has the given component.</td></tr>
+<tr><td><a href="#has_entity"><code>has_entity</code></a></td><td>Checks if the given entity exists.</td></tr>
+<tr><td><a href="#has_resource"><code>has_resource</code></a></td><td>Checks if the world has the given resource.</td></tr>
+<tr><td><a href="#insert_bundle"><code>insert_bundle</code></a></td><td>Inserts the given bundle value into the provided entity, all of its components at once.</td></tr>
+<tr><td><a href="#insert_children"><code>insert_children</code></a></td><td>Inserts the given children entities into the provided parent entity.</td></tr>
+<tr><td><a href="#insert_component"><code>insert_component</code></a></td><td>Inserts the given component value into the provided entity</td></tr>
+<tr><td><a href="#is_loaded"><code>is_loaded</code></a></td><td>Whether the asset and all of its dependencies are loaded.</td></tr>
+<tr><td><a href="#load_asset"><code>load_asset</code></a></td><td>Starts loading an asset of the given type from a path, returning a handle to it right away.</td></tr>
+<tr><td><a href="#load_state"><code>load_state</code></a></td><td>The loading state of the asset: <code>"NotLoaded"</code>, <code>"Loading"</code>, <code>"Loaded"</code> or <code>"Failed"</code>.</td></tr>
+<tr><td><a href="#push_children"><code>push_children</code></a></td><td>Pushes the given children entities into the provided parent entity.</td></tr>
+<tr><td><a href="#query"><code>query</code></a></td><td>Creates a new <code>ScriptQueryBuilder</code> which can be used to query the ECS.</td></tr>
+<tr><td><a href="#real_time"><code>real_time</code></a></td><td>The clock of the real world, which always advances at the system’s pace.</td></tr>
+<tr><td><a href="#register_new_component"><code>register_new_component</code></a></td><td>Registers a new component type with the world.</td></tr>
+<tr><td><a href="#register_new_event"><code>register_new_event</code></a></td><td>Registers a new script event.</td></tr>
+<tr><td><a href="#register_new_system_set"><code>register_new_system_set</code></a></td><td>Registers a new system set, which script systems can be put in and ordered against.</td></tr>
+<tr><td><a href="#remove_component"><code>remove_component</code></a></td><td>Removes the given component from the entity.</td></tr>
+<tr><td><a href="#remove_resource"><code>remove_resource</code></a></td><td>Removes the given resource from the world.</td></tr>
+<tr><td><a href="#set_next_state"><code>set_next_state</code></a></td><td>Sets the state to change to in the next state transition, for the type of the given state value.</td></tr>
+<tr><td><a href="#spawn"><code>spawn</code></a></td><td>Spawns a new entity and returns it</td></tr>
+<tr><td><a href="#spawn_bundle"><code>spawn_bundle</code></a></td><td>Spawns a new entity with the given bundle value and returns it.</td></tr>
+<tr><td><a href="#time"><code>time</code></a></td><td>The default clock: in Update it advances by the frame time, in FixedUpdate by the fixed timestep.</td></tr>
+<tr><td><a href="#trigger_event"><code>trigger_event</code></a></td><td>Triggers an observer-style event: either a Rust event type with <code>#[reflect(Event)]</code>, or an event registered with…</td></tr>
+<tr><td><a href="#virtual_time"><code>virtual_time</code></a></td><td>The clock which can be paused and slowed down, it is the one games usually move objects with.</td></tr>
+<tr><td><a href="#write_message"><code>write_message</code></a></td><td>Writes a buffered message. The message type must be registered and have <code>#[reflect(Message)]</code>.</td></tr>
 </tbody>
 </table>
 </div>
+<h3 id="add_asset" class="lad-function"><a class="header" href="#add_asset"><code>add_asset</code></a></h3>
+<div class="lad-signature">
+<p><strong>add_asset</strong>&lt;A&gt;(value: A) -&gt; <a href="./handlea.html">Handle</a>&lt;A&gt;</p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>.</p>
+
+<p>Adds a value as a new asset of its type, returning a strong handle to it.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>value</code>: The asset value, of a type registered for asset reflection.</li>
+</ul>
+<p><strong>Returns</strong>: A handle to the new asset.</p>
+<h3 id="add_default_component" class="lad-function"><a class="header" href="#add_default_component"><code>add_default_component</code></a></h3>
+<div class="lad-signature">
+<p><strong>add_default_component</strong>(entity: <a href="./entity.html">Entity</a>, registration: <a href="./scriptcomponentregistration.html">ScriptComponentRegistration</a>)</p>
+</div>
+
+<p>Adds the given resource to the world.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>registration</code>: The resource to add.</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the resource was added successfully.</p>
+<h3 id="add_observer" class="lad-function"><a class="header" href="#add_observer"><code>add_observer</code></a></h3>
+<div class="lad-signature">
+<p><strong>add_observer</strong>(event: <a href="./scripttyperegistration.html">ScriptTypeRegistration</a> | <a href="./scripteventregistration.html">ScriptEventRegistration</a>, callback: <a href="./string.html">String</a>, components: Optional&lt;Vec&lt;<a href="./scriptcomponentregistration.html">ScriptComponentRegistration</a>&gt;&gt;, entities: Optional&lt;Vec&lt;<a href="./entity.html">Entity</a>&gt;&gt;) -&gt; <a href="./entity.html">Entity</a></p>
+</div>
+
+<p>Adds an observer which runs the callback <code>callback</code> of the calling script whenever an event of the given type is triggered.</p>
+<p>The callback is a normal script callback: either a function registered with <code>register_callback</code>, or a top level function with that name.
+It receives a copy of the event (or the payload, for script events), and is run by the same machinery as other callbacks:
+right after the operation which triggered the event, unless the script’s context is busy running another callback
+(e.g. the one that triggered the event), in which case it runs as soon as that callback finishes.
+Observers never re-enter a running script. The order in which the observers of an event run is unspecified.
+Removed component data is no longer available inside the callback. Errors of the callback are reported like those of other callbacks.</p>
+<p>The event type must have <code>#[reflect(Event)]</code>. The lifecycle events (<code>AddEvent</code>, <code>InsertEvent</code>, <code>DiscardEvent</code>,
+<code>RemoveEvent</code>, <code>DespawnEvent</code>, imported with <code>import_namespace("bevy_ecs")</code>) are supported out of the box, and run for the given components.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>event</code>: The type of the event to observe, or an event registered with <code>register_new_event</code>.</li>
+<li><code>callback</code>: The label of the callback to run, receives the event.</li>
+<li><code>components</code>: The components the observer is interested in, for component lifecycle events. Ignored for script events.</li>
+<li><code>entities</code>: If given, the observer only runs for these entities. Ignored for script events.</li>
+</ul>
+<p><strong>Returns</strong>: The observer entity, despawn it to remove the observer.</p>
+<h3 id="add_system" class="lad-function"><a class="header" href="#add_system"><code>add_system</code></a></h3>
+<div class="lad-signature">
+<p><strong>add_system</strong>(schedule: <a href="./reflectschedule.html">ReflectSchedule</a>, builder: <a href="./scriptsystembuilder.html">ScriptSystemBuilder</a>) -&gt; <a href="./reflectsystem.html">ReflectSystem</a></p>
+</div>
+
+<p>Adds the given system to the world.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>schedule</code>: The schedule to add the system to.</li>
+<li><code>builder</code>: The system builder specifying the system and its dependencies.</li>
+</ul>
+<p><strong>Returns</strong>: The system that was added.</p>
+<h3 id="asset_path" class="lad-function"><a class="header" href="#asset_path"><code>asset_path</code></a></h3>
+<div class="lad-signature">
+<p><strong>asset_path</strong>&lt;A&gt;(handle: <a href="./handlea.html">Handle</a>&lt;A&gt;) -&gt; Optional&lt;<a href="./string.html">String</a>&gt;</p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>.</p>
+
+<p>The path the asset was loaded from, or nil if the handle is invalid or the asset was not loaded from a path.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>handle</code>: The handle to the asset.</li>
+</ul>
+<p><strong>Returns</strong>: The asset path, if known.</p>
+<h3 id="despawn" class="lad-function"><a class="header" href="#despawn"><code>despawn</code></a></h3>
+<div class="lad-signature">
+<p><strong>despawn</strong>(entity: <a href="./entity.html">Entity</a>)</p>
+</div>
+
+<p>Despawns the given entity.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to despawn.</li>
+</ul>
+<h3 id="despawn_descendants" class="lad-function"><a class="header" href="#despawn_descendants"><code>despawn_descendants</code></a></h3>
+<div class="lad-signature">
+<p><strong>despawn_descendants</strong>(entity: <a href="./entity.html">Entity</a>)</p>
+</div>
+
+<p>Despawn the descendants of the given entity.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to despawn the descendants of.</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the descendants were despawned successfully.</p>
+<h3 id="despawn_recursive" class="lad-function"><a class="header" href="#despawn_recursive"><code>despawn_recursive</code></a></h3>
+<div class="lad-signature">
+<p><strong>despawn_recursive</strong>(entity: <a href="./entity.html">Entity</a>)</p>
+</div>
+
+<p>Despawns the entity and all its descendants.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to despawn recursively.</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the entity and its descendants were despawned successfully.</p>
+<h3 id="exit" class="lad-function"><a class="header" href="#exit"><code>exit</code></a></h3>
+<div class="lad-signature">
+<p><strong>exit</strong>()</p>
+</div>
+
+<p>Quits the program.</p>
+<p><strong>Returns</strong>: Nothing if the program was exited successfully.</p>
+<h3 id="find_entity_by_name" class="lad-function"><a class="header" href="#find_entity_by_name"><code>find_entity_by_name</code></a></h3>
+<div class="lad-signature">
+<p><strong>find_entity_by_name</strong>(name: <a href="./string.html">String</a>) -&gt; Optional&lt;<a href="./entity.html">Entity</a>&gt;</p>
+</div>
+
+<p>The first entity with the given <a href="./name.html"><code>Name</code></a>, or nil if there is none.</p>
+<h3 id="fixed_time" class="lad-function"><a class="header" href="#fixed_time"><code>fixed_time</code></a></h3>
+<div class="lad-signature">
+<p><strong>fixed_time</strong>() -&gt; <a href="./timet.html">Time</a>&lt;<a href="./fixed.html">Fixed</a>&gt;</p>
+</div>
+
+<p>The clock of the fixed update step, which advances in steps of the fixed timestep.</p>
+<h3 id="gamepads" class="lad-function"><a class="header" href="#gamepads"><code>gamepads</code></a></h3>
+<div class="lad-signature">
+<p><strong>gamepads</strong>() -&gt; Vec&lt;<a href="./entity.html">Entity</a>&gt;</p>
+</div>
+
+<p>The entities of the connected gamepads.</p>
+<h3 id="get_asset" class="lad-function"><a class="header" href="#get_asset"><code>get_asset</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_asset</strong>&lt;A&gt;(handle_reference: <a href="./handlea.html">Handle</a>&lt;A&gt;, registration: Type&lt;A&gt;) -&gt; Optional&lt;A&gt;</p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>, the type given as <code>registration</code>.</p>
+
+<p>Retrieves an asset by its handle and asset type registration.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>handle_reference</code>: The handle to the asset (as a reflect reference).</li>
+<li><code>registration</code>: The type registration of the asset type.</li>
+</ul>
+<p><strong>Returns</strong>: The asset reference, if the asset is loaded.</p>
+<h3 id="get_children" class="lad-function"><a class="header" href="#get_children"><code>get_children</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_children</strong>(entity: <a href="./entity.html">Entity</a>) -&gt; Vec&lt;<a href="./entity.html">Entity</a>&gt;</p>
+</div>
+
+<p>Retrieves the children of the given entity.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to retrieve the children of.</li>
+</ul>
+<p><strong>Returns</strong>: The children of the entity.</p>
+<h3 id="get_component" class="lad-function"><a class="header" href="#get_component"><code>get_component</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_component</strong>&lt;A&gt;(entity: <a href="./entity.html">Entity</a>, registration: Type&lt;A&gt;) -&gt; Optional&lt;A&gt;</p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>, the type given as <code>registration</code>.</p>
+
+<p>Tries to retrieve the given component type on an entity.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to retrieve the component from.</li>
+<li><code>registration</code>: The component to retrieve.</li>
+</ul>
+<p><strong>Returns</strong>: The component on the entity, if it exists.</p>
+<h3 id="get_enum_variant" class="lad-function"><a class="header" href="#get_enum_variant"><code>get_enum_variant</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_enum_variant</strong>(registration: <a href="./scripttyperegistration.html">ScriptTypeRegistration</a> | <a href="./scriptcomponentregistration.html">ScriptComponentRegistration</a> | <a href="./scriptresourceregistration.html">ScriptResourceRegistration</a> | <a href="./scriptbundleregistration.html">ScriptBundleRegistration</a>, variant_name: <a href="./string.html">String</a>) -&gt; Optional&lt;<a href="./enumvariantref.html">EnumVariantRef</a>&gt;</p>
+</div>
+
+<p>Retrieves the variant of an enum by name.</p>
+<p>This is the same as accessing <code>MyEnum.Variant</code>, but works for variants which share a name with a function.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>registration</code>: The enum type.</li>
+<li><code>variant_name</code>: The name of the variant.</li>
+</ul>
+<p><strong>Returns</strong>: The variant, if the type is an enum with such a variant.</p>
+<h3 id="get_parent" class="lad-function"><a class="header" href="#get_parent"><code>get_parent</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_parent</strong>(entity: <a href="./entity.html">Entity</a>) -&gt; Optional&lt;<a href="./entity.html">Entity</a>&gt;</p>
+</div>
+
+<p>Retrieves the parent of the given entity.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to retrieve the parent of.</li>
+</ul>
+<p><strong>Returns</strong>: The parent of the entity</p>
+<h3 id="get_resource" class="lad-function"><a class="header" href="#get_resource"><code>get_resource</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_resource</strong>&lt;A&gt;(registration: Type&lt;A&gt;) -&gt; Optional&lt;A&gt;</p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>, the type given as <code>registration</code>.</p>
+
+<p>Retrieves the resource with the given registration.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>registration</code>: The registration of the resource to retrieve.</li>
+</ul>
+<p><strong>Returns</strong>: The resource, if it exists.</p>
+<h3 id="get_schedule_by_name" class="lad-function"><a class="header" href="#get_schedule_by_name"><code>get_schedule_by_name</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_schedule_by_name</strong>(name: <a href="./string.html">String</a>) -&gt; Optional&lt;<a href="./reflectschedule.html">ReflectSchedule</a>&gt;</p>
+</div>
+
+<p>Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.</p>
+<p>Schedules in bevy are “containers” for systems, each schedule runs separately and contains different systems.</p>
+<p>By default among others bevy contains the following schedules:</p>
+<ul>
+<li><code>Update</code>: Runs every frame.</li>
+<li><code>PostUpdate</code>: Runs after the <code>Update</code> schedule.</li>
+<li><code>FixedUpdate</code>: Runs at a fixed rate.</li>
+</ul>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>name</code>: The name of the schedule to retrieve.</li>
+</ul>
+<p><strong>Returns</strong>: The schedule with the given name, if it exists</p>
+<h3 id="get_state" class="lad-function"><a class="header" href="#get_state"><code>get_state</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_state</strong>&lt;A&gt;(state_type: Type&lt;A&gt;) -&gt; Optional&lt;A&gt;</p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>, the type given as <code>state_type</code>.</p>
+
+<p>The current value of the state of the given type, or nil if the app has no such state.</p>
+<p>The state type is passed as its registration, see <code>world.get_type_by_name</code>.</p>
+<h3 id="get_system_set_by_name" class="lad-function"><a class="header" href="#get_system_set_by_name"><code>get_system_set_by_name</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_system_set_by_name</strong>(name: <a href="./string.html">String</a>) -&gt; Optional&lt;<a href="./reflectsystemset.html">ReflectSystemSet</a>&gt;</p>
+</div>
+
+<p>Retrieves a system set by its full name, i.e. <code>transform.TransformSystems.Propagate</code> for a set of the game,
+or <code>script.my_game.ai</code> for a set registered by a script.</p>
+<p>The sets of the game are also members of their namespace, i.e. <code>import_namespace("transform.TransformSystems").Propagate</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>name</code>: The full name of the system set.</li>
+</ul>
+<p><strong>Returns</strong>: The system set with the given name, if it exists.</p>
+<h3 id="get_type_by_name" class="lad-function"><a class="header" href="#get_type_by_name"><code>get_type_by_name</code></a></h3>
+<div class="lad-signature">
+<p><strong>get_type_by_name</strong>(type_name: <a href="./string.html">String</a>) -&gt; Optional&lt;<a href="./scripttyperegistration.html">ScriptTypeRegistration</a> | <a href="./scriptcomponentregistration.html">ScriptComponentRegistration</a> | <a href="./scriptresourceregistration.html">ScriptResourceRegistration</a> | <a href="./scriptbundleregistration.html">ScriptBundleRegistration</a>&gt;</p>
+</div>
+
+<p>Returns either a <code>ScriptComponentRegistration</code>, <code>ScriptResourceRegistration</code> or <code>ScriptBundleRegistration</code> depending on the type of the type requested.
+If the type is none of these returns a <code>ScriptTypeRegistration</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>type_name</code>: The full path of the type to retrieve, i.e. <code>bevy_transform::components::transform::Transform</code> or <code>script.my_game.Enemy</code>.</li>
+</ul>
+<p><strong>Returns</strong>: The registration of the type, if it exists.</p>
+<h3 id="has_asset" class="lad-function"><a class="header" href="#has_asset"><code>has_asset</code></a></h3>
+<div class="lad-signature">
+<p><strong>has_asset</strong>&lt;A&gt;(handle_reference: <a href="./handlea.html">Handle</a>&lt;A&gt;) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>.</p>
+
+<p>Checks if can get asset handle</p>
+<h3 id="has_component" class="lad-function"><a class="header" href="#has_component"><code>has_component</code></a></h3>
+<div class="lad-signature">
+<p><strong>has_component</strong>(entity: <a href="./entity.html">Entity</a>, registration: <a href="./scriptcomponentregistration.html">ScriptComponentRegistration</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Checks if the given entity has the given component.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to check.</li>
+<li><code>registration</code>: The component to check for.</li>
+</ul>
+<p><strong>Returns</strong>: Whether the entity has the component.</p>
+<h3 id="has_entity" class="lad-function"><a class="header" href="#has_entity"><code>has_entity</code></a></h3>
+<div class="lad-signature">
+<p><strong>has_entity</strong>(e: <a href="./entity.html">Entity</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Checks if the given entity exists.</p>
+<p><strong>Returns</strong>: Whether the entity exists.</p>
+<h3 id="has_resource" class="lad-function"><a class="header" href="#has_resource"><code>has_resource</code></a></h3>
+<div class="lad-signature">
+<p><strong>has_resource</strong>(registration: <a href="./scriptresourceregistration.html">ScriptResourceRegistration</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Checks if the world has the given resource.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>registration</code>: The registration of the resource to check for.</li>
+</ul>
+<p><strong>Returns</strong>: Whether the world has the resource.</p>
+<h3 id="insert_bundle" class="lad-function"><a class="header" href="#insert_bundle"><code>insert_bundle</code></a></h3>
+<div class="lad-signature">
+<p><strong>insert_bundle</strong>(entity: <a href="./entity.html">Entity</a>, registration: <a href="./scriptbundleregistration.html">ScriptBundleRegistration</a>, value: <a href="./reflectreference.html">ReflectReference</a>)</p>
+</div>
+
+<p>Inserts the given bundle value into the provided entity, all of its components at once.</p>
+<p>The bundle type must be registered in rust with <code>#[reflect(Bundle)]</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to insert the bundle into.</li>
+<li><code>registration</code>: The bundle registration of the bundle to insert.</li>
+<li><code>value</code>: The value of the bundle to insert. Can be constructed like any other value, i.e. using <code>construct</code> or the type’s <code>new</code> function.</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the bundle was inserted successfully.</p>
+<h3 id="insert_children" class="lad-function"><a class="header" href="#insert_children"><code>insert_children</code></a></h3>
+<div class="lad-signature">
+<p><strong>insert_children</strong>(entity: <a href="./entity.html">Entity</a>, index: <a href="./usize.html">usize</a>, children: Vec&lt;<a href="./entity.html">Entity</a>&gt;)</p>
+</div>
+
+<p>Inserts the given children entities into the provided parent entity.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The parent entity to receive children</li>
+<li><code>index</code>: The index to insert the children at</li>
+<li><code>children</code>: The children entities to insert</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the children were inserted successfully.</p>
+<h3 id="insert_component" class="lad-function"><a class="header" href="#insert_component"><code>insert_component</code></a></h3>
+<div class="lad-signature">
+<p><strong>insert_component</strong>&lt;A&gt;(entity: <a href="./entity.html">Entity</a>, registration: Type&lt;A&gt;, value: A)</p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>, the type given as <code>registration</code>.</p>
+
+<p>Inserts the given component value into the provided entity</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to insert the component into.</li>
+<li><code>registration</code>: The component registration of the component to insert.</li>
+<li><code>value</code>: The value of the component to insert. Can be constructed using <code>construct</code></li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the component was inserted successfully.</p>
+<h3 id="is_loaded" class="lad-function"><a class="header" href="#is_loaded"><code>is_loaded</code></a></h3>
+<div class="lad-signature">
+<p><strong>is_loaded</strong>&lt;A&gt;(handle: <a href="./handlea.html">Handle</a>&lt;A&gt;) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>.</p>
+
+<p>Whether the asset and all of its dependencies are loaded.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>handle</code>: The handle to the asset.</li>
+</ul>
+<p><strong>Returns</strong>: Whether the asset and its dependencies are loaded.</p>
+<h3 id="load_asset" class="lad-function"><a class="header" href="#load_asset"><code>load_asset</code></a></h3>
+<div class="lad-signature">
+<p><strong>load_asset</strong>&lt;A&gt;(path: <a href="./string.html">String</a>, asset_type: Type&lt;A&gt;) -&gt; <a href="./handlea.html">Handle</a>&lt;A&gt;</p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>, the type given as <code>asset_type</code>.</p>
+
+<p>Starts loading an asset of the given type from a path, returning a handle to it right away.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>path</code>: The asset path, relative to the assets folder.</li>
+<li><code>asset_type</code>: The type of the asset, i.e. <code>bevy_mod_scripting_asset::script_asset::ScriptAsset</code>.</li>
+</ul>
+<p><strong>Returns</strong>: A handle to the asset, which is loaded in the background.</p>
+<h3 id="load_state" class="lad-function"><a class="header" href="#load_state"><code>load_state</code></a></h3>
+<div class="lad-signature">
+<p><strong>load_state</strong>&lt;A&gt;(handle: <a href="./handlea.html">Handle</a>&lt;A&gt;) -&gt; <a href="./string.html">String</a></p>
+</div>
+
+<p class="lad-note">Generic over <code>A</code>.</p>
+
+<p>The loading state of the asset: <code>"NotLoaded"</code>, <code>"Loading"</code>, <code>"Loaded"</code> or <code>"Failed"</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>handle</code>: The handle to the asset.</li>
+</ul>
+<p><strong>Returns</strong>: The name of the loading state.</p>
+<h3 id="push_children" class="lad-function"><a class="header" href="#push_children"><code>push_children</code></a></h3>
+<div class="lad-signature">
+<p><strong>push_children</strong>(entity: <a href="./entity.html">Entity</a>, children: Vec&lt;<a href="./entity.html">Entity</a>&gt;)</p>
+</div>
+
+<p>Pushes the given children entities into the provided parent entity.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The parent entity to receive children</li>
+<li><code>children</code>: The children entities to push</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the children were pushed successfully.</p>
+<h3 id="query" class="lad-function"><a class="header" href="#query"><code>query</code></a></h3>
+<div class="lad-signature">
+<p><strong>query</strong>() -&gt; <a href="./scriptquerybuilder.html">ScriptQueryBuilder</a></p>
+</div>
+
+<p>Creates a new <code>ScriptQueryBuilder</code> which can be used to query the ECS.</p>
+<p>Returns:</p>
+<ul>
+<li><code>query</code>: The new query builder.</li>
+</ul>
+<h3 id="real_time" class="lad-function"><a class="header" href="#real_time"><code>real_time</code></a></h3>
+<div class="lad-signature">
+<p><strong>real_time</strong>() -&gt; <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;</p>
+</div>
+
+<p>The clock of the real world, which always advances at the system’s pace.</p>
+<h3 id="register_new_component" class="lad-function"><a class="header" href="#register_new_component"><code>register_new_component</code></a></h3>
+<div class="lad-signature">
+<p><strong>register_new_component</strong>(namespace: <a href="./string.html">String</a>, name: <a href="./string.html">String</a>, allow_existing: Optional&lt;<a href="./bool.html">bool</a>&gt;) -&gt; <a href="./scriptcomponentregistration.html">ScriptComponentRegistration</a></p>
+</div>
+
+<p>Registers a new component type with the world.</p>
+<p>The component will behave like any other native component for all intents and purposes.
+The type that will be instantiated to back this component will be <code>DynamicComponent</code> which contains just one field:</p>
+<ul>
+<li><code>data</code></li>
+</ul>
+<p>This field can be set to any value and modified freely.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>namespace</code>: The script namespace to register the component in, it must start with <code>script.</code>, i.e. <code>script.my_game</code>. Scripts cannot add to other namespaces.</li>
+<li><code>name</code>: The name of the component type, unique within the namespace. The component can later be found as <code>import_namespace(namespace).name</code>.</li>
+<li><code>allow_existing</code>: If true, returns the registration of the already registered component with this name instead of failing. Defaults to false.</li>
+</ul>
+<p><strong>Returns</strong>: The registration of the new component type if successful.</p>
+<h3 id="register_new_event" class="lad-function"><a class="header" href="#register_new_event"><code>register_new_event</code></a></h3>
+<div class="lad-signature">
+<p><strong>register_new_event</strong>(namespace: <a href="./string.html">String</a>, name: <a href="./string.html">String</a>, allow_existing: Optional&lt;<a href="./bool.html">bool</a>&gt;) -&gt; <a href="./scripteventregistration.html">ScriptEventRegistration</a></p>
+</div>
+
+<p>Registers a new script event.</p>
+<p>Script events carry an arbitrary payload, and can be observed with <code>add_observer</code> and triggered with <code>trigger_event</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>namespace</code>: The script namespace to register the event in, it must start with <code>script.</code>, i.e. <code>script.my_game</code>.</li>
+<li><code>name</code>: The name of the event, unique within the namespace.</li>
+<li><code>allow_existing</code>: If true, returns the already registered event with this name instead of failing. Defaults to false.</li>
+</ul>
+<p><strong>Returns</strong>: The handle of the new event.</p>
+<h3 id="register_new_system_set" class="lad-function"><a class="header" href="#register_new_system_set"><code>register_new_system_set</code></a></h3>
+<div class="lad-signature">
+<p><strong>register_new_system_set</strong>(namespace: <a href="./string.html">String</a>, name: <a href="./string.html">String</a>, allow_existing: Optional&lt;<a href="./bool.html">bool</a>&gt;) -&gt; <a href="./reflectsystemset.html">ReflectSystemSet</a></p>
+</div>
+
+<p>Registers a new system set, which script systems can be put in and ordered against.</p>
+<p>The set is removed from its namespace when the script unloads, registering it again (i.e. after a reload) gives the same set.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>namespace</code>: The script namespace to register the set in, it must start with <code>script.</code>, i.e. <code>script.my_game</code>.</li>
+<li><code>name</code>: The name of the set, unique within the namespace. The set can later be found as <code>import_namespace(namespace).name</code>.</li>
+<li><code>allow_existing</code>: If true, returns the already registered set with this name instead of failing. Defaults to false.</li>
+</ul>
+<p><strong>Returns</strong>: The new system set.</p>
+<h3 id="remove_component" class="lad-function"><a class="header" href="#remove_component"><code>remove_component</code></a></h3>
+<div class="lad-signature">
+<p><strong>remove_component</strong>(entity: <a href="./entity.html">Entity</a>, registration: <a href="./scriptcomponentregistration.html">ScriptComponentRegistration</a>)</p>
+</div>
+
+<p>Removes the given component from the entity.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>entity</code>: The entity to remove the component from.</li>
+<li><code>registration</code>: The component to remove.</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the component was removed successfully or didn’t exist in the first place.</p>
+<h3 id="remove_resource" class="lad-function"><a class="header" href="#remove_resource"><code>remove_resource</code></a></h3>
+<div class="lad-signature">
+<p><strong>remove_resource</strong>(registration: <a href="./scriptresourceregistration.html">ScriptResourceRegistration</a>)</p>
+</div>
+
+<p>Removes the given resource from the world.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>registration</code>: The resource to remove.</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the resource was removed successfully or didn’t exist in the first place.</p>
+<h3 id="set_next_state" class="lad-function"><a class="header" href="#set_next_state"><code>set_next_state</code></a></h3>
+<div class="lad-signature">
+<p><strong>set_next_state</strong>(value: <a href="./reflectreference.html">ReflectReference</a>)</p>
+</div>
+
+<p>Sets the state to change to in the next state transition, for the type of the given state value.</p>
+<p>Errors if the value is not of a state type that the app has.</p>
+<h3 id="spawn" class="lad-function"><a class="header" href="#spawn"><code>spawn</code></a></h3>
+<div class="lad-signature">
+<p><strong>spawn</strong>() -&gt; <a href="./entity.html">Entity</a></p>
+</div>
+
+<p>Spawns a new entity and returns it</p>
+<p><strong>Returns</strong>: The newly spawned entity</p>
+<h3 id="spawn_bundle" class="lad-function"><a class="header" href="#spawn_bundle"><code>spawn_bundle</code></a></h3>
+<div class="lad-signature">
+<p><strong>spawn_bundle</strong>(registration: <a href="./scriptbundleregistration.html">ScriptBundleRegistration</a>, value: <a href="./reflectreference.html">ReflectReference</a>) -&gt; <a href="./entity.html">Entity</a></p>
+</div>
+
+<p>Spawns a new entity with the given bundle value and returns it.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>registration</code>: The bundle registration of the bundle to insert.</li>
+<li><code>value</code>: The value of the bundle to insert.</li>
+</ul>
+<p><strong>Returns</strong>: The newly spawned entity</p>
+<h3 id="time" class="lad-function"><a class="header" href="#time"><code>time</code></a></h3>
+<div class="lad-signature">
+<p><strong>time</strong>() -&gt; <a href="./timet.html">Time</a>&lt;()&gt;</p>
+</div>
+
+<p>The default clock: in Update it advances by the frame time, in FixedUpdate by the fixed timestep.</p>
+<h3 id="trigger_event" class="lad-function"><a class="header" href="#trigger_event"><code>trigger_event</code></a></h3>
+<div class="lad-signature">
+<p><strong>trigger_event</strong>(event: <a href="./scripttyperegistration.html">ScriptTypeRegistration</a> | <a href="./scripteventregistration.html">ScriptEventRegistration</a>, value: Optional&lt;<a href="./scriptvalue.html">ScriptValue</a>&gt;)</p>
+</div>
+
+<p>Triggers an observer-style event: either a Rust event type with <code>#[reflect(Event)]</code>, or an event registered with <code>register_new_event</code>.</p>
+<p>Observers run immediately, and the commands they queue are applied before this function returns.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>event</code>: The type of the event, or the script event.</li>
+<li><code>value</code>: The event value, e.g. built with <code>construct</code>, for Rust events. Any value (or nothing) for script events, which is passed to the observers.</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the event was triggered successfully.</p>
+<h3 id="virtual_time" class="lad-function"><a class="header" href="#virtual_time"><code>virtual_time</code></a></h3>
+<div class="lad-signature">
+<p><strong>virtual_time</strong>() -&gt; <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;</p>
+</div>
+
+<p>The clock which can be paused and slowed down, it is the one games usually move objects with.</p>
+<h3 id="write_message" class="lad-function"><a class="header" href="#write_message"><code>write_message</code></a></h3>
+<div class="lad-signature">
+<p><strong>write_message</strong>(registration: <a href="./scripttyperegistration.html">ScriptTypeRegistration</a>, message: <a href="./reflectreference.html">ReflectReference</a>)</p>
+</div>
+
+<p>Writes a buffered message. The message type must be registered and have <code>#[reflect(Message)]</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>registration</code>: The type of the message.</li>
+<li><code>message</code>: The message value, e.g. built with <code>construct</code>.</li>
+</ul>
+<p><strong>Returns</strong>: Nothing if the message was written successfully.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/namespace_root.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/usize.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/world/exit.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../ScriptingReference/core-callbacks.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -264,11 +801,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/namespace_root.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/usize.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/world/exit.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../ScriptingReference/core-callbacks.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -297,9 +834,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 

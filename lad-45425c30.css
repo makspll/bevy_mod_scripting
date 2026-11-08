@@ -1,0 +1,97 @@
+/* The pages generated from LAD files by `mdbook_lad_preprocessor`, which start with a `.lad-page` marker */
+
+:root {
+    /* reference pages are mostly tables, which read better with some room */
+    --content-max-width: 900px;
+}
+
+/* the chapters generated below "Core Bindings" are numbered so mdbook nests them in the sidebar,
+   but numbers like `19.1.29.3.` only crowd it */
+.sidebar .chapter-item a[href*="core_bindings/"] > strong,
+.chapter li.chapter-item a[href*="core_bindings/"] > strong {
+    display: none;
+}
+
+/* tables span the page, left aligned, with a light header */
+.lad-page ~ .table-wrapper {
+    overflow-x: auto;
+}
+
+.lad-page ~ .table-wrapper > table {
+    width: 100%;
+    margin: 0.5em 0 1.5em;
+}
+
+.lad-page ~ .table-wrapper thead,
+.lad-page ~ .table-wrapper thead tr,
+.lad-page ~ .table-wrapper th {
+    background: transparent;
+}
+
+.lad-page ~ .table-wrapper th {
+    text-align: left;
+    border-bottom: 2px solid var(--table-border-color);
+    font-weight: 600;
+}
+
+.lad-page ~ .table-wrapper th,
+.lad-page ~ .table-wrapper td {
+    padding: 0.35em 0.75em;
+    vertical-align: top;
+}
+
+/* names stay on one line, long types break anywhere rather than overflowing */
+.lad-page ~ .table-wrapper td:first-child {
+    white-space: nowrap;
+    width: 1%;
+}
+
+.lad-page ~ .table-wrapper td {
+    overflow-wrap: anywhere;
+}
+
+/* each function is a section of its own */
+.lad-page ~ h3.lad-function {
+    margin-top: 2.5em;
+    padding-top: 1em;
+    border-top: 1px solid var(--table-border-color);
+}
+
+.lad-page ~ h2 {
+    margin-top: 2em;
+}
+
+.lad-signature {
+    font-family: var(--mono-font);
+    font-size: 0.875em;
+    background: var(--quote-bg);
+    border-left: 3px solid var(--links);
+    border-radius: 3px;
+    padding: 0.6em 1em;
+    margin: 0.75em 0 1em;
+    overflow-wrap: anywhere;
+}
+
+.lad-signature p {
+    margin: 0;
+}
+
+.lad-note {
+    opacity: 0.75;
+    font-size: 0.9em;
+}
+
+.lad-badges {
+    margin-top: -0.5em;
+}
+
+.lad-badge {
+    display: inline-block;
+    font-size: 0.75em;
+    font-weight: 600;
+    padding: 0.1em 0.7em;
+    margin-right: 0.4em;
+    border: 1px solid var(--links);
+    border-radius: 1em;
+    color: var(--links);
+}

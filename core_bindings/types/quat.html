@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../multi-code-block-77737d02.css">
+        <link rel="stylesheet" href="../../lad-45425c30.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b057c527.js";
+            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-9b670661.js"></script>
+        <script src="../../toc-e7f8e28c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,64 +183,251 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="quat"><a class="header" href="#quat"><code>Quat</code></a></h1>
-<h3 id="quat-1"><a class="header" href="#quat-1">Quat</a></h3>
-<ul>
-<li><strong>x</strong>:<a href="./f32.html">F32</a></li>
-<li><strong>y</strong>:<a href="./f32.html">F32</a></li>
-<li><strong>z</strong>:<a href="./f32.html">F32</a></li>
-<li><strong>w</strong>:<a href="./f32.html">F32</a></li>
-</ul>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
-<blockquote>
-<p>No Documentation 🚧</p>
-</blockquote>
-<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
-<p>For function details and documentation, click on the function link.</p>
+<div class="lad-page"></div>
+
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Summary</th></tr>
+<tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="./quat/xyz.html">xyz</a></td><td>The vector part of the quaternion, i.e. the x, y and z components.</td></tr>
-<tr><td><a href="./quat/from_mat3.html">from_mat3</a></td><td>The rotation described by a 3x3 rotation matrix.</td></tr>
-<tr><td><a href="./quat/length.html">length</a></td><td>The length of the quaternion, which is `1` for a rotation.</td></tr>
-<tr><td><a href="./quat/from_axis_angle.html">from_axis_angle</a></td><td>A rotation of `angle` radians around `axis`. Errors if the axis is zero or not finite.</td></tr>
-<tr><td><a href="./quat/from_rotation_z.html">from_rotation_z</a></td><td>A rotation of `angle` radians around the z axis.</td></tr>
-<tr><td><a href="./quat/eq.html">eq</a></td><td>Whether both rotations have exactly the same components.</td></tr>
-<tr><td><a href="./quat/to_euler.html">to_euler</a></td><td>The three angles in radians of this rotation, in the given [`EulerRot`](bevy_math::EulerRot) order.</td></tr>
-<tr><td><a href="./quat/identity.html">identity</a></td><td>The identity rotation, which leaves everything unchanged.</td></tr>
-<tr><td><a href="./quat/angle.html">angle</a></td><td>The angle in radians this rotation turns by around its [`axis`](Self::axis).</td></tr>
-<tr><td><a href="./quat/axis.html">axis</a></td><td>The axis this rotation turns around.</td></tr>
-<tr><td><a href="./quat/normalize.html">normalize</a></td><td>The rotation scaled to a length of `1`.</td></tr>
-<tr><td><a href="./quat/slerp.html">slerp</a></td><td>Spherically interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.</td></tr>
-<tr><td><a href="./quat/conjugate.html">conjugate</a></td><td>The rotation with the vector part negated, which is the inverse for unit quaternions.</td></tr>
-<tr><td><a href="./quat/mul_vec3.html">mul_vec3</a></td><td>Rotates a [`Vec3`](bevy_math::Vec3).</td></tr>
-<tr><td><a href="./quat/is_normalized.html">is_normalized</a></td><td>Whether the quaternion has a length of `1`.</td></tr>
-<tr><td><a href="./quat/inverse.html">inverse</a></td><td>The rotation that undoes this one.</td></tr>
-<tr><td><a href="./quat/lerp.html">lerp</a></td><td>Linearly interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.</td></tr>
-<tr><td><a href="./quat/neg.html">neg</a></td><td>The opposite rotation, with every component negated.</td></tr>
-<tr><td><a href="./quat/from_rotation_x.html">from_rotation_x</a></td><td>A rotation of `angle` radians around the x axis.</td></tr>
-<tr><td><a href="./quat/dot.html">dot</a></td><td>The dot product of two rotations.</td></tr>
-<tr><td><a href="./quat/angle_between.html">angle_between</a></td><td>The angle in radians between two rotations.</td></tr>
-<tr><td><a href="./quat/from_rotation_y.html">from_rotation_y</a></td><td>A rotation of `angle` radians around the y axis.</td></tr>
-<tr><td><a href="./quat/mul.html">mul</a></td><td>Composes two rotations when given a rotation, or rotates a vector when given a [`Vec3`](bevy_math::Vec3).</td></tr>
-<tr><td><a href="./quat/from_rotation_arc.html">from_rotation_arc</a></td><td>The rotation that turns the direction `from` onto the direction `to`. Errors if either vector is zer...</td></tr>
-<tr><td><a href="./quat/from_euler.html">from_euler</a></td><td>A rotation from three angles in radians, applied in the given [`EulerRot`](bevy_math::EulerRot) order, i.e. `EulerRot.YXZ`.</td></tr>
-<tr><td><a href="./quat/new.html">new</a></td><td>Constructs a new instance of the type from a table of its fields. Missing fields are filled in from ...</td></tr>
+<tr><td><code>x</code></td><td><a href="./f32.html">f32</a></td></tr>
+<tr><td><code>y</code></td><td><a href="./f32.html">f32</a></td></tr>
+<tr><td><code>z</code></td><td><a href="./f32.html">f32</a></td></tr>
+<tr><td><code>w</code></td><td><a href="./f32.html">f32</a></td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#from_axis_angle"><code>from_axis_angle</code></a></td><td>A rotation of <code>angle</code> radians around <code>axis</code>. Errors if the axis is zero or not finite.</td></tr>
+<tr><td><a href="#from_euler"><code>from_euler</code></a></td><td>A rotation from three angles in radians, applied in the given <code>EulerRot</code> order, i.e. <code>EulerRot.YXZ</code>.</td></tr>
+<tr><td><a href="#from_mat3"><code>from_mat3</code></a></td><td>The rotation described by a 3x3 rotation matrix.</td></tr>
+<tr><td><a href="#from_rotation_arc"><code>from_rotation_arc</code></a></td><td>The rotation that turns the direction <code>from</code> onto the direction <code>to</code>. Errors if either vector is zero or not finite.</td></tr>
+<tr><td><a href="#from_rotation_x"><code>from_rotation_x</code></a></td><td>A rotation of <code>angle</code> radians around the x axis.</td></tr>
+<tr><td><a href="#from_rotation_y"><code>from_rotation_y</code></a></td><td>A rotation of <code>angle</code> radians around the y axis.</td></tr>
+<tr><td><a href="#from_rotation_z"><code>from_rotation_z</code></a></td><td>A rotation of <code>angle</code> radians around the z axis.</td></tr>
+<tr><td><a href="#identity"><code>identity</code></a></td><td>The identity rotation, which leaves everything unchanged.</td></tr>
+<tr><td><a href="#new"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="from_axis_angle" class="lad-function"><a class="header" href="#from_axis_angle"><code>from_axis_angle</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_axis_angle</strong>(axis: <a href="./vec3.html">Vec3</a>, angle: <a href="./f32.html">f32</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>A rotation of <code>angle</code> radians around <code>axis</code>. Errors if the axis is zero or not finite.</p>
+<h3 id="from_euler" class="lad-function"><a class="header" href="#from_euler"><code>from_euler</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_euler</strong>(order: <a href="./eulerrot.html">EulerRot</a>, a: <a href="./f32.html">f32</a>, b: <a href="./f32.html">f32</a>, c: <a href="./f32.html">f32</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>A rotation from three angles in radians, applied in the given <a href="./eulerrot.html"><code>EulerRot</code></a> order, i.e. <code>EulerRot.YXZ</code>.</p>
+<h3 id="from_mat3" class="lad-function"><a class="header" href="#from_mat3"><code>from_mat3</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_mat3</strong>(m: <a href="./mat3.html">Mat3</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>The rotation described by a 3x3 rotation matrix.</p>
+<h3 id="from_rotation_arc" class="lad-function"><a class="header" href="#from_rotation_arc"><code>from_rotation_arc</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_rotation_arc</strong>(from: <a href="./vec3.html">Vec3</a>, to: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>The rotation that turns the direction <code>from</code> onto the direction <code>to</code>. Errors if either vector is zero or not finite.</p>
+<h3 id="from_rotation_x" class="lad-function"><a class="header" href="#from_rotation_x"><code>from_rotation_x</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_rotation_x</strong>(angle: <a href="./f32.html">f32</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>A rotation of <code>angle</code> radians around the x axis.</p>
+<h3 id="from_rotation_y" class="lad-function"><a class="header" href="#from_rotation_y"><code>from_rotation_y</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_rotation_y</strong>(angle: <a href="./f32.html">f32</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>A rotation of <code>angle</code> radians around the y axis.</p>
+<h3 id="from_rotation_z" class="lad-function"><a class="header" href="#from_rotation_z"><code>from_rotation_z</code></a></h3>
+<div class="lad-signature">
+<p><strong>from_rotation_z</strong>(angle: <a href="./f32.html">f32</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>A rotation of <code>angle</code> radians around the z axis.</p>
+<h3 id="identity" class="lad-function"><a class="header" href="#identity"><code>identity</code></a></h3>
+<div class="lad-signature">
+<p><strong>identity</strong>() -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>The identity rotation, which leaves everything unchanged.</p>
+<h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="./quat.html">Quat</a>&gt;) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#angle"><code>angle</code></a></td><td>The angle in radians this rotation turns by around its <code>axis</code>.</td></tr>
+<tr><td><a href="#angle_between"><code>angle_between</code></a></td><td>The angle in radians between two rotations.</td></tr>
+<tr><td><a href="#axis"><code>axis</code></a></td><td>The axis this rotation turns around.</td></tr>
+<tr><td><a href="#conjugate"><code>conjugate</code></a></td><td>The rotation with the vector part negated, which is the inverse for unit quaternions.</td></tr>
+<tr><td><a href="#dot"><code>dot</code></a></td><td>The dot product of two rotations.</td></tr>
+<tr><td><a href="#inverse"><code>inverse</code></a></td><td>The rotation that undoes this one.</td></tr>
+<tr><td><a href="#is_normalized"><code>is_normalized</code></a></td><td>Whether the quaternion has a length of <code>1</code>.</td></tr>
+<tr><td><a href="#length"><code>length</code></a></td><td>The length of the quaternion, which is <code>1</code> for a rotation.</td></tr>
+<tr><td><a href="#lerp"><code>lerp</code></a></td><td>Linearly interpolates towards <code>other</code>, <code>t = 0</code> gives this rotation and <code>t = 1</code> gives <code>other</code>.</td></tr>
+<tr><td><a href="#mul_vec3"><code>mul_vec3</code></a></td><td>Rotates a <code>Vec3</code>.</td></tr>
+<tr><td><a href="#normalize"><code>normalize</code></a></td><td>The rotation scaled to a length of <code>1</code>.</td></tr>
+<tr><td><a href="#slerp"><code>slerp</code></a></td><td>Spherically interpolates towards <code>other</code>, <code>t = 0</code> gives this rotation and <code>t = 1</code> gives <code>other</code>.</td></tr>
+<tr><td><a href="#to_euler"><code>to_euler</code></a></td><td>The three angles in radians of this rotation, in the given <code>EulerRot</code> order.</td></tr>
+<tr><td><a href="#xyz"><code>xyz</code></a></td><td>The vector part of the quaternion, i.e. the x, y and z components.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="angle" class="lad-function"><a class="header" href="#angle"><code>angle</code></a></h3>
+<div class="lad-signature">
+<p><strong>angle</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The angle in radians this rotation turns by around its <code>axis</code>.</p>
+<h3 id="angle_between" class="lad-function"><a class="header" href="#angle_between"><code>angle_between</code></a></h3>
+<div class="lad-signature">
+<p><strong>angle_between</strong>(self: <a href="./quat.html">Quat</a>, other: <a href="./quat.html">Quat</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The angle in radians between two rotations.</p>
+<h3 id="axis" class="lad-function"><a class="header" href="#axis"><code>axis</code></a></h3>
+<div class="lad-signature">
+<p><strong>axis</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./vec3.html">Vec3</a></p>
+</div>
+
+<p>The axis this rotation turns around.</p>
+<h3 id="conjugate" class="lad-function"><a class="header" href="#conjugate"><code>conjugate</code></a></h3>
+<div class="lad-signature">
+<p><strong>conjugate</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>The rotation with the vector part negated, which is the inverse for unit quaternions.</p>
+<h3 id="dot" class="lad-function"><a class="header" href="#dot"><code>dot</code></a></h3>
+<div class="lad-signature">
+<p><strong>dot</strong>(self: <a href="./quat.html">Quat</a>, other: <a href="./quat.html">Quat</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The dot product of two rotations.</p>
+<h3 id="inverse" class="lad-function"><a class="header" href="#inverse"><code>inverse</code></a></h3>
+<div class="lad-signature">
+<p><strong>inverse</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>The rotation that undoes this one.</p>
+<h3 id="is_normalized" class="lad-function"><a class="header" href="#is_normalized"><code>is_normalized</code></a></h3>
+<div class="lad-signature">
+<p><strong>is_normalized</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether the quaternion has a length of <code>1</code>.</p>
+<h3 id="length" class="lad-function"><a class="header" href="#length"><code>length</code></a></h3>
+<div class="lad-signature">
+<p><strong>length</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./f32.html">f32</a></p>
+</div>
+
+<p>The length of the quaternion, which is <code>1</code> for a rotation.</p>
+<h3 id="lerp" class="lad-function"><a class="header" href="#lerp"><code>lerp</code></a></h3>
+<div class="lad-signature">
+<p><strong>lerp</strong>(self: <a href="./quat.html">Quat</a>, other: <a href="./quat.html">Quat</a>, t: <a href="./f32.html">f32</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>Linearly interpolates towards <code>other</code>, <code>t = 0</code> gives this rotation and <code>t = 1</code> gives <code>other</code>.</p>
+<h3 id="mul_vec3" class="lad-function"><a class="header" href="#mul_vec3"><code>mul_vec3</code></a></h3>
+<div class="lad-signature">
+<p><strong>mul_vec3</strong>(self: <a href="./quat.html">Quat</a>, v: <a href="./vec3.html">Vec3</a>) -&gt; <a href="./vec3.html">Vec3</a></p>
+</div>
+
+<p>Rotates a <a href="./vec3.html"><code>Vec3</code></a>.</p>
+<h3 id="normalize" class="lad-function"><a class="header" href="#normalize"><code>normalize</code></a></h3>
+<div class="lad-signature">
+<p><strong>normalize</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>The rotation scaled to a length of <code>1</code>.</p>
+<h3 id="slerp" class="lad-function"><a class="header" href="#slerp"><code>slerp</code></a></h3>
+<div class="lad-signature">
+<p><strong>slerp</strong>(self: <a href="./quat.html">Quat</a>, other: <a href="./quat.html">Quat</a>, t: <a href="./f32.html">f32</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>Spherically interpolates towards <code>other</code>, <code>t = 0</code> gives this rotation and <code>t = 1</code> gives <code>other</code>.</p>
+<h3 id="to_euler" class="lad-function"><a class="header" href="#to_euler"><code>to_euler</code></a></h3>
+<div class="lad-signature">
+<p><strong>to_euler</strong>(self: <a href="./quat.html">Quat</a>, order: <a href="./eulerrot.html">EulerRot</a>) -&gt; Vec&lt;<a href="./f32.html">f32</a>&gt;</p>
+</div>
+
+<p>The three angles in radians of this rotation, in the given <a href="./eulerrot.html"><code>EulerRot</code></a> order.</p>
+<h3 id="xyz" class="lad-function"><a class="header" href="#xyz"><code>xyz</code></a></h3>
+<div class="lad-signature">
+<p><strong>xyz</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./vec3.html">Vec3</a></p>
+</div>
+
+<p>The vector part of the quaternion, i.e. the x, y and z components.</p>
+<h2 id="operators"><a class="header" href="#operators">Operators</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#eq"><code>eq</code></a></td><td>Whether both rotations have exactly the same components.</td></tr>
+<tr><td><a href="#mul"><code>mul</code></a></td><td>Composes two rotations when given a rotation, or rotates a vector when given a <code>Vec3</code>.</td></tr>
+<tr><td><a href="#neg"><code>neg</code></a></td><td>The opposite rotation, with every component negated.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="eq" class="lad-function"><a class="header" href="#eq"><code>eq</code></a></h3>
+<div class="lad-signature">
+<p><strong>eq</strong>(self: <a href="./quat.html">Quat</a>, other: <a href="./quat.html">Quat</a>) -&gt; <a href="./bool.html">bool</a></p>
+</div>
+
+<p>Whether both rotations have exactly the same components.</p>
+<h3 id="mul" class="lad-function"><a class="header" href="#mul"><code>mul</code></a></h3>
+<div class="lad-signature">
+<p><strong>mul</strong>(self: <a href="./quat.html">Quat</a>, rhs: <a href="./quat.html">Quat</a> | <a href="./vec3.html">Vec3</a>) -&gt; <a href="./quat.html">Quat</a> | <a href="./vec3.html">Vec3</a></p>
+</div>
+
+<p>Composes two rotations when given a rotation, or rotates a vector when given a <a href="./vec3.html"><code>Vec3</code></a>.</p>
+<h3 id="neg" class="lad-function"><a class="header" href="#neg"><code>neg</code></a></h3>
+<div class="lad-signature">
+<p><strong>neg</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
+<p>The opposite rotation, with every component negated.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/mat4/new.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/plane3d.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/quat/xyz.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/ray2d.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -249,11 +437,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/mat4/new.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/plane3d.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/quat/xyz.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/ray2d.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -282,9 +470,9 @@
         <script src="../../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../multi-code-block-2bf61ad4.js"></script>
+        <script src="../../multi-code-block-8d1048e1.js"></script>
         <script src="../../mermaid-eefea253.min.js"></script>
-        <script src="../../mermaid-init-ccf746f1.js"></script>
+        <script src="../../mermaid-init-f69ab335.js"></script>
 
 
 
