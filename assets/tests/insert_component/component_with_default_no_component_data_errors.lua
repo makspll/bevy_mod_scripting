@@ -1,6 +1,6 @@
 local world = import_namespace("bms").world
 local entity = world.spawn()
-local _type = world.get_type_by_name('test_utils::test_data::CompWithDefault')
+local _type = world.get_type_by_name('test_utils::test_data::CompWithDefault') --[[@as bms.ScriptComponentRegistration<test_utils.CompWithDefault>]]
 local entity_with_component = assert(world._get_entity_with_test_component('CompWithDefault'))
 local existing_component = world.get_component(entity_with_component, _type)
 
