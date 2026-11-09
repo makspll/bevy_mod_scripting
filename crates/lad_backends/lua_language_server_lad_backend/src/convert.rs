@@ -1006,7 +1006,8 @@ fn no_fields_module() -> LuaModule {
 /// value is a reference (see `into_script_erased`), so containers are also a `ReflectReference`, i.e.
 /// `integer[] | ReflectReference`, with the container functions of the reference (`push`, `map_get`, ...).
 fn field_type(ladfile: &LadFile, kind: &LadTypeKind) -> Result<LuaType, anyhow::Error> {
-    let or_reference = |ty: LuaType| LuaType::Union(vec![ty, LuaType::Alias("ReflectReference".into())]);
+    let or_reference =
+        |ty: LuaType| LuaType::Union(vec![ty, LuaType::Alias("ReflectReference".into())]);
     Ok(match kind {
         LadTypeKind::Option(inner) => {
             let mut types = match field_type(ladfile, inner)? {
