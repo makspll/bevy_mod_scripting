@@ -300,28 +300,13 @@ fn type_to_lua_class(
 }
 
 /// The class of the registration a type is at runtime, as given by `import_namespace` or `world.get_type_by_name`,
-/// i.e. `bms.ScriptComponentRegistration` for a component. Resources are checked first, as they are components too.
+/// i.e. `bms.ScriptComponentRegistration` for a component, see [`ladfile::LadTypeMetadata::registration`].
 fn registration_class(ladfile: &LadFile, lad_type: &ladfile::LadTypeDefinition) -> Option<String> {
-    if !lad_type.metadata.is_reflect {
-        return None;
-    }
-    let metadata = &lad_type.metadata;
-    let registration = if metadata.is_resource {
-        "ScriptResourceRegistration"
-    } else if metadata.is_component {
-        "ScriptComponentRegistration"
-    } else if metadata.is_bundle {
-        "ScriptBundleRegistration"
-    } else {
-        "ScriptTypeRegistration"
-    };
-    let type_id = LadTypeId::new_string_id(
-        format!("bevy_mod_scripting_bindings::query::{registration}").into(),
-    );
+    let registration = lad_type.metadata.registration.as_ref()?;
     ladfile
         .types
-        .contains_key(&type_id)
-        .then(|| lua_class_name(ladfile, &type_id))
+        .contains_key(registration)
+        .then(|| lua_class_name(ladfile, registration))
 }
 
 /// The fields of a struct or tuple struct, named or by their index, i.e. `[1]`. Enums and opaque types have none.
@@ -1458,6 +1443,8 @@ mod test {
         definition.path = registration.to_string();
         definition.namespace = "bms".into();
         file.types.insert(registration.clone(), definition);
+        let plain = type_id(&file, "PlainStructType");
+        file.types[&plain].metadata.registration = Some(registration.clone());
         let a = LadNamedType::Param { param: "A".into() };
         let type_of = |erased: LadTypeKind| LadTypeKind::Type {
             of: a.clone(),
