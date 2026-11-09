@@ -18,6 +18,10 @@ use bevy_mod_scripting_bindings::{
         bound::is_asset_type, namespace::FunctionScope, script_function::FunctionCallContext,
     },
     into_through_type_info_with_registry,
+    query::{
+        ScriptBundleRegistration, ScriptComponentRegistration, ScriptResourceRegistration,
+        ScriptTypeRegistration,
+    },
 };
 pub use bevy_mod_scripting_bindings_domain::*; // re-export the thing we use
 use bevy_platform::collections::{HashMap, HashSet};
@@ -141,6 +145,7 @@ impl<'t> LadFileBuilder<'t> {
                     is_asset: false,
                     is_reflect: false,
                     mapped_to_primitive_kind: Some(primitive),
+                    registration: None,
                     default: None,
                     misc: Default::default(),
                 },
@@ -211,6 +216,7 @@ impl<'t> LadFileBuilder<'t> {
                     is_asset: false,
                     is_reflect: false,
                     mapped_to_primitive_kind: primitive_kind_of(std::any::TypeId::of::<T>()),
+                    registration: None,
                     default: None,
                     misc: Default::default(),
                 },
@@ -290,6 +296,16 @@ impl<'t> LadFileBuilder<'t> {
             is_asset,
             is_reflect,
             mapped_to_primitive_kind: primitive_kind_of(type_info.type_id()),
+            // resources are components too, so they are checked first
+            registration: Some(self.lad_id_from_type_id(if is_resource {
+                TypeId::of::<ScriptResourceRegistration>()
+            } else if is_component {
+                TypeId::of::<ScriptComponentRegistration>()
+            } else if is_bundle {
+                TypeId::of::<ScriptBundleRegistration>()
+            } else {
+                TypeId::of::<ScriptTypeRegistration>()
+            })),
             default: self.lad_default(type_info.type_id()),
             misc: Default::default(),
         };
@@ -687,6 +703,27 @@ impl<'t> LadFileBuilder<'t> {
         }
 
         self.add_named_generic_types(&mut file);
+
+        // registration types left out of the file can't be referred to
+        let type_ids: HashSet<_> = file.types.keys().cloned().collect();
+        let instantiations = file
+            .generic_types
+            .values_mut()
+            .flat_map(|generic| generic.instantiations.iter_mut().map(|i| &mut i.metadata));
+        for metadata in file
+            .types
+            .values_mut()
+            .map(|t| &mut t.metadata)
+            .chain(instantiations)
+        {
+            if metadata
+                .registration
+                .as_ref()
+                .is_some_and(|registration| !type_ids.contains(registration))
+            {
+                metadata.registration = None;
+            }
+        }
 
         // associate functions on type namespaces with their types
         for (function_id, function) in file.functions.iter() {

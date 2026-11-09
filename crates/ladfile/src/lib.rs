@@ -839,6 +839,11 @@ pub struct LadTypeMetadata {
     /// Set to a primitive kind if this type is mapped to a primitive
     pub mapped_to_primitive_kind: Option<ReflectionPrimitiveKind>,
 
+    /// The registration type scripts receive for this type, i.e. `ScriptComponentRegistration` for a component,
+    /// as given by `world.get_type_by_name`. Set if the registration type is in the file.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub registration: Option<LadTypeId>,
+
     /// Set if the type has a registered `Default` implementation.
     ///
     /// Constructors use it to fill in fields missing from their payload.
