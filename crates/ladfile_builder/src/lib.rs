@@ -237,7 +237,7 @@ impl<'t> LadFileBuilder<'t> {
     /// Will overwrite any existing type definitions with the same type id.
     pub fn add_type_info(&mut self, type_info: &TypeInfo) -> &mut Self {
         // markers are registered to describe generic types, they are not types of their own
-        if is_param_marker(type_info.type_id()) {
+        if is_param_marker(self.type_registry, type_info.type_id()) {
             return self;
         }
         // instantiations of declared generic types are excluded here as types are in `build`, since they aren't types
@@ -757,7 +757,8 @@ impl<'t> LadFileBuilder<'t> {
                         ),
                     }
                 }
-                LadFunctionNamespace::Type(LadNamedType::Param { .. }) => warn!(
+                // i.e. the constructors registered on every type, the markers included
+                LadFunctionNamespace::Type(LadNamedType::Param { .. }) => bevy_log::debug!(
                     "Function {function_id} is on a generic parameter, which has no functions of its own."
                 ),
                 // variants are not types, backends find their functions by namespace
@@ -1128,7 +1129,7 @@ impl<'t> LadFileBuilder<'t> {
     /// to its arguments, i.e. `Handle<Image>`, in the layout of a generic type a marker is the parameter it stands for,
     /// any other type is its id. Also adds the types to the file if `register` is set.
     fn lad_named_type(&mut self, type_info: &'static TypeInfo, register: bool) -> LadNamedType {
-        if is_param_marker(type_info.type_id()) {
+        if is_param_marker(self.type_registry, type_info.type_id()) {
             return marker_param(type_info.type_path());
         }
         if register {
@@ -1158,7 +1159,9 @@ impl<'t> LadFileBuilder<'t> {
         };
         match through_type {
             // in the layout of a generic type, the markers are its parameters, see `lad_named_type` for references to them
-            ThroughTypeInfo::Opaque(type_info) if is_param_marker(type_info.type_id()) => {
+            ThroughTypeInfo::Opaque(type_info)
+                if is_param_marker(self.type_registry, type_info.type_id()) =>
+            {
                 LadTypeKind::Val(marker_param(type_info.type_path()))
             }
             ThroughTypeInfo::Ref(type_info) => {
@@ -2153,7 +2156,7 @@ mod test {
             .err()
             .unwrap();
         assert!(
-            error.contains("does not instantiate `T` with a marker"),
+            error.contains("does not instantiate `T` with a registered marker"),
             "{error}"
         );
         let error = builder

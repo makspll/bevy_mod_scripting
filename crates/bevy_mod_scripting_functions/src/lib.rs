@@ -17,6 +17,20 @@ impl Plugin for ScriptFunctionsPlugin {
         register_bevy_bindings(app);
         register_core_functions(app);
 
+        {
+            use bevy_mod_scripting_bindings::function::generics::{A, B, GenericTypesAppExt};
+            app.register_generic_type::<::core::ops::Range<A>>(
+                "core",
+                &["T"],
+                "A range of values, from `start` up to but not including `end`.",
+            )
+            .register_generic_type::<bevy_platform::hash::Hashed<A, B>>(
+                "bevy_platform",
+                &["V", "S"],
+                "A value with its hash computed once, `S` builds the hasher.",
+            );
+        }
+
         // TODO: if bevy ever does this itself we should remove this
         let world_mut = app.world_mut();
         world_mut.register_component::<ChildOf>();

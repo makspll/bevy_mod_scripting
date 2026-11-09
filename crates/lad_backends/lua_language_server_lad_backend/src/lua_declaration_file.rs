@@ -383,6 +383,8 @@ pub struct LuaModule {
     pub is_meta: bool,
     /// If set, the class only describes a shape, i.e. a table argument, and no table is declared for it
     pub type_only: bool,
+    /// Aliases declared after the class, i.e. `---@alias math.Vec3.Type bms.ScriptTypeRegistration<math.Vec3> | math.Vec3.Static`
+    pub aliases: Vec<TypeInstance>,
 }
 
 /// Represents a Lua definition file

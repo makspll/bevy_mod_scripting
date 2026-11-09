@@ -5,16 +5,18 @@
 
 use std::any::TypeId;
 
-use bevy_mod_scripting_bindings::{docgen::typed_through::ThroughTypeInfo, function::generics::A};
+use bevy_mod_scripting_bindings::{
+    docgen::typed_through::ThroughTypeInfo, function::generics::is_generic_marker,
+};
 use bevy_platform::collections::HashSet;
-use bevy_reflect::{GenericInfo, TypeInfo, Typed};
+use bevy_reflect::{GenericInfo, TypeInfo, TypeRegistry, Typed};
 use ladfile::*;
 
 use crate::LadFileBuilder;
 
 /// Whether the type stands for a generic parameter when declaring a generic type, see [`LadFileBuilder::add_generic_type`].
-pub(crate) fn is_param_marker(type_id: TypeId) -> bool {
-    type_id == TypeId::of::<A>()
+pub(crate) fn is_param_marker(type_registry: &TypeRegistry, type_id: TypeId) -> bool {
+    is_generic_marker(type_registry, type_id)
 }
 
 /// The parameter a marker stands for, named by the marker's path (which no declared name is) until
@@ -174,7 +176,8 @@ impl LadFileBuilder<'_> {
     /// type, but in `Time<A>` those are exactly the fields of type `A`, so the layout is described from `G`.
     /// Instantiations in the type registry are matched by path and number of parameters.
     ///
-    /// The only marker so far is [`A`], so only types with one parameter can be declared.
+    /// The markers are [`A`](bevy_mod_scripting_bindings::function::generics::A), [`B`](bevy_mod_scripting_bindings::function::generics::B), [`C`](bevy_mod_scripting_bindings::function::generics::C)
+    /// and the ones declared with [`bevy_mod_scripting_bindings::generic_marker`], which must be in the type registry.
     ///
     /// # Errors
     /// If a parameter of `G` is not instantiated with a marker, two share one, or `params` doesn't name each of them.
@@ -210,9 +213,9 @@ impl LadFileBuilder<'_> {
         // each marker stands for one parameter, so the fields of each can be told apart
         let mut markers = HashSet::new();
         for (generic, name) in generics.iter().zip(params) {
-            if !is_param_marker(generic.type_id()) {
+            if !is_param_marker(self.type_registry, generic.type_id()) {
                 return Err(format!(
-                    "`{path}` does not instantiate `{name}` with a marker, i.e. `A`"
+                    "`{path}` does not instantiate `{name}` with a registered marker, i.e. `A`"
                 ));
             }
             if !markers.insert(generic.type_id()) {
@@ -345,7 +348,7 @@ impl LadFileBuilder<'_> {
         arg: &GenericInfo,
         register: bool,
     ) -> LadTypeKind {
-        if is_param_marker(arg.type_id()) {
+        if is_param_marker(self.type_registry, arg.type_id()) {
             return LadTypeKind::Val(marker_param(arg.type_path()));
         }
         // reflection only gives the arguments as type ids
