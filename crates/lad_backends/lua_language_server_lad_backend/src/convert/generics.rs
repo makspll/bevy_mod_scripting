@@ -252,7 +252,7 @@ fn instantiation_variant_functions<'a>(
 /// The class of an instantiation of a generic type with functions of its own or on its variants, i.e. `time.Time.Virtual`
 /// for `Time<Virtual>`, which extends the generic class applied to the arguments. Instantiations without functions have none.
 ///
-/// It is named after the identifiers of the arguments, joined by `_` (`Time.Virtual`, `Foo.Image_Mesh`), unless they aren't
+/// It is named after the identifiers of the arguments, joined by `_` (`Time.Virtual`, `Foo.Image_Mesh`, `Time.Unit` for `()`), unless they aren't
 /// types of the file or clash with a variant. Its table is the class name with `_` for `.`, a local table, as the generic class
 /// has none to nest it in.
 pub(super) fn instantiation_class_name(
@@ -273,6 +273,8 @@ pub(super) fn instantiation_class_name(
             LadTypeKind::Val(LadNamedType::Id(type_id)) => {
                 ladfile.types.get(type_id).map(|t| t.identifier.clone())
             }
+            // i.e. `Time<()>`, the default clock
+            LadTypeKind::Tuple(elements) if elements.is_empty() => Some("Unit".to_owned()),
             _ => None,
         })
         .collect::<Option<Vec<_>>>()

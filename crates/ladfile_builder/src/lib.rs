@@ -667,6 +667,24 @@ impl<'t> LadFileBuilder<'t> {
         inner_type_ids.iter().any(|id| self.has_unknowns(*id))
     }
 
+    /// Whether the type is a container, i.e. a list, map, set, array, `Option` or `Result`.
+    fn is_container(&self, lad_type_id: &LadTypeId) -> bool {
+        let Some(type_info) = self
+            .type_id_mapping
+            .iter()
+            .find(|(_, id)| *id == lad_type_id)
+            .and_then(|(type_id, _)| self.type_registry.get_type_info(*type_id))
+        else {
+            return false;
+        };
+        match type_info {
+            TypeInfo::List(_) | TypeInfo::Array(_) | TypeInfo::Map(_) | TypeInfo::Set(_) => true,
+            type_info => ["core::option::Option<", "core::result::Result<"]
+                .iter()
+                .any(|container| type_info.type_path().starts_with(container)),
+        }
+    }
+
     /// Build the finalized and optimized LAD file.
     pub fn build(&mut self) -> LadFile {
         let mut file = std::mem::replace(&mut self.file, LadFile::new());
@@ -713,6 +731,11 @@ impl<'t> LadFileBuilder<'t> {
                 LadFunctionNamespace::Type(LadNamedType::Id(type_id)) => {
                     if let Some(t) = file.types.get_mut(type_id) {
                         t.associated_functions.push(function_id.clone());
+                    } else if self.is_container(type_id) {
+                        // i.e. `Option<Vec3>::new`, containers are described by what they contain rather than as types
+                        bevy_log::debug!(
+                            "Function {function_id} is on container type {type_id}, which is not a type of the LAD file."
+                        );
                     } else {
                         warn!(
                             "Function {} is on type {}, but the type is not registered in the LAD file.",

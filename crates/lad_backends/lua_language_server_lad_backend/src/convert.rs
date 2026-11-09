@@ -320,7 +320,7 @@ fn layout_fields(ladfile: &LadFile, layout: &ladfile::LadTypeLayout) -> Vec<Clas
             for (idx, field) in fields.iter().enumerate() {
                 lua_fields.push(ClassField {
                     name: format!("[{}]", idx + 1),
-                    ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
+                    ty: match field_type(ladfile, &field.type_) {
                         Ok(ty) => ty,
                         Err(e) => {
                             log::warn!(
@@ -339,7 +339,7 @@ fn layout_fields(ladfile: &LadFile, layout: &ladfile::LadTypeLayout) -> Vec<Clas
             for field in fields.iter() {
                 lua_fields.push(ClassField {
                     name: field.name.clone(),
-                    ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
+                    ty: match field_type(ladfile, &field.type_) {
                         Ok(ty) => ty,
                         Err(e) => {
                             log::warn!(
@@ -630,7 +630,7 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
         Ok(LuaType::Any)
     }
 
-    // TODO: currently ignores the possibility of an error type, we should have a custom class abstraction here
+    // errors are raised as Lua errors rather than returned, so the result is the value
     fn visit_interop_result(&mut self, inner: &ladfile::LadTypeKind) -> Self::Output {
         self.visit(inner)
     }
@@ -1000,6 +1000,32 @@ fn no_fields_module() -> LuaModule {
         type_only: true,
         ..Default::default()
     }
+}
+
+/// The type of a field of a value. Reading a field gives primitives by value and unwraps `Option`s, but every other
+/// value is a reference (see `into_script_erased`), so containers are also a `ReflectReference`, i.e.
+/// `integer[] | ReflectReference`, with the container functions of the reference (`push`, `map_get`, ...).
+fn field_type(ladfile: &LadFile, kind: &LadTypeKind) -> Result<LuaType, anyhow::Error> {
+    let or_reference =
+        |ty: LuaType| LuaType::Union(vec![ty, LuaType::Alias("ReflectReference".into())]);
+    Ok(match kind {
+        LadTypeKind::Option(inner) => {
+            let mut types = match field_type(ladfile, inner)? {
+                LuaType::Union(types) => types,
+                ty => vec![ty],
+            };
+            types.push(LuaType::Primitive(LuaPrimitiveType::Nil));
+            LuaType::Union(types)
+        }
+        LadTypeKind::Vec(..)
+        | LadTypeKind::Array(..)
+        | LadTypeKind::HashMap(..)
+        | LadTypeKind::HashSet(..) => or_reference(lad_instance_to_lua_type(ladfile, kind)?),
+        LadTypeKind::Tuple(items) if !items.is_empty() => {
+            or_reference(lad_instance_to_lua_type(ladfile, kind)?)
+        }
+        kind => lad_instance_to_lua_type(ladfile, kind)?,
+    })
 }
 
 /// The classes of the tables `import_namespace` returns, named `namespace.<name>`.
@@ -1374,6 +1400,39 @@ mod test {
                 && fields.contains("---@field  [any] 'never'"),
             "{fields}"
         );
+
+        // container fields of a value are references to the container, but constructors take a table
+        let usize = || Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::Usize));
+        let string = || Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::String));
+        for (kind, field, constructor) in [
+            (
+                LadTypeKind::Vec(usize()),
+                "integer[] | ReflectReference",
+                "integer[]",
+            ),
+            (
+                LadTypeKind::Option(Box::new(LadTypeKind::HashMap(string(), usize()))),
+                "table<string, integer> | ReflectReference | nil",
+                "table<string, integer> | nil",
+            ),
+        ] {
+            let ladfile::LadTypeLayout::MonoVariant(ladfile::LadVariant::Struct { fields, .. }) =
+                &mut file.types[&plain].layout
+            else {
+                panic!("PlainStructType is a struct");
+            };
+            fields[0].type_ = kind;
+            let rendered = render(&file);
+            let class = block(&rendered, "---@class ladfile_builder.PlainStructType");
+            let line = format!("---@field  int_field? {field}\n");
+            assert!(class.contains(&line), "missing {line} in {class}");
+            let fields = block(
+                &rendered,
+                "---@class (exact) ladfile_builder.PlainStructType.Fields",
+            );
+            let line = format!("---@field  int_field? {constructor}\n");
+            assert!(fields.contains(&line), "missing {line} in {fields}");
+        }
     }
 
     #[test]
@@ -1758,6 +1817,13 @@ mod test {
         let generic_type = file.generic_types.get_mut(&generic_id).unwrap();
         generic_type.instantiations.push(ladfile::LadInstantiation {
             args: vec![LadTypeKind::Val(plain.clone().into())],
+            associated_functions: vec![only.clone()],
+            metadata: file.types[&plain].metadata.clone(),
+        });
+        // i.e. `Time<()>`
+        let unit = LadTypeKind::Tuple(vec![]);
+        generic_type.instantiations.push(ladfile::LadInstantiation {
+            args: vec![unit.clone()],
             associated_functions: vec![only],
             metadata: file.types[&plain].metadata.clone(),
         });
@@ -1801,6 +1867,11 @@ mod test {
                 "{:?}",
                 LuaType::Alias("ladfile_builder.OpaqueGenericType.PlainStructType".into())
             )
+        );
+        // a unit argument is named `Unit`
+        assert!(
+            rendered.contains("---@class ladfile_builder.OpaqueGenericType.Unit : ladfile_builder.OpaqueGenericType<nil>"),
+            "{rendered}"
         );
     }
 
