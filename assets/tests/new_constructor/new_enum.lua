@@ -2,6 +2,8 @@ local SimpleEnum = import_namespace("test_utils").SimpleEnum
 
 local constructed = SimpleEnum.new({ variant = "Struct", foo = 123 })
 assert(constructed:variant_name() == "Struct", "expected variant Struct but got " .. tostring(constructed:variant_name()))
+-- the fields of a variant are read off the enum value, which the declarations can't type
+---@diagnostic disable-next-line: undefined-field
 assert(constructed.foo == 123, "expected foo to be 123 but got " .. tostring(constructed.foo))
 
 local unit = SimpleEnum.new({ variant = "Unit" })

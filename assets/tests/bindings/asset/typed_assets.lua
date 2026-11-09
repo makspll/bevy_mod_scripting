@@ -15,7 +15,7 @@ assert(ScriptAsset.get_asset(missing) == nil, "get_asset returns nil for an asse
 
 -- added assets can be read and changed through their handle
 local added = TestAsset.add_asset(TestAsset.new({ value = 7, name = "added" }))
-local asset = TestAsset.get_asset(added)
+local asset = assert(TestAsset.get_asset(added))
 assert(asset.value == 7, "the added asset has its value, got: " .. tostring(asset.value))
 assert(asset.name == "added", "the added asset has its name")
 
@@ -23,5 +23,6 @@ asset.value = 8
 assert(TestAsset.get_asset(added).value == 8, "changes to the returned asset change the asset")
 
 -- values must be of the asset type
+---@diagnostic disable-next-line: param-type-mismatch
 local ok, err = pcall(function() return TestAsset.add_asset(ScriptAsset.get_asset(handle)) end)
 assert(not ok and string.find(tostring(err), "not of the asset type", 1, true), "expected a type error, got: " .. tostring(err))

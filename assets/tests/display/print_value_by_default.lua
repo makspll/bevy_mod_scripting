@@ -39,7 +39,7 @@ do
 end
 
 
-local test_resource = world.get_resource(world.get_type_by_name("test_utils::test_data::TestResource"))
+local test_resource = assert(world.get_resource(world.get_type_by_name("test_utils::test_data::TestResource")))
 
 local expected_test_resource_debug = [[
 ReflectReference {

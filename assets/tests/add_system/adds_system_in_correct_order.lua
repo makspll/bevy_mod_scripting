@@ -8,10 +8,10 @@ local runs = {}
 
 -- runs on `Update`
 function on_test()
-    local post_update_schedule = world.get_schedule_by_name("PostUpdate")
+    local post_update_schedule = assert(world.get_schedule_by_name("PostUpdate"))
 
-    local test_system = post_update_schedule:get_system_by_name("on_test_post_update")
-    local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+    local test_system = assert(post_update_schedule:get_system_by_name("on_test_post_update"))
+    local script_attachment = ScriptAttachment.new_entity_script(assert(bms.current_entity()), assert(bms.current_script()))
 
     local system_after = world.add_system(
         post_update_schedule,

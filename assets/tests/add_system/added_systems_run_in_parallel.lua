@@ -3,11 +3,11 @@ local bms = import_namespace("bms")
 local world = bms.world
 local test_utils = import_namespace("test_utils")
 function on_test()
-  local post_update_schedule = world.get_schedule_by_name("PostUpdate")
+  local post_update_schedule = assert(world.get_schedule_by_name("PostUpdate"))
 
-  local test_system = post_update_schedule:get_system_by_name("on_test_post_update")
+  local test_system = assert(post_update_schedule:get_system_by_name("on_test_post_update"))
 
-  local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+  local script_attachment = ScriptAttachment.new_entity_script(assert(bms.current_entity()), assert(bms.current_script()))
 
   local system_a = world.add_system(
     post_update_schedule,

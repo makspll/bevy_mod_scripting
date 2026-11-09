@@ -4,7 +4,7 @@ local new_entity = world.spawn()
 world.add_default_component(new_entity, NewComponent)
 
 local component_instance = world.get_component(new_entity, NewComponent)
-assert(component_instance ~= nil, "unexpected value: " .. tostring(component_instance.data))
+assert(component_instance ~= nil, "the component was not added")
 
 world.remove_component(new_entity, NewComponent)
 local component_instance = world.get_component(new_entity, NewComponent)

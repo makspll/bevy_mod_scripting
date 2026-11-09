@@ -10,7 +10,8 @@ assert(constructed.foo == 123, "expected foo to be 123 but got " .. tostring(con
 local defaulted = SimpleStruct.new({})
 assert(defaulted.foo == 0, "expected foo to be 0 but got " .. tostring(defaulted.foo))
 
--- tuple structs use positional keys
+-- tuple structs use positional keys, which can also be strings (the declarations only know integer ones)
+---@diagnostic disable-next-line: assign-type-mismatch
 local tuple_struct = SimpleTupleStruct.new({ ["1"] = 5 })
 assert(tuple_struct[1] == 5, "expected first field to be 5 but got " .. tostring(tuple_struct[1]))
 

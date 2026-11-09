@@ -42,22 +42,27 @@ pub fn register_test_functions(world: &mut App) {
         .register("_get_mock_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;
-            let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
-            ReflectReference::new_allocated(reg)
+            V(ScriptTypeRegistration::new(Arc::new(
+                TypeRegistration::of::<Dummy>(),
+            )))
         })
         .register("_get_mock_component_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
-            let comp = ScriptComponentRegistration::new(reg, ComponentId::new(999999999999999));
-            ReflectReference::new_allocated(comp)
+            V(ScriptComponentRegistration::new(
+                reg,
+                ComponentId::new(999999999999999),
+            ))
         })
         .register("_get_mock_resource_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
-            let comp = ScriptResourceRegistration::new(reg, ComponentId::new(999999999999999));
-            ReflectReference::new_allocated(comp)
+            V(ScriptResourceRegistration::new(
+                reg,
+                ComponentId::new(999999999999999),
+            ))
         })
         .register("_sleep", |time: f64| {
             std::thread::sleep(std::time::Duration::from_secs_f64(time));

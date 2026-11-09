@@ -4,7 +4,7 @@ local TestComponent = import_namespace("test_utils").TestComponent
 local bms = import_namespace("bms")
 local world = bms.world
 local function attachment_of(e)
-    return ScriptAttachment.new_entity_script(e, bms.current_script())
+    return ScriptAttachment.new_entity_script(e, assert(bms.current_script()))
 end
 
 -- the other entity running this script
@@ -31,7 +31,7 @@ function bounce(back_to)
 end
 
 function record(value)
-    world.insert_component(bms.current_entity(), world.get_type_by_name("test_utils::test_data::TestComponent"), TestComponent.new({ strings = { value } }))
+    world.insert_component(assert(bms.current_entity()), world.get_type_by_name("test_utils::test_data::TestComponent"), TestComponent.new({ strings = { value } }))
 end
 
 function on_test()
@@ -44,7 +44,7 @@ function on_test()
     assert(sum == 3, "Expected 3, got: " .. tostring(sum))
 
     -- recipients return a list with one value per script
-    local results = bms.run_script_callback("double", Recipients.entity_script(other, bms.current_script()), 5)
+    local results = bms.run_script_callback("double", Recipients.entity_script(other, assert(bms.current_script())), 5)
     assert(#results == 1, "Expected 1 result, got: " .. #results)
     assert(results[1] == 10, "Expected 10, got: " .. tostring(results[1]))
 
@@ -60,10 +60,10 @@ function on_test()
     bms.queue_script_callback("record", attachment_of(bms.current_entity()), "queued!")
     -- flushing the world must not run them early
     world.spawn()
-    assert(not world.has_component(bms.current_entity(), world.get_type_by_name("test_utils::test_data::TestComponent")), "Queued callback ran before the callback queueing it finished")
+    assert(not world.has_component(assert(bms.current_entity()), world.get_type_by_name("test_utils::test_data::TestComponent")), "Queued callback ran before the callback queueing it finished")
     return "ok"
 end
 
 function on_test_post_update()
-    return world.get_component(bms.current_entity(), world.get_type_by_name("test_utils::test_data::TestComponent")).strings[1]
+    return assert(world.get_component(assert(bms.current_entity()), world.get_type_by_name("test_utils::test_data::TestComponent"))).strings[1]
 end

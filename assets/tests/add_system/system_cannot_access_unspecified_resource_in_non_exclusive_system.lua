@@ -4,8 +4,8 @@ local world = bms.world
 runs = {}
 
 function on_test()
-    local post_update_schedule = world.get_schedule_by_name("PostUpdate")
-    local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+    local post_update_schedule = assert(world.get_schedule_by_name("PostUpdate"))
+    local script_attachment = ScriptAttachment.new_entity_script(assert(bms.current_entity()), assert(bms.current_script()))
 
     world.add_system(
         post_update_schedule,
@@ -21,7 +21,8 @@ function my_non_exclusive_system()
 
     local ResourceType = world.get_type_by_name("test_utils::test_data::TestResource")
     assert_throws(function()
-        local res = world.get_resource(ResourceType)
+        local res = assert(world.get_resource(ResourceType))
+        ---@diagnostic disable-next-line: undefined-field
         local blah = res.blahblah
     end, ".*annot claim access to.*")
 end

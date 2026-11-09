@@ -7,7 +7,7 @@ local visibility_type = world.get_type_by_name("bevy_camera::visibility::Visibil
 local function visibility_of(value)
     local entity = world.spawn()
     world.insert_component(entity, visibility_type, value)
-    return world.get_component(entity, visibility_type)
+    return assert(world.get_component(entity, visibility_type))
 end
 
 -- toggling inherited and visible keeps hidden entities hidden

@@ -168,6 +168,7 @@ impl CompWithFromWorldAndComponentData {
 }
 
 #[derive(Resource, Reflect, PartialEq, Debug)]
+#[reflect(Resource)]
 pub struct TestResourceWithVariousFields {
     pub string: String,
     pub usize: usize,

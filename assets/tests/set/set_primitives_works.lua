@@ -1,7 +1,7 @@
 local world = import_namespace("bms").world
 local SimpleType = import_namespace("test_utils").SimpleType
 local Resource = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields")
-local resource = world.get_resource(Resource)
+local resource = assert(world.get_resource(Resource))
 
 resource.string = "Hello, World!"
 resource.bool = true

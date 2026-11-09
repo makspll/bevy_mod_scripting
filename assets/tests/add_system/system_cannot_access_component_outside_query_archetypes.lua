@@ -8,8 +8,8 @@ local ComponentA = world.get_type_by_name("test_utils::test_data::CompWithFromWo
 local ComponentB = world.get_type_by_name("test_utils::test_data::CompWithDefaultAndComponentData")
 
 function on_test()
-    local post_update_schedule = world.get_schedule_by_name("PostUpdate")
-    local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+    local post_update_schedule = assert(world.get_schedule_by_name("PostUpdate"))
+    local script_attachment = ScriptAttachment.new_entity_script(assert(bms.current_entity()), assert(bms.current_script()))
 
     local matched = world.spawn()
     world.add_default_component(matched, ComponentA)
@@ -43,13 +43,13 @@ function check_accesses(query)
         "the matched component should be accessible through the world too")
 
     assert_throws(function()
-        local component = world.get_component(outsider, ComponentA)
+        local component = assert(world.get_component(outsider, ComponentA))
         local _ = component[1]
     end, ".*not matched by any query.*")
 
     -- `with` filters by `B` without accessing it
     assert_throws(function()
-        local component = world.get_component(matched[1], ComponentB)
+        local component = assert(world.get_component(matched[1], ComponentB))
         local _ = component[1]
     end, ".*annot claim access.*")
 end

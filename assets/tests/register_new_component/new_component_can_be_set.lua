@@ -8,7 +8,7 @@ function on_test()
         data = "Hello World"
     }))
 
-    local component_instance = world.get_component(new_entity, NewComponent)
+    local component_instance = assert(world.get_component(new_entity, NewComponent)) --[[@as bms.DynamicComponent]]
     assert(component_instance.data == "Hello World", "unexpected value: " .. component_instance.data)
 
     component_instance.data = {
