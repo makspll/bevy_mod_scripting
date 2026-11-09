@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
+            window.path_to_searchindex_js = "../../searchindex-deefda46.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-e7f8e28c.js"></script>
+        <script src="../../toc-f4b0a7af.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -202,7 +202,7 @@
 </table>
 </div>
 <h2 id="instantiations"><a class="header" href="#instantiations">Instantiations</a></h2>
-<p><a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;, <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./keycode.html">KeyCode</a>&gt;, <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;</p>
+<p><a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;, <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./keycode.html">KeyCode</a>&gt;, <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;</p>
 <h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -215,10 +215,10 @@
 </table>
 </div>
 <h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;&gt;) -&gt; <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;&gt;) -&gt; <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -246,50 +246,50 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="get_pressed" class="lad-function"><a class="header" href="#get_pressed"><code>get_pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>get_pressed</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;) -&gt; Vec&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;</p>
+<p><strong>get_pressed</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;) -&gt; Vec&lt;<a href="./mousebutton.html">MouseButton</a>&gt;</p>
 </div>
 
 <p>The buttons which are held down.</p>
 <h3 id="just_pressed" class="lad-function"><a class="header" href="#just_pressed"><code>just_pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>just_pressed</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;, button: <a href="./gamepadbutton.html">GamepadButton</a>) -&gt; <a href="./bool.html">bool</a></p>
+<p><strong>just_pressed</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;, button: <a href="./mousebutton.html">MouseButton</a>) -&gt; <a href="./bool.html">bool</a></p>
 </div>
 
 <p>Whether the button was pressed during the last update.</p>
 <h3 id="just_released" class="lad-function"><a class="header" href="#just_released"><code>just_released</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>just_released</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;, button: <a href="./gamepadbutton.html">GamepadButton</a>) -&gt; <a href="./bool.html">bool</a></p>
+<p><strong>just_released</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;, button: <a href="./mousebutton.html">MouseButton</a>) -&gt; <a href="./bool.html">bool</a></p>
 </div>
 
 <p>Whether the button was released during the last update.</p>
 <h3 id="press" class="lad-function"><a class="header" href="#press"><code>press</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>press</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;, button: <a href="./gamepadbutton.html">GamepadButton</a>)</p>
+<p><strong>press</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;, button: <a href="./mousebutton.html">MouseButton</a>)</p>
 </div>
 
 <p>Holds the button down, as if it was pressed.</p>
 <h3 id="pressed" class="lad-function"><a class="header" href="#pressed"><code>pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>pressed</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;, button: <a href="./gamepadbutton.html">GamepadButton</a>) -&gt; <a href="./bool.html">bool</a></p>
+<p><strong>pressed</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;, button: <a href="./mousebutton.html">MouseButton</a>) -&gt; <a href="./bool.html">bool</a></p>
 </div>
 
 <p>Whether the button is held down.</p>
 <h3 id="release" class="lad-function"><a class="header" href="#release"><code>release</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>release</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./gamepadbutton.html">GamepadButton</a>&gt;, button: <a href="./gamepadbutton.html">GamepadButton</a>)</p>
+<p><strong>release</strong>(self: <a href="./buttoninputt.html">ButtonInput</a>&lt;<a href="./mousebutton.html">MouseButton</a>&gt;, button: <a href="./mousebutton.html">MouseButton</a>)</p>
 </div>
 
 <p>Lets go of the button, as if it was released.</p>

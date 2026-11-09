@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-eacc04a5.js";
+            window.path_to_searchindex_js = "../../searchindex-deefda46.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-e7f8e28c.js"></script>
+        <script src="../../toc-f4b0a7af.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -491,8 +491,10 @@ or <code>script.my_game.ai</code> for a set registered by a script.</p>
 <p><strong>Returns</strong>: The system set with the given name, if it exists.</p>
 <h3 id="get_type_by_name" class="lad-function"><a class="header" href="#get_type_by_name"><code>get_type_by_name</code></a></h3>
 <div class="lad-signature">
-<p><strong>get_type_by_name</strong>(type_name: <a href="./string.html">String</a>) -&gt; Optional&lt;<a href="./scripttyperegistration.html">ScriptTypeRegistration</a> | <a href="./scriptcomponentregistration.html">ScriptComponentRegistration</a> | <a href="./scriptresourceregistration.html">ScriptResourceRegistration</a> | <a href="./scriptbundleregistration.html">ScriptBundleRegistration</a>&gt;</p>
+<p><strong>get_type_by_name</strong>&lt;A&gt;(type_name: Type&lt;A&gt;) -&gt; Optional&lt;Type&lt;A&gt;&gt;</p>
 </div>
+
+<p class="lad-note">Generic over <code>A</code>, the type given as <code>type_name</code>.</p>
 
 <p>Returns either a <code>ScriptComponentRegistration</code>, <code>ScriptResourceRegistration</code> or <code>ScriptBundleRegistration</code> depending on the type of the type requested.
 If the type is none of these returns a <code>ScriptTypeRegistration</code>.</p>
