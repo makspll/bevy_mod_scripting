@@ -166,7 +166,10 @@ fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
                 // the type's functions come first, so they shadow the registration's, i.e. its `new`
                 parents: vec![
                     LuaType::Alias(functions_class),
-                    LuaType::Alias(registration.clone()),
+                    LuaType::Generic {
+                        name: registration.clone(),
+                        args: vec![LuaType::Alias(name.clone())],
+                    },
                 ],
                 fields: variant_fields,
                 documentation: Some(format!(
@@ -428,6 +431,35 @@ fn registration_of(ladfile: &LadFile, erased: &LadTypeKind, param: &str) -> Opti
     }
 }
 
+/// Registrations a function returns of an unknown type, i.e. from `get_type_by_name(name)`, register a `ReflectReference`:
+/// `bms.ScriptComponentRegistration<ReflectReference>`, so generic functions given them return one rather than `nil`.
+/// Only returns: LuaLS doesn't match typed registrations against params with an argument, i.e. `X.Type` against `A | B<ReflectReference>`.
+fn widen_registrations(ladfile: &LadFile, ty: LuaType) -> LuaType {
+    let registrations: IndexSet<String> = ladfile
+        .types
+        .values()
+        .filter_map(|lad_type| lad_type.metadata.registration.as_ref())
+        .map(|type_id| lua_class_name(ladfile, type_id))
+        .collect();
+    fn widen(ty: LuaType, registrations: &IndexSet<String>) -> LuaType {
+        match ty {
+            LuaType::Alias(name) if registrations.contains(&name) => LuaType::Generic {
+                name,
+                args: vec![LuaType::Alias("ReflectReference".into())],
+            },
+            LuaType::Union(types) => LuaType::Union(
+                types
+                    .into_iter()
+                    .map(|ty| widen(ty, registrations))
+                    .collect(),
+            ),
+            LuaType::Array(ty) => LuaType::Array(Box::new(widen(*ty, registrations))),
+            ty => ty,
+        }
+    }
+    widen(ty, &registrations)
+}
+
 /// The type of the table of a type in its namespace, i.e. `transform.Transform.Type` for `Transform`, see `class_modules`.
 /// Types without a registration have no table of their own, they are their class.
 fn type_table_type(ladfile: &LadFile, type_id: &LadTypeId) -> LuaType {
@@ -618,7 +650,7 @@ pub fn lad_function_to_lua_function(
                 ))
             })
             .collect::<Result<Vec<_>, anyhow::Error>>()?;
-        let returns = kind(&function.return_type.kind)?;
+        let returns = widen_registrations(ladfile, kind(&function.return_type.kind)?);
         Ok((params, returns))
     };
     let overload = |(params, returns): (Vec<FunctionParam>, LuaType)| FunctionSignature {
@@ -1699,7 +1731,7 @@ mod test {
         for line in [
             "---@class ladfile_builder.PlainStructType.Functions\n",
             "---@class ladfile_builder.PlainStructType : ReflectReference,ladfile_builder.PlainStructType.Functions\n",
-            "---@class ladfile_builder.PlainStructType.Static : ladfile_builder.PlainStructType.Functions,bms.ScriptTypeRegistration\n",
+            "---@class ladfile_builder.PlainStructType.Static : ladfile_builder.PlainStructType.Functions,bms.ScriptTypeRegistration<ladfile_builder.PlainStructType>\n",
             "---@alias ladfile_builder.PlainStructType.Type ladfile_builder.PlainStructType.Static | bms.ScriptTypeRegistration<ladfile_builder.PlainStructType>\n",
             "---@class bms.ScriptTypeRegistration<T> : ReflectReference\n",
             "---@param registration bms.ScriptTypeRegistration<A>\n",
@@ -1718,7 +1750,8 @@ mod test {
             format!(
                 "---@overload fun(type_name: \"{path}\"): ladfile_builder.PlainStructType.Type\n"
             ),
-            "---@return bms.ScriptTypeRegistration | nil\n".into(),
+            // a registration of an unknown type, so generic functions given it return a reference rather than `nil`
+            "---@return bms.ScriptTypeRegistration<ReflectReference> | nil\n".into(),
         ] {
             assert!(lookup.contains(&line), "missing {line} in {lookup}");
         }
