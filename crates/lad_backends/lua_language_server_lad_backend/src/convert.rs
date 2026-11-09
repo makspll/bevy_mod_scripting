@@ -1,7 +1,9 @@
 mod generics;
 
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
-use generics::{erase_generics, generic_type_modules, instantiation_class_name, mentions_generic};
+use generics::{
+    erase_generics, generic_type_modules, instantiation_class_name, mentions_generic, names_generic,
+};
 use indexmap::{IndexMap, IndexSet};
 use ladfile::{
     ArgumentVisitor, LadFile, LadFunction, LadNamedType, LadTypeId, LadTypeKind,
@@ -276,12 +278,12 @@ fn type_to_lua_class(
             if lad_type.metadata.is_reflect && name != "ReflectReference" {
                 parents.push(LuaType::Alias(String::from("ReflectReference")))
             }
-            // if metadata.is_component {
-            //     parents.push(String::from("ScriptComponentRegistration"))
-            // }
-            // if metadata.is_resource {
-            //     parents.push(String::from("ScriptResourceRegistration"))
-            // }
+            // the table of a type in its namespace is its registration, i.e. `world.has_component(entity, Transform)`
+            if let Some(registration) = registration_class(ladfile, lad_type)
+                && registration != name
+            {
+                parents.push(LuaType::Alias(registration));
+            }
         }
     }
 
@@ -295,6 +297,31 @@ fn type_to_lua_class(
         operators: lua_operators,
     };
     (class, lua_functions)
+}
+
+/// The class of the registration a type is at runtime, as given by `import_namespace` or `world.get_type_by_name`,
+/// i.e. `bms.ScriptComponentRegistration` for a component. Resources are checked first, as they are components too.
+fn registration_class(ladfile: &LadFile, lad_type: &ladfile::LadTypeDefinition) -> Option<String> {
+    if !lad_type.metadata.is_reflect {
+        return None;
+    }
+    let metadata = &lad_type.metadata;
+    let registration = if metadata.is_resource {
+        "ScriptResourceRegistration"
+    } else if metadata.is_component {
+        "ScriptComponentRegistration"
+    } else if metadata.is_bundle {
+        "ScriptBundleRegistration"
+    } else {
+        "ScriptTypeRegistration"
+    };
+    let type_id = LadTypeId::new_string_id(
+        format!("bevy_mod_scripting_bindings::query::{registration}").into(),
+    );
+    ladfile
+        .types
+        .contains_key(&type_id)
+        .then(|| lua_class_name(ladfile, &type_id))
 }
 
 /// The fields of a struct or tuple struct, named or by their index, i.e. `[1]`. Enums and opaque types have none.
@@ -453,11 +480,10 @@ pub fn lad_function_to_lua_function(
     let name = function.identifier.to_string();
     ForbiddenKeywords::is_forbidden_err(&function.identifier)?;
 
-    let signature = |erase: bool| -> Result<(Vec<FunctionParam>, LuaType), anyhow::Error> {
-        let kind = |kind: &LadTypeKind| match erase {
-            true => erase_generics(kind, &function.generics),
-            false => kind.clone(),
-        };
+    let erased = |kind: &LadTypeKind| {
+        lad_instance_to_lua_type(ladfile, &erase_generics(kind, &function.generics))
+    };
+    let signature = |kind: &dyn Fn(&LadTypeKind) -> Result<LuaType, anyhow::Error>| -> Result<(Vec<FunctionParam>, LuaType), anyhow::Error> {
         let params = function
             .arguments
             .iter()
@@ -468,33 +494,91 @@ pub fn lad_function_to_lua_function(
                         Ok(_) => ident,
                         Err(_) => format!("_{ident}"),
                     },
-                    lad_instance_to_lua_type(ladfile, &kind(&a.kind))?,
+                    kind(&a.kind)?,
                     matches!(a.kind, LadTypeKind::Option(..)),
                     a.documentation.as_ref().map(|d| d.to_string()),
                 ))
             })
             .collect::<Result<Vec<_>, anyhow::Error>>()?;
-        let returns = lad_instance_to_lua_type(ladfile, &kind(&function.return_type.kind))?;
+        let returns = kind(&function.return_type.kind)?;
         Ok((params, returns))
     };
-    let (params, returns) = signature(false)?;
+    let overload = |(params, returns): (Vec<FunctionParam>, LuaType)| FunctionSignature {
+        name: name.clone(),
+        params,
+        returns: vec![returns],
+        ..Default::default()
+    };
 
-    // what a generic function takes can also be passed untyped, i.e. a registration found by name or a handle of
-    // unknown type, which LuaLS can only express as an overload, as overloads can't be generic
+    // a type passed by name can't be inferred, so the function is declared untyped, with an overload per type naming it:
+    // `---@overload fun(type_name: "bevy_transform::components::transform::Transform"): transform.Transform`
+    if function
+        .arguments
+        .iter()
+        .any(|argument| names_generic(&argument.kind, &function.generics))
+    {
+        let (params, returns) = signature(&erased)?;
+        let overloads = ladfile
+            .types
+            .iter()
+            .filter(|(type_id, lad_type)| {
+                lad_type.metadata.is_reflect && ladfile.get_type_generics(type_id).is_none()
+            })
+            .map(|(type_id, lad_type)| {
+                let instantiate = |kind: &LadTypeKind| {
+                    if names_generic(kind, &function.generics) {
+                        return Ok(LuaType::Literal(format!("\"{}\"", lad_type.path)));
+                    }
+                    let mut kind = kind.clone();
+                    for param in &function.generics {
+                        kind.replace_param(param, &LadTypeKind::Val(type_id.clone().into()));
+                    }
+                    lad_instance_to_lua_type(ladfile, &kind)
+                };
+                // the types of the file are registered, so they are always found
+                let (params, returns) = signature(&instantiate)?;
+                let returns = match returns {
+                    LuaType::Union(types) => LuaType::Union(
+                        types
+                            .into_iter()
+                            .filter(|ty| !matches!(ty, LuaType::Primitive(LuaPrimitiveType::Nil)))
+                            .collect(),
+                    ),
+                    returns => returns,
+                };
+                Ok::<_, anyhow::Error>(overload((params, returns)))
+            })
+            .filter_map(|overload| {
+                overload
+                    .inspect_err(|e| log::warn!("Skipping an overload of {name}: {e}"))
+                    .ok()
+            })
+            .collect();
+        return Ok(FunctionSignature {
+            name,
+            params,
+            returns: vec![returns],
+            overloads,
+            documentation: function.documentation.as_ref().map(|d| d.to_string()),
+            has_self: function.receiver,
+            ..Default::default()
+        });
+    }
+
+    let (params, returns) = signature(&|kind| lad_instance_to_lua_type(ladfile, kind))?;
+
+    // what a generic function takes can also be passed untyped, i.e. a handle of unknown type, which LuaLS can only
+    // express as an overload, as overloads can't be generic. Not when the type itself is passed: types are their
+    // registrations (see `registration_class`), so typed ones would match the overload too, widening what it returns
     let takes_generics = function
         .arguments
         .iter()
         .any(|argument| mentions_generic(&argument.kind, &function.generics));
-    let overloads = match takes_generics {
-        true => {
-            let (params, returns) = signature(true)?;
-            vec![FunctionSignature {
-                name: name.clone(),
-                params,
-                returns: vec![returns],
-                ..Default::default()
-            }]
-        }
+    let takes_type = function.arguments.iter().any(|argument| {
+        matches!(&argument.kind, LadTypeKind::Type { of: LadNamedType::Param { param }, .. } if function.generics.contains(param))
+    });
+    let overloads = match takes_generics && !takes_type {
+        true => vec![overload(signature(&erased)?)],
         false => vec![],
     };
 
@@ -1319,7 +1403,7 @@ mod test {
             .entry("other_crate".into())
             .or_default()
             .types
-            .insert("UnitType".into(), unit);
+            .insert("UnitType".into(), unit.clone());
 
         let import_namespace = LadFunctionId::new_string_id("import_namespace".into());
         file.functions.insert(
@@ -1364,6 +1448,65 @@ mod test {
             let line = format!("---@overload fun(path: \"{name}\"): namespace.{name}");
             assert!(rendered.contains(&line), "missing {line} in {rendered}");
         }
+
+        // types are registrations, and are found by name like in `world.get_type_by_name`
+        let registration = LadTypeId::new_string_id(
+            "bevy_mod_scripting_bindings::query::ScriptTypeRegistration".into(),
+        );
+        let mut definition = file.types[&unit].clone();
+        definition.identifier = "ScriptTypeRegistration".into();
+        definition.path = registration.to_string();
+        definition.namespace = "bms".into();
+        file.types.insert(registration.clone(), definition);
+        let a = LadNamedType::Param { param: "A".into() };
+        let type_of = |erased: LadTypeKind| LadTypeKind::Type {
+            of: a.clone(),
+            erased: Box::new(erased),
+        };
+        file.functions.insert(
+            LadFunctionId::new_string_id("get_type_by_name".into()),
+            LadFunction {
+                namespace: LadFunctionNamespace::Global,
+                identifier: "get_type_by_name".into(),
+                overload_index: None,
+                arguments: vec![arg(
+                    "type_name",
+                    type_of(LadTypeKind::Primitive(ReflectionPrimitiveKind::String)),
+                )],
+                return_type: LadArgument {
+                    kind: LadTypeKind::Option(Box::new(type_of(LadTypeKind::Val(
+                        registration.clone().into(),
+                    )))),
+                    documentation: None,
+                    name: None,
+                },
+                documentation: None,
+                metadata: LadFunctionMetadata {
+                    operator: None,
+                    misc: Default::default(),
+                },
+                receiver: false,
+                generics: vec!["A".into()],
+            },
+        );
+        let rendered = render(&file);
+
+        let plain = block(&rendered, "---@class ladfile_builder.PlainStructType");
+        assert!(plain.starts_with("---@class ladfile_builder.PlainStructType : ReflectReference,bms.ScriptTypeRegistration\n"), "{plain}");
+        assert!(
+            rendered.contains("---@class bms.ScriptTypeRegistration : ReflectReference\n"),
+            "{rendered}"
+        );
+
+        let lookup = block(&rendered, "---@param type_name string");
+        let path = &file.types[&type_id(&file, "PlainStructType")].path;
+        for line in [
+            format!("---@overload fun(type_name: \"{path}\"): ladfile_builder.PlainStructType\n"),
+            "---@return bms.ScriptTypeRegistration | nil\n".into(),
+        ] {
+            assert!(lookup.contains(&line), "missing {line} in {lookup}");
+        }
+        assert!(!lookup.contains("---@generic"), "{lookup}");
     }
 
     #[test]
@@ -1633,10 +1776,10 @@ mod test {
         });
         let rendered = render(&file);
 
-        // the generic function returns the type it is given, or a reference when given it untyped
+        // the generic function returns the type it is given, which types are, so there is no untyped overload
         assert!(
             rendered.contains(
-                "---@generic A\n---@param registration A\n---@param handle ladfile_builder.OpaqueGenericType<A>\n---@overload fun(registration: ladfile_builder.PlainStructType, handle: ReflectReference): ReflectReference | nil\n---@return A | nil\nfunction PlainStructType.get(registration,handle) end"
+                "---@generic A\n---@param registration A\n---@param handle ladfile_builder.OpaqueGenericType<A>\n---@return A | nil\nfunction PlainStructType.get(registration,handle) end"
             ),
             "{rendered}"
         );

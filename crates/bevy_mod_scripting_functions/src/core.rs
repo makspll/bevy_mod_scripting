@@ -97,13 +97,13 @@ impl World {
     /// * `type`: The registration of the type, if it exists.
     fn get_type_by_name(
         ctxt: FunctionCallContext,
-        type_name: String,
-    ) -> Result<Option<AnyTypeRegistrationV>, InteropError> {
+        type_name: TypeOf<String, A>,
+    ) -> Result<Option<TypeOf<AnyTypeRegistrationV, A>>, InteropError> {
         profiling::function_scope!("get_type_by_name");
         let world = ctxt.world()?;
         world
-            .get_type_registration_by_name(type_name)
-            .map(|v| v.map(|v| v.into_script()))
+            .get_type_registration_by_name(type_name.into_inner())
+            .map(|v| v.map(|v| TypeOf::new(v.into_script())))
     }
 
     /// Retrieves the variant of an enum by name.
