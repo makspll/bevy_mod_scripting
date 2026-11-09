@@ -28,6 +28,7 @@ pub fn convert_ladfile_to_lua_declaration_files(
     modules.extend(class_modules(ladfile));
     modules.extend(generic_type_modules(ladfile));
     modules.extend(fields_modules(ladfile));
+    modules.push(list_module());
 
     // `import_namespace` needs the namespace classes, so they are built before the globals
     let namespaces = namespace_modules(ladfile);
@@ -335,7 +336,7 @@ fn layout_fields(ladfile: &LadFile, layout: &ladfile::LadTypeLayout) -> Vec<Clas
             for (idx, field) in fields.iter().enumerate() {
                 lua_fields.push(ClassField {
                     name: format!("[{}]", idx + 1),
-                    ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
+                    ty: match field_type(ladfile, &field.type_) {
                         Ok(ty) => ty,
                         Err(e) => {
                             log::warn!(
@@ -354,7 +355,7 @@ fn layout_fields(ladfile: &LadFile, layout: &ladfile::LadTypeLayout) -> Vec<Clas
             for field in fields.iter() {
                 lua_fields.push(ClassField {
                     name: field.name.clone(),
-                    ty: match lad_instance_to_lua_type(ladfile, &field.type_) {
+                    ty: match field_type(ladfile, &field.type_) {
                         Ok(ty) => ty,
                         Err(e) => {
                             log::warn!(
@@ -645,7 +646,7 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
         Ok(LuaType::Any)
     }
 
-    // TODO: currently ignores the possibility of an error type, we should have a custom class abstraction here
+    // errors are raised as Lua errors rather than returned, so the result is the value
     fn visit_interop_result(&mut self, inner: &ladfile::LadTypeKind) -> Self::Output {
         self.visit(inner)
     }
@@ -1013,6 +1014,96 @@ fn no_fields_module() -> LuaModule {
             operators: vec![],
         }),
         type_only: true,
+        ..Default::default()
+    }
+}
+
+/// The class of list fields, i.e. a `Vec<usize>` field is a `bms.List<integer>`: reading the field gives a reference
+/// to the list, with the list functions of `ReflectReference`, typed here by the element.
+const LIST_CLASS: &str = "bms.List";
+
+/// The type of a field of a value, which is a reference to the field: lists are [`LIST_CLASS`], not Lua arrays.
+fn field_type(ladfile: &LadFile, kind: &LadTypeKind) -> Result<LuaType, anyhow::Error> {
+    match kind {
+        LadTypeKind::Vec(element) => Ok(LuaType::Generic {
+            name: LIST_CLASS.to_string(),
+            args: vec![lad_instance_to_lua_type(ladfile, element)?],
+        }),
+        kind => lad_instance_to_lua_type(ladfile, kind),
+    }
+}
+
+fn list_module() -> LuaModule {
+    let list = LuaType::Generic {
+        name: LIST_CLASS.to_string(),
+        args: vec![LuaType::Alias("T".into())],
+    };
+    let element = LuaType::Alias("T".into());
+    let index = LuaType::Primitive(LuaPrimitiveType::Integer);
+    let param = |name: &str, ty: &LuaType| FunctionParam::new(name.into(), ty.clone(), false, None);
+    let function =
+        |name: &str, documentation: &str, params: Vec<FunctionParam>, returns: LuaType| {
+            FunctionSignature {
+                name: name.into(),
+                params: [vec![param("list", &list)], params].concat(),
+                returns: vec![returns],
+                generics: vec!["T".into()],
+                documentation: Some(documentation.into()),
+                has_self: true,
+                ..Default::default()
+            }
+        };
+    let nil = LuaType::Primitive(LuaPrimitiveType::Nil);
+    LuaModule {
+        name: LIST_CLASS.to_string(),
+        table: "List".into(),
+        namespace: "bms".into(),
+        class: Some(LuaClass {
+            name: LIST_CLASS.to_string(),
+            parents: vec![LuaType::Alias("ReflectReference".into())],
+            fields: vec![ClassField {
+                name: "[integer]".into(),
+                ty: element.clone(),
+                scope: FieldScope::Public,
+                optional: false,
+                description: None,
+            }],
+            generics: vec!["T".into()],
+            documentation: Some(
+                "A list field of a value, i.e. a `Vec`: a reference to the list, indexed from 1."
+                    .into(),
+            ),
+            exact: false,
+            operators: vec![],
+        }),
+        functions: vec![
+            function(
+                "push",
+                "Appends a value to the list.",
+                vec![param("value", &element)],
+                nil.clone(),
+            ),
+            function(
+                "pop",
+                "Removes the last value of the list and returns it.",
+                vec![],
+                element.clone(),
+            ),
+            function(
+                "insert",
+                "Inserts a value at the index, shifting the values after it.",
+                vec![param("index", &index), param("value", &element)],
+                nil.clone(),
+            ),
+            function(
+                "remove",
+                "Removes the value at the index and returns it.",
+                vec![param("index", &index)],
+                element.clone(),
+            ),
+            function("len", "The number of values in the list.", vec![], index),
+            function("clear", "Removes every value of the list.", vec![], nil),
+        ],
         ..Default::default()
     }
 }
@@ -1388,6 +1479,34 @@ mod test {
             fields.contains("---@field  int_field? integer")
                 && fields.contains("---@field  [any] 'never'"),
             "{fields}"
+        );
+
+        // a list field of a value is a reference to the list, but constructors take a table
+        let ladfile::LadTypeLayout::MonoVariant(ladfile::LadVariant::Struct { fields, .. }) =
+            &mut file.types[&plain].layout
+        else {
+            panic!("PlainStructType is a struct");
+        };
+        fields[0].type_ = LadTypeKind::Vec(Box::new(LadTypeKind::Primitive(
+            ReflectionPrimitiveKind::Usize,
+        )));
+        let rendered = render(&file);
+        let class = block(&rendered, "---@class ladfile_builder.PlainStructType");
+        assert!(
+            class.contains("---@field  int_field? bms.List<integer>"),
+            "{class}"
+        );
+        let fields = block(
+            &rendered,
+            "---@class (exact) ladfile_builder.PlainStructType.Fields",
+        );
+        assert!(
+            fields.contains("---@field  int_field? integer[]"),
+            "{fields}"
+        );
+        assert!(
+            rendered.contains("---@class bms.List<T> : ReflectReference\n"),
+            "{rendered}"
         );
     }
 
@@ -1771,6 +1890,13 @@ mod test {
         let generic_type = file.generic_types.get_mut(&generic_id).unwrap();
         generic_type.instantiations.push(ladfile::LadInstantiation {
             args: vec![LadTypeKind::Val(plain.clone().into())],
+            associated_functions: vec![only.clone()],
+            metadata: file.types[&plain].metadata.clone(),
+        });
+        // i.e. `Time<()>`
+        let unit = LadTypeKind::Tuple(vec![]);
+        generic_type.instantiations.push(ladfile::LadInstantiation {
+            args: vec![unit.clone()],
             associated_functions: vec![only],
             metadata: file.types[&plain].metadata.clone(),
         });
@@ -1814,6 +1940,11 @@ mod test {
                 "{:?}",
                 LuaType::Alias("ladfile_builder.OpaqueGenericType.PlainStructType".into())
             )
+        );
+        // a unit argument is named `Unit`
+        assert!(
+            rendered.contains("---@class ladfile_builder.OpaqueGenericType.Unit : ladfile_builder.OpaqueGenericType<nil>"),
+            "{rendered}"
         );
     }
 
