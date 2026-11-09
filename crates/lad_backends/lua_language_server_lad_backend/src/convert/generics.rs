@@ -326,3 +326,11 @@ pub(super) fn mentions_generic(kind: &LadTypeKind, generics: &[String]) -> bool 
     });
     mentions
 }
+
+/// Whether the kind is a parameter of a generic function passed by its name, i.e. the `type_name` `get_type_by_name` takes.
+///
+/// LuaLS can't infer a type from a string, so such functions are declared untyped, with an overload per type naming it.
+pub(super) fn names_generic(kind: &LadTypeKind, generics: &[String]) -> bool {
+    matches!(kind, LadTypeKind::Type { of: LadNamedType::Param { param }, erased }
+        if generics.contains(param) && **erased == LadTypeKind::Primitive(ReflectionPrimitiveKind::String))
+}

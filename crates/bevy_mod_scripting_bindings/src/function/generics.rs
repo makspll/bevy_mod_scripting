@@ -37,9 +37,16 @@ pub struct A;
 ///
 /// `M` is the marker standing for the function's parameter ([`A`]), [`ValueOf`] values of the same marker are of that type.
 /// It only changes how the function is documented.
+///
+/// A type passed as a `String` is named by its path, i.e. `get_type_by_name("bevy_transform::components::transform::Transform")`.
 pub struct TypeOf<R, M>(pub R, PhantomData<fn() -> M>);
 
 impl<R, M> TypeOf<R, M> {
+    /// Wrap the value the type is passed as.
+    pub fn new(inner: R) -> Self {
+        TypeOf(inner, PhantomData)
+    }
+
     /// Unwrap the value the type is passed as.
     pub fn into_inner(self) -> R {
         self.0
@@ -62,6 +69,12 @@ impl<R: FromScript, M> FromScript for TypeOf<R, M> {
         world: WorldGuard<'_>,
     ) -> Result<Self::This<'_>, InteropError> {
         R::from_script(value, world).map(|inner| TypeOf(inner, PhantomData))
+    }
+}
+
+impl<R: IntoScript, M> IntoScript for TypeOf<R, M> {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        self.0.into_script(world)
     }
 }
 
