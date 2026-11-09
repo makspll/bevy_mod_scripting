@@ -85,6 +85,8 @@ function {% if module.class -%}{{module.table}}.{%- endif -%} {{ function.name }
         {{ ty.value }}
     {%- elif ty.kind == "Any" -%}
         any
+    {%- elif ty.kind == "Array" and ty.value.kind == "Union" -%}
+        ({{ self::lua_type(ty=ty.value) }})[]
     {%- elif ty.kind == "Array" -%}
         {{ self::lua_type(ty=ty.value) }}[]
     {%- elif ty.kind == "Union" -%}
