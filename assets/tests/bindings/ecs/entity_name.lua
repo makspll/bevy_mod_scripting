@@ -25,5 +25,5 @@ assert(world.find_entity_by_name("nobody") == nil, "missing names give nil")
 
 -- hierarchy
 world.push_children(entity, { other })
-local child_of = world.get_component(other, world.get_type_by_name("bevy_ecs::hierarchy::ChildOf"))
+local child_of = assert(world.get_component(other, world.get_type_by_name("bevy_ecs::hierarchy::ChildOf")))
 assert(child_of:parent() == entity, "parent")

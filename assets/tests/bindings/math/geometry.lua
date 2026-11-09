@@ -12,7 +12,7 @@ local function approx(a, b)
 end
 
 -- directions
-local dir = Dir3.new(Vec3.new(0, 0, 5))
+local dir = assert(Dir3.new(Vec3.new(0, 0, 5)))
 assert(dir:as_vec3() == Vec3.unit_z(), "dir is normalized")
 assert(Dir3.new(Vec3.zero()) == nil, "zero vector is not a direction")
 assert(Dir3.y():as_vec3() == Vec3.unit_y(), "dir constant")

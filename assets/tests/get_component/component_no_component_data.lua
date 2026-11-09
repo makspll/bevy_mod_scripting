@@ -1,6 +1,6 @@
 local world = import_namespace("bms").world
 local component = world.get_type_by_name("test_utils::test_data::CompWithDefault")
-local entity = world._get_entity_with_test_component("CompWithDefault")
+local entity = assert(world._get_entity_with_test_component("CompWithDefault"))
 local retrieved = world.get_component(entity, component)
 
 assert(retrieved ~= nil, "Component was not found")

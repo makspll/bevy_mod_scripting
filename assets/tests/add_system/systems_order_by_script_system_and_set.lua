@@ -5,8 +5,8 @@ local world = bms.world
 runs = {}
 
 function on_test()
-    local post_update_schedule = world.get_schedule_by_name("PostUpdate")
-    local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+    local post_update_schedule = assert(world.get_schedule_by_name("PostUpdate"))
+    local script_attachment = ScriptAttachment.new_entity_script(assert(bms.current_entity()), assert(bms.current_script()))
 
     local group = world.register_new_system_set("script.test", "group")
     -- registering again returns the same set, other namespaces are not for scripts

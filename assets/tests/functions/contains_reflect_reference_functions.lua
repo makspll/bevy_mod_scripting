@@ -10,7 +10,7 @@ function contains(table, element)
 end
 
 local Resource = world.get_type_by_name("test_utils::test_data::TestResource")
-local resource = world.get_resource(Resource)
+local resource = assert(world.get_resource(Resource))
 
 local functions = resource:functions()
 assert(#functions > 0, "functions should not be empty")

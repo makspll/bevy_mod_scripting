@@ -9,6 +9,7 @@ function on_test()
     assert(transform.Transform ~= nil, "Transform should be in transform")
     assert(transform.Transform:namespace() == "transform")
     -- other categories' types are not in it
+    ---@diagnostic disable-next-line: undefined-field
     assert(transform.Entity == nil)
 
     local bms = import_namespace("bms")

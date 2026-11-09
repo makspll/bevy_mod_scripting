@@ -10,8 +10,10 @@ local constructed = bms.construct(type, {
 
 assert(constructed:variant_name() == "Struct",
     "Value was constructed incorrectly, expected constructed.variant to be Struct but got " .. constructed:variant_name())
-assert(constructed.foo == 123,
-    "Value was constructed incorrectly, expected constructed.foo to be 123 but got " .. constructed.foo)
+-- the fields of a variant are read off the enum value, which the declarations can't type
+local foo = constructed.foo ---@diagnostic disable-line: undefined-field
+assert(foo == 123,
+    "Value was constructed incorrectly, expected constructed.foo to be 123 but got " .. tostring(foo))
 
 
 -- TupleStruct Variant

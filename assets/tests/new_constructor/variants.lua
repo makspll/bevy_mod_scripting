@@ -12,8 +12,12 @@ assert(SimpleEnum.Unit:variant_name() == "Unit", "expected variant name Unit")
 -- constructing from variants
 local constructed = SimpleEnum.Struct:new({ foo = 5 })
 assert(constructed:variant() == SimpleEnum.Struct, "expected Struct variant")
+-- the fields of a variant are read off the enum value, which the declarations can't type
+---@diagnostic disable-next-line: undefined-field
 assert(constructed.foo == 5, "expected foo to be 5 but got " .. tostring(constructed.foo))
 
+-- positional keys can also be strings (the declarations only know integer ones)
+---@diagnostic disable-next-line: assign-type-mismatch
 local tuple = SimpleEnum.TupleStruct:new({ ["1"] = 7 })
 assert(tuple:variant() == SimpleEnum.TupleStruct, "expected TupleStruct variant")
 assert(tuple[1] == 7, "expected first field to be 7 but got " .. tostring(tuple[1]))

@@ -144,11 +144,11 @@ local transform_type = world.get_type_by_name("bevy_transform::components::trans
 local entity = world.spawn()
 world.insert_component(entity, transform_type, Transform.from_xyz(1, 2, 3))
 
-local reference = world.get_component(entity, transform_type)
+local reference = assert(world.get_component(entity, transform_type))
 reference:rotate_y(1.0)
 reference.translation.x = 5
 
-local fetched = world.get_component(entity, transform_type)
+local fetched = assert(world.get_component(entity, transform_type))
 assert(approx(fetched.translation.x, 5), "a field change persists")
 assert(approx(fetched.translation.y, 2), "other fields are unchanged")
 assert(approx_vec3(fetched:forward(), Vec3.new(-math.sin(1.0), 0, -math.cos(1.0))), "a rotation persists")

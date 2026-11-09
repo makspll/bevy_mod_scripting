@@ -4,8 +4,8 @@ local world = bms.world
 runs = {}
 
 function on_test()
-    local post_update_schedule = world.get_schedule_by_name("PostUpdate")
-    local script_attachment = ScriptAttachment.new_entity_script(bms.current_entity(), bms.current_script())
+    local post_update_schedule = assert(world.get_schedule_by_name("PostUpdate"))
+    local script_attachment = ScriptAttachment.new_entity_script(assert(bms.current_entity()), assert(bms.current_script()))
     world.add_system(
         post_update_schedule,
         bms.system_builder("my_exclusive_system", script_attachment):exclusive()
