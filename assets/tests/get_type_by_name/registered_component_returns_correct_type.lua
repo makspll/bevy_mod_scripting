@@ -21,3 +21,6 @@ local type_ref = type:display()
 --  check contains ScriptComponentRegistration
 assert(string.find(type_ref, "ScriptComponentRegistration") ~= nil,
     "ScriptComponentRegistration not found in type_ref. got: " .. type_ref)
+
+-- registrations are opaque, scripts cannot forge their component ids
+assert(not pcall(function() type.component_id = type end), "component_id should not be settable")

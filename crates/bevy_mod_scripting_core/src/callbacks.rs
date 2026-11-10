@@ -29,6 +29,16 @@ pub struct ScriptCallbacks<P: IntoScriptPluginParams> {
     pub callbacks: Arc<RwLock<HashMap<(ScriptAttachment, String), Arc<CallbackFn<P>>>>>,
 }
 
+/// A `(ScriptAttachment, String)` key borrowing its parts, so lookups don't allocate. Hashes the same as the key.
+#[derive(Hash)]
+pub(crate) struct CallbackKeyRef<'a>(pub &'a ScriptAttachment, pub &'a str);
+
+impl equivalent::Equivalent<(ScriptAttachment, String)> for CallbackKeyRef<'_> {
+    fn equivalent(&self, key: &(ScriptAttachment, String)) -> bool {
+        self.1 == key.1 && *self.0 == key.0
+    }
+}
+
 impl<P: IntoScriptPluginParams> Clone for ScriptCallbacks<P> {
     fn clone(&self) -> Self {
         Self {

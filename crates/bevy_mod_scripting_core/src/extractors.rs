@@ -1,20 +1,9 @@
-//! Systems which are used to extract the various resources and components used by BMS.
-//!
-//! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
+//! Access helpers used when locking the components and resources of a system's [`Access`].
 
 use bevy_ecs::{
     component::ComponentId,
     query::{Access, AccessConflicts, ComponentIdSet},
 };
-
-// /// A wrapper around a world which pre-populates access, to safely co-exist with other system params,
-// /// acts exactly like `&mut World` so this should be your only top-level system param
-// ///
-// /// The reason is the guard needs to know the underlying access that
-// pub struct WithWorldGuard<'w, 's, T: SystemParam> {
-//     world_guard: WorldGuard<'w>,
-//     param: T::Item<'w, 's>,
-// }
 
 // impl<'w, 's, T: SystemParam> WithWorldGuard<'w, 's, T> {
 //     /// Get the world guard and the inner system param

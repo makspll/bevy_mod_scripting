@@ -677,8 +677,9 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let component_id = self.get_component_id(type_id)?.ok_or(
             InteropError::unregistered_component_or_resource_type(type_id),
         )?;
+        self.check_archetype_access(entity, component_id, false)?;
         let cell = self.as_unsafe_world_cell()?;
-        // Safety: we claimed access to this component
+        // Safety: we claimed access to this component and checked the entity is in an allowed archetype
         self.with_read_access(component_id, || {
             f(unsafe { cell.get_entity(entity).ok().and_then(|e| e.get::<C>()) })
         })
@@ -694,8 +695,9 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let component_id = self.get_component_id(type_id)?.ok_or(
             InteropError::unregistered_component_or_resource_type(type_id),
         )?;
+        self.check_archetype_access(entity, component_id, true)?;
         let cell = self.as_unsafe_world_cell()?;
-        // Safety: we claimed access to this component
+        // Safety: we claimed access to this component and checked the entity is in an allowed archetype
         self.with_write_access(component_id, || {
             f(unsafe { cell.get_entity(entity).ok().and_then(|e| e.get_mut::<C>()) })
         })
@@ -1374,7 +1376,10 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         registration: ScriptTypeRegistration,
     ) -> Result<Result<ScriptResourceRegistration, ScriptTypeRegistration>, InteropError> {
         Ok(match self.get_resource_id(registration.type_id())? {
-            Some(resource_id) => Ok(ScriptResourceRegistration::new(registration, resource_id)),
+            // Safety: the id was looked up by this registration's type id
+            Some(resource_id) => {
+                Ok(unsafe { ScriptResourceRegistration::new(registration, resource_id) })
+            }
             None => Err(registration),
         })
     }
@@ -1384,7 +1389,8 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         registration: ScriptTypeRegistration,
     ) -> Result<Result<ScriptComponentRegistration, ScriptTypeRegistration>, InteropError> {
         Ok(match self.get_component_id(registration.type_id())? {
-            Some(comp_id) => Ok(ScriptComponentRegistration::new(registration, comp_id)),
+            // Safety: the id was looked up by this registration's type id
+            Some(comp_id) => Ok(unsafe { ScriptComponentRegistration::new(registration, comp_id) }),
             None => Err(registration),
         })
     }
@@ -1523,12 +1529,15 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         drop(component_registry_read);
         let mut component_registry = component_registry.write();
 
-        let mut registration = ScriptComponentRegistration::new(
-            ScriptTypeRegistration::new(Arc::new(
-                <DynamicComponent as GetTypeRegistration>::get_type_registration(),
-            )),
-            component_id,
-        );
+        // Safety: the component was just registered with a `DynamicComponent` layout
+        let mut registration = unsafe {
+            ScriptComponentRegistration::new(
+                ScriptTypeRegistration::new(Arc::new(
+                    <DynamicComponent as GetTypeRegistration>::get_type_registration(),
+                )),
+                component_id,
+            )
+        };
         registration.script_namespace = Some(namespace.to_owned());
 
         let component_info = DynamicComponentInfo {

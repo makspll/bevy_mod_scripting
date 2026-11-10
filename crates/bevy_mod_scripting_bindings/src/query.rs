@@ -38,33 +38,37 @@ pub struct ScriptTypeRegistration {
 }
 
 #[derive(Clone, Reflect, Debug)]
-#[reflect(NoTypeFunctions)]
+#[reflect(opaque, NoTypeFunctions)]
 /// A reference to a component type's reflection registration.
 ///
 /// In general think of this as a handle to a type.
 ///
 /// Not to be confused with script registered dynamic components, although this can point to a script registered component.
+///
+/// Opaque with private fields: world accessors trust that `component_id` belongs to `registration`'s type.
 pub struct ScriptComponentRegistration {
     /// The type registration of the component
-    pub registration: ScriptTypeRegistration,
+    pub(crate) registration: ScriptTypeRegistration,
     /// the component id of the component
-    pub component_id: ComponentId,
+    pub(crate) component_id: ComponentId,
     /// whether this is a component registered BY a script
-    pub is_dynamic_script_component: bool,
+    pub(crate) is_dynamic_script_component: bool,
     /// the script namespace the component was registered in, if registered by a script
-    pub script_namespace: Option<String>,
+    pub(crate) script_namespace: Option<String>,
 }
 
 #[derive(Clone, Reflect, Debug)]
-#[reflect(NoTypeFunctions)]
+#[reflect(opaque, NoTypeFunctions)]
 /// A reference to a resource type's reflection registration.
 ///
 /// In general think of this as a handle to a type.
+///
+/// Opaque with private fields: world accessors trust that `resource_id` belongs to `registration`'s type.
 pub struct ScriptResourceRegistration {
     /// the type registration of the resource
-    pub registration: ScriptTypeRegistration,
+    pub(crate) registration: ScriptTypeRegistration,
     /// the component id of the resource
-    pub resource_id: ComponentId,
+    pub(crate) resource_id: ComponentId,
 }
 
 #[derive(Clone, Reflect, Debug)]
@@ -167,7 +171,10 @@ impl ScriptTypeRegistration {
 #[profiling::all_functions]
 impl ScriptResourceRegistration {
     /// Creates a new [`ScriptResourceRegistration`] from a [`ScriptTypeRegistration`] and a [`ComponentId`].
-    pub fn new(registration: ScriptTypeRegistration, resource_id: ComponentId) -> Self {
+    ///
+    /// # Safety
+    /// In every world this is used with, `resource_id` must either be unused or be the id of the resource of `registration`'s type.
+    pub unsafe fn new(registration: ScriptTypeRegistration, resource_id: ComponentId) -> Self {
         Self {
             registration,
             resource_id,
@@ -194,7 +201,11 @@ impl ScriptResourceRegistration {
 #[profiling::all_functions]
 impl ScriptComponentRegistration {
     /// Creates a new [`ScriptComponentRegistration`] from a [`ScriptTypeRegistration`] and a [`ComponentId`].
-    pub fn new(registration: ScriptTypeRegistration, component_id: ComponentId) -> Self {
+    ///
+    /// # Safety
+    /// In every world this is used with, `component_id` must either be unused or be the id of the component of `registration`'s type
+    /// (for [`DynamicComponent`] registrations: a component backed by [`DynamicComponent`]).
+    pub unsafe fn new(registration: ScriptTypeRegistration, component_id: ComponentId) -> Self {
         Self {
             is_dynamic_script_component: registration.type_id()
                 == std::any::TypeId::of::<DynamicComponent>(),

@@ -18,7 +18,7 @@ use bevy_mod_scripting_world::{WorldAccessGuard, WorldGuard};
 
 use crate::{
     IntoScriptPluginParams,
-    callbacks::ScriptCallbacks,
+    callbacks::{CallbackKeyRef, ScriptCallbacks},
     error::ScriptError,
     event::{
         CallbackLabel, GetRecipients, IntoCallbackLabel, Recipients, ScriptCallbackMessage,
@@ -34,6 +34,16 @@ use {
     bevy_log::error,
     parking_lot::Mutex,
 };
+
+/// Puts the previous [`CurrentScriptAttachment`] back into the guard when dropped, also when the callback panics
+struct RestoreAttachmentOnDrop<'a, 'w>(&'a WorldGuard<'w>, CurrentScriptAttachment);
+
+impl Drop for RestoreAttachmentOnDrop<'_, '_> {
+    fn drop(&mut self) {
+        let previous = std::mem::replace(&mut self.1, CurrentScriptAttachment(None));
+        self.0.replace_cached_registry(previous);
+    }
+}
 
 /// A function that handles a callback event
 pub type HandlerFn<P> = fn(
@@ -86,13 +96,16 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
             let mut script_ctxt = script_ctxt.lock();
             let script_ctxt = &mut *script_ctxt;
             WorldGuard::with_existing_static_guard(world.clone(), |world| {
-                // restored afterwards, so that a callback running inside another one leaves the outer callback's attachment intact
-                let previous_attachment = world
-                    .replace_cached_registry(CurrentScriptAttachment(Some(attachment.clone())));
+                // restored on drop (also on panic), so that a callback running inside another one leaves the outer callback's attachment intact
+                let _restore = RestoreAttachmentOnDrop(
+                    &world,
+                    world
+                        .replace_cached_registry(CurrentScriptAttachment(Some(attachment.clone()))),
+                );
                 let world_id = world.id();
                 let callbacks = script_callbacks.callbacks.read();
-                let result = if let Some(callback) = callbacks
-                    .get(&(attachment.clone(), callback.to_string()))
+                if let Some(callback) = callbacks
+                    .get(&CallbackKeyRef(attachment, callback.as_ref()))
                     .cloned()
                 {
                     drop(callbacks);
@@ -100,9 +113,7 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
                 } else {
                     drop(callbacks);
                     Self::handler()(args, attachment, callback, script_ctxt, world_id)
-                };
-                world.replace_cached_registry(previous_attachment);
-                result
+                }
             })
         };
 

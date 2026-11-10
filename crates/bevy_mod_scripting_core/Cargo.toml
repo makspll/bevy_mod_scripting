@@ -36,6 +36,7 @@ bevy_diagnostic = { workspace = true, default-features = false, features = [] }
 bevy_platform = { workspace = true, default-features = false, features = [] }
 bevy_time = { workspace = true, default-features = false, features = [] }
 indexmap = { workspace = true }
+equivalent = { workspace = true }
 bevy_utils = { workspace = true }
 
 parking_lot = { workspace = true }
