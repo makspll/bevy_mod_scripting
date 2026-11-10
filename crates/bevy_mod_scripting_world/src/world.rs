@@ -7,7 +7,6 @@
 
 use crate::{AccessByteSet, AccessMap, ArchetypeFilter, WorldAccessRange};
 
-use super::access_map::DynamicSystemMeta;
 use ::bevy_ecs::{
     component::ComponentId,
     entity::Entity,
@@ -20,10 +19,10 @@ use bevy_ecs::{
 use bevy_reflect::TypeRegistryArc;
 use std::{
     any::{Any, TypeId},
-    cell::{Ref, RefCell},
+    cell::{Cell, Ref, RefCell},
     fmt::Debug,
     rc::Rc,
-    sync::{Arc, atomic::AtomicBool},
+    sync::Arc,
 };
 
 /// Prefer to directly using [`WorldAccessGuard`]. If the underlying type changes, this alias will be updated.
@@ -63,7 +62,7 @@ pub struct WorldAccessGuard<'w> {
     pub(crate) inner: Rc<WorldAccessGuardInner<'w>>,
     /// if true the guard is invalid and cannot be used, stored as a second pointer so that this validity can be
     /// stored separate from the contents of the guard
-    invalid: Rc<AtomicBool>,
+    invalid: Rc<Cell<bool>>,
 }
 impl WorldAccessGuard<'_> {
     /// Returns the id of the world this guard provides access to
@@ -98,12 +97,6 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     type_registry: TypeRegistryArc,
 
     cached_slots: RegistryCache,
-    // /// The function registry for the world
-    // function_registry: AppScriptFunctionRegistry,
-    // /// The schedule registry for the world
-    // schedule_registry: AppScheduleRegistry,
-    // /// The registry of script registered components
-    // script_component_registry: AppScriptComponentRegistry,
 }
 
 impl std::fmt::Debug for WorldAccessGuardInner<'_> {
@@ -292,34 +285,14 @@ impl<'w> WorldAccessGuard<'w> {
         })
     }
 
-    /// Procures and releases the given access key allowing safe read access to world resources
-    /// requiring that key within the given closure
-    ///
-    /// This is a version of [`WorldAccessGuard::with_world_access`] which flattens errors using into implementations.
-    #[track_caller]
-    pub fn with_world_access_and_then<E, F: FnOnce(&World) -> Result<O, E>, O>(
-        &self,
-        f: F,
-    ) -> Result<O, E>
-    where
-        DynWorldAccessError: Into<E>,
-    {
-        let cell = self.as_unsafe_world_cell().map_err(Into::into)?;
-        self.with_write_access_and_then(WorldAccessRange::Global, || {
-            // Safety: we have exclusive access
-            f(unsafe { cell.world_mut() })
-        })
-    }
-
     /// Returns true if the guard is valid, false if it is invalid
     fn is_valid(&self) -> bool {
-        !self.invalid.load(std::sync::atomic::Ordering::Relaxed)
+        !self.invalid.get()
     }
 
     /// Invalidates the world access guard, making it and any guards derived from this one unusable.
     pub fn invalidate(&self) {
-        self.invalid
-            .store(true, std::sync::atomic::Ordering::Relaxed);
+        self.invalid.set(true);
     }
 
     /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`].
@@ -457,24 +430,18 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// Safety:
     /// - The caller must ensure it's safe to release any potentially locked accesses.
-    pub unsafe fn with_access_scope<O, F: FnOnce() -> O>(
-        &self,
-        f: F,
-    ) -> Result<O, DynWorldAccessError> {
-        Ok(self.inner.accesses.with_scope(f))
+    pub unsafe fn with_access_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
+        self.inner.accesses.with_scope(f)
     }
 
     /// Gets the component id of the given component or resource
     pub fn get_component_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
-        Ok(self
-            .as_unsafe_world_cell_readonly()?
-            .components()
-            .get_id(id))
+        Ok(self.as_unsafe_world_cell()?.components().get_id(id))
     }
 
     /// Gets the resource id of the given component or resource
     pub fn get_resource_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
-        let cell = self.as_unsafe_world_cell_readonly()?;
+        let cell = self.as_unsafe_world_cell()?;
         Ok(cell
             .components()
             .get_id(id)
@@ -504,30 +471,13 @@ impl<'w> WorldAccessGuard<'w> {
     /// creates a new guard derived from this one, which if invalidated, will not invalidate the original
     fn scope(&self) -> Self {
         let mut new_guard = self.clone();
-        new_guard.invalid = Rc::new(
-            new_guard
-                .invalid
-                .load(std::sync::atomic::Ordering::Relaxed)
-                .into(),
-        );
+        new_guard.invalid = Rc::new(Cell::new(new_guard.invalid.get()));
         new_guard
     }
 
     /// Retrieves the underlying unsafe world cell, with no additional guarantees of safety
     /// proceed with caution and only use this if you understand what you're doing
     pub fn as_unsafe_world_cell(&self) -> Result<UnsafeWorldCell<'w>, DynWorldAccessError> {
-        if !self.is_valid() {
-            return Err(DynWorldAccessError::missing_world());
-        }
-
-        Ok(self.inner.cell)
-    }
-
-    /// Retrieves the underlying read only unsafe world cell, with no additional guarantees of safety
-    /// proceed with caution and only use this if you understand what you're doing
-    pub fn as_unsafe_world_cell_readonly(
-        &self,
-    ) -> Result<UnsafeWorldCell<'w>, DynWorldAccessError> {
         if !self.is_valid() {
             return Err(DynWorldAccessError::missing_world());
         }
@@ -734,7 +684,7 @@ mod test {
 
         // within the access scope, no extra accesses are claimed
         let result = unsafe { guard.with_access_scope(|| 100) };
-        assert_eq!(result.unwrap(), 100);
+        assert_eq!(result, 100);
 
         // failing closures release their claim too
         let key = WorldAccessRange::ComponentOrResource(ComponentId::new(0));
