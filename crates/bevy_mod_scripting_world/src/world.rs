@@ -182,10 +182,10 @@ impl<'w> WorldAccessGuard<'w> {
         if !self.inner.accesses.claim_read_access(key.clone()) {
             Err(DynWorldAccessError::cannot_claim_access(key, "Could not claim read access").into())
         } else {
-            let res = f()?;
+            let res = f();
             // Safety: we have claimed read access to this key
             unsafe { self.release_access(key) };
-            Ok(res)
+            res
         }
     }
 
@@ -231,10 +231,10 @@ impl<'w> WorldAccessGuard<'w> {
                     .into(),
             )
         } else {
-            let res = f()?;
-            // Safety: we have claimed read access to this key
+            let res = f();
+            // Safety: we have claimed write access to this key
             unsafe { self.release_access(key) };
-            Ok(res)
+            res
         }
     }
 
@@ -685,5 +685,12 @@ mod test {
         // within the access scope, no extra accesses are claimed
         let result = unsafe { guard.with_access_scope(|| 100) };
         assert_eq!(result, 100);
+
+        // failing closures release their claim too
+        let key = WorldAccessRange::ComponentOrResource(ComponentId::new(0));
+        let fail = || Err::<(), _>(DynWorldAccessError::missing_world());
+        assert!(guard.with_read_access_and_then(key.clone(), fail).is_err());
+        assert!(guard.with_write_access_and_then(key, fail).is_err());
+        assert_eq!(guard.access_len(), 0);
     }
 }
