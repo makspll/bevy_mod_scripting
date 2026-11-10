@@ -85,6 +85,49 @@ pub trait CachedRegistry: Any {
 /// Aliases the type used as the registry cache for the world guard.
 pub type RegistryCache = [Rc<RefCell<dyn Any>>; 6];
 
+/// A scope in which values converted from scripts may borrow from the world, see [`WorldAccessGuard::with_call_scope`].
+///
+/// Accesses claimed in the scope are released when it ends, which is why borrows from it can't outlive it.
+pub struct CallScope<'w> {
+    guard: WorldGuard<'w>,
+    /// The number of access scopes running when this one started, itself included
+    depth: usize,
+}
+
+impl<'w> CallScope<'w> {
+    /// The world guard this scope belongs to
+    pub fn world(&self) -> WorldGuard<'w> {
+        self.guard.clone()
+    }
+
+    /// Claims read access for a borrow that lives as long as this scope.
+    ///
+    /// Fails while a scope nested in this one runs, as that scope would release the claim when it ends.
+    #[track_caller]
+    pub fn claim_read_access(&self, key: impl Into<WorldAccessRange>) -> bool {
+        self.is_innermost() && self.guard.claim_read_access(key)
+    }
+
+    /// Claims write access for a borrow that lives as long as this scope, see [`Self::claim_read_access`].
+    #[track_caller]
+    pub fn claim_write_access(&self, key: impl Into<WorldAccessRange>) -> bool {
+        self.is_innermost() && self.guard.claim_write_access(key)
+    }
+
+    fn is_innermost(&self) -> bool {
+        self.guard.inner.accesses.scope_depth() == self.depth
+    }
+}
+
+/// Invalidates a static guard when dropped, also when its closure panics
+struct InvalidateOnDrop(WorldGuard<'static>);
+
+impl Drop for InvalidateOnDrop {
+    fn drop(&mut self) {
+        self.0.invalidate();
+    }
+}
+
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {
     /// Safety: cannot be used unless the scope depth is less than the max valid scope
@@ -306,13 +349,11 @@ impl<'w> WorldAccessGuard<'w> {
         let guard = WorldAccessGuard::new_exclusive(world, cached_slots);
         // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
         let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
+        let _invalidate = InvalidateOnDrop(static_guard.clone());
         let _restore = ThreadWorldContainer::replace_context(ThreadScriptContext {
             world: static_guard.clone(),
         });
-        let o = f(static_guard.clone());
-
-        static_guard.invalidate();
-        o
+        f(static_guard)
     }
 
     /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`] using a previously lifetimed world guard.
@@ -324,12 +365,11 @@ impl<'w> WorldAccessGuard<'w> {
         // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends, from the static guard
         // i.e. even if somebody squirells it away, it will be useless.
         let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard.scope()) };
+        let _invalidate = InvalidateOnDrop(static_guard.clone());
         let _restore = ThreadWorldContainer::replace_context(ThreadScriptContext {
             world: static_guard.clone(),
         });
-        let o = f(static_guard.clone());
-        static_guard.invalidate();
-        o
+        f(static_guard)
     }
 
     /// Creates a new [`WorldAccessGuard`] from a possibly non-exclusive access to the world.
@@ -426,12 +466,38 @@ impl<'w> WorldAccessGuard<'w> {
         })
     }
 
-    /// Runs a closure within an isolated access scope, releasing leftover accesses, should only be used in a single-threaded context.
+    /// Runs `f` in a new [`CallScope`], releasing the accesses claimed in it once `f` returns or panics.
     ///
-    /// Safety:
-    /// - The caller must ensure it's safe to release any potentially locked accesses.
-    pub unsafe fn with_access_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
-        self.inner.accesses.with_scope(f)
+    /// Values converted from scripts borrow from the world through the scope, so they can't outlive it:
+    ///
+    /// ```
+    /// # use bevy_mod_scripting_world::WorldGuard;
+    /// fn f(guard: WorldGuard) -> WorldGuard { guard.with_call_scope(|scope| scope.world()) }
+    /// ```
+    ///
+    /// ```compile_fail
+    /// # use bevy_mod_scripting_world::WorldGuard;
+    /// fn f(guard: WorldGuard) { let _ = guard.with_call_scope(|scope| scope); }
+    /// ```
+    pub fn with_call_scope<O>(&self, f: impl FnOnce(&CallScope<'w>) -> O) -> O {
+        self.inner.accesses.with_scope(|| {
+            let scope = CallScope {
+                guard: self.clone(),
+                depth: self.inner.accesses.scope_depth(),
+            };
+            f(&scope)
+        })
+    }
+
+    /// Runs `f` with a [`CallScope`] that doesn't release its accesses when it ends, for converting owned values cheaply.
+    ///
+    /// Borrows can't outlive the scope either way, accesses left claimed by them are released by the enclosing
+    /// [`Self::with_call_scope`], if there is one.
+    pub fn with_borrow_scope<O>(&self, f: impl FnOnce(&CallScope<'w>) -> O) -> O {
+        f(&CallScope {
+            guard: self.clone(),
+            depth: self.inner.accesses.scope_depth(),
+        })
     }
 
     /// Gets the component id of the given component or resource
@@ -646,6 +712,21 @@ mod test {
             Some(false),
             "scoped world was not invalidated"
         );
+
+        // also when the closure panics
+        let sneaky_clone = RefCell::new(None);
+        let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            WorldAccessGuard::with_existing_static_guard(world.clone(), |g| {
+                *sneaky_clone.borrow_mut() = Some(g.clone());
+                panic!("callback failed");
+            })
+        }));
+        assert!(panicked.is_err());
+        pretty_assertions::assert_eq!(
+            sneaky_clone.into_inner().map(|c| c.is_valid()),
+            Some(false),
+            "scoped world was not invalidated after a panic"
+        );
     }
 
     #[test]
@@ -683,14 +764,26 @@ mod test {
         );
 
         // within the access scope, no extra accesses are claimed
-        let result = unsafe { guard.with_access_scope(|| 100) };
+        let result = guard.with_call_scope(|_| 100);
         assert_eq!(result, 100);
 
+        let key = || WorldAccessRange::ComponentOrResource(ComponentId::new(0));
+        guard.with_call_scope(|outer| {
+            assert!(outer.claim_read_access(key()));
+            guard.with_call_scope(|inner| {
+                // the inner scope would release a claim made for the outer one
+                assert!(!outer.claim_read_access(key()));
+                assert!(inner.claim_read_access(key()));
+            });
+            assert_eq!(guard.access_len(), 1);
+        });
+        // claims are released when their scope ends
+        assert_eq!(guard.access_len(), 0);
+
         // failing closures release their claim too
-        let key = WorldAccessRange::ComponentOrResource(ComponentId::new(0));
         let fail = || Err::<(), _>(DynWorldAccessError::missing_world());
-        assert!(guard.with_read_access_and_then(key.clone(), fail).is_err());
-        assert!(guard.with_write_access_and_then(key, fail).is_err());
+        assert!(guard.with_read_access_and_then(key(), fail).is_err());
+        assert!(guard.with_write_access_and_then(key(), fail).is_err());
         assert_eq!(guard.access_len(), 0);
     }
 }

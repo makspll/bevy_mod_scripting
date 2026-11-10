@@ -47,14 +47,14 @@ pub fn from_script(input: TokenStream) -> TokenStream {
 
         impl #impl_generics #bms_bindings_path::FromScript for #ident #type_generics #where_clause {
             type This<'w> = #ident #type_generics;
-            fn from_script(
+            fn from_script<'s>(
                 value: #bms_bindings_path::ScriptValue,
-                world: #bms_bindings_path::WorldGuard<'_>,
-            ) -> Result<Self::This<'_>, #bms_bindings_path::InteropError>
+                scope: &'s #bms_bindings_path::CallScope<'_>,
+            ) -> Result<Self::This<'s>, #bms_bindings_path::InteropError>
             where
                 Self: Sized,
             {
-                #bms_bindings_path::V::<Self>::from_script(value, world).map(#bms_bindings_path::V::into_inner)
+                #bms_bindings_path::V::<Self>::from_script(value, scope).map(#bms_bindings_path::V::into_inner)
             }
         }
     }

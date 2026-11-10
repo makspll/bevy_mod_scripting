@@ -5,7 +5,7 @@ use std::{any::TypeId, marker::PhantomData, ops::Deref};
 use bevy_app::App;
 use bevy_asset::Asset;
 use bevy_ecs::resource::Resource;
-use bevy_mod_scripting_world::WorldGuard;
+use bevy_mod_scripting_world::{CallScope, WorldGuard};
 use bevy_reflect::{CreateTypeData, Reflect, TypeInfo, TypeRegistry, Typed};
 
 use crate::{
@@ -118,11 +118,11 @@ impl<R, M> Deref for TypeOf<R, M> {
 impl<R: FromScript, M> FromScript for TypeOf<R, M> {
     type This<'w> = TypeOf<R::This<'w>, M>;
 
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError> {
-        R::from_script(value, world).map(|inner| TypeOf(inner, PhantomData))
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
+        R::from_script(value, scope).map(|inner| TypeOf(inner, PhantomData))
     }
 }
 
@@ -183,8 +183,8 @@ impl<M> Deref for ValueOf<M> {
 impl<M> FromScript for ValueOf<M> {
     type This<'w> = Self;
 
-    fn from_script(value: ScriptValue, world: WorldGuard<'_>) -> Result<Self, InteropError> {
-        ReflectReference::from_script(value, world).map(ValueOf::new)
+    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
+        ReflectReference::from_script(value, scope).map(ValueOf::new)
     }
 }
 

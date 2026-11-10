@@ -5,7 +5,7 @@
 
 use std::{any::TypeId, collections::VecDeque};
 
-use bevy_mod_scripting_world::WorldGuard;
+use bevy_mod_scripting_world::{CallScope, WorldGuard};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::TypeRegistry;
 
@@ -30,8 +30,8 @@ macro_rules! impl_bound_reference {
         impl FromScript for $ty {
             type This<'w> = Self;
 
-            fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
-                ReflectReference::from_script(value, world).map($ty)
+            fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
+                ReflectReference::from_script(value, scope).map($ty)
             }
         }
 
@@ -89,7 +89,7 @@ impl BoundFields {
 impl FromScript for BoundFields {
     type This<'w> = Self;
 
-    fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(value: ScriptValue, _scope: &CallScope) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Map(map) => Ok(BoundFields::Keyed(map)),
             ScriptValue::List(list) => Ok(BoundFields::Positional(list)),

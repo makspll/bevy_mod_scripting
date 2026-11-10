@@ -39,31 +39,39 @@ impl FromScriptErased for Box<dyn PartialReflect> {
     where
         Self: Sized,
     {
-        match_by_type! (
+        // the primitives don't borrow from the world
+        let primitive = world.with_borrow_scope(|scope| {
+            match_by_type! (
             match target {
-                ta : usize   => return <usize>::from_script(value, world).map(|a| Box::new(a) as _),
-                tb : isize   => return <isize>::from_script(value, world).map(|a| Box::new(a) as _),
-                tc : u8      => return <u8>::from_script(value, world).map(|a| Box::new(a) as _),
-                td : u16     => return <u16>::from_script(value, world).map(|a| Box::new(a) as _),
-                te : u32     => return <u32>::from_script(value, world).map(|a| Box::new(a) as _),
-                tf : u64     => return <u64>::from_script(value, world).map(|a| Box::new(a) as _),
-                tg : u128    => return <u128>::from_script(value, world).map(|a| Box::new(a) as _),
-                th : i8      => return <i8>::from_script(value, world).map(|a| Box::new(a) as _),
-                ti : i16     => return <i16>::from_script(value, world).map(|a| Box::new(a) as _),
-                tj : i32     => return <i32>::from_script(value, world).map(|a| Box::new(a) as _),
-                tk : i64     => return <i64>::from_script(value, world).map(|a| Box::new(a) as _),
-                tl : i128    => return <i128>::from_script(value, world).map(|a| Box::new(a) as _),
-                tm : f32     => return <f32>::from_script(value, world).map(|a| Box::new(a) as _),
-                tn : f64     => return <f64>::from_script(value, world).map(|a| Box::new(a) as _),
-                to : bool    => return <bool>::from_script(value, world).map(|a| Box::new(a) as _),
-                tp : char    => return <char>::from_script(value, world).map(|a| Box::new(a) as _),
-                tq : String  => return <String>::from_script(value, world).map(|a| Box::new(a) as _),
-                tr : PathBuf => return <PathBuf>::from_script(value, world).map(|a| Box::new(a) as _),
-                ts : OsString=> return <OsString>::from_script(value, world).map(|a| Box::new(a) as _),
-                tsv: ScriptValue => return <ScriptValue>::from_script(value, world).map(|a| Box::new(a) as _),
-                tn : ()      => return <()>::from_script(value, world).map(|a| Box::new(a) as _)
+                ta : usize   => return Ok(<usize>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tb : isize   => return Ok(<isize>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tc : u8      => return Ok(<u8>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                td : u16     => return Ok(<u16>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                te : u32     => return Ok(<u32>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tf : u64     => return Ok(<u64>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tg : u128    => return Ok(<u128>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                th : i8      => return Ok(<i8>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                ti : i16     => return Ok(<i16>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tj : i32     => return Ok(<i32>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tk : i64     => return Ok(<i64>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tl : i128    => return Ok(<i128>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tm : f32     => return Ok(<f32>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tn : f64     => return Ok(<f64>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                to : bool    => return Ok(<bool>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tp : char    => return Ok(<char>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tq : String  => return Ok(<String>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tr : PathBuf => return Ok(<PathBuf>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                ts : OsString=> return Ok(<OsString>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tsv: ScriptValue => return Ok(<ScriptValue>::from_script(value, scope).map(|a| Box::new(a) as _)),
+                tn : ()      => return Ok(<()>::from_script(value, scope).map(|a| Box::new(a) as _))
             }
-        );
+            );
+            Err(value)
+        });
+        let value = match primitive {
+            Ok(converted) => return converted,
+            Err(value) => value,
+        };
 
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();

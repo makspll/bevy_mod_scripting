@@ -26,13 +26,15 @@ impl FromScript for MyFunkyArgumentType {
     // generally this is always Self, unless you are implementing complex wrapper types
     type This<'w> = Self;
 
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        world: bevy_mod_scripting_bindings::WorldGuard<'_>,
-    ) -> std::result::Result<Self::This<'_>, bevy_mod_scripting_bindings::InteropError>
+        // values can borrow from the world for as long as the scope lives, i.e. the function call
+        scope: &'s bevy_mod_scripting_bindings::CallScope<'_>,
+    ) -> std::result::Result<Self::This<'s>, bevy_mod_scripting_bindings::InteropError>
     where
         Self: Sized,
     {
+        let world = scope.world();
         match value {
             ScriptValue::Unit => Ok(Self::Nil),
             ScriptValue::Bool(_) => todo!(),

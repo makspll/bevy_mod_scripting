@@ -6,7 +6,7 @@ use crate::{
     EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
     error::InteropError, script_value::VariadicTuple,
 };
-use bevy_mod_scripting_world::WorldGuard;
+use bevy_mod_scripting_world::{CallScope, WorldGuard};
 use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{FromReflect, Reflect};
 use nonmax::NonMaxU32;
@@ -21,16 +21,19 @@ use std::{
 /// Describes the procedure for constructing a value of type `T` from a [`ScriptValue`].
 ///
 /// The [`FromScript::This`] associated type is used to allow for the implementation of this trait to return
-/// a type with the lifetime of the world guard. In 99% cases you can just use `Self` as the associated type.
+/// a type borrowing from the world for the duration of a [`CallScope`]. In 99% cases you can just use `Self` as the associated type.
 pub trait FromScript {
     /// The type that is constructed from the script value.
-    type This<'w>;
+    type This<'s>;
 
     /// Construct a value of type `T` from a [`ScriptValue`].
-    fn from_script(
+    ///
+    /// Borrows from the world can't outlive the `scope`, which releases their accesses when it ends,
+    /// see [`bevy_mod_scripting_world::WorldAccessGuard::with_call_scope`].
+    fn from_script<'s>(
         value: ScriptValue,
-        world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError>
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError>
     where
         Self: Sized;
 }
@@ -38,7 +41,7 @@ pub trait FromScript {
 #[profiling::all_functions]
 impl FromScript for ScriptValue {
     type This<'w> = Self;
-    fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(value: ScriptValue, _scope: &CallScope) -> Result<Self, InteropError> {
         Ok(value)
     }
 }
@@ -46,7 +49,7 @@ impl FromScript for ScriptValue {
 #[profiling::all_functions]
 impl FromScript for () {
     type This<'w> = Self;
-    fn from_script(_value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(_value: ScriptValue, _scope: &CallScope) -> Result<Self, InteropError> {
         Ok(())
     }
 }
@@ -55,16 +58,16 @@ impl FromScript for () {
 impl FromScript for bool {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError>
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError>
     where
         Self: Sized,
     {
         match value {
             ScriptValue::Bool(b) => Ok(b),
-            ScriptValue::Reference(r) => r.downcast::<Self>(world),
+            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<Self>(),
                 value,
@@ -80,11 +83,11 @@ macro_rules! impl_from_with_downcast {
             impl FromScript for $ty {
                 type This<'w> = Self;
                 #[profiling::function]
-                fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+                fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
                     match value {
                         ScriptValue::Integer(i) => Ok(i as $ty),
                         ScriptValue::Float(i) => Ok(i as $ty),
-                        ScriptValue::Reference(r) => r.downcast::<Self>(world),
+                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
                         ScriptValue::Bool(b) => Ok(b as usize as $ty),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
@@ -105,10 +108,10 @@ macro_rules! impl_from_stringlike {
             impl FromScript for $ty {
                 type This<'w> = Self;
                 #[profiling::function]
-                fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+                fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
                     match value {
                         ScriptValue::String(s) => Ok(s.to_string().into()),
-                        ScriptValue::Reference(r) => r.downcast::<Self>(world),
+                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
                 }
@@ -122,17 +125,17 @@ impl_from_stringlike!(String, PathBuf, OsString);
 impl FromScript for NonMaxU32 {
     type This<'w> = Self;
 
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        _world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError>
+        _scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError>
     where
         Self: Sized,
     {
         match value {
             ScriptValue::Integer(i) if i != 0 => Ok(unsafe { NonMaxU32::new_unchecked(i as u32) }),
             ScriptValue::Float(f) if f != 0.0 => Ok(unsafe { NonMaxU32::new_unchecked(f as u32) }),
-            // ScriptValue::Reference(r) => r.downcast::<Self>(world),
+            // ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<Self>(),
                 value,
@@ -145,10 +148,10 @@ impl FromScript for NonMaxU32 {
 impl FromScript for char {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError>
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError>
     where
         Self: Sized,
     {
@@ -157,7 +160,7 @@ impl FromScript for char {
             ScriptValue::String(c) => c.chars().next().ok_or_else(|| {
                 InteropError::value_mismatch(TypeId::of::<char>(), ScriptValue::String(c))
             }),
-            ScriptValue::Reference(r) => r.downcast::<Self>(world),
+            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<Self>(),
                 value,
@@ -170,7 +173,7 @@ impl FromScript for char {
 impl FromScript for ReflectReference {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(value: ScriptValue, _scope: &CallScope) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Reference(r) => Ok(r),
             _ => Err(InteropError::value_mismatch(
@@ -252,7 +255,8 @@ impl<T> From<T> for V<T> {
 impl<T: FromReflect> FromScript for V<T> {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
+        let world = scope.world();
         match value {
             ScriptValue::Reference(reflect_reference) => {
                 let from_reflect = |reference: &ReflectReference| {
@@ -289,8 +293,7 @@ impl<T: FromReflect> FromScript for V<T> {
 /// This can be used to retrieve a reference out of a [`ScriptValue::Reference`] corresponding to the type `T`.
 /// Before downcasting the reference, it will claim write access to the object to ensure that the reference is valid.
 ///
-/// However, the access is NOT released when the `Mut` is dropped. This is not unsafe but can lead to deadlocks if not released later.
-/// The script function calling mechanism will take care of releasing all accesses claimed during the function call.
+/// The access is released when the [`CallScope`] it was converted in ends, see [`M`].
 pub struct R<'w, T>(pub &'w T);
 
 impl<T> Deref for R<'_, T> {
@@ -305,21 +308,23 @@ impl<T> Deref for R<'_, T> {
 impl<T: FromReflect> FromScript for R<'_, T> {
     type This<'a> = R<'a, T>;
     #[profiling::function]
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError> {
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
+                let world = scope.world();
                 // the claim keeps an allocated value alive, the borrow outlives `reflect_reference`
-                if world.claim_read_access(&reflect_reference.base.base_id) {
+                // and is released when `scope` ends, which the borrow can't outlive
+                if scope.claim_read_access(&reflect_reference.base.base_id) {
                     // Safety: we just claimed access
                     let ref_ =
                         unsafe { reflect_reference.reflect_unsafe_non_empty(world.clone()) }?;
                     match ref_.try_downcast_ref::<T>() {
                         Some(cast) => Ok(R(cast)),
                         None => match variant_as_value::<T>(&reflect_reference, &world) {
-                            Some(value) => Self::from_script(ScriptValue::Reference(value), world),
+                            Some(value) => Self::from_script(ScriptValue::Reference(value), scope),
                             None => Err(InteropError::type_mismatch(
                                 std::any::TypeId::of::<T>(),
                                 ref_.get_represented_type_info().map(|i| i.type_id()),
@@ -352,8 +357,20 @@ impl<'a, T> From<&'a T> for R<'a, T> {
 /// This can be used to retrieve a mutable reference out of a [`ScriptValue::Reference`] corresponding to the type `T`.
 /// Before downcasting the reference, it will claim write access to the object to ensure that the reference is valid.
 ///
-/// However, the access is NOT released when the `Mut` is dropped. This is not unsafe but can lead to deadlocks if not released later.
-/// The [`ScriptFunction`] calling mechanism will take care of releasing all accesses claimed during the function call.
+/// The access is released when the [`CallScope`] it was converted in ends, i.e. when the function call returns,
+/// which is why the borrow can't be kept past the call:
+///
+/// ```
+/// # use bevy_mod_scripting_bindings::function::{from::M, script_function::ScriptFunction};
+/// fn double(mut m: M<u32>) { *m.0 *= 2 }
+/// let _ = double.into_dynamic_script_function();
+/// ```
+///
+/// ```compile_fail
+/// # use bevy_mod_scripting_bindings::function::{from::M, script_function::ScriptFunction};
+/// fn stash(m: M<'static, u32>) {}
+/// let _ = stash.into_dynamic_script_function();
+/// ```
 pub struct M<'w, T>(pub &'w mut T);
 
 impl<T> Deref for M<'_, T> {
@@ -380,16 +397,18 @@ impl<'a, T> From<&'a mut T> for M<'a, T> {
 impl<T: FromReflect> FromScript for M<'_, T> {
     type This<'w> = M<'w, T>;
     #[profiling::function]
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError> {
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
                 // the claim keeps an allocated value alive, the borrow outlives `reflect_reference`
-                if world.claim_write_access(&reflect_reference.base.base_id) {
+                // and is released when `scope` ends, which the borrow can't outlive
+                if scope.claim_write_access(&reflect_reference.base.base_id) {
                     // Safety: we just claimed write access
-                    let ref_ = unsafe { reflect_reference.reflect_mut_unsafe_non_empty(world) }?;
+                    let ref_ =
+                        unsafe { reflect_reference.reflect_mut_unsafe_non_empty(scope.world()) }?;
                     let type_id = ref_.get_represented_type_info().map(|i| i.type_id());
                     let cast = ref_.try_downcast_mut::<T>().ok_or_else(|| {
                         InteropError::type_mismatch(std::any::TypeId::of::<T>(), type_id)
@@ -414,13 +433,13 @@ impl<T: FromReflect> FromScript for M<'_, T> {
 impl<T: FromScript> FromScript for Option<T> {
     type This<'w> = Option<T::This<'w>>;
     #[profiling::function]
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError> {
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
         match value {
             ScriptValue::Unit => Ok(None),
-            _ => Ok(Some(T::from_script(value, world)?)),
+            _ => Ok(Some(T::from_script(value, scope)?)),
         }
     }
 }
@@ -432,12 +451,12 @@ where
 {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
         match value {
             ScriptValue::List(list) => {
                 let mut vec = Vec::with_capacity(list.len());
                 for item in list {
-                    vec.push(T::from_script(item, world.clone())?.into());
+                    vec.push(T::from_script(item, scope)?.into());
                 }
                 Ok(vec)
             }
@@ -456,12 +475,12 @@ where
 {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
         match value {
             ScriptValue::List(list) => {
                 let mut vec = VecDeque::with_capacity(list.len());
                 for item in list {
-                    vec.push_back(T::from_script(item, world.clone())?.into());
+                    vec.push_back(T::from_script(item, scope)?.into());
                 }
                 Ok(vec)
             }
@@ -480,12 +499,12 @@ where
 {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
         match value {
             ScriptValue::List(list) if list.len() == N => {
                 let converted_list = list
                     .into_iter()
-                    .map(|item| T::from_script(item, world.clone()).map(Into::into))
+                    .map(|item| T::from_script(item, scope).map(Into::into))
                     .collect::<Result<Vec<T>, _>>()?
                     .try_into()
                     .map_err(|list: Vec<T>| InteropError::length_mismatch(N, list.len()))?;
@@ -503,7 +522,10 @@ where
 impl FromScript for DynamicScriptFunctionMut {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(value: ScriptValue, _: WorldGuard<'_>) -> Result<Self::This<'_>, InteropError>
+    fn from_script<'s>(
+        value: ScriptValue,
+        _: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError>
     where
         Self: Sized,
     {
@@ -521,7 +543,10 @@ impl FromScript for DynamicScriptFunctionMut {
 impl FromScript for DynamicScriptFunction {
     type This<'w> = Self;
     #[profiling::function]
-    fn from_script(value: ScriptValue, _: WorldGuard<'_>) -> Result<Self::This<'_>, InteropError>
+    fn from_script<'s>(
+        value: ScriptValue,
+        _: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError>
     where
         Self: Sized,
     {
@@ -545,19 +570,19 @@ macro_rules! impl_from_script_hashmap {
         {
             type This<'w> = Self;
             #[profiling::function]
-            fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+            fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
                 match value {
                     ScriptValue::Map(map) => {
                         let mut hashmap = <$hashmap_type>::new();
                         for (key, value) in map {
-                            hashmap.insert(key, V::from_script(value, world.clone())?.into());
+                            hashmap.insert(key, V::from_script(value, scope)?.into());
                         }
                         Ok(hashmap)
                     }
                     ScriptValue::List(list) => {
                         let mut hashmap = <$hashmap_type>::new();
                         for elem in list {
-                            let (key, val) = <(String, V)>::from_script(elem, world.clone())?;
+                            let (key, val) = <(String, V)>::from_script(elem, scope)?;
                             hashmap.insert(key, val);
                         }
                         Ok(hashmap)
@@ -585,19 +610,19 @@ macro_rules! impl_from_script_hashset {
         {
             type This<'w> = Self;
             #[profiling::function]
-            fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+            fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
                 match value {
                     ScriptValue::Map(map) => {
                         let mut hashmap = <$hashset_type>::new();
                         for (_, value) in map {
-                            hashmap.insert(V::from_script(value, world.clone())?.into());
+                            hashmap.insert(V::from_script(value, scope)?.into());
                         }
                         Ok(hashmap)
                     }
                     ScriptValue::List(list) => {
                         let mut hashmap = <$hashset_type>::new();
                         for elem in list {
-                            let key = <V>::from_script(elem, world.clone())?;
+                            let key = <V>::from_script(elem, scope)?;
                             hashmap.insert(key.into());
                         }
                         Ok(hashmap)
@@ -667,25 +692,25 @@ impl<T1, T2> Union<T1, T2> {
 #[profiling::all_functions]
 impl<T1: FromScript, T2: FromScript> FromScript for Union<T1, T2> {
     type This<'w> = Union<T1::This<'w>, T2::This<'w>>;
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError> {
-        if let Ok(v) = T1::from_script(value.clone(), world.clone()) {
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
+        if let Ok(v) = T1::from_script(value.clone(), scope) {
             return Ok(Union(Ok(v)));
         }
 
-        T2::from_script(value, world).map(|v| Union(Err(v)))
+        T2::from_script(value, scope).map(|v| Union(Err(v)))
     }
 }
 
 impl FromScript for VariadicTuple {
     type This<'w> = Self;
 
-    fn from_script(
+    fn from_script<'s>(
         value: ScriptValue,
-        _world: WorldGuard<'_>,
-    ) -> Result<Self::This<'_>, InteropError>
+        _scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError>
     where
         Self: Sized,
     {
@@ -709,7 +734,7 @@ macro_rules! impl_from_script_tuple {
         {
             type This<'w> = Self;
 
-            fn from_script(value: ScriptValue, world: WorldGuard<'_>) -> Result<Self, InteropError> {
+            fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
                 match value {
                     ScriptValue::List(list) | ScriptValue::Tuple(VariadicTuple(list)) => {
                         let expected_arg_count = $crate::function::script_function::count!( $($ty)* );
@@ -720,7 +745,7 @@ macro_rules! impl_from_script_tuple {
                         let mut iter = list.into_iter();
                         $(
                             let next_item = iter.next().ok_or_else(|| InteropError::invariant("list has right amount of elements"))?;
-                            let $ty = $ty::from_script(next_item, world.clone())?.into();
+                            let $ty = $ty::from_script(next_item, scope)?.into();
                         )*
 
 

@@ -689,7 +689,8 @@ macro_rules! impl_script_function {
         where
             O: IntoScript,
             F: $fn_type(  $($contextty,)? $($param ),* ) -> $res + Send + Sync + 'static,
-            $( $param::This<'env>: Into<$param>,)*
+            // the arguments borrow from the call scope, so the function can't keep them
+            F: for<'s> $fn_type(  $($contextty,)? $($param::This<'s> ),* ) -> $res,
         {
             #[allow(unused_mut,unused_variables)]
             #[profiling::function]
@@ -703,9 +704,9 @@ macro_rules! impl_script_function {
 
                         $( let $context = caller_context.clone(); )?
                         let world = caller_context.world()?;
-                        // Safety: we're not holding any references to the world, the arguments which might have aliased will always be dropped
-                        let ret: Result<ScriptValue, InteropError> = unsafe {
-                            world.with_access_scope(||{
+                        // the accesses claimed for the arguments are released once the call ends
+                        let ret: Result<ScriptValue, InteropError> = {
+                            world.with_call_scope(|scope| {
                                 let mut current_arg = 0;
 
                                 $(let $param = {
@@ -717,7 +718,7 @@ macro_rules! impl_script_function {
                                                 return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
                                             }
                                         };
-                                        let $param = <$param>::from_script($param, world.clone())
+                                        let $param = <$param>::from_script($param, scope)
                                             .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
                                         $param
                                     };
@@ -726,7 +727,7 @@ macro_rules! impl_script_function {
                                 let ret = {
                                     let out = {
                                         profiling::scope!("function call");
-                                        self( $( $context,)?  $( $param.into(), )* )
+                                        self( $( $context,)?  $( $param, )* )
                                     };
 
                                     $(

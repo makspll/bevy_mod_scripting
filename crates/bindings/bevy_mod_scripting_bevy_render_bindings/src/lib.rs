@@ -11,7 +11,7 @@ use bevy_reflect::{PartialReflect, TypeRegistry, Typed};
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_mod_scripting_bindings::{
     GetTypeDependencies, InteropError, ReflectReference, ScriptValue, ThroughTypeInfo,
-    TypedThrough, WorldGuard,
+    TypedThrough,
     function::{
         arg_meta::ArgMeta,
         from::{FromScript, R, V},
@@ -98,8 +98,11 @@ struct MeshShape(ReflectReference);
 impl FromScript for MeshShape {
     type This<'w> = Self;
 
-    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
-        ReflectReference::from_script(value, world).map(MeshShape)
+    fn from_script(
+        value: ScriptValue,
+        scope: &bevy_mod_scripting_bindings::CallScope,
+    ) -> Result<Self, InteropError> {
+        ReflectReference::from_script(value, scope).map(MeshShape)
     }
 }
 
