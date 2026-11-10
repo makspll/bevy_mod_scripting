@@ -1,6 +1,6 @@
 //! Error types for the bindings
 use crate::{
-    FunctionCallContext, FunctionScope, ReflectBaseType, ReflectReference,
+    FunctionCallContext, FunctionScope, ReflectBaseType, ReflectNoTypeFunctions, ReflectReference,
     script_value::ScriptValue,
 };
 use bevy_ecs::{component::ComponentId, entity::Entity};
@@ -140,7 +140,7 @@ impl DebugWithTypeInfo for WorldAccessRangeWithDisplay {
 /// An error occurring when converting between rust and a script context.
 #[derive(Clone, Reflect, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
-#[reflect(opaque)]
+#[reflect(opaque, NoTypeFunctions)]
 pub enum InteropError {
     /// The given feature is not implemented
     NotImplemented,

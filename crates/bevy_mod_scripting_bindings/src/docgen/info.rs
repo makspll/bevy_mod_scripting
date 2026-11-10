@@ -3,6 +3,7 @@
 use crate::function::arg_meta::ArgMeta;
 use crate::function::namespace::FunctionScope;
 use crate::function::script_function::FunctionCallContext;
+use crate::static_type::ReflectNoTypeFunctions;
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::{DisplayWithTypeInfo, WithTypeInfo};
 use bevy_mod_scripting_world::WorldGuard;
@@ -23,6 +24,7 @@ pub trait GetFunctionInfo<Marker> {
 
 #[derive(Clone, Reflect, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+#[reflect(NoTypeFunctions)]
 /// Information about a function.
 pub struct FunctionInfo {
     /// The name of the function.
@@ -176,6 +178,7 @@ impl FunctionInfo {
 
 #[derive(Clone, Reflect, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+#[reflect(NoTypeFunctions)]
 /// Information about a function argument.
 pub struct FunctionArgInfo {
     /// The name of the argument.
@@ -229,6 +232,7 @@ impl FunctionArgInfo {
 
 #[derive(Clone, Reflect, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+#[reflect(NoTypeFunctions)]
 /// Information about a function return value.
 pub struct FunctionReturnInfo {
     /// The type of the return value.

@@ -681,6 +681,10 @@
             "primitive": "usize"
           },
           "name": "arg1"
+        },
+        {
+          "kind": "untypedTuple",
+          "name": "rest"
         }
       ],
       "return_type": {

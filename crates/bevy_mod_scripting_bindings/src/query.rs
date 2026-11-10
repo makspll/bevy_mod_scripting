@@ -5,8 +5,8 @@ use bevy_mod_scripting_world::WorldGuard;
 
 use super::{DynamicComponent, ReflectReference};
 use crate::{
-    GetTypeDependencies, IntoScript, PartialReflectExt, ScriptValue, ThroughTypeInfo, TypedThrough,
-    WorldExtensions,
+    GetTypeDependencies, IntoScript, PartialReflectExt, ReflectNoTypeFunctions, ScriptValue,
+    ThroughTypeInfo, TypedThrough, WorldExtensions,
     error::InteropError,
     function::{
         from::{Union, V},
@@ -32,12 +32,13 @@ use std::{any::TypeId, collections::VecDeque, sync::Arc};
 ///
 /// In general think of this as a handle to a type.
 #[derive(Clone, Reflect)]
-#[reflect(opaque)]
+#[reflect(opaque, NoTypeFunctions)]
 pub struct ScriptTypeRegistration {
     pub(crate) registration: Arc<TypeRegistration>,
 }
 
 #[derive(Clone, Reflect, Debug)]
+#[reflect(NoTypeFunctions)]
 /// A reference to a component type's reflection registration.
 ///
 /// In general think of this as a handle to a type.
@@ -55,6 +56,7 @@ pub struct ScriptComponentRegistration {
 }
 
 #[derive(Clone, Reflect, Debug)]
+#[reflect(NoTypeFunctions)]
 /// A reference to a resource type's reflection registration.
 ///
 /// In general think of this as a handle to a type.
@@ -66,7 +68,7 @@ pub struct ScriptResourceRegistration {
 }
 
 #[derive(Clone, Reflect, Debug)]
-#[reflect(opaque)]
+#[reflect(opaque, NoTypeFunctions)]
 /// A reference to a bundle type's reflection registration, i.e. a type with `ReflectBundle` type data.
 ///
 /// In general think of this as a handle to a type.
@@ -678,7 +680,7 @@ impl ScriptQueryBuilder {
 }
 
 #[derive(Clone, Reflect)]
-#[reflect(opaque)]
+#[reflect(opaque, NoTypeFunctions)]
 /// A result from a query.
 ///
 /// Scripts receive it as a plain list, the entity followed by the components in the order they were added to the query,

@@ -8,8 +8,8 @@ use ::{
 };
 use bevy_log::{error, info};
 use bevy_mod_scripting_bindings::{
-    AppScriptNamespaceMembers, EnumVariantRef, FunctionInfo, ScriptFunctionRegistry,
-    ScriptNamespaceMembers, StaticTypeRef,
+    AppScriptNamespaceMembers, EnumVariantRef, FunctionInfo, ReflectNoTypeFunctions,
+    ScriptFunctionRegistry, ScriptNamespaceMembers, StaticTypeRef,
     builtins::builtin_docs,
     function::{generics::AppGenericTypes, script_function::AppScriptFunctionRegistry},
     into_through_type_info_with_registry,
@@ -204,7 +204,12 @@ fn add_registered_type(
     // bound to the type, unless the type has a function of its own with the same name.
     // This is the same signature scripts see at runtime, see `WorldExtensions::lookup_static_member`
     // Functions generic over the type are only documented on types they can be instantiated with, see `add_function_info_bound_to`.
-    if type_id != TypeId::of::<StaticTypeRef>() {
+    // types opting out with `ReflectNoTypeFunctions` don't get them, as at runtime
+    if type_id != TypeId::of::<StaticTypeRef>()
+        && type_registry
+            .get_type_data::<ReflectNoTypeFunctions>(type_id)
+            .is_none()
+    {
         for (_, function) in functions.iter_type(TypeId::of::<StaticTypeRef>()) {
             if functions.contains(type_id, function.name().clone()) {
                 continue;

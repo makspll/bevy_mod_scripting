@@ -225,6 +225,8 @@ print(Vec3.describe()) -- "glam::Vec3"
 A function registered on the type itself always takes priority over one on `StaticTypeRef`.
 The `new` constructor is implemented this way, see [Constructing Arbitrary Types](../ScriptingReference/constructing-arbitrary-types.md).
 
+Types scripts don't make or use this way, such as handles the runtime gives out, opt out with `#[reflect(NoTypeFunctions)]` (`ReflectNoTypeFunctions`): only their own functions remain, in scripts and in the generated docs.
+
 #### Signatures which depend on the type
 
 A shared function's signature can refer to the type it is bound to, using the placeholder types `BoundValue` (a value of the type), `BoundFields` (a table of the type's fields) and `BoundHandle` (a handle to an asset of the type).

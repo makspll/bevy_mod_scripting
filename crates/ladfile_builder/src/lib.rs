@@ -225,6 +225,72 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
+    /// Adds a type which is only known by its path, i.e. the asset type of `Handle<Font>`, which isn't reflected.
+    /// It goes in the namespace of the reflected types of its crate, if there are any, so `text.Font` sits next to `text.TextFont`.
+    pub(crate) fn add_opaque_type(&mut self, type_id: TypeId, path: &str) -> LadTypeId {
+        let lad_type_id = LadTypeId::new_string_id(path.to_owned().into());
+        self.type_id_mapping.insert(type_id, lad_type_id.clone());
+        if self.file.types.contains_key(&lad_type_id) {
+            return lad_type_id;
+        }
+        let crate_ = path.split("::").next().map(str::to_owned);
+        // generic arguments are named by the segment before them, i.e. `Foo` in `a::Foo<b::Bar>`
+        let identifier = path
+            .split('<')
+            .next()
+            .and_then(|p| p.rsplit("::").next())
+            .unwrap_or(path)
+            .to_owned();
+        // only if they agree, i.e. not for `bevy_platform`, whose `Instant` is in `time`
+        let crate_name = crate_.clone().unwrap_or_default();
+        let namespaces: HashSet<String> = self
+            .type_registry
+            .iter()
+            .filter(|registration| {
+                registration.type_info().type_path_table().crate_name() == crate_.as_deref()
+            })
+            .map(|registration| {
+                registration
+                    .data::<ScriptNamespace>()
+                    .map(|n| n.0.to_string())
+                    .unwrap_or_else(|| crate_name.clone())
+            })
+            .collect();
+        let namespace = match namespaces.len() {
+            1 => namespaces.into_iter().next().unwrap_or(crate_name),
+            _ => crate_name,
+        };
+        self.file.types.insert(
+            lad_type_id.clone(),
+            LadTypeDefinition {
+                identifier,
+                crate_,
+                namespace,
+                path: path.to_owned(),
+                generics: vec![],
+                documentation: Some(
+                    "Not reflected: scripts can only pass values of it around.".to_owned(),
+                ),
+                associated_functions: vec![],
+                layout: LadTypeLayout::Opaque,
+                generated: false,
+                insignificance: default_importance(),
+                metadata: LadTypeMetadata {
+                    is_component: false,
+                    is_resource: false,
+                    is_bundle: false,
+                    is_asset: false,
+                    is_reflect: false,
+                    mapped_to_primitive_kind: None,
+                    registration: None,
+                    default: None,
+                    misc: Default::default(),
+                },
+            },
+        );
+        lad_type_id
+    }
+
     /// Add a type definition to the LAD file.
     ///
     /// Equivalent to calling [`Self::add_type_info`] with `T::type_info()`.
@@ -236,8 +302,11 @@ impl<'t> LadFileBuilder<'t> {
     /// Add a type definition to the LAD file.
     /// Will overwrite any existing type definitions with the same type id.
     pub fn add_type_info(&mut self, type_info: &TypeInfo) -> &mut Self {
-        // markers are registered to describe generic types, they are not types of their own
-        if is_param_marker(self.type_registry, type_info.type_id()) {
+        // markers are registered to describe generic types, they are not types of their own,
+        // and types without an identifier, i.e. `()` in `Time<()>`, can't be named
+        if is_param_marker(self.type_registry, type_info.type_id())
+            || type_info.type_path_table().ident().is_none()
+        {
             return self;
         }
         // instantiations of declared generic types are excluded here as types are in `build`, since they aren't types
@@ -1542,10 +1611,10 @@ mod test {
                     + " * `return`: I am some docs for the return type, I provide a name for the return value too",
             );
 
-        let global_function = |_: usize| 2usize;
+        let global_function = |_: usize, _: bevy_mod_scripting_bindings::VariadicTuple| 2usize;
         let global_function_info = global_function
             .get_function_info("hello_world".into(), FunctionScope::Builtin)
-            .with_arg_names(&["arg1"]);
+            .with_arg_names(&["arg1", "rest"]);
 
         impl TypedThrough for OpaqueGenericType<usize> {
             fn through_type_info() -> ThroughTypeInfo {
@@ -1678,11 +1747,14 @@ mod test {
         struct TestAsset;
         #[derive(Reflect)]
         struct NotAnAsset;
+        #[derive(Asset, bevy_reflect::TypePath)]
+        struct NotReflected;
 
         let mut type_registry = TypeRegistry::default();
         type_registry.register::<NotAnAsset>();
         type_registry.register::<TestAsset>();
         type_registry.register::<Handle<TestAsset>>();
+        type_registry.register::<Handle<NotReflected>>();
         type_registry.register_type_data::<TestAsset, ReflectAsset>();
 
         // a function generic over the type it is called on, bound to the asset type
@@ -1699,8 +1771,32 @@ mod test {
         let lad_file = builder
             .add_function_info_bound_to(&info, NotAnAsset::type_info())
             .add_function_info_bound_to(&info, TestAsset::type_info())
+            .add_type::<Handle<NotReflected>>()
             .build();
         assert_eq!(lad_file.functions.len(), 1);
+
+        // an asset type which isn't reflected is still named by its path, as a type scripts can't import
+        let handle =
+            &lad_file.generic_types[&LadTypeId::new_string_id("bevy_asset::handle::Handle".into())];
+        let not_reflected =
+            LadTypeId::new_string_id(<NotReflected as bevy_reflect::TypePath>::type_path().into());
+        assert!(
+            handle
+                .instantiations
+                .iter()
+                .any(|i| i.args == vec![LadTypeKind::Val(not_reflected.clone().into())]),
+            "{:?}",
+            handle.instantiations
+        );
+        let opaque = &lad_file.types[&not_reflected];
+        assert_eq!(opaque.identifier, "NotReflected");
+        assert!(!opaque.metadata.is_reflect);
+        assert!(
+            lad_file
+                .namespaces
+                .values()
+                .all(|n| !n.types.values().any(|id| id == &not_reflected))
+        );
         let function = lad_file
             .functions
             .values()

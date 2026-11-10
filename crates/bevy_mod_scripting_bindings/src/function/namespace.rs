@@ -1,7 +1,7 @@
 //! A module for managing namespaces for functions
 
 use crate::{
-    AppScriptNamespaceMembers, NamespaceMembers, ScriptFunctionRegistryArc,
+    AppScriptNamespaceMembers, NamespaceMembers, ReflectNoTypeFunctions, ScriptFunctionRegistryArc,
     docgen::info::GetFunctionInfo,
     function::script_function::{AppScriptFunctionRegistry, ScriptFunction, documented_function},
 };
@@ -17,6 +17,7 @@ use super::type_dependencies::GetFunctionTypeDependencies;
 /// Where a function lives, for its documentation and errors
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Reflect, DebugWithTypeInfo)]
 #[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
+#[reflect(NoTypeFunctions)]
 pub enum FunctionScope {
     /// On a type, i.e. `MyType.my_function()`, in the [`crate::ScriptFunctionRegistry`]
     OnType(TypeId),

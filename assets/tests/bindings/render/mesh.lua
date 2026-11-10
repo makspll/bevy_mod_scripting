@@ -10,4 +10,5 @@ assert(Mesh.from_shape(Sphere.new(1)):count_vertices() > 0, "sphere mesh has ver
 assert(Mesh.from_shape(Rectangle.new(1, 1)):count_vertices() > 0, "2d shapes make meshes too")
 
 -- values that are not shapes are errors
+---@diagnostic disable-next-line: param-type-mismatch
 assert(not pcall(function() return Mesh.from_shape(Vec3.new(1, 2, 3)) end), "non shapes error")

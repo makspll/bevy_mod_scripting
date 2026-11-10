@@ -4,7 +4,7 @@ use std::any::TypeId;
 
 use crate::{FromScript, InteropError, IntoScript, ScriptValue};
 use bevy_mod_scripting_world::WorldGuard;
-use bevy_reflect::{Reflect, TypeInfo};
+use bevy_reflect::{CreateTypeData, Reflect, TypeInfo};
 
 /// A static reference to a type, what scripts see as the type's global.
 ///
@@ -47,6 +47,23 @@ impl FromScript for StaticTypeRef {
 impl IntoScript for StaticTypeRef {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Type(self.type_id))
+    }
+}
+
+/// Type data hiding the functions registered on [`StaticTypeRef`] from a type, i.e. `MyType.new{}`, for types scripts
+/// don't make or use that way, such as registrations. The type's own functions stay:
+///
+/// ```rust,ignore
+/// #[derive(Reflect)]
+/// #[reflect(NoTypeFunctions)]
+/// struct Handle { .. }
+/// ```
+#[derive(Clone)]
+pub struct ReflectNoTypeFunctions;
+
+impl<T> CreateTypeData<T> for ReflectNoTypeFunctions {
+    fn create_type_data(_: ()) -> Self {
+        ReflectNoTypeFunctions
     }
 }
 

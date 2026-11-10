@@ -160,7 +160,8 @@ local Usize = {}
 
 
 ---@param arg1 integer
+---@param ... any
 ---@return integer
-function hello_world(arg1) end
+function hello_world(arg1,...) end
 
 

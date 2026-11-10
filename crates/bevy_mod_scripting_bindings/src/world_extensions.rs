@@ -12,7 +12,7 @@ use super::{
     },
     schedule::AppScheduleRegistry,
     script_value::ScriptValue,
-    static_type::registered_type_info,
+    static_type::{ReflectNoTypeFunctions, registered_type_info},
 };
 use crate::{
     AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo, SCRIPT_NAMESPACE_PREFIX,
@@ -1723,9 +1723,18 @@ impl FunctionLookups for WorldAccessGuard<'_> {
             Ok(func) => return Ok(func),
             Err(name) => name,
         };
-        match registered_type_info(self, type_id) {
-            Ok(type_info) => lookup_bound_type_function(self, type_info, name),
-            Err(_) => Err(name),
+        // the same registry read `registered_type_info` would do, types can opt out of the shared functions
+        let type_info = {
+            let registry = self.type_registry();
+            let registry = registry.read();
+            registry
+                .get(type_id)
+                .filter(|registration| !registration.contains::<ReflectNoTypeFunctions>())
+                .map(|registration| registration.type_info())
+        };
+        match type_info {
+            Some(type_info) => lookup_bound_type_function(self, type_info, name),
+            None => Err(name),
         }
     }
 }

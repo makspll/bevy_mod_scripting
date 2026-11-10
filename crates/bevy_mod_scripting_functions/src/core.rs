@@ -16,9 +16,9 @@ use bevy_ecs::{
 use bevy_mod_scripting_bindings::{
     AnyTypeRegistrationV, AppScriptNamespaceMembers, DynamicScriptFunctionMut, EnumVariantRef,
     FunctionInfo, InteropError, NamespaceMembers, NamespaceValue, PartialReflectExt,
-    QueuedScriptCallback, ReflectReference, ScriptBundleRegistration, ScriptComponentRegistration,
-    ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration,
-    ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
+    QueuedScriptCallback, ReflectNoTypeFunctions, ReflectReference, ScriptBundleRegistration,
+    ScriptComponentRegistration, ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
+    ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
     docgen::typed_through::ThroughTypeInfo,
     function::{
@@ -2439,6 +2439,14 @@ pub fn register_core_functions(app: &mut App) {
         register_reflect_schedule_functions(world);
         register_reflect_system_functions(world);
         register_reflect_system_set_functions(world);
+        // values the runtime hands out, not made with the functions shared by all types, i.e. `new`
+        {
+            let registry = world.resource::<AppTypeRegistry>().clone();
+            let mut registry = registry.write();
+            registry.register_type_data::<ReflectSchedule, ReflectNoTypeFunctions>();
+            registry.register_type_data::<ReflectSystem, ReflectNoTypeFunctions>();
+            registry.register_type_data::<ReflectSystemSet, ReflectNoTypeFunctions>();
+        }
         register_script_system_builder_functions(world);
         register_script_run_condition_functions(world);
         // the conditions are static functions of the condition type, i.e. `bms.conditions.run_once()`
@@ -2455,9 +2463,12 @@ pub fn register_core_functions(app: &mut App) {
                             std::any::TypeId::of::<ScriptRunCondition>(),
                         ))
                     }),
-                    type_information: ThroughTypeInfo::Primitive(
-                        ReflectionPrimitiveKind::StaticTypeRef,
-                    ),
+                    type_information: ThroughTypeInfo::TypeOf {
+                        of: <ScriptRunCondition as bevy_reflect::Typed>::type_info(),
+                        erased: Box::new(ThroughTypeInfo::Primitive(
+                            ReflectionPrimitiveKind::StaticTypeRef,
+                        )),
+                    },
                     documentation: Some("Run conditions for script systems.".into()),
                 },
             );
