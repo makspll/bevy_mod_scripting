@@ -6,7 +6,8 @@
 use std::any::TypeId;
 
 use bevy_mod_scripting_bindings::{
-    docgen::typed_through::ThroughTypeInfo, function::generics::is_generic_marker,
+    docgen::typed_through::{ThroughTypeInfo, primitive_kind_of},
+    function::generics::is_generic_marker,
 };
 use bevy_platform::collections::HashSet;
 use bevy_reflect::{GenericInfo, TypeInfo, TypeRegistry, Typed};
@@ -355,6 +356,10 @@ impl LadFileBuilder<'_> {
         let type_info = self.type_registry.get_type_info(arg.type_id());
         if register && let Some(type_info) = type_info {
             self.add_type_info(type_info);
+        }
+        // not reflected, i.e. `Font` in `Handle<Font>`, but still named by its path
+        if type_info.is_none() && primitive_kind_of(arg.type_id()).is_none() {
+            return LadTypeKind::Val(self.add_opaque_type(arg.type_id(), arg.type_path()).into());
         }
         self.lad_field_kind(arg.type_id(), type_info)
     }

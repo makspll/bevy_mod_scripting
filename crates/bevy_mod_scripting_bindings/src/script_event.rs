@@ -9,7 +9,7 @@ use std::sync::Arc;
 use bevy_ecs::event::Event;
 use bevy_reflect::Reflect;
 
-use crate::script_value::ScriptValue;
+use crate::{script_value::ScriptValue, static_type::ReflectNoTypeFunctions};
 
 /// The event triggered for every script event, see [`ScriptEventRegistration`].
 #[derive(Event, Clone)]
@@ -22,7 +22,7 @@ pub struct ScriptEvent {
 
 /// A handle to a script registered event type.
 #[derive(Clone, Reflect, Debug)]
-#[reflect(opaque)]
+#[reflect(opaque, NoTypeFunctions)]
 pub struct ScriptEventRegistration {
     /// The name the event was registered under
     pub name: Arc<str>,

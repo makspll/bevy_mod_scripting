@@ -24,6 +24,8 @@ impl Plugin for BevyAnimationBindingsPlugin {
     }
 
     fn build(&self, app: &mut App) {
+        // the asset `AnimationGraph::add_clip` takes a handle of, not registered by bevy
+        app.register_type::<bevy_animation::AnimationClip>();
         let world = app.world_mut();
         animation_player::register(world);
         animation_node_index::register(world);

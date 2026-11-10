@@ -25,3 +25,10 @@ local constructed_via_global = bms.construct(struct_type, { foo = 3 })
 assert(constructed_via_global.foo == 3, "expected foo to be 3 but got " .. tostring(constructed_via_global.foo))
 local tuple_type = world.get_type_by_name("test_utils::test_data::SimpleTupleStruct")
 assert(bms.construct(tuple_type, { 4 })[1] == 4, "expected construct to accept positional fields")
+
+-- types with `ReflectNoTypeFunctions` don't get the shared functions, while the types registrations stand for keep them
+assert_throws(function()
+    ---@diagnostic disable-next-line: undefined-field
+    local _ = bms.ScriptTypeRegistration.new
+end, "new")
+assert(struct_type.new({ foo = 5 }).foo == 5, "expected a registration to construct the type it stands for")

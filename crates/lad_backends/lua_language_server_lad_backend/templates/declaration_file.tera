@@ -50,17 +50,17 @@
 {{- self::function_param(arg=param) -}}
 {%- endfor -%}
 {%- for overload in function.overloads -%}
----@overload fun({% for param in overload.params %}{{ param.name }}: {{ self::lua_type(ty=param.ty) }}{% if not loop.last %}, {% endif %}{% endfor %}): {{ self::lua_type(ty=overload.returns | first) }}
+---@overload fun({% for param in overload.params %}{% if param.variadic %}...: {{ self::lua_type(ty=param.ty.value) }}{% else %}{{ param.name }}{% if param.optional %}?{% endif %}: {{ self::lua_type(ty=param.ty) }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}): {% for return in overload.returns %}{{ self::lua_type(ty=return) }}{% if not loop.last %}, {% endif %}{% endfor %}
 {% endfor -%}
 {%- for return in function.returns -%}
 ---@return {{ self::lua_type(ty=return, return_position=true) }}
+{% endfor -%}
 function {% if module.class -%}{{module.table}}.{%- endif -%} {{ function.name }}(
     {%- for param in function.params -%}
-        {% if param.variadic -%}... {% endif-%}{{ param.name }} {%- if not loop.last -%},{%- endif -%}
+        {% if param.variadic -%}...{%- else -%}{{ param.name }}{%- endif -%} {%- if not loop.last -%},{%- endif -%}
     {%- endfor -%}
 ) end
 {# newline #}
-{%- endfor -%}
 {%- endfor -%} {# functions #}
 {# newline #}
 {# newline #}
@@ -133,7 +133,11 @@ function {% if module.class -%}{{module.table}}.{%- endif -%} {{ function.name }
 {%- endmacro lua_type -%}
 
 {%- macro function_param(arg) -%}
+{% if arg.variadic -%}
+---@param ... {{ self::lua_type(ty=arg.ty.value) -}}
+{%- else -%}
 ---@param {{ arg.name }}{% if arg.optional %}?{% endif %} {{ self::lua_type(ty=arg.ty) -}}
+{%- endif -%}
 {# newline #}
 {# newline -#}
 {{- self::multiline_description(description=arg.description) -}}

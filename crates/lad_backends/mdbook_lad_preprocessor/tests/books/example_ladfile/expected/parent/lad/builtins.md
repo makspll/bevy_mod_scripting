@@ -14,7 +14,7 @@ The only globals of scripts. Everything else is imported from a namespace, see t
 
 <div class="lad-signature">
 
-**hello\_world**(arg1: [usize](./types/usize.md)) -> [usize](./types/usize.md)
+**hello\_world**(arg1: [usize](./types/usize.md), rest: ...) -> [usize](./types/usize.md)
 
 </div>
 
