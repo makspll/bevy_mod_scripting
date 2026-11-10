@@ -37,7 +37,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-13d39d6f.js";
+            window.path_to_searchindex_js = "../searchindex-533cdc49.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-151df591.js"></script>
@@ -252,6 +252,8 @@ let reference = ReflectReference::new_allocated(value);</code></pre>
 <li><code>ScriptQueryResult::components</code> is a <code>Vec&lt;Option&lt;ReflectReference&gt;&gt;</code>, <code>None</code> for absent optional components. <code>ArchetypeFilter::allow</code> / <code>is_allowed</code> and <code>WorldAccessGuard::check_archetype_access</code> take whether the component is written.</li>
 <li><code>AccessByteSet::from_allowed_lists(read_write, read_only)</code> creates subsets with read only accesses. At most 63 accesses to the same value can be claimed at once, claims beyond fail (the count used to overflow).</li>
 <li><code>WorldAccessRange::External</code> holds the value’s owner (<code>AccessOwner</code>) instead of an id, and the access map keeps it alive until the claim is released. Build it from the value (<code>(&amp;allocation_id).into()</code>); <code>WorldAccessRange</code> is no longer <code>Copy</code>.</li>
+<li><code>ReflectReference::new_component_ref_by_id</code> / <code>new_resource_ref_by_id</code> are <code>unsafe</code>: the type id must be the type of the component or resource. <code>ReflectBaseType::base_id</code> is private, read it with <code>base_id()</code>.</li>
+<li>Asset references claim global access, so assets can’t be accessed in non-exclusive script systems, nor while the same call holds a component write (i.e. an <code>M&lt;Transform&gt;</code> argument next to an asset reference). Reading an asset no longer marks it modified.</li>
 </ul>
 <h3 id="language-implementations"><a class="header" href="#language-implementations">Language implementations</a></h3>
 <ul>
