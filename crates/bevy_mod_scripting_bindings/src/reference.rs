@@ -5,7 +5,7 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 use crate::{
-    ReferencePart, ReferencePath, ReflectAllocationId, error::InteropError,
+    DynamicComponent, ReferencePart, ReferencePath, ReflectAllocationId, error::InteropError,
     reflection_extensions::PartialReflectExt,
 };
 use bevy_asset::{ReflectAsset, UntypedHandle};
@@ -200,8 +200,10 @@ impl ReflectReference {
     }
 
     /// Create a new reference to component by id.
-    /// If the type id is incorrect, you will get runtime errors when trying to access the value.
-    pub fn new_component_ref_by_id(
+    ///
+    /// # Safety
+    /// - `type_id` must be the type of the component with `component_id`, accessing the value casts it to that type
+    pub unsafe fn new_component_ref_by_id(
         entity: Entity,
         component_id: ComponentId,
         type_id: TypeId,
@@ -216,8 +218,10 @@ impl ReflectReference {
     }
 
     /// Create a new reference to resource by id.
-    /// If the type id is incorrect, you will get runtime errors when trying to access the value.
-    pub fn new_resource_ref_by_id(component_id: ComponentId, type_id: TypeId) -> Self {
+    ///
+    /// # Safety
+    /// - `type_id` must be the type of the resource with `component_id`, accessing the value casts it to that type
+    pub unsafe fn new_resource_ref_by_id(component_id: ComponentId, type_id: TypeId) -> Self {
         Self {
             base: ReflectBaseType {
                 type_id,
@@ -496,16 +500,9 @@ impl ReflectReference {
         }
         .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
-        // (Ptr) Safety: we use the same type_id to both
-        // 1) retrieve the ptr
-        // 2) retrieve the ReflectFromPtr type data
-        // (UnsafeWorldCell) Safety:
-        // we already have access to &world so no &mut world exists
-        debug_assert_eq!(
-            from_ptr_data.type_id(),
-            self.base.type_id,
-            "Safety invariant violated"
-        );
+        // (Ptr) Safety: `base.type_id` is the type stored at `base.base_id`, an invariant of `ReflectBaseType`
+        self.base
+            .debug_assert_type_matches(world.as_unsafe_world_cell()?);
 
         let base = unsafe { from_ptr_data.ptr_as_reflect(ptr) };
         self.walk_path(base.as_partial_reflect(), &type_registry)
@@ -572,16 +569,9 @@ impl ReflectReference {
         }
         .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
-        // (Ptr) Safety: we use the same type_id to both
-        // 1) retrieve the ptr
-        // 2) retrieve the ReflectFromPtr type data
-        // (UnsafeWorldCell) Safety:
-        // we already have access to &world so no &mut world exists
-        debug_assert_eq!(
-            from_ptr_data.type_id(),
-            self.base.type_id,
-            "Invariant violated"
-        );
+        // (Ptr) Safety: `base.type_id` is the type stored at `base.base_id`, an invariant of `ReflectBaseType`
+        self.base
+            .debug_assert_type_matches(world.as_unsafe_world_cell()?);
 
         let base = unsafe { from_ptr_data.ptr_as_reflect_mut(ptr.into_inner()) };
         self.walk_path_mut(base.as_partial_reflect_mut(), &type_registry)
@@ -615,8 +605,8 @@ pub struct ReflectBaseType {
     /// The type id of the value we want to access
     /// This MUST always be inline with the type id we are pointing to
     pub(crate) type_id: TypeId,
-    /// The base kind of the value we want to access
-    pub base_id: ReflectBase,
+    /// The base kind of the value we want to access, private as it must match `type_id`
+    pub(crate) base_id: ReflectBase,
 }
 
 impl DisplayWithTypeInfo for ReflectBaseType {
@@ -639,6 +629,28 @@ impl ReflectBaseType {
     /// Returns the type id of the value pointed to by the base
     pub fn type_id(&self) -> TypeId {
         self.type_id
+    }
+
+    #[inline]
+    /// Returns where the value pointed to by the base lives
+    pub fn base_id(&self) -> &ReflectBase {
+        &self.base_id
+    }
+
+    /// Debug check of the invariant that `type_id` is the type stored at `base_id`
+    #[inline]
+    fn debug_assert_type_matches(&self, world: UnsafeWorldCell) {
+        if let ReflectBase::Component(_, id) | ReflectBase::Resource(id) = &self.base_id {
+            debug_assert_eq!(
+                world
+                    .components()
+                    .get_info(*id)
+                    // components registered by scripts have no type, they are stored as `DynamicComponent`s
+                    .map(|i| i.type_id().unwrap_or(TypeId::of::<DynamicComponent>())),
+                Some(self.type_id),
+                "reference type id doesn't match the component or resource it points to"
+            );
+        }
     }
 
     /// Create a new reflection base pointing to a component on the given entity
@@ -1153,6 +1165,27 @@ mod test {
                 .unwrap(),
             TypeId::of::<String>()
         );
+    }
+
+    #[test]
+    #[cfg(debug_assertions)]
+    #[should_panic(expected = "reference type id doesn't match")]
+    fn by_id_ref_with_wrong_type_is_caught_in_debug() {
+        let mut world = setup_world();
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        let entity = world.spawn(TestComponent(vec![])).id();
+        let component_id = world.register_component::<TestComponent>();
+        let world_guard = WorldGuard::new_exclusive(&mut world, cache);
+
+        // breaks the safety contract on purpose, the debug check fires before the cast
+        let reference = unsafe {
+            ReflectReference::new_component_ref_by_id(
+                entity,
+                component_id,
+                TypeId::of::<TestResource>(),
+            )
+        };
+        let _ = reference.with_reflect(world_guard, |_| ());
     }
 
     #[test]

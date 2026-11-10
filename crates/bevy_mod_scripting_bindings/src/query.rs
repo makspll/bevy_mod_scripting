@@ -588,11 +588,14 @@ impl ScriptQueryBuilder {
             .enumerate()
             .map(|(index, c)| {
                 (!self.is_optional(index) || entity.contains_id(c.component_id())).then(|| {
-                    ReflectReference::new_component_ref_by_id(
-                        entity.id(),
-                        c.component_id(),
-                        c.type_registration().type_id(),
-                    )
+                    // Safety: the registration and component id come from the same `ScriptComponentRegistration`
+                    unsafe {
+                        ReflectReference::new_component_ref_by_id(
+                            entity.id(),
+                            c.component_id(),
+                            c.type_registration().type_id(),
+                        )
+                    }
                 })
             })
             .collect();
