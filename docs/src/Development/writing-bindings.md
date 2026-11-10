@@ -21,7 +21,20 @@ use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
 app.register_generic_type::<Time<A>>("time", &["T"], "A clock, i.e. `Time<Virtual>`.");
 ```
 
-The fields of type `A` are then documented as being of the parameter `T`, and the instantiations as `Time<T>` applied to their arguments. Only declare types whose parameter is part of what they are (`Handle`, `Time`, `ButtonInput`), not containers like `Arc<T>`.
+The fields of type `A` are then documented as being of the parameter `T`, and the instantiations as `Time<T>` applied to their arguments. Only declare types whose parameter is part of what they are (`Handle`, `Time`, `ButtonInput`), not containers like `Arc<T>`. Undeclared instantiations get a class each, named after their arguments (`render.MeshExtractableData.Indices`).
+
+Further parameters use the markers `B` and `C` (`Hashed<A, B>`). A parameter with bounds the markers don't satisfy gets a marker of its own, implementing them:
+
+```rust,ignore
+bevy_mod_scripting_bindings::generic_marker! {
+    /// Stands for the material of `MyMaterialHolder<M>`
+    pub struct M;
+}
+impl MyMaterial for M {}
+
+app.register_type::<M>()
+    .register_generic_type::<MyMaterialHolder<M>>("my_crate", &["M"], "...");
+```
 
 Functions which return values of the type they are given are declared generic in their signature, with the same marker:
 

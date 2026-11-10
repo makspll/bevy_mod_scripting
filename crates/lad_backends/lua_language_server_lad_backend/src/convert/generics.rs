@@ -269,13 +269,21 @@ pub(super) fn instantiation_class_name(
     let suffix = instantiation
         .args
         .iter()
-        .map(|arg| match arg {
-            LadTypeKind::Val(LadNamedType::Id(type_id)) => {
-                ladfile.types.get(type_id).map(|t| t.identifier.clone())
-            }
+        .filter_map(|arg| match arg {
+            LadTypeKind::Val(LadNamedType::Id(type_id)) => Some(Some(
+                ladfile
+                    .types
+                    .get(type_id)
+                    .map(|t| t.identifier.clone())
+                    .unwrap_or_else(|| super::short_type_name(&type_id.to_string())),
+            )),
+            // i.e. `Range<f32>`
+            LadTypeKind::Primitive(kind) => Some(Some(format!("{kind:?}").to_lowercase())),
             // i.e. `Time<()>`, the default clock
-            LadTypeKind::Tuple(elements) if elements.is_empty() => Some("Unit".to_owned()),
-            _ => None,
+            LadTypeKind::Tuple(elements) if elements.is_empty() => Some(Some("Unit".to_owned())),
+            // the hasher of `Hashed<Cow<str>, FixedHasher>`, which reflection can't describe, is left out of the name
+            LadTypeKind::Unknown(_) => None,
+            _ => Some(None),
         })
         .collect::<Option<Vec<_>>>()
         .map(|identifiers| identifiers.join("_"));

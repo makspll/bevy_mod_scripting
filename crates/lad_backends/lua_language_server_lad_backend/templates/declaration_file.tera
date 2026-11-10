@@ -17,6 +17,10 @@
 {% if "." in module.table %}{{ module.table }} = {}{% else %}local {{ module.table }} = {}{% endif %}
 {%- endif -%}
 {%- endif -%} {# class #}
+{%- for alias in module.aliases %}
+{{ self::multiline_description(description=alias.description) -}}
+---@alias {{ alias.name }} {{ self::lua_type(ty=alias.definition) }}
+{%- endfor %}
 {# newline #}
 {%- for function in module.functions -%}
 {# newline #}

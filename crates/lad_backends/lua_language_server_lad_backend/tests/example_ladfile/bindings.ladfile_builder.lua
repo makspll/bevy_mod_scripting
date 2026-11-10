@@ -26,11 +26,11 @@ function PlainStructType.plain_struct_function(arg1,arg2) end
 
 
 
----@class ladfile_builder.GenericStructType : ReflectReference
+---@class ladfile_builder.GenericStructType.usize : ReflectReference
 ---  I am a struct
 ---@field  field? integer
 ---@field  field2? integer
-local GenericStructType = {}
+local GenericStructType_usize = {}
 
 ---@param ref_ ReflectReference
 --- I am some docs for argument 1
@@ -39,7 +39,7 @@ local GenericStructType = {}
 ---@param option_vec_ref_wrapper? ladfile_builder.EnumType[] | nil
 --- I am some docs for argument 3
 ---@return integer
-function GenericStructType.hello_world(ref_,tuple,option_vec_ref_wrapper) end
+function GenericStructType_usize.hello_world(ref_,tuple,option_vec_ref_wrapper) end
 
 
 
@@ -93,14 +93,14 @@ local UnitType = {}
 ---@class namespace.ladfile_builder
 --- The `ladfile_builder` namespace, as returned by `import_namespace("ladfile_builder")`.
 ---@field  EnumType ladfile_builder.EnumType
----@field  GenericStructType ladfile_builder.GenericStructType
+---@field  GenericStructType ladfile_builder.GenericStructType.usize
 ---@field  HoldsOpaqueType ladfile_builder.HoldsOpaqueType
 ---@field  PlainStructType ladfile_builder.PlainStructType
 ---@field  TupleStructType ladfile_builder.TupleStructType
 ---@field  UnitType ladfile_builder.UnitType
 ---@field  map table<string, string | string>
 ---@field  my_non_static_instance ladfile_builder.UnitType[]
----@field  my_static_instance any
+---@field  my_static_instance ladfile_builder.GenericStructType.usize
 local namespace_ladfile_builder = {}
 
 

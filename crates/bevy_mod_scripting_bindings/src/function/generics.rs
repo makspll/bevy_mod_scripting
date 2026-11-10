@@ -1,12 +1,12 @@
 //! Generic parameters, which reflection can only see through the types they are instantiated with.
 
-use std::{marker::PhantomData, ops::Deref};
+use std::{any::TypeId, marker::PhantomData, ops::Deref};
 
 use bevy_app::App;
 use bevy_asset::Asset;
 use bevy_ecs::resource::Resource;
 use bevy_mod_scripting_world::WorldGuard;
-use bevy_reflect::{Reflect, TypeInfo, TypeRegistry, Typed};
+use bevy_reflect::{CreateTypeData, Reflect, TypeInfo, TypeRegistry, Typed};
 
 use crate::{
     ReflectReference, ScriptValue,
@@ -22,11 +22,65 @@ use crate::{
 ///
 /// Reflecting `Time<A>` gives `context: A` wherever the definition says `context: T`, which instantiations
 /// like `Time<Virtual>` can't tell apart from a field that happens to be of the argument's type.
-/// It implements the traits generic parameters are commonly bounded by, so it can instantiate most generic types.
+/// It implements the traits generic parameters are commonly bounded by, so it can instantiate most generic types,
+/// types with more parameters use [`B`] and [`C`] too, and types with other bounds a [`generic_marker`](crate::generic_marker) of their own.
 ///
 /// In the signature of a script function, it is a parameter of the function, see [`TypeOf`] and [`ValueOf`].
 #[derive(Reflect, Asset, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[reflect(GenericMarker)]
 pub struct A;
+
+/// Type data marking a type as a generic marker, see [`generic_marker`](crate::generic_marker).
+#[derive(Clone)]
+pub struct ReflectGenericMarker;
+
+impl<T> CreateTypeData<T> for ReflectGenericMarker {
+    fn create_type_data(_: ()) -> Self {
+        ReflectGenericMarker
+    }
+}
+
+/// Whether the type is a generic marker: [`A`], [`B`], [`C`], or one declared with [`generic_marker`](crate::generic_marker) and registered.
+pub fn is_generic_marker(type_registry: &TypeRegistry, type_id: TypeId) -> bool {
+    [TypeId::of::<A>(), TypeId::of::<B>(), TypeId::of::<C>()].contains(&type_id)
+        || type_registry
+            .get_type_data::<ReflectGenericMarker>(type_id)
+            .is_some()
+}
+
+/// Declares a marker standing for a generic parameter like [`A`], for generic types with more parameters or with
+/// bounds [`A`] doesn't satisfy, which the declaring crate implements on the marker:
+/// ```rust,ignore
+/// generic_marker! {
+///     /// Stands for the material of `MeshMaterial2d<M>`
+///     pub struct M2d;
+/// }
+/// impl Material2d for M2d {}
+/// app.register_type::<M2d>()
+///     .register_generic_type::<MeshMaterial2d<M2d>>("sprite", &["M"], "...");
+/// ```
+/// The declaring crate needs `bevy_reflect`, and must register the marker, so it's not documented as a type of its own.
+#[macro_export]
+macro_rules! generic_marker {
+    ($(#[$meta:meta])* $vis:vis struct $name:ident;) => {
+        $(#[$meta])*
+        #[derive(
+            ::bevy_reflect::Reflect, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug,
+        )]
+        #[reflect($crate::function::generics::GenericMarker)]
+        $vis struct $name;
+    };
+}
+
+generic_marker! {
+    /// Stands for the second parameter of a generic type, see [`A`].
+    pub struct B;
+}
+
+generic_marker! {
+    /// Stands for the third parameter of a generic type, see [`A`].
+    pub struct C;
+}
 
 /// A type passed to a generic script function, converted as `R`, i.e. the component type `get_component` takes:
 ///
@@ -195,7 +249,9 @@ impl GenericTypesAppExt for App {
         params: &[&'static str],
         documentation: &'static str,
     ) -> &mut Self {
-        self.register_type::<A>();
+        self.register_type::<A>()
+            .register_type::<B>()
+            .register_type::<C>();
         self.world_mut()
             .get_resource_or_init::<AppGenericTypes>()
             .0
