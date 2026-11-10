@@ -1125,8 +1125,9 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     type_id,
                 } => {
                     // Safety: both ids come from the same `ScriptResourceRegistration` in `initialize`
-                    let res_ref =
-                        unsafe { ReflectReference::new_resource_ref_by_id(*component_id, *type_id) };
+                    let res_ref = unsafe {
+                        ReflectReference::new_resource_ref_by_id(*component_id, *type_id)
+                    };
                     payload.push(res_ref.into_script_inline_error(guard.clone()));
                 }
                 ScriptSystemParam::EntityQuery { query, builder } => {
