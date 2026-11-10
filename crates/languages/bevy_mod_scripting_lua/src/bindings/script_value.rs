@@ -25,8 +25,8 @@ impl MultiLuaScriptValue {
     pub fn into_script_value(mut self) -> ScriptValue {
         if self.0.is_empty() {
             ScriptValue::Unit
-        } else if let Some(first) = self.0.pop_front()
-            && self.0.len() == 1
+        } else if self.0.len() == 1
+            && let Some(first) = self.0.pop_front()
         {
             first
         } else {
