@@ -1,11 +1,6 @@
 {
   "version": "0.23.0",
   "namespaces": {
-    "": {
-      "types": {
-        "": "()"
-      }
-    },
     "alloc": {
       "types": {
         "Cow": "alloc::borrow::Cow<str>"
@@ -14,11 +9,15 @@
     "animation": {
       "types": {
         "ActiveAnimation": "bevy_animation::ActiveAnimation",
+        "AnimationClip": "bevy_animation::AnimationClip",
+        "AnimationEventData": "bevy_animation::AnimationEventData",
+        "AnimationEventTarget": "bevy_animation::AnimationEventTarget",
         "AnimationGraph": "bevy_animation::graph::AnimationGraph",
         "AnimationPlayer": "bevy_animation::AnimationPlayer",
         "AnimationTargetId": "bevy_animation::AnimationTargetId",
         "NodeIndex": "petgraph::graph::NodeIndex",
-        "RepeatAnimation": "bevy_animation::RepeatAnimation"
+        "RepeatAnimation": "bevy_animation::RepeatAnimation",
+        "TimedAnimationEvent": "bevy_animation::TimedAnimationEvent"
       }
     },
     "asset": {
@@ -106,7 +105,12 @@
       "values": {
         "conditions": {
           "type_kind": {
-            "primitive": "staticTypeRef"
+            "type": {
+              "of": "bevy_mod_scripting_core::script_system::ScriptRunCondition",
+              "erased": {
+                "primitive": "staticTypeRef"
+              }
+            }
           },
           "is_static": false
         },
@@ -290,9 +294,11 @@
         "Affine2": "glam::Affine2",
         "Affine3A": "glam::Affine3A",
         "Annulus": "bevy_shape::dim2::Annulus",
+        "Capsule2d": "bevy_shape::dim2::Capsule2d",
         "Capsule3d": "bevy_shape::dim3::Capsule3d",
         "Circle": "bevy_shape::dim2::Circle",
         "CompassOctant": "bevy_math::compass::CompassOctant",
+        "Cone": "bevy_shape::dim3::Cone",
         "Cuboid": "bevy_shape::dim3::Cuboid",
         "Cylinder": "bevy_shape::dim3::Cylinder",
         "DVec2": "glam::DVec2",
@@ -318,6 +324,7 @@
         "Rot2": "bevy_math::rotation2d::Rot2",
         "Sphere": "bevy_shape::dim3::Sphere",
         "Torus": "bevy_shape::dim3::Torus",
+        "Triangle2d": "bevy_shape::dim2::Triangle2d",
         "URect": "bevy_math::rects::urect::URect",
         "UVec2": "glam::UVec2",
         "UVec3": "glam::UVec3",
@@ -3696,8 +3703,7 @@
       "associated_functions": [
         "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::new"
+        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::short_name"
       ],
       "layout": null,
       "generated": false,
@@ -3719,8 +3725,7 @@
       "associated_functions": [
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::new"
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -3804,8 +3809,7 @@
       "associated_functions": [
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::new"
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace"
       ],
       "layout": {
         "kind": "Struct",
@@ -3844,8 +3848,7 @@
       "associated_functions": [
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace",
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::new"
+        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace"
       ],
       "layout": null,
       "generated": false,
@@ -3866,8 +3869,7 @@
       "documentation": " A handle to a script registered event type.",
       "associated_functions": [
         "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::short_name",
-        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::namespace",
-        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::new"
+        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::namespace"
       ],
       "layout": null,
       "generated": false,
@@ -5111,8 +5113,7 @@
       "associated_functions": [
         "bevy_system_reflection::ReflectSchedule::render_dot",
         "bevy_system_reflection::ReflectSchedule::get_system_by_name",
-        "bevy_system_reflection::ReflectSchedule::systems",
-        "bevy_system_reflection::ReflectSchedule::new"
+        "bevy_system_reflection::ReflectSchedule::systems"
       ],
       "layout": {
         "kind": "Struct",
@@ -5150,8 +5151,7 @@
       "documentation": " A reflectable system.",
       "associated_functions": [
         "bevy_system_reflection::ReflectSystem::path",
-        "bevy_system_reflection::ReflectSystem::identifier",
-        "bevy_system_reflection::ReflectSystem::new"
+        "bevy_system_reflection::ReflectSystem::identifier"
       ],
       "layout": null,
       "generated": false,
@@ -5171,8 +5171,7 @@
       "namespace": "bms",
       "documentation": " A reflectable system set: a set node of a schedule graph, or a set scripts put and order their systems in.\n\n Bevy does not expose the interned sets of a schedule graph, so set nodes of a graph only have a node id,\n while sets made from an interned set (i.e. the ones scripts use) only have the set.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSystemSet::name",
-        "bevy_system_reflection::ReflectSystemSet::new"
+        "bevy_system_reflection::ReflectSystemSet::name"
       ],
       "layout": null,
       "generated": false,
@@ -8016,6 +8015,114 @@
         "default": {}
       }
     },
+    "bevy_animation::AnimationClip": {
+      "identifier": "AnimationClip",
+      "crate": "bevy_animation",
+      "path": "bevy_animation::AnimationClip",
+      "namespace": "animation",
+      "documentation": " A list of [`VariableCurve`]s and the [`AnimationTargetId`]s to which they\n apply.\n\n Because animation clips refer to targets by UUID, they can target any\n entity with that ID.",
+      "associated_functions": [
+        "bevy_animation::AnimationClip::load",
+        "bevy_animation::AnimationClip::new",
+        "bevy_animation::AnimationClip::add_asset",
+        "bevy_animation::AnimationClip::get_asset"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "AnimationClip",
+        "fields": [
+          {
+            "name": "events",
+            "type": {
+              "hashMap": [
+                {
+                  "val": "bevy_animation::AnimationEventTarget"
+                },
+                {
+                  "vec": {
+                    "val": "bevy_animation::TimedAnimationEvent"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "duration",
+            "type": {
+              "primitive": "f32"
+            },
+            "has_default": true
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration",
+        "default": {}
+      }
+    },
+    "bevy_animation::AnimationEventData": {
+      "identifier": "AnimationEventData",
+      "crate": "bevy_animation",
+      "path": "bevy_animation::AnimationEventData",
+      "namespace": "animation",
+      "associated_functions": [
+        "bevy_animation::AnimationEventData::new"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "AnimationEventData"
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
+    "bevy_animation::AnimationEventTarget": {
+      "identifier": "AnimationEventTarget",
+      "crate": "bevy_animation",
+      "path": "bevy_animation::AnimationEventTarget",
+      "namespace": "animation",
+      "associated_functions": [
+        "bevy_animation::AnimationEventTarget::new"
+      ],
+      "layout": [
+        {
+          "kind": "Unit",
+          "name": "Root"
+        },
+        {
+          "kind": "TupleStruct",
+          "name": "Node",
+          "fields": [
+            {
+              "type": {
+                "val": "bevy_animation::AnimationTargetId"
+              }
+            }
+          ]
+        }
+      ],
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
     "bevy_animation::AnimationTargetId": {
       "identifier": "AnimationTargetId",
       "crate": "bevy_animation",
@@ -8089,6 +8196,43 @@
         "default": {
           "variant": "Never"
         }
+      }
+    },
+    "bevy_animation::TimedAnimationEvent": {
+      "identifier": "TimedAnimationEvent",
+      "crate": "bevy_animation",
+      "path": "bevy_animation::TimedAnimationEvent",
+      "namespace": "animation",
+      "associated_functions": [
+        "bevy_animation::TimedAnimationEvent::new"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "TimedAnimationEvent",
+        "fields": [
+          {
+            "name": "time",
+            "type": {
+              "primitive": "f32"
+            },
+            "has_default": true
+          },
+          {
+            "name": "event",
+            "type": {
+              "val": "bevy_animation::AnimationEventData"
+            }
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
       }
     },
     "bevy_asset::assets::AssetIndex": {
@@ -9303,7 +9447,7 @@
                     "val": "alloc::borrow::Cow<str>"
                   },
                   {
-                    "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+                    "val": "bevy_platform::hash::FixedHasher"
                   }
                 ]
               }
@@ -10223,224 +10367,6 @@
         "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
       }
     },
-    "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo": {
-      "identifier": "FunctionArgInfo",
-      "crate": "bevy_mod_scripting_bindings",
-      "path": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo",
-      "namespace": "bms",
-      "documentation": " Information about a function argument.",
-      "associated_functions": [
-        "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo::new"
-      ],
-      "layout": {
-        "kind": "Struct",
-        "name": "FunctionArgInfo",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "option": {
-                "val": "alloc::borrow::Cow<str>"
-              }
-            },
-            "has_default": true
-          },
-          {
-            "name": "arg_index",
-            "type": {
-              "primitive": "usize"
-            },
-            "has_default": true
-          },
-          {
-            "name": "type_id",
-            "type": {
-              "val": "core::any::TypeId"
-            }
-          }
-        ]
-      },
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
-    "bevy_mod_scripting_bindings::docgen::info::FunctionInfo": {
-      "identifier": "FunctionInfo",
-      "crate": "bevy_mod_scripting_bindings",
-      "path": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo",
-      "namespace": "bms",
-      "documentation": " Information about a function.",
-      "associated_functions": [
-        "bevy_mod_scripting_bindings::docgen::info::FunctionInfo::new"
-      ],
-      "layout": {
-        "kind": "Struct",
-        "name": "FunctionInfo",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "val": "alloc::borrow::Cow<str>"
-            }
-          },
-          {
-            "name": "namespace",
-            "type": {
-              "val": "bevy_mod_scripting_bindings::function::namespace::FunctionScope"
-            }
-          },
-          {
-            "name": "arg_info",
-            "type": {
-              "vec": {
-                "val": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo"
-              }
-            }
-          },
-          {
-            "name": "return_info",
-            "type": {
-              "val": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo"
-            }
-          },
-          {
-            "name": "docs",
-            "type": {
-              "option": {
-                "val": "alloc::borrow::Cow<str>"
-              }
-            },
-            "has_default": true
-          }
-        ]
-      },
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
-    "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo": {
-      "identifier": "FunctionReturnInfo",
-      "crate": "bevy_mod_scripting_bindings",
-      "path": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo",
-      "namespace": "bms",
-      "documentation": " Information about a function return value.",
-      "associated_functions": [
-        "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo::new"
-      ],
-      "layout": {
-        "kind": "Struct",
-        "name": "FunctionReturnInfo",
-        "fields": [
-          {
-            "name": "type_id",
-            "type": {
-              "val": "core::any::TypeId"
-            }
-          }
-        ]
-      },
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
-    "bevy_mod_scripting_bindings::error::InteropError": {
-      "identifier": "InteropError",
-      "crate": "bevy_mod_scripting_bindings",
-      "path": "bevy_mod_scripting_bindings::error::InteropError",
-      "namespace": "bms",
-      "documentation": " An error occurring when converting between rust and a script context.",
-      "associated_functions": [
-        "bevy_mod_scripting_bindings::error::InteropError::new"
-      ],
-      "layout": null,
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
-    "bevy_mod_scripting_bindings::function::namespace::FunctionScope": {
-      "identifier": "FunctionScope",
-      "crate": "bevy_mod_scripting_bindings",
-      "path": "bevy_mod_scripting_bindings::function::namespace::FunctionScope",
-      "namespace": "bms",
-      "documentation": " Where a function lives, for its documentation and errors",
-      "associated_functions": [
-        "bevy_mod_scripting_bindings::function::namespace::FunctionScope::new"
-      ],
-      "layout": [
-        {
-          "kind": "TupleStruct",
-          "name": "OnType",
-          "fields": [
-            {
-              "type": {
-                "val": "core::any::TypeId"
-              }
-            }
-          ]
-        },
-        {
-          "kind": "Unit",
-          "name": "Member"
-        },
-        {
-          "kind": "Unit",
-          "name": "Builtin"
-        }
-      ],
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
-    "bevy_mod_scripting_bindings::query::ScriptQueryResult": {
-      "identifier": "ScriptQueryResult",
-      "crate": "bevy_mod_scripting_bindings",
-      "path": "bevy_mod_scripting_bindings::query::ScriptQueryResult",
-      "namespace": "bms",
-      "documentation": " A result from a query.\n\n Scripts receive it as a plain list, the entity followed by the components in the order they were added to the query,\n i.e. `{entity, a, b}` in Lua, with nil for absent optional components. Nothing is allocated for the result itself.",
-      "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryResult::new"
-      ],
-      "layout": null,
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
     "bevy_mod_scripting_bindings::script_component::DynamicComponent": {
       "identifier": "DynamicComponent",
       "crate": "bevy_mod_scripting_bindings",
@@ -10944,6 +10870,123 @@
         "is_reflect": true,
         "mapped_to_primitive_kind": null,
         "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
+    "bevy_shape::dim2::Capsule2d": {
+      "identifier": "Capsule2d",
+      "crate": "bevy_shape",
+      "path": "bevy_shape::dim2::Capsule2d",
+      "namespace": "math",
+      "documentation": " A 2D capsule primitive, also known as a stadium or pill shape.\n\n A two-dimensional capsule is defined as a neighborhood of points at a distance (radius) from a line",
+      "associated_functions": [
+        "bevy_shape::dim2::Capsule2d::new"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "Capsule2d",
+        "fields": [
+          {
+            "name": "radius",
+            "type": {
+              "primitive": "f32"
+            },
+            "has_default": true
+          },
+          {
+            "name": "half_length",
+            "type": {
+              "primitive": "f32"
+            },
+            "has_default": true
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration",
+        "default": {}
+      }
+    },
+    "bevy_shape::dim2::Triangle2d": {
+      "identifier": "Triangle2d",
+      "crate": "bevy_shape",
+      "path": "bevy_shape::dim2::Triangle2d",
+      "namespace": "math",
+      "documentation": " A triangle in 2D space",
+      "associated_functions": [
+        "bevy_shape::dim2::Triangle2d::new"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "Triangle2d",
+        "fields": [
+          {
+            "name": "vertices",
+            "type": {
+              "array": [
+                {
+                  "val": "glam::Vec2"
+                },
+                3
+              ]
+            }
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration",
+        "default": {}
+      }
+    },
+    "bevy_shape::dim3::Cone": {
+      "identifier": "Cone",
+      "crate": "bevy_shape",
+      "path": "bevy_shape::dim3::Cone",
+      "namespace": "math",
+      "documentation": " A cone primitive centered on the midpoint between the tip of the cone and the center of its base.\n\n The cone is oriented with its tip pointing towards the Y axis.",
+      "associated_functions": [
+        "bevy_shape::dim3::Cone::new"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "Cone",
+        "fields": [
+          {
+            "name": "radius",
+            "type": {
+              "primitive": "f32"
+            },
+            "has_default": true
+          },
+          {
+            "name": "height",
+            "type": {
+              "primitive": "f32"
+            },
+            "has_default": true
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration",
+        "default": {}
       }
     },
     "bevy_sprite::sprite::SpriteAlphaMode": {
@@ -11758,7 +11801,7 @@
                   "generic_type": "bevy_asset::handle::Handle",
                   "args": [
                     {
-                      "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+                      "val": "bevy_text::font::Font"
                     }
                   ]
                 }
@@ -15642,20 +15685,6 @@
         "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
       }
     },
-    "()": {
-      "identifier": "",
-      "path": "()",
-      "layout": null,
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
     "DynamicFunction": {
       "identifier": "DynamicFunction",
       "path": "DynamicFunction",
@@ -15710,6 +15739,318 @@
         "is_resource": false,
         "is_reflect": false,
         "mapped_to_primitive_kind": "str"
+      }
+    },
+    "bevy_asset::assets::LoadedUntypedAsset": {
+      "identifier": "LoadedUntypedAsset",
+      "crate": "bevy_asset",
+      "path": "bevy_asset::assets::LoadedUntypedAsset",
+      "namespace": "asset",
+      "documentation": "Not reflected: scripts can only pass values of it around.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "bevy_asset::folder::LoadedFolder": {
+      "identifier": "LoadedFolder",
+      "crate": "bevy_asset",
+      "path": "bevy_asset::folder::LoadedFolder",
+      "namespace": "asset",
+      "documentation": "Not reflected: scripts can only pass values of it around.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "bevy_mesh::skinning::SkinnedMeshInverseBindposes": {
+      "identifier": "SkinnedMeshInverseBindposes",
+      "crate": "bevy_mesh",
+      "path": "bevy_mesh::skinning::SkinnedMeshInverseBindposes",
+      "namespace": "render",
+      "documentation": "Not reflected: scripts can only pass values of it around.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo": {
+      "identifier": "FunctionArgInfo",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo",
+      "namespace": "bms",
+      "documentation": " Information about a function argument.",
+      "layout": {
+        "kind": "Struct",
+        "name": "FunctionArgInfo",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": {
+                "val": "alloc::borrow::Cow<str>"
+              }
+            },
+            "has_default": true
+          },
+          {
+            "name": "arg_index",
+            "type": {
+              "primitive": "usize"
+            },
+            "has_default": true
+          },
+          {
+            "name": "type_id",
+            "type": {
+              "val": "core::any::TypeId"
+            }
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
+    "bevy_mod_scripting_bindings::docgen::info::FunctionInfo": {
+      "identifier": "FunctionInfo",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo",
+      "namespace": "bms",
+      "documentation": " Information about a function.",
+      "layout": {
+        "kind": "Struct",
+        "name": "FunctionInfo",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "val": "alloc::borrow::Cow<str>"
+            }
+          },
+          {
+            "name": "namespace",
+            "type": {
+              "val": "bevy_mod_scripting_bindings::function::namespace::FunctionScope"
+            }
+          },
+          {
+            "name": "arg_info",
+            "type": {
+              "vec": {
+                "val": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo"
+              }
+            }
+          },
+          {
+            "name": "return_info",
+            "type": {
+              "val": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo"
+            }
+          },
+          {
+            "name": "docs",
+            "type": {
+              "option": {
+                "val": "alloc::borrow::Cow<str>"
+              }
+            },
+            "has_default": true
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
+    "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo": {
+      "identifier": "FunctionReturnInfo",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo",
+      "namespace": "bms",
+      "documentation": " Information about a function return value.",
+      "layout": {
+        "kind": "Struct",
+        "name": "FunctionReturnInfo",
+        "fields": [
+          {
+            "name": "type_id",
+            "type": {
+              "val": "core::any::TypeId"
+            }
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
+    "bevy_mod_scripting_bindings::error::InteropError": {
+      "identifier": "InteropError",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::error::InteropError",
+      "namespace": "bms",
+      "documentation": " An error occurring when converting between rust and a script context.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
+    "bevy_mod_scripting_bindings::function::namespace::FunctionScope": {
+      "identifier": "FunctionScope",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::function::namespace::FunctionScope",
+      "namespace": "bms",
+      "documentation": " Where a function lives, for its documentation and errors",
+      "layout": [
+        {
+          "kind": "TupleStruct",
+          "name": "OnType",
+          "fields": [
+            {
+              "type": {
+                "val": "core::any::TypeId"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Unit",
+          "name": "Member"
+        },
+        {
+          "kind": "Unit",
+          "name": "Builtin"
+        }
+      ],
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
+    "bevy_mod_scripting_bindings::query::ScriptQueryResult": {
+      "identifier": "ScriptQueryResult",
+      "crate": "bevy_mod_scripting_bindings",
+      "path": "bevy_mod_scripting_bindings::query::ScriptQueryResult",
+      "namespace": "bms",
+      "documentation": " A result from a query.\n\n Scripts receive it as a plain list, the entity followed by the components in the order they were added to the query,\n i.e. `{entity, a, b}` in Lua, with nil for absent optional components. Nothing is allocated for the result itself.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": true,
+        "mapped_to_primitive_kind": null,
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+      }
+    },
+    "bevy_platform::hash::FixedHasher": {
+      "identifier": "FixedHasher",
+      "crate": "bevy_platform",
+      "path": "bevy_platform::hash::FixedHasher",
+      "namespace": "bevy_platform",
+      "documentation": "Not reflected: scripts can only pass values of it around.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "bevy_shader::shader::Shader": {
+      "identifier": "Shader",
+      "crate": "bevy_shader",
+      "path": "bevy_shader::shader::Shader",
+      "namespace": "bevy_shader",
+      "documentation": "Not reflected: scripts can only pass values of it around.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial": {
+      "identifier": "TilemapChunkMaterial",
+      "crate": "bevy_sprite_render",
+      "path": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial",
+      "namespace": "sprite",
+      "documentation": "Not reflected: scripts can only pass values of it around.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
+    "bevy_text::font::Font": {
+      "identifier": "Font",
+      "crate": "bevy_text",
+      "path": "bevy_text::font::Font",
+      "namespace": "text",
+      "documentation": "Not reflected: scripts can only pass values of it around.",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
       }
     }
   },
@@ -16007,6 +16348,23 @@
           ],
           "associated_functions": [
             "bevy_asset::handle::Handle<bevy_image::texture_atlas::TextureAtlasLayout>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
+              "val": "bevy_animation::AnimationClip"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::Handle<bevy_animation::AnimationClip>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16448,7 +16806,7 @@
               "val": "alloc::borrow::Cow<str>"
             },
             {
-              "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+              "val": "bevy_platform::hash::FixedHasher"
             }
           ],
           "associated_functions": [
@@ -19688,6 +20046,33 @@
       "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
       "metadata": {}
     },
+    "alloc::vec::Vec<bevy_animation::TimedAnimationEvent>::new": {
+      "namespace": "alloc::vec::Vec<bevy_animation::TimedAnimationEvent>",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "alloc::vec::Vec<bevy_animation::TimedAnimationEvent>"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "alloc::vec::Vec<bevy_animation::TimedAnimationEvent>"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {}
+    },
     "alloc::vec::Vec<bevy_asset::handle::Handle<bevy_mod_scripting_asset::script_asset::ScriptAsset>>::new": {
       "namespace": "alloc::vec::Vec<bevy_asset::handle::Handle<bevy_mod_scripting_asset::script_asset::ScriptAsset>>",
       "identifier": "new",
@@ -20417,6 +20802,253 @@
       "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
       "metadata": {}
     },
+    "bevy_animation::AnimationClip::add_asset": {
+      "namespace": "bevy_animation::AnimationClip",
+      "identifier": "add_asset",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_animation::AnimationClip"
+          },
+          "documentation": "The asset value.",
+          "name": "value"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": {
+              "generic_type": "bevy_asset::handle::Handle",
+              "args": [
+                {
+                  "val": "bevy_animation::AnimationClip"
+                }
+              ]
+            }
+          }
+        },
+        "documentation": "A handle to the new asset.",
+        "name": "handle"
+      },
+      "documentation": "Adds a value of this type as a new asset, returning a strong handle to it.\n",
+      "metadata": {}
+    },
+    "bevy_animation::AnimationClip::get_asset": {
+      "namespace": "bevy_animation::AnimationClip",
+      "identifier": "get_asset",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "val": {
+              "generic_type": "bevy_asset::handle::Handle",
+              "args": [
+                {
+                  "val": "bevy_animation::AnimationClip"
+                }
+              ]
+            }
+          },
+          "documentation": "The handle to the asset.",
+          "name": "handle"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "option": {
+              "val": "bevy_animation::AnimationClip"
+            }
+          }
+        },
+        "documentation": "The asset, or nil.",
+        "name": "asset"
+      },
+      "documentation": "The asset a handle points to, or nil if it isn't loaded or added yet.\n\nChanges to the returned value change the asset.\n",
+      "metadata": {}
+    },
+    "bevy_animation::AnimationClip::load": {
+      "namespace": "bevy_animation::AnimationClip",
+      "identifier": "load",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "documentation": "The asset path, relative to the assets folder.",
+          "name": "path"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": {
+              "generic_type": "bevy_asset::handle::Handle",
+              "args": [
+                {
+                  "val": "bevy_animation::AnimationClip"
+                }
+              ]
+            }
+          }
+        },
+        "documentation": "A handle to the asset, which is loaded in the background.",
+        "name": "handle"
+      },
+      "documentation": "Starts loading an asset of this type from a path, returning a handle to it right away.\n",
+      "metadata": {}
+    },
+    "bevy_animation::AnimationClip::new": {
+      "namespace": "bevy_animation::AnimationClip",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_animation::AnimationClip"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_animation::AnimationClip"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {}
+    },
+    "bevy_animation::AnimationEventData::new": {
+      "namespace": "bevy_animation::AnimationEventData",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_animation::AnimationEventData"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_animation::AnimationEventData"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {}
+    },
+    "bevy_animation::AnimationEventTarget::Node::new": {
+      "namespace": {
+        "type": "bevy_animation::AnimationEventTarget",
+        "variant": "Node"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_animation::AnimationEventTarget",
+              "variant": "Node"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_animation::AnimationEventTarget"
+          }
+        }
+      },
+      "metadata": {},
+      "receiver": true
+    },
+    "bevy_animation::AnimationEventTarget::Root::new": {
+      "namespace": {
+        "type": "bevy_animation::AnimationEventTarget",
+        "variant": "Root"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef"
+          },
+          "name": "variant"
+        },
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_animation::AnimationEventTarget",
+              "variant": "Root"
+            }
+          },
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_animation::AnimationEventTarget"
+          }
+        }
+      },
+      "metadata": {},
+      "receiver": true
+    },
+    "bevy_animation::AnimationEventTarget::new": {
+      "namespace": "bevy_animation::AnimationEventTarget",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_animation::AnimationEventTarget"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_animation::AnimationEventTarget"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {}
+    },
     "bevy_animation::AnimationPlayer::all_finished": {
       "namespace": "bevy_animation::AnimationPlayer",
       "identifier": "all_finished",
@@ -20914,6 +21546,33 @@
       "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
       "metadata": {}
     },
+    "bevy_animation::TimedAnimationEvent::new": {
+      "namespace": "bevy_animation::TimedAnimationEvent",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_animation::TimedAnimationEvent"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_animation::TimedAnimationEvent"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {}
+    },
     "bevy_animation::graph::AnimationGraph::add_clip": {
       "namespace": "bevy_animation::graph::AnimationGraph",
       "identifier": "add_clip",
@@ -20931,7 +21590,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+                  "val": "bevy_animation::AnimationClip"
                 }
               ]
             }
@@ -20971,7 +21630,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+                  "val": "bevy_animation::AnimationClip"
                 }
               ]
             }
@@ -21562,7 +22221,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+              "val": "bevy_animation::AnimationClip"
             }
           ]
         },
@@ -21584,7 +22243,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+                    "val": "bevy_animation::AnimationClip"
                   }
                 ]
               },
@@ -21601,7 +22260,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+                  "val": "bevy_animation::AnimationClip"
                 }
               ]
             }
@@ -21617,7 +22276,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+              "val": "bevy_animation::AnimationClip"
             }
           ]
         },
@@ -21639,7 +22298,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+                    "val": "bevy_animation::AnimationClip"
                   }
                 ]
               },
@@ -21656,7 +22315,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+                  "val": "bevy_animation::AnimationClip"
                 }
               ]
             }
@@ -21671,7 +22330,7 @@
         "generic_type": "bevy_asset::handle::Handle",
         "args": [
           {
-            "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+            "val": "bevy_animation::AnimationClip"
           }
         ]
       },
@@ -21685,7 +22344,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+                    "val": "bevy_animation::AnimationClip"
                   }
                 ]
               }
@@ -21702,7 +22361,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x6ac5798406b15304d9d644333b2e4801)"
+                  "val": "bevy_animation::AnimationClip"
                 }
               ]
             }
@@ -21720,7 +22379,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+              "val": "bevy_asset::assets::LoadedUntypedAsset"
             }
           ]
         },
@@ -21742,7 +22401,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+                    "val": "bevy_asset::assets::LoadedUntypedAsset"
                   }
                 ]
               },
@@ -21759,7 +22418,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+                  "val": "bevy_asset::assets::LoadedUntypedAsset"
                 }
               ]
             }
@@ -21775,7 +22434,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+              "val": "bevy_asset::assets::LoadedUntypedAsset"
             }
           ]
         },
@@ -21797,7 +22456,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+                    "val": "bevy_asset::assets::LoadedUntypedAsset"
                   }
                 ]
               },
@@ -21814,7 +22473,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+                  "val": "bevy_asset::assets::LoadedUntypedAsset"
                 }
               ]
             }
@@ -21829,7 +22488,7 @@
         "generic_type": "bevy_asset::handle::Handle",
         "args": [
           {
-            "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+            "val": "bevy_asset::assets::LoadedUntypedAsset"
           }
         ]
       },
@@ -21843,7 +22502,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+                    "val": "bevy_asset::assets::LoadedUntypedAsset"
                   }
                 ]
               }
@@ -21860,7 +22519,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0xcfec0048a17b4450b07478163e0dd58d)"
+                  "val": "bevy_asset::assets::LoadedUntypedAsset"
                 }
               ]
             }
@@ -21878,7 +22537,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+              "val": "bevy_asset::folder::LoadedFolder"
             }
           ]
         },
@@ -21900,7 +22559,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+                    "val": "bevy_asset::folder::LoadedFolder"
                   }
                 ]
               },
@@ -21917,7 +22576,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+                  "val": "bevy_asset::folder::LoadedFolder"
                 }
               ]
             }
@@ -21933,7 +22592,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+              "val": "bevy_asset::folder::LoadedFolder"
             }
           ]
         },
@@ -21955,7 +22614,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+                    "val": "bevy_asset::folder::LoadedFolder"
                   }
                 ]
               },
@@ -21972,7 +22631,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+                  "val": "bevy_asset::folder::LoadedFolder"
                 }
               ]
             }
@@ -21987,7 +22646,7 @@
         "generic_type": "bevy_asset::handle::Handle",
         "args": [
           {
-            "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+            "val": "bevy_asset::folder::LoadedFolder"
           }
         ]
       },
@@ -22001,7 +22660,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+                    "val": "bevy_asset::folder::LoadedFolder"
                   }
                 ]
               }
@@ -22018,7 +22677,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0xd5d8848dd8ad512fcada6b8475c989c1)"
+                  "val": "bevy_asset::folder::LoadedFolder"
                 }
               ]
             }
@@ -22510,7 +23169,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+              "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
             }
           ]
         },
@@ -22532,7 +23191,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+                    "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
                   }
                 ]
               },
@@ -22549,7 +23208,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+                  "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
                 }
               ]
             }
@@ -22565,7 +23224,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+              "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
             }
           ]
         },
@@ -22587,7 +23246,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+                    "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
                   }
                 ]
               },
@@ -22604,7 +23263,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+                  "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
                 }
               ]
             }
@@ -22619,7 +23278,7 @@
         "generic_type": "bevy_asset::handle::Handle",
         "args": [
           {
-            "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+            "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
           }
         ]
       },
@@ -22633,7 +23292,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+                    "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
                   }
                 ]
               }
@@ -22650,7 +23309,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x0a330e4a718c1b5f9117976a89efe8f9)"
+                  "val": "bevy_mesh::skinning::SkinnedMeshInverseBindposes"
                 }
               ]
             }
@@ -23024,7 +23683,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+              "val": "bevy_shader::shader::Shader"
             }
           ]
         },
@@ -23046,7 +23705,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+                    "val": "bevy_shader::shader::Shader"
                   }
                 ]
               },
@@ -23063,7 +23722,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+                  "val": "bevy_shader::shader::Shader"
                 }
               ]
             }
@@ -23079,7 +23738,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+              "val": "bevy_shader::shader::Shader"
             }
           ]
         },
@@ -23101,7 +23760,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+                    "val": "bevy_shader::shader::Shader"
                   }
                 ]
               },
@@ -23118,7 +23777,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+                  "val": "bevy_shader::shader::Shader"
                 }
               ]
             }
@@ -23133,7 +23792,7 @@
         "generic_type": "bevy_asset::handle::Handle",
         "args": [
           {
-            "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+            "val": "bevy_shader::shader::Shader"
           }
         ]
       },
@@ -23147,7 +23806,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+                    "val": "bevy_shader::shader::Shader"
                   }
                 ]
               }
@@ -23164,7 +23823,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x28405cbbd5b2003563d2568d27a6b6e6)"
+                  "val": "bevy_shader::shader::Shader"
                 }
               ]
             }
@@ -23498,7 +24157,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+              "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
             }
           ]
         },
@@ -23520,7 +24179,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+                    "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
                   }
                 ]
               },
@@ -23537,7 +24196,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+                  "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
                 }
               ]
             }
@@ -23553,7 +24212,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+              "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
             }
           ]
         },
@@ -23575,7 +24234,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+                    "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
                   }
                 ]
               },
@@ -23592,7 +24251,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+                  "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
                 }
               ]
             }
@@ -23607,7 +24266,7 @@
         "generic_type": "bevy_asset::handle::Handle",
         "args": [
           {
-            "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+            "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
           }
         ]
       },
@@ -23621,7 +24280,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+                    "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
                   }
                 ]
               }
@@ -23638,7 +24297,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x99c7c95a19153056678dab2d99c2ff50)"
+                  "val": "bevy_sprite_render::tilemap_chunk::tilemap_chunk_material::TilemapChunkMaterial"
                 }
               ]
             }
@@ -23656,7 +24315,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+              "val": "bevy_text::font::Font"
             }
           ]
         },
@@ -23678,7 +24337,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+                    "val": "bevy_text::font::Font"
                   }
                 ]
               },
@@ -23695,7 +24354,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+                  "val": "bevy_text::font::Font"
                 }
               ]
             }
@@ -23711,7 +24370,7 @@
           "generic_type": "bevy_asset::handle::Handle",
           "args": [
             {
-              "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+              "val": "bevy_text::font::Font"
             }
           ]
         },
@@ -23733,7 +24392,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+                    "val": "bevy_text::font::Font"
                   }
                 ]
               },
@@ -23750,7 +24409,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+                  "val": "bevy_text::font::Font"
                 }
               ]
             }
@@ -23765,7 +24424,7 @@
         "generic_type": "bevy_asset::handle::Handle",
         "args": [
           {
-            "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+            "val": "bevy_text::font::Font"
           }
         ]
       },
@@ -23779,7 +24438,7 @@
                 "generic_type": "bevy_asset::handle::Handle",
                 "args": [
                   {
-                    "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+                    "val": "bevy_text::font::Font"
                   }
                 ]
               }
@@ -23796,7 +24455,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+                  "val": "bevy_text::font::Font"
                 }
               ]
             }
@@ -43899,7 +44558,47 @@
       "arguments": [
         {
           "kind": {
-            "primitive": "reflectReference"
+            "union": [
+              {
+                "ref": "bevy_shape::dim3::Cuboid"
+              },
+              {
+                "ref": "bevy_shape::dim3::Sphere"
+              },
+              {
+                "ref": "bevy_shape::dim3::Plane3d"
+              },
+              {
+                "ref": "bevy_shape::dim3::Cylinder"
+              },
+              {
+                "ref": "bevy_shape::dim3::Capsule3d"
+              },
+              {
+                "ref": "bevy_shape::dim3::Cone"
+              },
+              {
+                "ref": "bevy_shape::dim3::Torus"
+              },
+              {
+                "ref": "bevy_shape::dim2::Circle"
+              },
+              {
+                "ref": "bevy_shape::dim2::Rectangle"
+              },
+              {
+                "ref": "bevy_shape::dim2::RegularPolygon"
+              },
+              {
+                "ref": "bevy_shape::dim2::Capsule2d"
+              },
+              {
+                "ref": "bevy_shape::dim2::Annulus"
+              },
+              {
+                "ref": "bevy_shape::dim2::Triangle2d"
+              }
+            ]
           },
           "name": "shape"
         }
@@ -45463,87 +46162,6 @@
       "documentation": "Draws a wireframe sphere around the position.",
       "metadata": {}
     },
-    "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo::new": {
-      "namespace": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::docgen::info::FunctionArgInfo"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
-    "bevy_mod_scripting_bindings::docgen::info::FunctionInfo::new": {
-      "namespace": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::docgen::info::FunctionInfo"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
-    "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo::new": {
-      "namespace": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::docgen::info::FunctionReturnInfo"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
     "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq": {
       "namespace": "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef",
       "identifier": "eq",
@@ -45644,33 +46262,6 @@
       "documentation": "Retrieves the name of the variant.\n",
       "metadata": {},
       "receiver": true
-    },
-    "bevy_mod_scripting_bindings::error::InteropError::new": {
-      "namespace": "bevy_mod_scripting_bindings::error::InteropError",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::error::InteropError"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::error::InteropError"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
     },
     "bevy_mod_scripting_bindings::function::generics::A::new": {
       "namespace": {
@@ -45882,33 +46473,6 @@
       "metadata": {},
       "receiver": true
     },
-    "bevy_mod_scripting_bindings::function::namespace::FunctionScope::new": {
-      "namespace": "bevy_mod_scripting_bindings::function::namespace::FunctionScope",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::function::namespace::FunctionScope"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::function::namespace::FunctionScope"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
     "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::namespace": {
       "namespace": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration",
       "identifier": "namespace",
@@ -45932,33 +46496,6 @@
       "documentation": "Retrieves the script namespace of the type, by default the name of the crate defining it.\nTypes in the root namespace have the empty string as namespace.\n",
       "metadata": {},
       "receiver": true
-    },
-    "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::new": {
-      "namespace": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
     },
     "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::short_name": {
       "namespace": "bevy_mod_scripting_bindings::query::ScriptBundleRegistration",
@@ -46031,33 +46568,6 @@
       "documentation": "Retrieves the script namespace of the type, by default the name of the crate defining it.\nTypes in the root namespace have the empty string as namespace.\n",
       "metadata": {},
       "receiver": true
-    },
-    "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::new": {
-      "namespace": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
     },
     "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name": {
       "namespace": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration",
@@ -46418,33 +46928,6 @@
       "metadata": {},
       "receiver": true
     },
-    "bevy_mod_scripting_bindings::query::ScriptQueryResult::new": {
-      "namespace": "bevy_mod_scripting_bindings::query::ScriptQueryResult",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::query::ScriptQueryResult"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::query::ScriptQueryResult"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
     "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace": {
       "namespace": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration",
       "identifier": "namespace",
@@ -46468,33 +46951,6 @@
       "documentation": "Retrieves the script namespace of the type, by default the name of the crate defining it.\nTypes in the root namespace have the empty string as namespace.\n",
       "metadata": {},
       "receiver": true
-    },
-    "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::new": {
-      "namespace": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
     },
     "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name": {
       "namespace": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration",
@@ -46567,33 +47023,6 @@
       "documentation": "Retrieves the script namespace of the type, by default the name of the crate defining it.\nTypes in the root namespace have the empty string as namespace.\n",
       "metadata": {},
       "receiver": true
-    },
-    "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::new": {
-      "namespace": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
     },
     "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name": {
       "namespace": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration",
@@ -46693,33 +47122,6 @@
       "documentation": "Retrieves the script namespace the event was registered in, i.e. `script.game` for `script.game.Hit`.\n",
       "metadata": {},
       "receiver": true
-    },
-    "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::new": {
-      "namespace": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
     },
     "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::short_name": {
       "namespace": "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration",
@@ -48193,6 +48595,33 @@
       "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
       "metadata": {}
     },
+    "bevy_platform::collections::HashMap<bevy_animation::AnimationEventTarget, alloc::vec::Vec<bevy_animation::TimedAnimationEvent>, bevy_platform::hash::FixedHasher>::new": {
+      "namespace": "bevy_platform::collections::HashMap<bevy_animation::AnimationEventTarget, alloc::vec::Vec<bevy_animation::TimedAnimationEvent>, bevy_platform::hash::FixedHasher>",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_platform::collections::HashMap<bevy_animation::AnimationEventTarget, alloc::vec::Vec<bevy_animation::TimedAnimationEvent>, bevy_platform::hash::FixedHasher>"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_platform::collections::HashMap<bevy_animation::AnimationEventTarget, alloc::vec::Vec<bevy_animation::TimedAnimationEvent>, bevy_platform::hash::FixedHasher>"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {}
+    },
     "bevy_platform::collections::HashMap<bevy_animation::AnimationTargetId, u64, bevy_platform::hash::FixedHasher>::new": {
       "namespace": "bevy_platform::collections::HashMap<bevy_animation::AnimationTargetId, u64, bevy_platform::hash::FixedHasher>",
       "identifier": "new",
@@ -48363,7 +48792,7 @@
             "val": "alloc::borrow::Cow<str>"
           },
           {
-            "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+            "val": "bevy_platform::hash::FixedHasher"
           }
         ]
       },
@@ -48380,7 +48809,7 @@
                     "val": "alloc::borrow::Cow<str>"
                   },
                   {
-                    "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+                    "val": "bevy_platform::hash::FixedHasher"
                   }
                 ]
               }
@@ -48400,7 +48829,7 @@
                   "val": "alloc::borrow::Cow<str>"
                 },
                 {
-                  "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+                  "val": "bevy_platform::hash::FixedHasher"
                 }
               ]
             }
@@ -48800,6 +49229,33 @@
       "documentation": "A ring with the given inner and outer radii.",
       "metadata": {}
     },
+    "bevy_shape::dim2::Capsule2d::new": {
+      "namespace": "bevy_shape::dim2::Capsule2d",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_shape::dim2::Capsule2d"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_shape::dim2::Capsule2d"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {}
+    },
     "bevy_shape::dim2::Circle::new": {
       "namespace": "bevy_shape::dim2::Circle",
       "identifier": "new",
@@ -48892,6 +49348,33 @@
       "documentation": "A regular polygon with the given number of sides, all corners at `circumradius` from the center.",
       "metadata": {}
     },
+    "bevy_shape::dim2::Triangle2d::new": {
+      "namespace": "bevy_shape::dim2::Triangle2d",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_shape::dim2::Triangle2d"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_shape::dim2::Triangle2d"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {}
+    },
     "bevy_shape::dim3::Capsule3d::new": {
       "namespace": "bevy_shape::dim3::Capsule3d",
       "identifier": "new",
@@ -48916,6 +49399,33 @@
         }
       },
       "documentation": "A capsule with the given radius and length of its middle section.",
+      "metadata": {}
+    },
+    "bevy_shape::dim3::Cone::new": {
+      "namespace": "bevy_shape::dim3::Cone",
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "bevy_shape::dim3::Cone"
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_shape::dim3::Cone"
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
       "metadata": {}
     },
     "bevy_shape::dim3::Cuboid::from_size": {
@@ -50778,33 +51288,6 @@
       "metadata": {},
       "receiver": true
     },
-    "bevy_system_reflection::ReflectSchedule::new": {
-      "namespace": "bevy_system_reflection::ReflectSchedule",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_system_reflection::ReflectSchedule"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_system_reflection::ReflectSchedule"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
     "bevy_system_reflection::ReflectSchedule::render_dot": {
       "namespace": "bevy_system_reflection::ReflectSchedule",
       "identifier": "render_dot",
@@ -50883,33 +51366,6 @@
       "metadata": {},
       "receiver": true
     },
-    "bevy_system_reflection::ReflectSystem::new": {
-      "namespace": "bevy_system_reflection::ReflectSystem",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_system_reflection::ReflectSystem"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_system_reflection::ReflectSystem"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
     "bevy_system_reflection::ReflectSystem::path": {
       "namespace": "bevy_system_reflection::ReflectSystem",
       "identifier": "path",
@@ -50957,33 +51413,6 @@
       "documentation": "Retrieves the name of the system set",
       "metadata": {},
       "receiver": true
-    },
-    "bevy_system_reflection::ReflectSystemSet::new": {
-      "namespace": "bevy_system_reflection::ReflectSystemSet",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_system_reflection::ReflectSystemSet"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_system_reflection::ReflectSystemSet"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
     },
     "bevy_system_reflection::ReflectableScheduleLabel::new": {
       "namespace": "bevy_system_reflection::ReflectableScheduleLabel",
@@ -52807,7 +53236,7 @@
               "generic_type": "bevy_asset::handle::Handle",
               "args": [
                 {
-                  "unknown": "TypeId(0x9c36e55538b526d968d32f830f456fdf)"
+                  "val": "bevy_text::font::Font"
                 }
               ]
             }

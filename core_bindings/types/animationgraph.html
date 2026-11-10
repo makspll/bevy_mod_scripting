@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7dfc2941.js";
+            window.path_to_searchindex_js = "../../searchindex-11bc9da8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-8daa8fad.js"></script>
+        <script src="../../toc-151df591.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -253,7 +253,7 @@ information.</p>
 <tr><th>Field</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><code>graph</code></td><td>DiGraph&lt;Unknown, <a href="./unit.html">()</a>, <a href="./u32.html">u32</a>&gt;</td></tr>
+<tr><td><code>graph</code></td><td>DiGraph&lt;Unknown, Unknown, <a href="./u32.html">u32</a>&gt;</td></tr>
 <tr><td><code>root</code></td><td><a href="./nodeindex.html">NodeIndex</a></td></tr>
 <tr><td><code>mask_groups</code></td><td>HashMap&lt;<a href="./animationtargetid.html">AnimationTargetId</a>, <a href="./u64.html">u64</a>&gt;</td></tr>
 </tbody>
@@ -273,7 +273,7 @@ information.</p>
 </div>
 <h3 id="from_clip" class="lad-function"><a class="header" href="#from_clip"><code>from_clip</code></a></h3>
 <div class="lad-signature">
-<p><strong>from_clip</strong>(handle: <a href="./handlea.html">Handle</a>&lt;Unknown&gt;) -&gt; <a href="./animationgraph.html">AnimationGraph</a></p>
+<p><strong>from_clip</strong>(handle: <a href="./handlea.html">Handle</a>&lt;<a href="./animationclip.html">AnimationClip</a>&gt;) -&gt; <a href="./animationgraph.html">AnimationGraph</a></p>
 </div>
 
 <p>A new graph that plays <code>handle</code> on its own at full weight.</p>
@@ -304,7 +304,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 <h3 id="add_clip" class="lad-function"><a class="header" href="#add_clip"><code>add_clip</code></a></h3>
 <div class="lad-signature">
-<p><strong>add_clip</strong>(self: <a href="./animationgraph.html">AnimationGraph</a>, handle: <a href="./handlea.html">Handle</a>&lt;Unknown&gt;, weight: <a href="./f32.html">f32</a>, parent: <a href="./nodeindex.html">NodeIndex</a>) -&gt; <a href="./nodeindex.html">NodeIndex</a></p>
+<p><strong>add_clip</strong>(self: <a href="./animationgraph.html">AnimationGraph</a>, handle: <a href="./handlea.html">Handle</a>&lt;<a href="./animationclip.html">AnimationClip</a>&gt;, weight: <a href="./f32.html">f32</a>, parent: <a href="./nodeindex.html">NodeIndex</a>) -&gt; <a href="./nodeindex.html">NodeIndex</a></p>
 </div>
 
 <p>Adds the clip <code>handle</code> under the node <code>parent</code>, with <code>weight</code> relative to its siblings. Returns the new node.</p>
@@ -319,7 +319,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/activeanimation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/animationeventtarget.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -333,7 +333,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/activeanimation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/animationeventtarget.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 

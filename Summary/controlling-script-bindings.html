@@ -37,10 +37,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7dfc2941.js";
+            window.path_to_searchindex_js = "../searchindex-11bc9da8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-8daa8fad.js"></script>
+        <script src="../toc-151df591.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -360,6 +360,7 @@ print(Vec3.describe()) -- "glam::Vec3"
 </code></pre>
 <p>A function registered on the type itself always takes priority over one on <code>StaticTypeRef</code>.
 The <code>new</code> constructor is implemented this way, see <a href="../ScriptingReference/constructing-arbitrary-types.html">Constructing Arbitrary Types</a>.</p>
+<p>Types scripts don’t make or use this way, such as handles the runtime gives out, opt out with <code>#[reflect(NoTypeFunctions)]</code> (<code>ReflectNoTypeFunctions</code>): only their own functions remain, in scripts and in the generated docs.</p>
 <h4 id="signatures-which-depend-on-the-type"><a class="header" href="#signatures-which-depend-on-the-type">Signatures which depend on the type</a></h4>
 <p>A shared function’s signature can refer to the type it is bound to, using the placeholder types <code>BoundValue</code> (a value of the type), <code>BoundFields</code> (a table of the type’s fields) and <code>BoundHandle</code> (a handle to an asset of the type).
 Wherever the function is bound to a type, these are replaced with the type, so the documentation and the Lua language server files show, for example, <code>MyStruct.new(payload: MyStruct.Fields): MyStruct</code> rather than a generic table and reference, or <code>Image.load(path: string): Handle&lt;Image&gt;</code>.
