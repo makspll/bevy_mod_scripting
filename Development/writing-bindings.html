@@ -37,10 +37,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-deefda46.js";
+            window.path_to_searchindex_js = "../searchindex-7dfc2941.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-f4b0a7af.js"></script>
+        <script src="../toc-8daa8fad.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -197,7 +197,16 @@ They live in <code>crates/bindings/bevy_mod_scripting_bevy_&lt;category&gt;_bind
 <pre><code class="language-rust ignore">use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
 
 app.register_generic_type::&lt;Time&lt;A&gt;&gt;("time", &amp;["T"], "A clock, i.e. `Time&lt;Virtual&gt;`.");</code></pre>
-<p>The fields of type <code>A</code> are then documented as being of the parameter <code>T</code>, and the instantiations as <code>Time&lt;T&gt;</code> applied to their arguments. Only declare types whose parameter is part of what they are (<code>Handle</code>, <code>Time</code>, <code>ButtonInput</code>), not containers like <code>Arc&lt;T&gt;</code>.</p>
+<p>The fields of type <code>A</code> are then documented as being of the parameter <code>T</code>, and the instantiations as <code>Time&lt;T&gt;</code> applied to their arguments. Only declare types whose parameter is part of what they are (<code>Handle</code>, <code>Time</code>, <code>ButtonInput</code>), not containers like <code>Arc&lt;T&gt;</code>. Undeclared instantiations get a class each, named after their arguments (<code>render.MeshExtractableData.Indices</code>).</p>
+<p>Further parameters use the markers <code>B</code> and <code>C</code> (<code>Hashed&lt;A, B&gt;</code>). A parameter with bounds the markers don’t satisfy gets a marker of its own, implementing them:</p>
+<pre><code class="language-rust ignore">bevy_mod_scripting_bindings::generic_marker! {
+    /// Stands for the material of `MyMaterialHolder&lt;M&gt;`
+    pub struct M;
+}
+impl MyMaterial for M {}
+
+app.register_type::&lt;M&gt;()
+    .register_generic_type::&lt;MyMaterialHolder&lt;M&gt;&gt;("my_crate", &amp;["M"], "...");</code></pre>
 <p>Functions which return values of the type they are given are declared generic in their signature, with the same marker:</p>
 <pre><code class="language-rust ignore">fn get_component(
     ctxt: FunctionCallContext,

@@ -52,8 +52,7 @@
     },
     "bevy_platform": {
       "types": {
-        "Arc": "bevy_platform::sync::Arc<bevy_asset::handle::StrongHandle>",
-        "Hashed": "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>"
+        "Arc": "bevy_platform::sync::Arc<bevy_asset::handle::StrongHandle>"
       }
     },
     "bms": {
@@ -205,7 +204,6 @@
         "NonZeroI16": "core::num::NonZeroI16",
         "NonZeroU16": "core::num::NonZeroU16",
         "NonZeroU32": "core::num::NonZeroU32",
-        "Range": "core::ops::Range<f32>",
         "TypeId": "core::any::TypeId"
       }
     },
@@ -7586,9 +7584,8 @@
       }
     },
     "F32": {
-      "identifier": "F32",
-      "path": "F32",
-      "documentation": "A 32-bit floating point number",
+      "identifier": "f32",
+      "path": "f32",
       "associated_functions": [
         "F32::new"
       ],
@@ -7598,8 +7595,10 @@
       "metadata": {
         "is_component": false,
         "is_resource": false,
-        "is_reflect": false,
-        "mapped_to_primitive_kind": "f32"
+        "is_reflect": true,
+        "mapped_to_primitive_kind": "f32",
+        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration",
+        "default": {}
       }
     },
     "F64": {
@@ -8653,7 +8652,14 @@
           {
             "name": "depth",
             "type": {
-              "val": "core::ops::Range<f32>"
+              "val": {
+                "generic_type": "core::ops::Range",
+                "args": [
+                  {
+                    "primitive": "f32"
+                  }
+                ]
+              }
             }
           }
         ]
@@ -9290,7 +9296,17 @@
         "fields": [
           {
             "type": {
-              "val": "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>"
+              "val": {
+                "generic_type": "bevy_platform::hash::Hashed",
+                "args": [
+                  {
+                    "val": "alloc::borrow::Cow<str>"
+                  },
+                  {
+                    "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+                  }
+                ]
+              }
             }
           }
         ]
@@ -15499,31 +15515,6 @@
         "default": {}
       }
     },
-    "core::ops::Range<f32>": {
-      "identifier": "Range",
-      "crate": "core",
-      "path": "core::ops::Range<f32>",
-      "namespace": "core",
-      "generics": [
-        {
-          "type_id": "F32",
-          "name": "T"
-        }
-      ],
-      "associated_functions": [
-        "core::ops::Range<f32>::new"
-      ],
-      "layout": null,
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
     "bevy_mesh::mesh::MeshExtractableData<alloc::vec::Vec<alloc::string::String>>": {
       "identifier": "MeshExtractableData",
       "crate": "bevy_mesh",
@@ -15608,35 +15599,6 @@
           "name": "ExtractedToRenderWorld"
         }
       ],
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-      }
-    },
-    "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>": {
-      "identifier": "Hashed",
-      "crate": "bevy_platform",
-      "path": "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>",
-      "namespace": "bevy_platform",
-      "generics": [
-        {
-          "type_id": "alloc::borrow::Cow<str>",
-          "name": "T"
-        },
-        {
-          "type_id": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)",
-          "name": "H"
-        }
-      ],
-      "associated_functions": [
-        "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>::new"
-      ],
-      "layout": null,
       "generated": false,
       "insignificance": 1000,
       "metadata": {
@@ -16470,6 +16432,39 @@
       ],
       "documentation": "The pressed state of the inputs of type `T`, i.e. `KeyCode`."
     },
+    "bevy_platform::hash::Hashed": {
+      "identifier": "Hashed",
+      "crate": "bevy_platform",
+      "path": "bevy_platform::hash::Hashed",
+      "namespace": "bevy_platform",
+      "params": [
+        "V",
+        "S"
+      ],
+      "instantiations": [
+        {
+          "args": [
+            {
+              "val": "alloc::borrow::Cow<str>"
+            },
+            {
+              "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+            }
+          ],
+          "associated_functions": [
+            "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        }
+      ],
+      "documentation": "A value with its hash computed once, `S` builds the hasher."
+    },
     "bevy_time::time::Time": {
       "identifier": "Time",
       "crate": "bevy_time",
@@ -16675,6 +16670,35 @@
         }
       ],
       "documentation": "A clock, `T` is the kind of clock, i.e. `Virtual` or `Fixed`."
+    },
+    "core::ops::Range": {
+      "identifier": "Range",
+      "crate": "core",
+      "path": "core::ops::Range",
+      "namespace": "core",
+      "params": [
+        "T"
+      ],
+      "instantiations": [
+        {
+          "args": [
+            {
+              "primitive": "f32"
+            }
+          ],
+          "associated_functions": [
+            "core::ops::Range<f32>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        }
+      ],
+      "documentation": "A range of values, from `start` up to but not including `end`."
     }
   },
   "functions": {
@@ -45684,6 +45708,78 @@
         "A"
       ]
     },
+    "bevy_mod_scripting_bindings::function::generics::B::new": {
+      "namespace": {
+        "param": "bevy_mod_scripting_bindings::function::generics::B"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": {
+                "param": "B"
+              }
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": {
+              "param": "B"
+            }
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {},
+      "generics": [
+        "B"
+      ]
+    },
+    "bevy_mod_scripting_bindings::function::generics::C::new": {
+      "namespace": {
+        "param": "bevy_mod_scripting_bindings::function::generics::C"
+      },
+      "identifier": "new",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": {
+                "param": "C"
+              }
+            }
+          },
+          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": {
+              "param": "C"
+            }
+          }
+        },
+        "documentation": "The constructed value.",
+        "name": "reference"
+      },
+      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
+      "metadata": {},
+      "generics": [
+        "C"
+      ]
+    },
     "bevy_mod_scripting_bindings::function::namespace::FunctionScope::Builtin::new": {
       "namespace": {
         "type": "bevy_mod_scripting_bindings::function::namespace::FunctionScope",
@@ -48260,14 +48356,34 @@
       "metadata": {}
     },
     "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>::new": {
-      "namespace": "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>",
+      "namespace": {
+        "generic_type": "bevy_platform::hash::Hashed",
+        "args": [
+          {
+            "val": "alloc::borrow::Cow<str>"
+          },
+          {
+            "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+          }
+        ]
+      },
       "identifier": "new",
       "overload_index": null,
       "arguments": [
         {
           "kind": {
             "fields": {
-              "type": "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>"
+              "type": {
+                "generic_type": "bevy_platform::hash::Hashed",
+                "args": [
+                  {
+                    "val": "alloc::borrow::Cow<str>"
+                  },
+                  {
+                    "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+                  }
+                ]
+              }
             }
           },
           "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
@@ -48277,7 +48393,17 @@
       "return_type": {
         "kind": {
           "interopResult": {
-            "val": "bevy_platform::hash::Hashed<alloc::borrow::Cow<str>, bevy_platform::hash::FixedHasher>"
+            "val": {
+              "generic_type": "bevy_platform::hash::Hashed",
+              "args": [
+                {
+                  "val": "alloc::borrow::Cow<str>"
+                },
+                {
+                  "unknown": "TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)"
+                }
+              ]
+            }
           }
         },
         "documentation": "The constructed value.",
@@ -65794,14 +65920,28 @@
       "metadata": {}
     },
     "core::ops::Range<f32>::new": {
-      "namespace": "core::ops::Range<f32>",
+      "namespace": {
+        "generic_type": "core::ops::Range",
+        "args": [
+          {
+            "primitive": "f32"
+          }
+        ]
+      },
       "identifier": "new",
       "overload_index": null,
       "arguments": [
         {
           "kind": {
             "fields": {
-              "type": "core::ops::Range<f32>"
+              "type": {
+                "generic_type": "core::ops::Range",
+                "args": [
+                  {
+                    "primitive": "f32"
+                  }
+                ]
+              }
             }
           },
           "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
@@ -65811,7 +65951,14 @@
       "return_type": {
         "kind": {
           "interopResult": {
-            "val": "core::ops::Range<f32>"
+            "val": {
+              "generic_type": "core::ops::Range",
+              "args": [
+                {
+                  "primitive": "f32"
+                }
+              ]
+            }
           }
         },
         "documentation": "The constructed value.",

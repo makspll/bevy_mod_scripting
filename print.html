@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-deefda46.js";
+            window.path_to_searchindex_js = "searchindex-7dfc2941.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-f4b0a7af.js"></script>
+        <script src="toc-8daa8fad.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1602,7 +1602,8 @@ let reference = ReflectReference::new_allocated(value);</code></pre>
 <li>LAD: <code>LadFieldOrVariableKind</code> → <code>LadTypeKind</code>; <code>globals</code> is removed, builtin functions are <code>LadFunctionNamespace::Global</code> (the mdbook “Globals” and “Functions” pages are one “Builtins” page), namespaces have <code>values</code> (<code>add_instance*</code> → <code>add_namespace_value_of</code> / <code>add_namespace_instance</code>); new <code>namespaces</code>, <code>generic_types</code>, <code>LadTypeDefinition::generic_type</code>, <code>LadFunction::receiver</code>, <code>LadFunctionMetadata::operator</code> (replaces <code>is_operator</code>); arguments are always named and never include the call context; <code>polymorphizied_types</code> is removed. <code>ArgumentVisitor</code> has an <code>Output</code> type and <code>visit_*</code> methods.</li>
 <li>Generic types:
 <ul>
-<li>They are declared with <code>app.register_generic_type::&lt;Handle&lt;A&gt;&gt;("asset", &amp;["A"], docs)</code> (<code>GenericTypesAppExt</code>, stored in <code>AppGenericTypes</code>, which <code>generate_lad_file</code> now takes) or <code>LadFileBuilder::add_generic_type</code>, the marker <code>A</code> standing in for the parameter (<code>bindings::function::generics::A</code>). The bindings crates declare their own (<code>Handle</code>, <code>AssetId</code>, <code>Time</code>, <code>ButtonInput</code>, …).</li>
+<li>They are declared with <code>app.register_generic_type::&lt;Handle&lt;A&gt;&gt;("asset", &amp;["A"], docs)</code> (<code>GenericTypesAppExt</code>, stored in <code>AppGenericTypes</code>, which <code>generate_lad_file</code> now takes) or <code>LadFileBuilder::add_generic_type</code>, the markers <code>A</code>, <code>B</code>, <code>C</code> standing in for the parameters (<code>bindings::function::generics</code>), or a marker of your own declared with <code>generic_marker!</code> and registered. The bindings crates declare their own (<code>Handle</code>, <code>AssetId</code>, <code>Time</code>, <code>ButtonInput</code>, <code>Range</code>, <code>Hashed</code>, …). Instantiations of undeclared generic types get a Lua class each (<code>core.Range.f32</code>).</li>
+<li>In Lua, a type’s functions are on <code>X.Functions</code>, which both its values (<code>X : ReflectReference, X.Functions</code>) and its table in its namespace (<code>X.Type</code>, an alias of <code>X.Static | bms.ScriptComponentRegistration&lt;X&gt;</code>) extend, so values don’t show registration functions and type tables don’t show fields. Registration classes are generic in the type they register, generic functions take <code>bms.ScriptComponentRegistration&lt;A&gt;</code>. LAD: <code>LadTypeMetadata::registration</code>.</li>
 <li>Their layout is in terms of the parameter (<code>LadGenericType::layout</code>, a parameter being <code>LadNamedType::Param</code>, i.e. <code>{ "ref": { "param": "T" } }</code>, instantiated with <code>replace_param</code>).</li>
 <li><code>Ref</code>/<code>Mut</code>/<code>Val</code> hold a <code>LadNamedType</code>: a type id as before, or a declared generic type applied to arguments (<code>{ "generic_type": "bevy_asset::handle::Handle", "args": [...] }</code>), which is how instantiations are named everywhere (<code>ArgumentVisitor::visit_generic</code>).</li>
 <li>Instantiations of declared generic types aren’t types of the file anymore: they are recorded on the generic type (<code>LadGenericType::instantiations</code>, with their arguments, metadata and functions, see <code>LadFile::get_instantiation</code>). <code>LadFunctionNamespace::Type</code>/<code>Variant</code> and <code>LadTypeKind::Fields</code> name types by <code>LadNamedType</code>. <code>LadTypeDefinition::generic_type</code>, <code>LadFile::get_generic_instance</code> and <code>LadFile::documented_types</code> are removed.</li>
@@ -3459,7 +3460,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </thead>
 <tbody>
 <tr><td><a href="#arcunknown"><code>Arc&lt;Unknown&gt;</code></a></td><td></td></tr>
-<tr><td><a href="#hashedcow-unknown"><code>Hashed&lt;Cow, Unknown&gt;</code></a></td><td></td></tr>
+<tr><td><a href="#hashedv-s"><code>Hashed&lt;V, S&gt;</code></a></td><td>A value with its hash computed once, <code>S</code> builds the hasher.</td></tr>
 </tbody>
 </table>
 </div>
@@ -3494,11 +3495,16 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </ul>
 <p><strong>Returns</strong>: The constructed value.</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="hashedcow-unknown"><a class="header" href="#hashedcow-unknown"><code>Hashed&lt;Cow, Unknown&gt;</code></a></h1>
+<h1 id="hashedv-s"><a class="header" href="#hashedv-s"><code>Hashed&lt;V, S&gt;</code></a></h1>
 <div class="lad-page"></div>
 
+<p class="lad-badges"><span class="lad-badge">Generic</span></p>
+
+<p>A value with its hash computed once, <code>S</code> builds the hasher.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
+<h2 id="instantiations-4"><a class="header" href="#instantiations-4">Instantiations</a></h2>
+<p><a href="#hashedv-s">Hashed</a>&lt;<a href="#cow">Cow</a>, Unknown&gt;</p>
 <h2 id="functions-20"><a class="header" href="#functions-20">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -3511,8 +3517,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-19" class="lad-function"><a class="header" href="#new-19"><code>new</code></a></h3>
+<p class="lad-note">On <code>Hashed&lt;Cow, TypeId(0x25a4ea3a039d36ab2573b36d95c6b63d)&gt;</code></p>
+
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;Hashed&lt;<a href="#cow">Cow</a>, Unknown&gt;&gt;) -&gt; Hashed&lt;<a href="#cow">Cow</a>, Unknown&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#hashedv-s">Hashed</a>&lt;<a href="#cow">Cow</a>, Unknown&gt;&gt;) -&gt; <a href="#hashedv-s">Hashed</a>&lt;<a href="#cow">Cow</a>, Unknown&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -7000,7 +7008,7 @@ fn update_viewport(
 <tbody>
 <tr><td><code>physical_position</code></td><td><a href="#uvec2">UVec2</a></td></tr>
 <tr><td><code>physical_size</code></td><td><a href="#uvec2">UVec2</a></td></tr>
-<tr><td><code>depth</code></td><td>Range&lt;<a href="#f32">f32</a>&gt;</td></tr>
+<tr><td><code>depth</code></td><td><a href="#ranget">Range</a>&lt;<a href="#f32">f32</a>&gt;</td></tr>
 </tbody>
 </table>
 </div>
@@ -8450,7 +8458,7 @@ assert!(c.alpha == 0.5);
 <tr><td><a href="#nonzeroi16"><code>NonZeroI16</code></a></td><td></td></tr>
 <tr><td><a href="#nonzerou16"><code>NonZeroU16</code></a></td><td></td></tr>
 <tr><td><a href="#nonzerou32"><code>NonZeroU32</code></a></td><td></td></tr>
-<tr><td><a href="#rangef32"><code>Range&lt;f32&gt;</code></a></td><td></td></tr>
+<tr><td><a href="#ranget"><code>Range&lt;T&gt;</code></a></td><td>A range of values, from <code>start</code> up to but not including <code>end</code>.</td></tr>
 <tr><td><a href="#typeid"><code>TypeId</code></a></td><td></td></tr>
 </tbody>
 </table>
@@ -8546,11 +8554,16 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </ul>
 <p><strong>Returns</strong>: The constructed value.</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="rangef32"><a class="header" href="#rangef32"><code>Range&lt;f32&gt;</code></a></h1>
+<h1 id="ranget"><a class="header" href="#ranget"><code>Range&lt;T&gt;</code></a></h1>
 <div class="lad-page"></div>
 
+<p class="lad-badges"><span class="lad-badge">Generic</span></p>
+
+<p>A range of values, from <code>start</code> up to but not including <code>end</code>.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
+<h2 id="instantiations-5"><a class="header" href="#instantiations-5">Instantiations</a></h2>
+<p><a href="#ranget">Range</a>&lt;<a href="#f32">f32</a>&gt;</p>
 <h2 id="functions-85"><a class="header" href="#functions-85">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -8563,8 +8576,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-84" class="lad-function"><a class="header" href="#new-84"><code>new</code></a></h3>
+<p class="lad-note">On <code>Range&lt;f32&gt;</code></p>
+
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;Range&lt;<a href="#f32">f32</a>&gt;&gt;) -&gt; Range&lt;<a href="#f32">f32</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#ranget">Range</a>&lt;<a href="#f32">f32</a>&gt;&gt;) -&gt; <a href="#ranget">Range</a>&lt;<a href="#f32">f32</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -9056,7 +9071,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Index</th><th>Type</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0</code></td><td>Hashed&lt;<a href="#cow">Cow</a>, Unknown&gt;</td></tr>
+<tr><td><code>0</code></td><td><a href="#hashedv-s">Hashed</a>&lt;<a href="#cow">Cow</a>, Unknown&gt;</td></tr>
 </tbody>
 </table>
 </div>
@@ -9494,7 +9509,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="instantiations-4"><a class="header" href="#instantiations-4">Instantiations</a></h2>
+<h2 id="instantiations-6"><a class="header" href="#instantiations-6">Instantiations</a></h2>
 <p><a href="#axist">Axis</a>&lt;<a href="#gamepadinput">GamepadInput</a>&gt;</p>
 <h2 id="functions-98"><a class="header" href="#functions-98">Functions</a></h2>
 <div class="table-wrapper">
@@ -9542,7 +9557,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="instantiations-5"><a class="header" href="#instantiations-5">Instantiations</a></h2>
+<h2 id="instantiations-7"><a class="header" href="#instantiations-7">Instantiations</a></h2>
 <p><a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;</p>
 <h2 id="functions-99"><a class="header" href="#functions-99">Functions</a></h2>
 <div class="table-wrapper">
@@ -21307,7 +21322,7 @@ for a pathological interaction with the monitor refresh rate where the game
 alternates between running two fixed timesteps and zero fixed timesteps per
 frame (for example when running two fixed timesteps takes longer than a
 frame). Additionally, the value is a power of two which losslessly converts
-into <code>f32</code> and <code>f64</code>.</p>
+into <a href="#f32"><code>f32</code></a> and <code>f64</code>.</p>
 <p>To run a system on a fixed timestep, add it to one of the <code>FixedMain</code>
 schedules, most commonly <code>FixedUpdate</code>.</p>
 <p>This schedule is run a number of times between
@@ -21641,7 +21656,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);</code></pre>
 </tbody>
 </table>
 </div>
-<h2 id="instantiations-6"><a class="header" href="#instantiations-6">Instantiations</a></h2>
+<h2 id="instantiations-8"><a class="header" href="#instantiations-8">Instantiations</a></h2>
 <p><a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;, <a href="#timet">Time</a>&lt;()&gt;, <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;, <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;</p>
 <h2 id="functions-212"><a class="header" href="#functions-212">Functions</a></h2>
 <div class="table-wrapper">
@@ -27546,7 +27561,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#char"><code>char</code></a></td><td>An 8-bit character</td></tr>
 <tr><td><a href="#dynamicfunction"><code>DynamicFunction</code></a></td><td>A callable dynamic function</td></tr>
 <tr><td><a href="#dynamicfunctionmut"><code>DynamicFunctionMut</code></a></td><td>A stateful and callable dynamic function</td></tr>
-<tr><td><a href="#f32"><code>f32</code></a></td><td>A 32-bit floating point number</td></tr>
+<tr><td><a href="#f32"><code>f32</code></a></td><td></td></tr>
 <tr><td><a href="#f64"><code>f64</code></a></td><td>A 64-bit floating point number</td></tr>
 <tr><td><a href="#functioncallcontext"><code>FunctionCallContext</code></a></td><td>Function call context, if accepted by a function, means the function can access the world in arbitrary ways.</td></tr>
 <tr><td><a href="#i128"><code>i128</code></a></td><td>A signed 128-bit integer</td></tr>
@@ -27682,7 +27697,6 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <h1 id="f32"><a class="header" href="#f32"><code>f32</code></a></h1>
 <div class="lad-page"></div>
 
-<p>A 32-bit floating point number</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
 <h2 id="functions-276"><a class="header" href="#functions-276">Functions</a></h2>
@@ -29246,7 +29260,16 @@ They live in <code>crates/bindings/bevy_mod_scripting_bevy_&lt;category&gt;_bind
 <pre><code class="language-rust ignore">use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
 
 app.register_generic_type::&lt;Time&lt;A&gt;&gt;("time", &amp;["T"], "A clock, i.e. `Time&lt;Virtual&gt;`.");</code></pre>
-<p>The fields of type <code>A</code> are then documented as being of the parameter <code>T</code>, and the instantiations as <code>Time&lt;T&gt;</code> applied to their arguments. Only declare types whose parameter is part of what they are (<code>Handle</code>, <code>Time</code>, <code>ButtonInput</code>), not containers like <code>Arc&lt;T&gt;</code>.</p>
+<p>The fields of type <code>A</code> are then documented as being of the parameter <code>T</code>, and the instantiations as <code>Time&lt;T&gt;</code> applied to their arguments. Only declare types whose parameter is part of what they are (<code>Handle</code>, <code>Time</code>, <code>ButtonInput</code>), not containers like <code>Arc&lt;T&gt;</code>. Undeclared instantiations get a class each, named after their arguments (<code>render.MeshExtractableData.Indices</code>).</p>
+<p>Further parameters use the markers <code>B</code> and <code>C</code> (<code>Hashed&lt;A, B&gt;</code>). A parameter with bounds the markers don’t satisfy gets a marker of its own, implementing them:</p>
+<pre><code class="language-rust ignore">bevy_mod_scripting_bindings::generic_marker! {
+    /// Stands for the material of `MyMaterialHolder&lt;M&gt;`
+    pub struct M;
+}
+impl MyMaterial for M {}
+
+app.register_type::&lt;M&gt;()
+    .register_generic_type::&lt;MyMaterialHolder&lt;M&gt;&gt;("my_crate", &amp;["M"], "...");</code></pre>
 <p>Functions which return values of the type they are given are declared generic in their signature, with the same marker:</p>
 <pre><code class="language-rust ignore">fn get_component(
     ctxt: FunctionCallContext,
