@@ -440,8 +440,8 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                 // due to how the pipeline runs, we might see scripts which have just been
                 // loaded, and attached, but the pipeline hasn't run yet
                 // we want to give those one frame to trigger
-            } else if highly_specific && ctxt.is_loading_or_reloading()
-                || might_not_have_reached_pipeline_if_new
+            } else if highly_specific
+                && (ctxt.is_loading_or_reloading() || might_not_have_reached_pipeline_if_new)
             {
                 // events with high specificity, have their callbacks re-queued in this case
                 // i.e. we don't want `on_update` to queue up, but a directed `on_collision_with_entity` callback will have
@@ -885,6 +885,37 @@ mod test {
             .collect::<Vec<_>>();
         values.sort();
         assert_eq!(values, vec![1, 2]);
+    }
+
+    crate::callback_labels!(OnPing => "ping");
+
+    #[test]
+    fn broadcast_event_is_not_requeued_for_loading_scripts() {
+        let mut app = make_app(1);
+        app.add_message::<ScriptCallbackMessage>();
+        app.world()
+            .resource::<ScriptContexts<TestPlugin>>()
+            .write()
+            .insert(script(2), Context::Loading)
+            .unwrap();
+        let runs = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let r = runs.clone();
+        register(&app_callbacks(&app), &script(1), "ping", move || {
+            r.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            Ok(ScriptValue::Unit)
+        });
+        let world = app.world_mut();
+        world.write_message(ScriptCallbackMessage::new_for_all_scripts("ping", vec![]));
+        // two frames, the second sees anything requeued by the first
+        for _ in 0..2 {
+            let result: bevy_ecs::error::Result = world
+                .run_system_cached(event_handler::<OnPing, TestPlugin>)
+                .unwrap();
+            result.unwrap();
+        }
+
+        // the loaded script runs it once, the loading one doesn't get it requeued
+        assert_eq!(runs.load(std::sync::atomic::Ordering::Relaxed), 1);
     }
 
     #[test]
