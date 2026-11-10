@@ -474,9 +474,20 @@ impl ReflectReference {
         }
 
         if let ReflectBase::Asset(handle, _) = &self.base.base_id {
-            let asset = unsafe { self.load_asset_mut(handle, world.clone())? };
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
+            let reflect_asset: &ReflectAsset = type_registry
+                .get_type_data(self.base.type_id)
+                .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
+            // Safety: asset bases are claimed as global access, so the caller may read the whole world
+            let world_ref = unsafe { world.as_unsafe_world_cell()?.world() };
+            let asset = reflect_asset.get(world_ref, handle).ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    Some(self.base.type_id),
+                    None,
+                    "Asset not loaded or handle is invalid",
+                )
+            })?;
             return self.walk_path(asset.as_partial_reflect(), &type_registry);
         }
 
@@ -764,18 +775,20 @@ pub enum ReflectBase {
     Resource(ComponentId),
     /// An allocation
     Owned(ReflectAllocationId),
-    /// An asset accessed by handle
+    /// An asset accessed by handle, and the id of its `Assets<T>` resource.
+    ///
+    /// Claims on assets are global, so they can't be accessed in non-exclusive script systems.
     Asset(UntypedHandle, ComponentId),
 }
 
 impl From<&ReflectBase> for WorldAccessRange {
     fn from(val: &ReflectBase) -> Self {
         match val {
-            ReflectBase::Component(_, component_id)
-            | ReflectBase::Resource(component_id)
-            | ReflectBase::Asset(_, component_id) => {
+            ReflectBase::Component(_, component_id) | ReflectBase::Resource(component_id) => {
                 WorldAccessRange::ComponentOrResource(*component_id)
             }
+            // reading an asset needs `&World` (`ReflectAsset::get`), and writing it `&mut Assets<T>`
+            ReflectBase::Asset(..) => WorldAccessRange::Global,
             ReflectBase::Owned(reflect_allocation_id) => reflect_allocation_id.into(),
         }
     }
@@ -1267,5 +1280,65 @@ mod test {
                 .unwrap(),
             TypeId::of::<String>()
         );
+    }
+
+    #[test]
+    fn test_asset_ref() {
+        #[derive(bevy_asset::Asset, Reflect)]
+        struct TestAsset(u32);
+
+        let mut world = setup_world();
+        {
+            let registry = world.resource::<AppTypeRegistry>();
+            let mut registry = registry.write();
+            registry.register::<TestAsset>();
+            registry.register_type_data::<TestAsset, ReflectAsset>();
+        }
+        let mut assets = bevy_asset::Assets::<TestAsset>::default();
+        let handle = assets.add(TestAsset(1)).untyped();
+        world.insert_resource(assets);
+        let entity = world.spawn(TestComponent(vec![])).id();
+        let changed_at = world
+            .get_resource_change_ticks::<bevy_asset::Assets<TestAsset>>()
+            .unwrap()
+            .changed;
+        world.increment_change_tick();
+
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        let world_guard = WorldGuard::new_exclusive(&mut world, cache);
+        let asset_ref =
+            ReflectReference::new_asset_ref(handle, TypeId::of::<TestAsset>(), world_guard.clone())
+                .unwrap();
+
+        // nested reads, i.e. `asset == asset`, share the asset
+        let equal = asset_ref
+            .with_reflect(world_guard.clone(), |a| {
+                asset_ref.with_reflect(world_guard.clone(), |b| {
+                    a.reflect_partial_eq(b).unwrap_or(false)
+                })
+            })
+            .unwrap()
+            .unwrap();
+        assert!(equal);
+
+        // asset claims are global, they can't overlap a component write
+        let component_ref =
+            ReflectReference::new_component_ref::<TestComponent>(entity, world_guard.clone())
+                .unwrap();
+        assert!(
+            component_ref
+                .with_reflect_mut(world_guard.clone(), |_| {
+                    asset_ref.with_reflect(world_guard.clone(), |_| ())
+                })
+                .unwrap()
+                .is_err()
+        );
+        drop(world_guard);
+
+        // reads don't mark the assets as changed
+        let ticks = world
+            .get_resource_change_ticks::<bevy_asset::Assets<TestAsset>>()
+            .unwrap();
+        assert_eq!(ticks.changed, changed_at);
     }
 }
