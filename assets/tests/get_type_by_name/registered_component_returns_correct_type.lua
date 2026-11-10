@@ -23,4 +23,5 @@ assert(string.find(type_ref, "ScriptComponentRegistration") ~= nil,
     "ScriptComponentRegistration not found in type_ref. got: " .. type_ref)
 
 -- registrations are opaque, scripts cannot forge their component ids
+---@diagnostic disable-next-line: inject-field
 assert(not pcall(function() type.component_id = type end), "component_id should not be settable")
