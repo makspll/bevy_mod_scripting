@@ -436,10 +436,7 @@ impl<'w> WorldAccessGuard<'w> {
 
     /// Gets the component id of the given component or resource
     pub fn get_component_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
-        Ok(self
-            .as_unsafe_world_cell()?
-            .components()
-            .get_id(id))
+        Ok(self.as_unsafe_world_cell()?.components().get_id(id))
     }
 
     /// Gets the resource id of the given component or resource
