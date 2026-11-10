@@ -5,7 +5,7 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 use crate::{
-    ReferencePart, ReferencePath, ReflectAllocationId, error::InteropError,
+    DynamicComponent, ReferencePart, ReferencePath, ReflectAllocationId, error::InteropError,
     reflection_extensions::PartialReflectExt,
 };
 use bevy_asset::{ReflectAsset, UntypedHandle};
@@ -642,7 +642,11 @@ impl ReflectBaseType {
     fn debug_assert_type_matches(&self, world: UnsafeWorldCell) {
         if let ReflectBase::Component(_, id) | ReflectBase::Resource(id) = &self.base_id {
             debug_assert_eq!(
-                world.components().get_info(*id).and_then(|i| i.type_id()),
+                world
+                    .components()
+                    .get_info(*id)
+                    // components registered by scripts have no type, they are stored as `DynamicComponent`s
+                    .map(|i| i.type_id().unwrap_or(TypeId::of::<DynamicComponent>())),
                 Some(self.type_id),
                 "reference type id doesn't match the component or resource it points to"
             );
