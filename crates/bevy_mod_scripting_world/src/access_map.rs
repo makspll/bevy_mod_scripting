@@ -497,6 +497,11 @@ impl AccessMap {
         !self.0.borrow().cant_access_global
     }
 
+    /// The number of [`Self::with_scope`] scopes currently running
+    pub fn scope_depth(&self) -> usize {
+        self.0.borrow().scope_marks.len()
+    }
+
     fn claim(&self, key: WorldAccessRange, write: bool) -> bool {
         let (claimed, unused_owner) = self.0.borrow_mut().claim_if_free(key, write);
         // dropped once unlocked

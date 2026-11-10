@@ -3,7 +3,7 @@
 use std::any::TypeId;
 
 use crate::{FromScript, InteropError, IntoScript, ScriptValue};
-use bevy_mod_scripting_world::WorldGuard;
+use bevy_mod_scripting_world::{CallScope, WorldGuard};
 use bevy_reflect::{CreateTypeData, Reflect, TypeInfo};
 
 /// A static reference to a type, what scripts see as the type's global.
@@ -33,7 +33,7 @@ impl StaticTypeRef {
 impl FromScript for StaticTypeRef {
     type This<'w> = Self;
 
-    fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(value: ScriptValue, _scope: &CallScope) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Type(type_id) => Ok(Self::new(type_id)),
             value => Err(InteropError::value_mismatch(
