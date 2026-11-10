@@ -737,7 +737,7 @@ macro_rules! impl_script_function {
                                     out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
                                 };
                                 ret
-                            })?
+                            })
                         };
                         ret
                     })();

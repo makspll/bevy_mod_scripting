@@ -944,19 +944,7 @@ impl Iterator for ReflectRefIter {
     type Item = Result<ReflectReference, InteropError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let result: Result<_, _> = {
-            match &mut self.index {
-                IterationKey::Index(i) => {
-                    let mut next = self.base.clone();
-                    let parsed_path = ReferencePart::IntegerAccess(*i as i64, false);
-                    next.push_path(parsed_path);
-                    *i += 1;
-                    Ok(next)
-                }
-            }
-        };
-
-        Some(result)
+        Some(Ok(self.next_ref().0))
     }
 }
 

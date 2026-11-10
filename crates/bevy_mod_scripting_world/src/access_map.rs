@@ -5,7 +5,7 @@ use std::{any::Any, sync::Arc};
 use bevy_ecs::component::ComponentId;
 
 use bevy_platform::collections::HashMap;
-use parking_lot::Mutex;
+use std::cell::RefCell;
 
 use bevy_ecs::schedule::FixedBitSet;
 
@@ -304,61 +304,8 @@ impl From<ComponentId> for WorldAccessRange {
 }
 
 #[derive(Debug)]
-/// A map of access claims
-pub struct AccessMap(Mutex<AccessMapInner>);
-
-/// A trait for controlling system world access at runtime.
-///
-/// This trait provides methods to claim and release read, write, and global access
-/// to various parts of the world. Implementations of this trait manage internal state
-/// to ensure safe and concurrent access to resources. Methods include scope-based locking,
-/// as well as introspection of access state via code location information.
-pub trait DynamicSystemMeta {
-    /// Executes the provided closure within a temporary access scope.
-    ///
-    /// Any accesses claimed or released within the scope are rolled back once the closure returns or panics.
-    /// Scopes can be nested, an inner scope rolls back only its own changes.
-    fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O;
-
-    /// Attempts to claim read access for the given key.
-    ///
-    /// Returns `true` if the read access is successfully claimed. The claim will fail if
-    /// the key is currently locked for write or if a global lock is active.
-    #[track_caller]
-    fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool;
-
-    /// Attempts to claim write access for the given key.
-    ///
-    /// Returns `true` if the write access is successfully claimed. Write access fails if any
-    /// read or write access is active for the key or if a global lock is held.
-    #[track_caller]
-    fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool;
-
-    /// Releases an access claimed for the provided key.
-    ///
-    /// The owner of a [`WorldAccessRange::External`] value is held until its last claim is released.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the access is released by a thread different from the one that claimed it.
-    fn release_access<K: Into<WorldAccessRange>>(&self, key: K);
-
-    /// Returns a list of active accesses.
-    ///
-    /// The list is provided as key and corresponding access count pairs.
-    fn list_accesses(&self) -> Vec<(WorldAccessRange, bool)>;
-
-    /// Returns the number of active individual accesses.
-    ///
-    /// In the case of a global lock, this method considers that as a single active access.
-    fn count_accesses(&self) -> usize;
-
-    /// Releases all active accesses, both individual and global.
-    ///
-    /// Inside a [`Self::with_scope`] only the accesses claimed in the innermost scope are released,
-    /// the ones from before it are released by whoever claimed them.
-    fn release_all_accesses(&self);
-}
+/// A map of access claims, used by a single thread through a [`crate::WorldAccessGuard`]
+pub struct AccessMap(RefCell<AccessMapInner>);
 
 #[derive(Default, Debug, Clone)]
 struct AccessMapInner {
@@ -366,7 +313,7 @@ struct AccessMapInner {
     component_access: AccessByteSet,
     world_access: AccessBitField,
     external_accesses: HashMap<usize, ExternalAccess>,
-    /// The length of [`Self::undo`] when each running [`DynamicSystemMeta::with_scope`] started, innermost last
+    /// The length of [`Self::undo`] when each running [`AccessMap::with_scope`] started, innermost last
     scope_marks: Vec<usize>,
     /// The changes made inside the running scopes, undone when they end
     undo: Vec<ScopeUndo>,
@@ -518,40 +465,6 @@ impl AccessMapInner {
         }
         None
     }
-    // #[inline]
-    // fn entry(&self, key: WorldAccessRange) -> Option<&AccessCount> {
-    //     self.individual_accesses
-    //         .iter()
-    //         .find_map(|(entry_key, access_count)| (key == *entry_key).then_some(access_count))
-    // }
-
-    // fn entry_index(&self, key: WorldAccessRange) -> Option<usize> {
-    //     self.individual_accesses.iter().position(|(k, _)| *k == key)
-    // }
-
-    // #[inline]
-    // fn entry_mut(&mut self, key: WorldAccessRange) -> Option<&mut AccessCount> {
-    //     self.individual_accesses
-    //         .iter_mut()
-    //         .find_map(|(entry_key, access_count)| (key == *entry_key).then_some(access_count))
-    // }
-
-    // #[inline]
-    // fn entry_or_insert_default(&mut self, key: WorldAccessRange) -> &mut AccessCount {
-    //     if let Some(i) = self.entry_index(key) {
-    //         return &mut self.individual_accesses[i].1;
-    //     }
-
-    //     self.individual_accesses.push((key, AccessCount::default()));
-    //     // Safety: we just added one element, option is never None
-    //     unsafe { &mut self.individual_accesses.last_mut().unwrap_unchecked().1 }
-    // }
-
-    // #[inline]
-    // fn remove(&mut self, key: WorldAccessRange) {
-    //     self.individual_accesses
-    //         .retain(|(entry_key, _)| *entry_key != key);
-    // }
 }
 
 impl Default for AccessMap {
@@ -563,14 +476,14 @@ impl Default for AccessMap {
 impl AccessMap {
     /// Creates a new access map which will only allow access up to the given component ID
     pub fn new() -> Self {
-        Self(Mutex::new(AccessMapInner {
+        Self(RefCell::new(AccessMapInner {
             ..Default::default()
         }))
     }
 
     /// Creates a new access map which will only allow access to the given set of components
     pub fn new_subset(filter: AccessByteSet) -> Self {
-        Self(Mutex::new(AccessMapInner {
+        Self(RefCell::new(AccessMapInner {
             component_access: filter,
             cant_access_global: true,
             ..Default::default()
@@ -581,29 +494,29 @@ impl AccessMap {
     ///
     /// Subsets are used where other systems can run in parallel, such as non-exclusive script systems.
     pub fn is_exclusive(&self) -> bool {
-        !self.0.lock().cant_access_global
+        !self.0.borrow().cant_access_global
     }
 
     fn claim(&self, key: WorldAccessRange, write: bool) -> bool {
-        let (claimed, unused_owner) = self.0.lock().claim_if_free(key, write);
+        let (claimed, unused_owner) = self.0.borrow_mut().claim_if_free(key, write);
         // dropped once unlocked
         drop(unused_owner);
         claimed
     }
 }
 
-/// Ends a [`DynamicSystemMeta::with_scope`] when dropped, so the scope is rolled back even if its closure panics.
+/// Ends a [`AccessMap::with_scope`] when dropped, so the scope is rolled back even if its closure panics.
 ///
 /// Scopes nest and end innermost first (also when a panic unwinds through them),
 /// so the scope ending is always the last one in [`AccessMapInner::scope_marks`],
 /// and it rolls back only the changes recorded after its mark.
-struct ScopeEnd<'a>(&'a Mutex<AccessMapInner>);
+struct ScopeEnd<'a>(&'a RefCell<AccessMapInner>);
 
 impl Drop for ScopeEnd<'_> {
     fn drop(&mut self) {
         let mut released = Released::new();
         {
-            let mut inner = self.0.lock();
+            let mut inner = self.0.borrow_mut();
             if let Some(mark) = inner.scope_marks.pop() {
                 inner.rollback(mark, &mut released);
             }
@@ -613,19 +526,26 @@ impl Drop for ScopeEnd<'_> {
 }
 
 #[profiling::all_functions]
-impl DynamicSystemMeta for AccessMap {
-    fn release_access<K: Into<WorldAccessRange>>(&self, key: K) {
+impl AccessMap {
+    /// Releases an access claimed for the provided key.
+    ///
+    /// The owner of a [`WorldAccessRange::External`] value is held until its last claim is released.
+    pub fn release_access<K: Into<WorldAccessRange>>(&self, key: K) {
         let key = key.into();
-        let released = self.0.lock().clear_access(&key);
+        let released = self.0.borrow_mut().clear_access(&key);
         // dropped once unlocked, after the key, which may have been the last other owner
         drop(key);
         drop(released);
     }
 
-    fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
+    /// Executes the provided closure within a temporary access scope.
+    ///
+    /// Any accesses claimed or released within the scope are rolled back once the closure returns or panics.
+    /// Scopes can be nested, an inner scope rolls back only its own changes.
+    pub fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
         // record the changes made inside the scope instead of copying the whole map
         {
-            let mut inner = self.0.lock();
+            let mut inner = self.0.borrow_mut();
             let mark = inner.undo.len();
             inner.scope_marks.push(mark);
         }
@@ -633,18 +553,27 @@ impl DynamicSystemMeta for AccessMap {
         f()
     }
 
+    /// Attempts to claim read access for the given key.
+    ///
+    /// Returns `true` if the read access is successfully claimed. The claim will fail if
+    /// the key is currently locked for write or if a global lock is active.
     #[track_caller]
-    fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool {
+    pub fn claim_read_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool {
         self.claim(key.into(), false)
     }
 
+    /// Attempts to claim write access for the given key.
+    ///
+    /// Returns `true` if the write access is successfully claimed. Write access fails if any
+    /// read or write access is active for the key or if a global lock is held.
     #[track_caller]
-    fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool {
+    pub fn claim_write_access<K: Into<WorldAccessRange>>(&self, key: K) -> bool {
         self.claim(key.into(), true)
     }
 
-    fn list_accesses(&self) -> Vec<(WorldAccessRange, bool)> {
-        let inner = self.0.lock();
+    /// Returns the active accesses, one entry per claim, with whether it's a write.
+    pub fn list_accesses(&self) -> Vec<(WorldAccessRange, bool)> {
+        let inner = self.0.borrow();
         let comps = inner.component_access.iter_accessed().flat_map(|(idx, a)| {
             (0..a.access_count()).map(move |_| {
                 (
@@ -670,14 +599,21 @@ impl DynamicSystemMeta for AccessMap {
         accesses
     }
 
-    fn count_accesses(&self) -> usize {
+    /// Returns the number of active individual accesses.
+    ///
+    /// In the case of a global lock, this method considers that as a single active access.
+    pub fn count_accesses(&self) -> usize {
         self.list_accesses().len()
     }
 
-    fn release_all_accesses(&self) {
+    /// Releases all active accesses, both individual and global.
+    ///
+    /// Inside a [`Self::with_scope`] only the accesses claimed in the innermost scope are released,
+    /// the ones from before it are released by whoever claimed them.
+    pub fn release_all_accesses(&self) {
         let mut released = Released::new();
         {
-            let mut inner = self.0.lock();
+            let mut inner = self.0.borrow_mut();
             match inner.scope_marks.last().copied() {
                 // the accesses from before the scope belong to callers, which release them themselves
                 Some(mark) => inner.rollback(mark, &mut released),
@@ -922,7 +858,7 @@ mod test {
         assert!(access_map.list_accesses().is_empty());
         // no scope is left open, so nothing is recorded anymore
         assert!(access_map.claim_write_access(TestAccess(3)));
-        assert!(access_map.0.lock().undo.is_empty());
+        assert!(access_map.0.borrow().undo.is_empty());
     }
 
     #[test]
