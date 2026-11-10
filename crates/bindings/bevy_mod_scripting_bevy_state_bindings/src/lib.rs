@@ -72,10 +72,13 @@ impl World {
             return Ok(None);
         }
         // the state value is the only field of the `State<T>` resource
-        let mut reference = ReflectReference::new_resource_ref_by_id(
-            resource.resource_id(),
-            resource.type_registration().type_id(),
-        );
+        // Safety: both ids come from the same `ScriptResourceRegistration`
+        let mut reference = unsafe {
+            ReflectReference::new_resource_ref_by_id(
+                resource.resource_id(),
+                resource.type_registration().type_id(),
+            )
+        };
         reference.push_path(ReferencePart::IntegerAccess(0, false));
         Ok(Some(ValueOf::new(reference)))
     }
@@ -115,10 +118,13 @@ impl World {
             )));
         }
 
-        let reference = ReflectReference::new_resource_ref_by_id(
-            resource.resource_id(),
-            resource.type_registration().type_id(),
-        );
+        // Safety: both ids come from the same `ScriptResourceRegistration`
+        let reference = unsafe {
+            ReflectReference::new_resource_ref_by_id(
+                resource.resource_id(),
+                resource.type_registration().type_id(),
+            )
+        };
         let state_value = value.to_owned_value(world.clone())?;
         let mut pending_fields = DynamicTuple::default();
         pending_fields.insert_boxed(state_value);
