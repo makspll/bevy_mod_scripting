@@ -1,6 +1,12 @@
 //! A map of access claims used to safely and dynamically access the world.
 
-use std::{any::Any, sync::Arc};
+use std::{
+    any::Any,
+    sync::{
+        Arc,
+        atomic::{AtomicU32, Ordering},
+    },
+};
 
 use bevy_ecs::component::ComponentId;
 
@@ -23,7 +29,69 @@ pub enum WorldAccessRange {
 }
 
 /// Keeps a value outside the world alive, see [`WorldAccessRange::External`].
-pub type AccessOwner = Arc<dyn Any + Send + Sync>;
+pub type AccessOwner = Arc<dyn ExternalValue>;
+
+/// A value outside the world, accessed through [`WorldAccessRange::External`] claims.
+pub trait ExternalValue: Any + Send + Sync {
+    /// The claims on the value shared by every access map, the same value can be reached through several guards
+    /// (i.e. script systems on other threads, or nested guards), each with its own map.
+    fn claims(&self) -> &SharedClaims;
+}
+
+/// Which access maps hold claims on an [`ExternalValue`]: one writing map or any number of reading ones.
+///
+/// Each map claims it once, on its first claim of the value, and releases it with its last.
+#[derive(Default, Debug)]
+pub struct SharedClaims(AtomicU32);
+
+impl SharedClaims {
+    const WRITE: u32 = u32::MAX;
+
+    /// Claims read or write access, returns whether it was claimed
+    pub fn try_claim(&self, write: bool) -> bool {
+        if write {
+            self.0
+                .compare_exchange(0, Self::WRITE, Ordering::Acquire, Ordering::Relaxed)
+                .is_ok()
+        } else {
+            self.0
+                .fetch_update(Ordering::Acquire, Ordering::Relaxed, |maps| {
+                    // never reaches `WRITE` by reads
+                    maps.checked_add(1).filter(|maps| *maps != Self::WRITE)
+                })
+                .is_ok()
+        }
+    }
+
+    /// Releases a claim made with [`Self::try_claim`], returns whether such a claim was held.
+    ///
+    /// Releasing a claim that isn't held does nothing: a read doesn't wrap to a write, a write doesn't free reads.
+    pub fn release(&self, write: bool) -> bool {
+        if write {
+            self.0
+                .compare_exchange(Self::WRITE, 0, Ordering::Release, Ordering::Relaxed)
+                .is_ok()
+        } else {
+            self.0
+                .fetch_update(Ordering::Release, Ordering::Relaxed, |maps| {
+                    (maps != 0 && maps != Self::WRITE).then(|| maps - 1)
+                })
+                .is_ok()
+        }
+    }
+}
+
+impl std::fmt::Debug for dyn ExternalValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("ExternalValue").field(self.claims()).finish()
+    }
+}
+
+impl ExternalValue for SharedClaims {
+    fn claims(&self) -> &SharedClaims {
+        self
+    }
+}
 
 /// The id of a value outside the world: the address of its owner, unique while the owner is alive.
 pub fn external_access_id(owner: &AccessOwner) -> usize {
@@ -319,12 +387,23 @@ struct AccessMapInner {
     undo: Vec<ScopeUndo>,
 }
 
-/// The claims on a value outside the world.
+/// The claims of one map on a value outside the world, while it counts any it holds the value's [`SharedClaims`].
 #[derive(Default, Debug, Clone)]
 struct ExternalAccess {
     bits: AccessBitField,
     /// Keeps the value alive, set whenever `bits` counts a claim
     owner: Option<AccessOwner>,
+}
+
+impl ExternalAccess {
+    /// Releases the shared claim this map holds, if any
+    fn release_shared(&self) {
+        if let Some(owner) = &self.owner
+            && self.bits.access_count() != 0
+        {
+            owner.claims().release(self.bits.is_write());
+        }
+    }
 }
 
 /// A change to an [`AccessMapInner`], recorded so a scope can roll it back: the state of an access before it changed.
@@ -363,6 +442,8 @@ impl AccessMapInner {
 
     /// Undoes the changes recorded since the undo log had the given length
     fn rollback(&mut self, mark: usize, released: &mut Released) {
+        // the external accesses as they were before the rollback, to update their shared claims once it's done
+        let mut external_before = smallvec::SmallVec::<[(usize, ExternalAccess); 4]>::new();
         while self.undo.len() > mark {
             let Some(undo) = self.undo.pop() else {
                 break;
@@ -376,11 +457,34 @@ impl AccessMapInner {
                         Some(previous) => self.external_accesses.insert(id, previous),
                         None => self.external_accesses.remove(&id),
                     };
+                    if !external_before.iter().any(|(seen, _)| *seen == id) {
+                        external_before.push((id, replaced.clone().unwrap_or_default()));
+                    }
                     released.extend(replaced.and_then(|access| access.owner));
                 }
                 ScopeUndo::Global(previous) => {
                     self.world_access = previous;
                 }
+            }
+        }
+
+        let held = |access: &ExternalAccess| {
+            (access.owner.is_some() && access.bits.access_count() != 0)
+                .then(|| access.bits.is_write())
+        };
+        for (id, before) in external_before {
+            let after = self.external_accesses.get(&id);
+            if held(&before) == after.and_then(held) {
+                continue;
+            }
+            before.release_shared();
+            // a claim released in the scope is back, i.e. one made before it (normally released by its caller)
+            if let Some(after) = after
+                && let (Some(write), Some(owner)) = (held(after), &after.owner)
+                && !owner.claims().try_claim(write)
+            {
+                // taken by another map in the meantime, give it up rather than aliasing it
+                released.extend(self.external_accesses.remove(&id).and_then(|a| a.owner));
             }
         }
     }
@@ -413,6 +517,10 @@ impl AccessMapInner {
                     .external_accesses
                     .entry(external_access_id(&owner))
                     .or_default();
+                // the first claim of this map claims the value against the other maps
+                if access.bits.access_count() == 0 && !owner.claims().try_claim(write) {
+                    return (false, Some(owner));
+                }
                 let (free, new) = access.bits.claim_if_free(write);
                 access.bits = new;
                 if free && access.owner.is_none() {
@@ -452,9 +560,14 @@ impl AccessMapInner {
 
             WorldAccessRange::External(owner) => {
                 if let Some(access) = self.external_accesses.get_mut(&external_access_id(owner)) {
+                    let was_write = access.bits.is_write();
                     access.bits = access.bits.decrement_count();
-                    if access.bits.access_count() == 0 {
-                        return access.owner.take();
+                    if access.bits.access_count() == 0
+                        && let Some(owner) = access.owner.take()
+                    {
+                        // the last claim of this map
+                        owner.claims().release(was_write);
+                        return Some(owner);
                     }
                 }
             }
@@ -470,6 +583,15 @@ impl AccessMapInner {
 impl Default for AccessMap {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Drop for AccessMap {
+    fn drop(&mut self) {
+        // claims left over, i.e. by a panic, would keep the values claimed for the other maps forever
+        for access in self.0.get_mut().external_accesses.values() {
+            access.release_shared();
+        }
     }
 }
 
@@ -624,7 +746,10 @@ impl AccessMap {
                 Some(mark) => inner.rollback(mark, &mut released),
                 None => {
                     inner.component_access.clear();
-                    released.extend(inner.external_accesses.drain().filter_map(|(_, a)| a.owner));
+                    released.extend(inner.external_accesses.drain().filter_map(|(_, a)| {
+                        a.release_shared();
+                        a.owner
+                    }));
                     inner.world_access = Default::default();
                 }
             }
@@ -902,7 +1027,7 @@ mod test {
     #[test]
     fn access_map_owners_live_until_their_access_is_released() {
         let access_map = AccessMap::new();
-        let owner: AccessOwner = Arc::new(());
+        let owner: AccessOwner = Arc::new(SharedClaims::default());
         let count = || Arc::strong_count(&owner);
         let key = || WorldAccessRange::External(owner.clone());
 
@@ -917,12 +1042,25 @@ mod test {
         assert_eq!(count(), 2);
         access_map.release_access(key());
         assert_eq!(count(), 1);
+
+        // releasing shared claims that aren't held changes nothing
+        let claims = owner.claims();
+        assert!(!claims.release(false), "would wrap to a write");
+        assert!(!claims.release(true));
+        assert!(claims.try_claim(true));
+        assert!(!claims.release(false), "would turn the write into reads");
+        assert!(!claims.try_claim(false));
+        assert!(claims.release(true));
+        assert!(claims.try_claim(false));
+        assert!(!claims.release(true), "would free the read");
+        assert!(!claims.try_claim(true));
+        assert!(claims.release(false));
     }
 
     #[test]
     fn access_map_scopes_drop_and_restore_owners() {
         let access_map = AccessMap::new();
-        let owner: AccessOwner = Arc::new(());
+        let owner: AccessOwner = Arc::new(SharedClaims::default());
         let count = || Arc::strong_count(&owner);
         let key = || WorldAccessRange::External(owner.clone());
 
@@ -949,8 +1087,8 @@ mod test {
 
     #[test]
     fn access_map_external_ids_are_owner_addresses() {
-        let a: AccessOwner = Arc::new(1u8);
-        let b: AccessOwner = Arc::new(1u8);
+        let a: AccessOwner = Arc::new(SharedClaims::default());
+        let b: AccessOwner = Arc::new(SharedClaims::default());
         assert_eq!(
             WorldAccessRange::External(a.clone()),
             WorldAccessRange::External(a.clone())

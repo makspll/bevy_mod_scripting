@@ -1280,6 +1280,29 @@ mod test {
                 .unwrap(),
             TypeId::of::<String>()
         );
+
+        // claims hold across guards, i.e. nested guards or script systems on other threads, each with its own access map
+        let mut other_world = setup_world();
+        let cache = WorldAccessGuard::setup_cache(&other_world, CurrentScriptAttachment::empty());
+        let other_guard = WorldGuard::new_exclusive(&mut other_world, cache);
+        let other_ref = allocation_ref.clone();
+        allocation_ref
+            .with_reflect_mut(world_guard.clone(), |_| {
+                assert!(other_ref.with_reflect(other_guard.clone(), |_| ()).is_err());
+            })
+            .unwrap();
+        allocation_ref
+            .with_reflect(world_guard.clone(), |_| {
+                assert!(other_ref.with_reflect(other_guard.clone(), |_| ()).is_ok());
+                assert!(
+                    other_ref
+                        .with_reflect_mut(other_guard.clone(), |_| ())
+                        .is_err()
+                );
+            })
+            .unwrap();
+        // and are released with the last claim of a map
+        assert!(other_ref.with_reflect_mut(other_guard, |_| ()).is_ok());
     }
 
     #[test]

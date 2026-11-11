@@ -4,9 +4,8 @@ use ::bevy_reflect::PartialReflect;
 use bevy_mod_scripting_display::{
     DebugWithTypeInfo, DebugWithTypeInfoBuilder, DisplayWithTypeInfo,
 };
-use bevy_mod_scripting_world::{WorldAccessRange, WorldGuard};
+use bevy_mod_scripting_world::{ExternalValue, SharedClaims, WorldAccessRange, WorldGuard};
 use std::{
-    any::Any,
     cell::UnsafeCell,
     cmp::Ordering,
     fmt::{Display, Formatter},
@@ -17,7 +16,7 @@ use std::{
 /// A value allocated for scripts. Clones share the value, which is freed with the last of them.
 ///
 /// Accesses to the value are claimed in the world's access map under [`WorldAccessRange::External`],
-/// which holds the value alive until the claim is released.
+/// which holds the value alive until the claim is released, and in the value itself against other access maps.
 #[derive(Clone)]
 pub struct ReflectAllocationId {
     value: Arc<dyn AllocatedValue>,
@@ -26,33 +25,52 @@ pub struct ReflectAllocationId {
 /// An allocated value.
 ///
 /// Both implementations hand out the pointer from an [`UnsafeCell`], which is the only way of mutating the value
-/// through the shared `Arc`; references made from it must follow the claims in the access map.
-trait AllocatedValue: Any + Send + Sync {
+/// through the shared `Arc`; references made from it must follow the claims on it, which live in the value itself
+/// ([`SharedClaims`]) since clones of a reference can be used through any guard, i.e. by script systems on other threads.
+trait AllocatedValue: ExternalValue {
     fn get_ptr(&self) -> *mut dyn PartialReflect;
 }
 
 /// A value of a known type, in the same heap allocation as its reference counts.
-struct Inline<T>(UnsafeCell<T>);
+struct Inline<T> {
+    claims: SharedClaims,
+    value: UnsafeCell<T>,
+}
 
-// Safety: the value is only accessed through claims in the access map, which never hand out aliasing mutable access.
+// Safety: the value is only accessed under its `SharedClaims`, which hand out one writer or many readers across all guards.
 unsafe impl<T: Send> Sync for Inline<T> {}
+
+impl<T: Send + 'static> ExternalValue for Inline<T> {
+    fn claims(&self) -> &SharedClaims {
+        &self.claims
+    }
+}
 
 impl<T: PartialReflect> AllocatedValue for Inline<T> {
     fn get_ptr(&self) -> *mut dyn PartialReflect {
-        self.0.get()
+        self.value.get()
     }
 }
 
 /// A value which was already boxed.
-struct Boxed(Box<UnsafeCell<dyn PartialReflect>>);
+struct Boxed {
+    claims: SharedClaims,
+    value: Box<UnsafeCell<dyn PartialReflect>>,
+}
 
 // Safety: as for [`Inline`]
 unsafe impl Sync for Boxed {}
 
+impl ExternalValue for Boxed {
+    fn claims(&self) -> &SharedClaims {
+        &self.claims
+    }
+}
+
 impl AllocatedValue for Boxed {
     fn get_ptr(&self) -> *mut dyn PartialReflect {
         // only a shared reference to the box and the cell, the pointer comes from the cell
-        UnsafeCell::get(&*self.0)
+        UnsafeCell::get(&*self.value)
     }
 }
 
@@ -60,7 +78,10 @@ impl ReflectAllocationId {
     /// Allocates a value, in a single heap allocation together with its reference counts.
     pub fn new<T: PartialReflect>(value: T) -> Self {
         Self {
-            value: Arc::new(Inline(UnsafeCell::new(value))),
+            value: Arc::new(Inline {
+                claims: SharedClaims::default(),
+                value: UnsafeCell::new(value),
+            }),
         }
     }
 
@@ -69,7 +90,10 @@ impl ReflectAllocationId {
         // Safety: `UnsafeCell<T>` has the same layout as `T`
         let value: Box<UnsafeCell<dyn PartialReflect>> = unsafe { std::mem::transmute(value) };
         Self {
-            value: Arc::new(Boxed(value)),
+            value: Arc::new(Boxed {
+                claims: SharedClaims::default(),
+                value,
+            }),
         }
     }
 
