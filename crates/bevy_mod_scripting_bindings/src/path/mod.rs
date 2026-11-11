@@ -3,7 +3,8 @@
 use std::{borrow::Cow, fmt::Display};
 
 use bevy_mod_scripting_asset::Language;
-use bevy_mod_scripting_display::{DebugWithTypeInfo, DisplayWithTypeInfo};
+use bevy_mod_scripting_derive::DebugWithTypeInfo;
+use bevy_mod_scripting_display::DisplayWithTypeInfo;
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::{
     PartialReflect, ReflectMut, ReflectRef, TypeInfo, TypeRegistry, enums::VariantType,
@@ -12,6 +13,8 @@ use bevy_reflect::{
 use crate::{ScriptValue, convert};
 
 /// A key referencing into a `Reflect` supporting trait object.
+#[derive(DebugWithTypeInfo)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub enum ReferencePart {
     /// A string labelled reference
     StringAccess(Cow<'static, str>),
@@ -170,7 +173,8 @@ impl ReferencePart {
 }
 
 /// A collection of references into a `Reflect` supporting trait object in series.
-#[derive(Clone, PartialEq, Default)]
+#[derive(DebugWithTypeInfo, Clone, PartialEq, Default)]
+#[debug_with_type_info(bms_display_path = "bevy_mod_scripting_display")]
 pub struct ReferencePath {
     path: Vec<ReferencePart>,
 }
@@ -202,16 +206,6 @@ impl Display for ReferencePart {
 impl Display for ReferencePath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.path.iter().try_for_each(|p| p.fmt(f))
-    }
-}
-
-impl DebugWithTypeInfo for ReferencePath {
-    fn to_string_with_type_info(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        _type_info_provider: Option<&bevy_mod_scripting_world::WorldAccessGuard>,
-    ) -> std::fmt::Result {
-        self.fmt(f)
     }
 }
 

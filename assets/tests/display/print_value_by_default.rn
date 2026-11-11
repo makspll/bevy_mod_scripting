@@ -44,7 +44,6 @@ pub fn main() {
         ),
     },
     reflect_path: ReferencePath {
-        one_indexed: false,
         path: [],
     },
 }
@@ -65,7 +64,6 @@ pub fn main() {
         ),
     },
     reflect_path: ReferencePath {
-        one_indexed: false,
         path: [],
     },
 }
