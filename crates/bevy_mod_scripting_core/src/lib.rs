@@ -49,7 +49,6 @@ mod derive_tests;
 
 pub mod error;
 pub mod event;
-pub mod extractors;
 pub mod handler;
 pub mod pipeline;
 pub mod runtime;

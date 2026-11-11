@@ -90,17 +90,6 @@ impl Default for ReflectReference {
     }
 }
 
-/// Specifies where we should source the type id from when reflecting a ReflectReference
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum TypeIdSource {
-    /// Use the type id the reference points to after walking the path
-    Tail,
-    /// Given the Tail referene is a container type, use the type id of the elements in the container
-    Element,
-    /// Givent the Tail reference is a container type, use the type id of the keys of the container
-    Key,
-}
-
 #[profiling::all_functions]
 
 impl ReflectReference {
@@ -424,18 +413,6 @@ impl ReflectReference {
         self.with_reflect(world, |r| r.key_type_id())
     }
 
-    /// Retrieves the type id of the value the reference points to based on the given source.
-    pub fn type_id_of(
-        &self,
-        source: TypeIdSource,
-        world: WorldGuard,
-    ) -> Result<Option<TypeId>, InteropError> {
-        match source {
-            TypeIdSource::Tail => self.tail_type_id(world),
-            TypeIdSource::Element => self.element_type_id(world),
-            TypeIdSource::Key => self.key_type_id(world),
-        }
-    }
 
     /// Equivalent to [`Self::reflect_unsafe`] but expecting a non-None value from the reference, i.e. will return an Err if the reference is to a missing key in a dictionary.
     /// # Safety
