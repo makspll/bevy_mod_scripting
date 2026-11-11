@@ -609,8 +609,7 @@ mod test {
 
     /// The world seen by the currently running callback
     fn thread_world() -> WorldGuard<'static> {
-        ThreadWorldContainer
-            .try_get_context()
+        ThreadWorldContainer::try_get_context()
             .expect("no world available inside callback")
             .world
     }

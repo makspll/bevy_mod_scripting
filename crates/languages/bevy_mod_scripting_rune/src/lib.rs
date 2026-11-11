@@ -184,7 +184,7 @@ impl Plugin for RuneScriptingPlugin {
 }
 
 fn register_callback(callback: String, function: Function) -> Result<(), InteropError> {
-    let world = ThreadWorldContainer.try_get_context()?.world;
+    let world = ThreadWorldContainer::try_get_context()?.world;
     let attachment = world.current_attachment().0.ok_or_else(|| {
         InteropError::str("Cannot register callback, missing script attachment context.")
     })?;

@@ -1456,7 +1456,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
     }
 
     fn set_current_attachment(&self, attachment: ScriptAttachment) {
-        self.set_cached_registry::<CurrentScriptAttachment>(CurrentScriptAttachment(Some(
+        self.replace_cached_registry::<CurrentScriptAttachment>(CurrentScriptAttachment(Some(
             attachment,
         )));
     }

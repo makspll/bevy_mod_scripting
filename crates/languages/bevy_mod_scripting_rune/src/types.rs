@@ -70,7 +70,7 @@ pub struct RuneFunction(pub ScriptFunction);
 pub struct RuneIter(ScriptFunction);
 
 fn world() -> Result<WorldGuard<'static>, InteropError> {
-    Ok(ThreadWorldContainer.try_get_context()?.world)
+    Ok(ThreadWorldContainer::try_get_context()?.world)
 }
 
 /// Converts the result of a call into the value a script gets, a bound method for a method which was not called.

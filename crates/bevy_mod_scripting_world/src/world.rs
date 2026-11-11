@@ -152,8 +152,8 @@ impl std::fmt::Debug for WorldAccessGuardInner<'_> {
 impl WorldAccessGuard<'static> {
     /// Shortens the lifetime of the guard to the given lifetime.
     pub(crate) fn shorten_lifetime<'w>(self) -> WorldGuard<'w> {
-        // Safety: todo
-        unsafe { std::mem::transmute(self) }
+        // the guard is covariant in its lifetime
+        self
     }
 }
 
@@ -186,6 +186,42 @@ impl<'w> WorldAccessGuard<'w> {
         self.inner.accesses.release_access(raid)
     }
 
+    /// Claims the given access key, runs `f` and releases the claim, also when `f` panics.
+    #[track_caller]
+    fn with_access<O>(
+        &self,
+        key: WorldAccessRange,
+        write: bool,
+        f: impl FnOnce() -> O,
+    ) -> Result<O, DynWorldAccessError> {
+        /// Releases the claim when dropped
+        struct Release<'a, 'w>(&'a WorldAccessGuard<'w>, Option<WorldAccessRange>);
+        impl Drop for Release<'_, '_> {
+            fn drop(&mut self) {
+                if let Some(key) = self.1.take() {
+                    // Safety: the claim was made in `with_access` and the borrows made under it ended with `f`
+                    unsafe { self.0.release_access(key) }
+                }
+            }
+        }
+
+        let claimed = if write {
+            self.inner.accesses.claim_write_access(key.clone())
+        } else {
+            self.inner.accesses.claim_read_access(key.clone())
+        };
+        if !claimed {
+            let msg = if write {
+                "Could not claim write access"
+            } else {
+                "Could not claim read access"
+            };
+            return Err(DynWorldAccessError::cannot_claim_access(key, msg));
+        }
+        let _release = Release(self, Some(key));
+        Ok(f())
+    }
+
     /// Procures and releases the given access key allowing safe read access to world resources
     /// requiring that key within the given closure
     #[track_caller]
@@ -194,18 +230,7 @@ impl<'w> WorldAccessGuard<'w> {
         key: impl Into<WorldAccessRange>,
         f: F,
     ) -> Result<O, DynWorldAccessError> {
-        let key = key.into();
-        if !self.inner.accesses.claim_read_access(key.clone()) {
-            Err(DynWorldAccessError::cannot_claim_access(
-                key,
-                "Could not claim read access",
-            ))
-        } else {
-            let res = f();
-            // Safety: we have claimed read access to this key
-            unsafe { self.release_access(key) };
-            Ok(res)
-        }
+        self.with_access(key.into(), false, f)
     }
 
     /// Procures and releases the given access key allowing safe read access to world resources
@@ -221,15 +246,7 @@ impl<'w> WorldAccessGuard<'w> {
     where
         DynWorldAccessError: Into<E>,
     {
-        let key = key.into();
-        if !self.inner.accesses.claim_read_access(key.clone()) {
-            Err(DynWorldAccessError::cannot_claim_access(key, "Could not claim read access").into())
-        } else {
-            let res = f();
-            // Safety: we have claimed read access to this key
-            unsafe { self.release_access(key) };
-            res
-        }
+        self.with_access(key.into(), false, f).map_err(Into::into)?
     }
 
     /// Procures and releases the given access key allowing safe write access to world resources
@@ -240,18 +257,7 @@ impl<'w> WorldAccessGuard<'w> {
         key: impl Into<WorldAccessRange>,
         f: F,
     ) -> Result<O, DynWorldAccessError> {
-        let key = key.into();
-        if !self.inner.accesses.claim_write_access(key.clone()) {
-            Err(DynWorldAccessError::cannot_claim_access(
-                key,
-                "Could not claim write access",
-            ))
-        } else {
-            let res = f();
-            // Safety: we have claimed read access to this key
-            unsafe { self.release_access(key) };
-            Ok(res)
-        }
+        self.with_access(key.into(), true, f)
     }
 
     /// Procures and releases the given access key allowing safe write access to world resources
@@ -267,18 +273,7 @@ impl<'w> WorldAccessGuard<'w> {
     where
         DynWorldAccessError: Into<E>,
     {
-        let key = key.into();
-        if !self.inner.accesses.claim_write_access(key.clone()) {
-            Err(
-                DynWorldAccessError::cannot_claim_access(key, "Could not claim write access")
-                    .into(),
-            )
-        } else {
-            let res = f();
-            // Safety: we have claimed write access to this key
-            unsafe { self.release_access(key) };
-            res
-        }
+        self.with_access(key.into(), true, f).map_err(Into::into)?
     }
 
     /// Procures and releases the given access key allowing safe read access to world resources
@@ -321,8 +316,8 @@ impl<'w> WorldAccessGuard<'w> {
     where
         DynWorldAccessError: Into<E>,
     {
-        let cell = self.as_unsafe_world_cell().map_err(Into::into)?;
         self.with_write_access_and_then(WorldAccessRange::Global, || {
+            let cell = self.as_unsafe_world_cell().map_err(Into::into)?;
             // Safety: we have exclusive access
             f(unsafe { cell.world_mut() })
         })
@@ -579,12 +574,6 @@ impl WorldAccessGuard<'_> {
         Ref::filter_map(self.inner.cached_slots[idx].borrow(), |r| r.downcast_ref()).ok()
     }
 
-    /// If a registry has been initialized in this world guard, downcasts it to its original type and returns
-    /// a reference to it
-    pub fn set_cached_registry<T: CachedRegistry>(&self, registry: T) {
-        self.replace_cached_registry(registry);
-    }
-
     /// Replaces the registry cached in this world guard with the given one, returning the previous value.
     pub fn replace_cached_registry<T: CachedRegistry>(&self, registry: T) -> T {
         let idx = T::SLOT;
@@ -628,13 +617,6 @@ thread_local! {
 }
 #[profiling::all_functions]
 impl ThreadWorldContainer {
-    /// Sets the thread context to the given value
-    pub fn set_context(&mut self, world: ThreadScriptContext<'static>) {
-        WORLD_CALLBACK_ACCESS.with(|w| {
-            w.replace(Some(world));
-        });
-    }
-
     /// Sets the thread context to the given value until the returned guard is dropped, at which point the previous context is restored.
     ///
     /// This keeps nested static guards (e.g. a callback running another callback) from leaving the outer callback with an invalidated world.
@@ -644,7 +626,7 @@ impl ThreadWorldContainer {
     }
 
     /// Tries to get the world from the container
-    pub fn try_get_context<'l>(&self) -> Result<ThreadScriptContext<'l>, DynWorldAccessError> {
+    pub fn try_get_context<'l>() -> Result<ThreadScriptContext<'l>, DynWorldAccessError> {
         WORLD_CALLBACK_ACCESS
             .with(|w| {
                 w.borrow()
@@ -738,8 +720,7 @@ mod test {
         );
 
         let thread_world_is_valid = || {
-            ThreadWorldContainer
-                .try_get_context()
+            ThreadWorldContainer::try_get_context()
                 .map(|c| c.world.is_valid())
                 .unwrap_or(false)
         };
@@ -784,6 +765,13 @@ mod test {
         let fail = || Err::<(), _>(DynWorldAccessError::missing_world());
         assert!(guard.with_read_access_and_then(key(), fail).is_err());
         assert!(guard.with_write_access_and_then(key(), fail).is_err());
+        assert_eq!(guard.access_len(), 0);
+
+        // and so do panicking ones, outside of a call scope
+        let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            guard.with_write_access(key(), || panic!("in closure"))
+        }));
+        assert!(panicked.is_err());
         assert_eq!(guard.access_len(), 0);
     }
 }

@@ -125,7 +125,9 @@ impl<T: DisplayWithTypeInfo> std::fmt::Display for WithTypeInfo<'_, T> {
         if let Some(provider) = self.1 {
             return self.0.display_with_type_info(f, Some(provider));
         }
-        let provider = ThreadWorldContainer.try_get_context().ok().map(|c| c.world);
+        let provider = ThreadWorldContainer::try_get_context()
+            .ok()
+            .map(|c| c.world);
         self.0.display_with_type_info(f, provider.as_ref())
     }
 }
@@ -188,7 +190,9 @@ impl<'a, T: DebugWithTypeInfo + ?Sized> std::fmt::Debug for WithTypeInfo<'a, T> 
         if let Some(provider) = self.1 {
             return self.0.to_string_with_type_info(f, Some(provider));
         }
-        let provider = ThreadWorldContainer.try_get_context().ok().map(|c| c.world);
+        let provider = ThreadWorldContainer::try_get_context()
+            .ok()
+            .map(|c| c.world);
         self.0.to_string_with_type_info(f, provider.as_ref())
     }
 }
