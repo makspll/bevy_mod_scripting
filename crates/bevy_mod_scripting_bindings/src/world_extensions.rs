@@ -1615,19 +1615,6 @@ pub(crate) trait FunctionLookups {
         name: impl Into<Cow<'static, str>>,
         context: FunctionCallContext,
     ) -> Result<DynamicScriptFunction, InteropError>;
-
-    /// Looks up a function callable on the static reference to a type, i.e. `Type.name(..)` in a script.
-    ///
-    /// Resolution order:
-    /// 1. functions registered on the type itself
-    /// 2. type level functions registered on [`StaticTypeRef`], with the type bound as their first argument
-    ///
-    /// Returns the name back if nothing was found.
-    fn lookup_type_function<'n>(
-        &self,
-        type_id: TypeId,
-        name: impl Into<Cow<'n, str>>,
-    ) -> Result<DynamicScriptFunction, Cow<'n, str>>;
 }
 
 impl FunctionLookups for WorldAccessGuard<'_> {
@@ -1648,14 +1635,6 @@ impl FunctionLookups for WorldAccessGuard<'_> {
             .map_err(|name| {
                 InteropError::missing_function(name, FunctionScope::all_references(), Some(context))
             })
-    }
-
-    fn lookup_type_function<'n>(
-        &self,
-        type_id: TypeId,
-        name: impl Into<Cow<'n, str>>,
-    ) -> Result<DynamicScriptFunction, Cow<'n, str>> {
-        Lookups::with(self, |lookups| lookups.type_function(type_id, name))
     }
 }
 
@@ -1762,7 +1741,8 @@ impl Lookups<'_> {
         Err(name)
     }
 
-    /// See [`FunctionLookups::lookup_type_function`]
+    /// Looks up a function callable on the static reference to a type, i.e. `Type.name(..)` in a script:
+    /// functions registered on the type, then the type level functions of [`StaticTypeRef`] with the type bound as their first argument
     fn type_function<'n>(
         &self,
         type_id: TypeId,
@@ -1923,11 +1903,11 @@ mod test {
 
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
+        let lookup_type_function =
+            |type_id, name| Lookups::with(&world, |lookups| lookups.type_function(type_id, name));
 
         // shared functions have the type bound
-        let shared = world
-            .lookup_type_function(TypeId::of::<SimpleTupleStruct>(), "describe")
-            .unwrap();
+        let shared = lookup_type_function(TypeId::of::<SimpleTupleStruct>(), "describe").unwrap();
         assert!(shared.info.arg_info.is_empty());
         assert_eq!(
             shared.info.namespace,
@@ -1935,19 +1915,13 @@ mod test {
         );
 
         // functions on the type itself take priority
-        let own = world
-            .lookup_type_function(TypeId::of::<SimpleStruct>(), "describe")
-            .unwrap();
+        let own = lookup_type_function(TypeId::of::<SimpleStruct>(), "describe").unwrap();
         assert_eq!(
             own.info.namespace,
             FunctionScope::OnType(TypeId::of::<SimpleStruct>())
         );
 
-        assert!(
-            world
-                .lookup_type_function(TypeId::of::<SimpleStruct>(), "missing")
-                .is_err()
-        );
+        assert!(lookup_type_function(TypeId::of::<SimpleStruct>(), "missing").is_err());
     }
 
     #[test]
