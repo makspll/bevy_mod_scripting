@@ -845,7 +845,7 @@ impl ReflectReference {
         let copy = reference.with_reflect(world.clone(), |value| {
             <dyn PartialReflect>::from_reflect_or_clone(value, world.clone())
         })??;
-        let copy = ReflectReference::new_allocated_boxed_parial_reflect(copy)?;
+        let copy = ReflectReference::new_allocated_boxed_partial_reflect(copy)?;
         ReflectReference::into_script_erased(copy, world)
     }
 
@@ -1001,7 +1001,7 @@ impl ReflectReference {
         profiling::function_scope!("pop");
         let world = ctxt.world()?;
         let o = reference.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
-        let reference = ReflectReference::new_allocated_boxed_parial_reflect(o)?;
+        let reference = ReflectReference::new_allocated_boxed_partial_reflect(o)?;
 
         ReflectReference::into_script_erased(reference, world)
     }
@@ -1113,7 +1113,7 @@ impl ReflectReference {
         let removed = reference.with_reflect_mut(world.clone(), |s| s.try_remove_boxed(key))??;
         match removed {
             Some(removed) => {
-                let reference = ReflectReference::new_allocated_boxed_parial_reflect(removed)?;
+                let reference = ReflectReference::new_allocated_boxed_partial_reflect(removed)?;
                 ReflectReference::into_script_erased(reference, world)
             }
             None => Ok(ScriptValue::Unit),

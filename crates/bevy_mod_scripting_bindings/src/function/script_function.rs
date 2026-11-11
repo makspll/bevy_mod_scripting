@@ -313,15 +313,17 @@ impl DynamicScriptFunctionMut {
     }
 }
 
+/// Clones are equal, they share the same function
 impl PartialEq for DynamicScriptFunction {
     fn eq(&self, other: &Self) -> bool {
-        std::ptr::addr_eq(self as *const Self, other as *const Self)
+        Arc::ptr_eq(&self.func, &other.func)
     }
 }
 
+/// Clones are equal, they share the same function
 impl PartialEq for DynamicScriptFunctionMut {
     fn eq(&self, other: &Self) -> bool {
-        std::ptr::addr_eq(self as *const Self, other as *const Self)
+        Arc::ptr_eq(&self.func, &other.func)
     }
 }
 
@@ -784,6 +786,9 @@ mod test {
 
         assert_eq!(function.info.name, "test");
         assert_eq!(function.info.namespace, FunctionScope::OnType(namespace));
+        // clones share the function
+        assert!(*function == function.clone());
+        assert!(*function != DynamicScriptFunction::from(|_, _| ScriptValue::Unit));
     }
 
     #[test]
