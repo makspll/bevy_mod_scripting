@@ -163,7 +163,7 @@ impl ReflectReference {
     ///
     /// Prefer using [`Self::new_allocated`] if you have a value that implements [`Reflect`].
     /// Will fail if the value does not have represented type info with a specific type id.
-    pub fn new_allocated_boxed_parial_reflect(
+    pub fn new_allocated_boxed_partial_reflect(
         value: Box<dyn PartialReflect>,
     ) -> Result<ReflectReference, InteropError> {
         Ok(ReflectReference {
