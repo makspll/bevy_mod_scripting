@@ -413,7 +413,6 @@ impl ReflectReference {
         self.with_reflect(world, |r| r.key_type_id())
     }
 
-
     /// Equivalent to [`Self::reflect_unsafe`] but expecting a non-None value from the reference, i.e. will return an Err if the reference is to a missing key in a dictionary.
     /// # Safety
     /// - The bounds of [`Self::reflect_unsafe`] must be upheld

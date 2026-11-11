@@ -22,12 +22,19 @@ use ::{
     bevy_reflect::Reflect,
 };
 use bevy_ecs::{
-    archetype::ArchetypeGeneration, change_detection::{CheckChangeTicks, Tick}, message::Messages, query::{Access, ComponentIdSet}, resource::Resource, schedule::{
+    archetype::ArchetypeGeneration,
+    change_detection::{CheckChangeTicks, Tick},
+    message::Messages,
+    query::{Access, ComponentIdSet},
+    resource::Resource,
+    schedule::{
         InternedScheduleLabel, InternedSystemSet, IntoScheduleConfigs, Schedule,
         ScheduleCleanupPolicy, ScheduleConfigs, ScheduleError, Schedules,
-    }, system::{
+    },
+    system::{
         ReadOnlySystem, RunSystemError, ScheduleSystem, SystemAccess, SystemIn, SystemStateFlags,
-    }, world::{DeferredWorld, WorldId},
+    },
+    world::{DeferredWorld, WorldId},
 };
 use bevy_log::{debug, warn, warn_once};
 use bevy_mod_scripting_bindings::{
@@ -1412,7 +1419,6 @@ impl ManageScriptSystems for WorldGuard<'_> {
     }
 }
 
-
 fn individual_conflicts(conflicts: AccessConflicts) -> ComponentIdSet {
     match conflicts {
         // todo, not sure what to do here
@@ -1446,7 +1452,6 @@ pub(crate) fn get_all_access_ids(access: &Access) -> Vec<(ComponentId, bool)> {
 
     result
 }
-
 
 #[cfg(test)]
 mod test {
