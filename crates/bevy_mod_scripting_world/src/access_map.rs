@@ -10,7 +10,7 @@ use std::{
 
 use bevy_ecs::component::ComponentId;
 
-use bevy_platform::collections::HashMap;
+use bevy_platform::collections::{HashMap, hash_map::Entry};
 use std::cell::RefCell;
 
 use bevy_ecs::schedule::FixedBitSet;
@@ -446,14 +446,15 @@ impl AccessMapInner {
             }
 
             WorldAccessRange::External(owner) => {
-                let access = self
-                    .external_accesses
-                    .entry(external_access_id(&owner))
-                    .or_default();
-                // the first claim of this map claims the value against the other maps
-                if access.bits.access_count() == 0 && !owner.claims().try_claim(write) {
-                    return (false, Some(owner));
-                }
+                // entries only exist while this map holds claims on the value
+                let access = match self.external_accesses.entry(external_access_id(&owner)) {
+                    Entry::Occupied(entry) => entry.into_mut(),
+                    // the first claim of this map claims the value against the other maps
+                    Entry::Vacant(_) if !owner.claims().try_claim(write) => {
+                        return (false, Some(owner));
+                    }
+                    Entry::Vacant(entry) => entry.insert(Default::default()),
+                };
                 let (free, new) = access.bits.claim_if_free(write);
                 access.bits = new;
                 if free && access.owner.is_none() {
@@ -490,15 +491,17 @@ impl AccessMapInner {
             }
 
             WorldAccessRange::External(owner) => {
-                if let Some(access) = self.external_accesses.get_mut(&external_access_id(owner)) {
+                let id = external_access_id(owner);
+                if let Some(access) = self.external_accesses.get_mut(&id) {
                     let was_write = access.bits.is_write();
                     access.bits = access.bits.decrement_count();
-                    if access.bits.access_count() == 0
-                        && let Some(owner) = access.owner.take()
-                    {
-                        // the last claim of this map
-                        owner.claims().release(was_write);
-                        return Some(owner);
+                    if access.bits.access_count() == 0 {
+                        // the last claim of this map, the value may be freed so its entry goes too
+                        let owner = self.external_accesses.remove(&id).and_then(|a| a.owner);
+                        if let Some(owner) = &owner {
+                            owner.claims().release(was_write);
+                        }
+                        return owner;
                     }
                 }
             }
@@ -819,12 +822,18 @@ mod test {
         assert_eq!(count(), 2);
         access_map.release_access(key());
         assert_eq!(count(), 1);
+        // no entries are kept for values without claims, they may be freed
+        let entries = || access_map.0.borrow().external_accesses.len();
+        assert_eq!(entries(), 0);
 
         // releasing shared claims that aren't held changes nothing
         let claims = owner.claims();
         assert!(!claims.release(false), "would wrap to a write");
         assert!(!claims.release(true));
         assert!(claims.try_claim(true));
+        // claimed by another map: fails without leaving an entry
+        assert!(!access_map.claim_read_access(key()));
+        assert_eq!(entries(), 0);
         assert!(!claims.release(false), "would turn the write into reads");
         assert!(!claims.try_claim(false));
         assert!(claims.release(true));
