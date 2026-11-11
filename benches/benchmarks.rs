@@ -187,7 +187,7 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
         },
         &|w, i| {
             let i = i.into_script(w.clone()).unwrap();
-            let _ = w.with_borrow_scope(|s| Vec::<ScriptValue>::from_script(i, s).unwrap());
+            let _ = w.with_call_scope(|s| Vec::<ScriptValue>::from_script(i, s).unwrap());
         },
         &mut group,
         BatchSize::SmallInput,
@@ -208,7 +208,7 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
         &|w, i| {
             let i = i.into_script(w.clone()).unwrap();
             let _ =
-                w.with_borrow_scope(|s| HashMap::<String, ScriptValue>::from_script(i, s).unwrap());
+                w.with_call_scope(|s| HashMap::<String, ScriptValue>::from_script(i, s).unwrap());
         },
         &mut group,
         BatchSize::SmallInput,
@@ -219,7 +219,7 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
         &|rng, _world| ReflectReference::new_allocated(ReflectyVal(rng.random())),
         &|w, i| {
             let i = i.into_script(w.clone()).unwrap();
-            let _ = w.with_borrow_scope(|s| ReflectReference::from_script(i, s).unwrap());
+            let _ = w.with_call_scope(|s| ReflectReference::from_script(i, s).unwrap());
         },
         &mut group,
         BatchSize::SmallInput,
@@ -230,7 +230,7 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
         &|rng, _| V::new(ReflectyVal(rng.random::<u32>())),
         &|w, i| {
             let v = i.into_script(w.clone()).unwrap();
-            w.with_borrow_scope(|s| V::<ReflectyVal>::from_script(v, s).unwrap());
+            w.with_call_scope(|s| V::<ReflectyVal>::from_script(v, s).unwrap());
         },
         &mut group,
         BatchSize::SmallInput,

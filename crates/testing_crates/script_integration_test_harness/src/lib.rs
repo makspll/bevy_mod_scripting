@@ -604,23 +604,24 @@ pub fn perform_benchmark_with_generator<
     *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);
     drop(rng_guard);
     let span = tracing::trace_span!("bench_fn");
+    // the fake accesses claimed for the previous batch
+    let claimed = std::cell::RefCell::new(Vec::new());
     group.bench_function(label, |c| {
         c.iter_batched(
             || {
                 let mut rng_guard = RNG.lock().unwrap();
-                unsafe { world_guard.release_all_accesses() };
+                for id in claimed.borrow_mut().drain(..) {
+                    // Safety: nothing borrows under the fake claims
+                    unsafe { world_guard.release_access(id) };
+                }
 
                 // lock a random amount of fake components/resources, to make benchmarks more natural
                 for _ in 0..rng_guard.random_range(0..=5) {
                     // pick random component
-                    match rng_guard.random_range(0..=4) {
-                        0 => world_guard.claim_write_access(f1),
-                        1 => world_guard.claim_write_access(f2),
-                        2 => world_guard.claim_write_access(f3),
-                        3 => world_guard.claim_write_access(f4),
-                        4 => world_guard.claim_write_access(f5),
-                        _ => false,
-                    };
+                    let id = [f1, f2, f3, f4, f5][rng_guard.random_range(0..=4)];
+                    if world_guard.claim_write_access(id) {
+                        claimed.borrow_mut().push(id);
+                    }
                 }
 
                 (
