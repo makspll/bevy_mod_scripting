@@ -14,7 +14,8 @@ use bevy_mod_scripting_world::WorldGuard;
 
 use crate::{
     DynamicScriptFunction, EnumVariantRef, FunctionCallContext, FunctionScope, InteropError,
-    ReflectReference, ScriptValue, WorldExtensions, world_extensions::FunctionLookups,
+    ReflectReference, ScriptValue, WorldExtensions,
+    world_extensions::{FunctionLookups, Lookups},
 };
 
 /// What indexing a value by a name found.
@@ -70,15 +71,20 @@ pub fn index_name<'n>(
 ) -> Result<Member, InteropError> {
     profiling::function_scope!("dispatch::index");
     let type_id = reference.tail_type_id(world.clone())?.or_fake_id();
-    match world.lookup_member(&reference, type_id, name) {
+    // one registry read for the member and the getter, which is called once unlocked
+    let (member, get) = Lookups::with(&world, |lookups| {
+        let member = lookups.member(&reference, type_id, name);
+        (member, lookups.registry.magic_functions.get)
+    });
+    match member {
         Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => Ok(Member::Method(func)),
         Ok(member) => Ok(Member::Static(member)),
-        Err(name) => magic_get(
-            world,
+        Err(name) => get(
+            ctx,
             reference.into_owned(),
             ScriptValue::String(Cow::Owned(name.into_owned())),
-            ctx,
-        ),
+        )
+        .map(Member::Static),
     }
 }
 
@@ -89,12 +95,9 @@ fn magic_get(
     key: ScriptValue,
     ctx: FunctionCallContext,
 ) -> Result<Member, InteropError> {
-    let registry = world.script_function_registry();
-    let registry = registry.read();
-    registry
-        .magic_functions
-        .get(ctx, reference, key)
-        .map(Member::Static)
+    // copied out, so the registry isn't locked during the call
+    let get = world.script_function_registry().read().magic_functions.get;
+    get(ctx, reference, key).map(Member::Static)
 }
 
 /// Assigns to an index of a reference, i.e. `v.x = 1`, through the [`crate::MagicFunctions::set`] function.
@@ -106,9 +109,9 @@ pub fn set_index(
     ctx: FunctionCallContext,
 ) -> Result<(), InteropError> {
     profiling::function_scope!("dispatch::set_index");
-    let registry = world.script_function_registry();
-    let registry = registry.read();
-    registry.magic_functions.set(ctx, reference, key, value)
+    // copied out, so the registry isn't locked during the call
+    let set = world.script_function_registry().read().magic_functions.set;
+    set(ctx, reference, key, value)
 }
 
 /// Indexes a type, i.e. `Vec3.new` where `Vec3` is a [`ScriptValue::Type`], see [`WorldExtensions::lookup_static_member`].
