@@ -1,4 +1,5 @@
 use std::{
+    cell::Cell,
     collections::VecDeque,
     ops::{Deref, DerefMut},
 };
@@ -106,6 +107,40 @@ impl From<LuaScriptValue> for ScriptValue {
         value.0
     }
 }
+/// How deeply tables may nest when converted to a [`ScriptValue`], deeper (i.e. cyclic) tables are an error instead of a stack overflow.
+pub const MAX_TABLE_DEPTH: usize = 128;
+
+thread_local! {
+    static TABLE_DEPTH: Cell<usize> = const { Cell::new(0) };
+}
+
+/// Counts a table being converted on this thread, see [`MAX_TABLE_DEPTH`].
+struct TableDepth;
+
+impl TableDepth {
+    fn enter() -> mlua::Result<Self> {
+        TABLE_DEPTH.with(|depth| {
+            if depth.get() >= MAX_TABLE_DEPTH {
+                return Err(mlua::Error::FromLuaConversionError {
+                    from: "table",
+                    to: "ScriptValue".to_owned(),
+                    message: Some(format!(
+                        "tables nest deeper than {MAX_TABLE_DEPTH} levels, is the table cyclic?"
+                    )),
+                });
+            }
+            depth.set(depth.get() + 1);
+            Ok(TableDepth)
+        })
+    }
+}
+
+impl Drop for TableDepth {
+    fn drop(&mut self) {
+        TABLE_DEPTH.with(|depth| depth.set(depth.get() - 1));
+    }
+}
+
 #[profiling::all_functions]
 impl FromLua for LuaScriptValue {
     fn from_lua(value: mlua::Value, lua: &mlua::Lua) -> mlua::Result<Self> {
@@ -126,6 +161,8 @@ impl FromLua for LuaScriptValue {
                 .into(),
             ),
             Value::Table(table) => {
+                // released when the table is converted, nested tables are converted inside `pairs`
+                let _depth = TableDepth::enter()?;
                 // NOTE: lua tables keep integer keys in either an array part (iterated by `pairs` in
                 // key order) or a hash part (iterated in arbitrary order), and `t[i]`/`#t` can't tell
                 // which. Never infer list order from `pairs`, place each value by its key instead.
@@ -302,5 +339,32 @@ impl IntoLua for LuaScriptValue {
                 hashmap.into_lua(lua)?
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn cyclic_and_too_deep_tables_are_errors() {
+        let lua = mlua::Lua::new();
+        let (cyclic, deep, ok): (Value, Value, Value) = lua
+            .load(
+                r#"
+                local cyclic = {}; cyclic.t = cyclic
+                local function nest(n) local t = {} for _ = 1, n do t = { t } end return t end
+                return cyclic, nest(1000), nest(100)
+                "#,
+            )
+            .eval()
+            .unwrap();
+        for table in [cyclic, deep] {
+            let err = LuaScriptValue::from_lua(table, &lua).unwrap_err();
+            assert!(err.to_string().contains("is the table cyclic?"), "{err}");
+        }
+        assert!(LuaScriptValue::from_lua(ok, &lua).is_ok());
+        // the depth is released after errors as well
+        assert_eq!(TABLE_DEPTH.with(Cell::get), 0);
     }
 }
