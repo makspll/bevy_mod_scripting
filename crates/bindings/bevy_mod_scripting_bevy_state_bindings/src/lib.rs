@@ -79,7 +79,7 @@ impl World {
                 resource.type_registration().type_id(),
             )
         };
-        reference.push_path(ReferencePart::IntegerAccess(0, false));
+        reference.push_path(ReferencePart::IntegerAccess(0));
         Ok(Some(ValueOf::new(reference)))
     }
 

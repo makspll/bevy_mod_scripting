@@ -930,7 +930,7 @@ impl ReflectRefIter {
         let next = match &mut self.index {
             IterationKey::Index(i) => {
                 let mut next = self.base.clone();
-                let parsed_path = ReferencePart::IntegerAccess(*i as i64, false);
+                let parsed_path = ReferencePart::IntegerAccess(*i as i64);
                 next.push_path(parsed_path);
                 *i += 1;
                 next
@@ -1021,7 +1021,7 @@ mod test {
             .unwrap();
 
         // index into vec field
-        component_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        component_ref.push_path(ReferencePart::IntegerAccess(0));
         assert_eq!(
             component_ref
                 .tail_type_id(world_guard.clone())
@@ -1054,7 +1054,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        component_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        component_ref.push_path(ReferencePart::IntegerAccess(0));
 
         component_ref
             .with_reflect(world_guard.clone(), |s| {
@@ -1104,7 +1104,7 @@ mod test {
             .unwrap();
 
         // index into vec field
-        resource_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        resource_ref.push_path(ReferencePart::IntegerAccess(0));
 
         assert_eq!(
             resource_ref
@@ -1138,7 +1138,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        resource_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        resource_ref.push_path(ReferencePart::IntegerAccess(0));
 
         resource_ref
             .with_reflect(world_guard.clone(), |s| {
@@ -1207,7 +1207,7 @@ mod test {
             .unwrap();
 
         // index into vec field
-        allocation_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        allocation_ref.push_path(ReferencePart::IntegerAccess(0));
         assert_eq!(
             allocation_ref
                 .tail_type_id(world_guard.clone())
@@ -1240,7 +1240,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        allocation_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        allocation_ref.push_path(ReferencePart::IntegerAccess(0));
 
         allocation_ref
             .with_reflect(world_guard.clone(), |s| {
