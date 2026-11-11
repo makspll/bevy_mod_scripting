@@ -37,7 +37,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-f0595d86.js";
+            window.path_to_searchindex_js = "../searchindex-e0ab3b47.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-7593d81c.js"></script>
@@ -240,7 +240,7 @@ use bevy_mod_scripting::prelude::*;
 fn scripting_plugin(app: &amp;mut App) {
     let plugin = LuaScriptingPlugin::default();
     plugin.add_context_initializer(|_context_key: &amp;ContextKey, context: &amp;mut Lua| {
-        let world = ThreadWorldContainer.try_get_world().unwrap();
+        let world = ThreadWorldContainer::try_get_context().unwrap().world;
         world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
         Ok(())
     });

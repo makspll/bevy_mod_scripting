@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f0595d86.js";
+            window.path_to_searchindex_js = "searchindex-e0ab3b47.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-7593d81c.js"></script>
@@ -670,7 +670,7 @@ use bevy_mod_scripting::prelude::*;
 fn scripting_plugin(app: &amp;mut App) {
     let plugin = LuaScriptingPlugin::default();
     plugin.add_context_initializer(|_context_key: &amp;ContextKey, context: &amp;mut Lua| {
-        let world = ThreadWorldContainer.try_get_world().unwrap();
+        let world = ThreadWorldContainer::try_get_context().unwrap().world;
         world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
         Ok(())
     });
@@ -1596,6 +1596,7 @@ let reference = ReflectReference::new_allocated(value);</code></pre>
 <li><code>WorldAccessRange::External</code> holds the value’s owner (<code>AccessOwner</code>) instead of an id, and the access map keeps it alive until the claim is released. Build it from the value (<code>(&amp;allocation_id).into()</code>); <code>WorldAccessRange</code> is no longer <code>Copy</code>.</li>
 <li><code>ReflectReference::new_component_ref_by_id</code> / <code>new_resource_ref_by_id</code> are <code>unsafe</code>: the type id must be the type of the component or resource. <code>ReflectBaseType::base_id</code> is private, read it with <code>base_id()</code>.</li>
 <li>Asset references claim global access, so assets can’t be accessed in non-exclusive script systems, nor while the same call holds a component write (i.e. an <code>M&lt;Transform&gt;</code> argument next to an asset reference). Reading an asset no longer marks it modified.</li>
+<li><code>ThreadWorldContainer::try_get_context()</code> is an associated function (was <code>ThreadWorldContainer.try_get_context()</code>), <code>set_context</code> is removed (use <code>replace_context</code>, which restores the previous context). <code>WorldAccessGuard::set_cached_registry</code> is removed, use <code>replace_cached_registry</code>.</li>
 </ul>
 <h3 id="language-implementations"><a class="header" href="#language-implementations">Language implementations</a></h3>
 <ul>
