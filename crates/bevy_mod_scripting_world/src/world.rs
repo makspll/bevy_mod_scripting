@@ -504,12 +504,6 @@ impl<'w> WorldAccessGuard<'w> {
         f(&scope)
     }
 
-    /// Runs `f` with a [`CallScope`] for converting owned values.
-    ///
-    /// Borrows can't outlive the scope either way, the accesses claimed through it are released when it ends.
-    pub fn with_call_scope<O>(&self, f: impl FnOnce(&CallScope<'w>) -> O) -> O {
-        self.with_call_scope(f)
-    }
 
     /// Gets the component id of the given component or resource
     pub fn get_component_id(&self, id: TypeId) -> Result<Option<ComponentId>, DynWorldAccessError> {
