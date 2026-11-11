@@ -379,6 +379,10 @@ pub struct AccessMap(RefCell<AccessMapInner>);
 struct AccessMapInner {
     cant_access_global: bool,
     component_access: AccessByteSet,
+    /// The claims counted in `component_access`, so global claims don't scan it
+    component_claims: u32,
+    /// The write claims counted in `component_access`
+    component_write_claims: u32,
     world_access: AccessBitField,
     external_accesses: HashMap<usize, ExternalAccess>,
     /// The length of [`Self::undo`] when each running [`AccessMap::with_scope`] started, innermost last
@@ -450,7 +454,7 @@ impl AccessMapInner {
             };
             match undo {
                 ScopeUndo::Component(id, previous) => {
-                    *self.component_access.entry_mut(id.index()) = previous;
+                    self.set_component_access(id.index(), previous);
                 }
                 ScopeUndo::External(id, previous) => {
                     let replaced = match previous {
@@ -494,10 +498,25 @@ impl AccessMapInner {
         if write && self.component_access.is_read_only(idx) {
             return false;
         }
-        let elem = self.component_access.entry_mut(idx);
-        let (free, new) = elem.claim_if_free(write);
-        *elem = new;
+        let (free, new) = self.component_access.entry_mut(idx).claim_if_free(write);
+        self.set_component_access(idx, new);
         return free;
+    }
+
+    /// Replaces the access to a component, keeping the claim counts in sync
+    #[inline]
+    fn set_component_access(&mut self, idx: usize, new: AccessBitField) {
+        let old = std::mem::replace(self.component_access.entry_mut(idx), new);
+        let writes = |a: AccessBitField| {
+            if a.is_write() {
+                a.access_count() as u32
+            } else {
+                0
+            }
+        };
+        self.component_claims =
+            self.component_claims + new.access_count() as u32 - old.access_count() as u32;
+        self.component_write_claims = self.component_write_claims + writes(new) - writes(old);
     }
 
     /// Claims the access if it's free, returns whether it was claimed,
@@ -534,10 +553,8 @@ impl AccessMapInner {
             WorldAccessRange::Global => {
                 let elem = &mut self.world_access;
                 if self.cant_access_global
-                    || self
-                        .component_access
-                        .iter_accessed()
-                        .any(|(_, a)| a.is_write() || write)
+                    || self.component_write_claims != 0
+                    || (write && self.component_claims != 0)
                 {
                     return (false, None);
                 }
@@ -554,8 +571,9 @@ impl AccessMapInner {
         self.record(key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
-                let entry = self.component_access.entry_mut(component_id.index());
-                *entry = entry.decrement_count();
+                let idx = component_id.index();
+                let decremented = self.component_access.entry_mut(idx).decrement_count();
+                self.set_component_access(idx, decremented);
             }
 
             WorldAccessRange::External(owner) => {
@@ -746,6 +764,8 @@ impl AccessMap {
                 Some(mark) => inner.rollback(mark, &mut released),
                 None => {
                     inner.component_access.clear();
+                    inner.component_claims = 0;
+                    inner.component_write_claims = 0;
                     released.extend(inner.external_accesses.drain().filter_map(|(_, a)| {
                         a.release_shared();
                         a.owner
@@ -920,6 +940,18 @@ mod test {
 
         assert!(access_map.claim_write_access(TestAccess(1)));
         assert!(!access_map.claim_write_access(WorldAccessRange::Global));
+        assert!(!access_map.claim_read_access(WorldAccessRange::Global));
+        access_map.release_access(TestAccess(1));
+
+        // accesses rolled back with a scope don't block it anymore
+        access_map.with_scope(|| {
+            assert!(access_map.claim_read_access(TestAccess(1)));
+            assert!(access_map.claim_read_access(TestAccess(2)));
+            // reads only block global writes
+            assert!(access_map.claim_read_access(WorldAccessRange::Global));
+            access_map.release_access(WorldAccessRange::Global);
+        });
+        assert!(access_map.claim_write_access(WorldAccessRange::Global));
     }
 
     #[test]
