@@ -132,15 +132,15 @@ impl FromScript for NonMaxU32 {
     where
         Self: Sized,
     {
-        match value {
-            ScriptValue::Integer(i) if i != 0 => Ok(unsafe { NonMaxU32::new_unchecked(i as u32) }),
-            ScriptValue::Float(f) if f != 0.0 => Ok(unsafe { NonMaxU32::new_unchecked(f as u32) }),
-            // ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
-            _ => Err(InteropError::value_mismatch(
-                std::any::TypeId::of::<Self>(),
-                value,
-            )),
-        }
+        let converted = match value {
+            ScriptValue::Integer(i) => u32::try_from(i).ok(),
+            // `as` saturates, so check the range first
+            ScriptValue::Float(f) if (0.0..u32::MAX as f64).contains(&f) => Some(f as u32),
+            _ => None,
+        };
+        converted
+            .and_then(NonMaxU32::new)
+            .ok_or_else(|| InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value))
     }
 }
 
@@ -718,6 +718,40 @@ impl FromScript for VariadicTuple {
             ScriptValue::List(tuple) | ScriptValue::Tuple(VariadicTuple(tuple)) => Ok(Self(tuple)),
             v => Ok(Self(VecDeque::from_iter([v]))),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::{CurrentScriptAttachment, WorldExtensions};
+    use bevy_ecs::world::World;
+    use bevy_mod_scripting_world::WorldAccessGuard;
+
+    #[test]
+    fn non_max_u32_rejects_out_of_range_values() {
+        let mut world = World::default();
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        let guard = WorldAccessGuard::new_exclusive(&mut world, cache);
+        guard.with_call_scope(|scope| {
+            let convert = |v| {
+                NonMaxU32::from_script(v, scope)
+                    .ok()
+                    .map(|v: NonMaxU32| v.get())
+            };
+            assert_eq!(convert(ScriptValue::Integer(0)), Some(0));
+            assert_eq!(convert(ScriptValue::Float(7.0)), Some(7));
+            for invalid in [
+                ScriptValue::Integer(-1),
+                ScriptValue::Integer(u32::MAX as i64),
+                ScriptValue::Integer(1 << 40),
+                ScriptValue::Float(-1.0),
+                ScriptValue::Float(u32::MAX as f64),
+                ScriptValue::Float(f64::NAN),
+            ] {
+                assert_eq!(convert(invalid.clone()), None, "{invalid:?}");
+            }
+        });
     }
 }
 
