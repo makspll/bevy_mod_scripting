@@ -37,10 +37,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-533cdc49.js";
+            window.path_to_searchindex_js = "../searchindex-f0595d86.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-151df591.js"></script>
+        <script src="../toc-7593d81c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -234,7 +234,7 @@ Values go in <code>AppScriptNamespaceMembers::register_value</code>, made each t
 let reference = ReflectReference::new_allocated(value, &amp;mut world.allocator().write());
 // after
 let reference = ReflectReference::new_allocated(value);</code></pre>
-<code>new_allocated_boxed</code> and <code>new_allocated_boxed_parial_reflect</code> change the same way.</li>
+<code>new_allocated_boxed</code> and <code>new_allocated_boxed_partial_reflect</code> (renamed from <code>new_allocated_boxed_parial_reflect</code>) change the same way.</li>
 <li><code>FromScript::from_script</code> takes a <code>&amp;CallScope</code> instead of a <code>WorldGuard</code>, and <code>R</code>/<code>M</code> borrow from it, so they can’t be kept past the function call (<code>M&lt;'static, T&gt;</code> arguments no longer compile). Get the guard with <code>scope.world()</code>, and convert outside of script functions in <code>guard.with_call_scope(|scope| ..)</code> (releases the claims when it ends) or <code>guard.with_borrow_scope(|scope| ..)</code> (for owned values):
 <pre><code class="language-rust ignore">fn from_script&lt;'s&gt;(value: ScriptValue, scope: &amp;'s CallScope&lt;'_&gt;) -&gt; Result&lt;Self::This&lt;'s&gt;, InteropError&gt; {
     let world = scope.world();

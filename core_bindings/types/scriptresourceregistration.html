@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-533cdc49.js";
+            window.path_to_searchindex_js = "../../searchindex-f0595d86.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-151df591.js"></script>
+        <script src="../../toc-7593d81c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -187,18 +187,9 @@
 
 <p>A reference to a resource type’s reflection registration.</p>
 <p>In general think of this as a handle to a type.</p>
-<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Field</th><th>Type</th></tr>
-</thead>
-<tbody>
-<tr><td><code>registration</code></td><td><a href="./scripttyperegistration.html">ScriptTypeRegistration</a></td></tr>
-<tr><td><code>resource_id</code></td><td><a href="./componentid.html">ComponentId</a></td></tr>
-</tbody>
-</table>
-</div>
+<p>Opaque with private fields: world accessors trust that <code>resource_id</code> belongs to <code>registration</code>’s type.</p>
+<p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
+
 <h2 id="methods"><a class="header" href="#methods">Methods</a></h2>
 <div class="table-wrapper">
 <table>

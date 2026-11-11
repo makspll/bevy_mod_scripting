@@ -215,7 +215,6 @@
       "types": {
         "AddEvent": "bevy_ecs::lifecycle::AddEvent",
         "ChildOf": "bevy_ecs::hierarchy::ChildOf",
-        "ComponentId": "bevy_ecs::component::info::ComponentId",
         "DespawnEvent": "bevy_ecs::lifecycle::DespawnEvent",
         "DiscardEvent": "bevy_ecs::lifecycle::DiscardEvent",
         "Entity": "bevy_ecs::entity::Entity",
@@ -3721,46 +3720,13 @@
       "crate": "bevy_mod_scripting_bindings",
       "path": "bevy_mod_scripting_bindings::query::ScriptComponentRegistration",
       "namespace": "bms",
-      "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.",
+      "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.\n\n Opaque with private fields: world accessors trust that `component_id` belongs to `registration`'s type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name"
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace"
       ],
-      "layout": {
-        "kind": "Struct",
-        "name": "ScriptComponentRegistration",
-        "fields": [
-          {
-            "name": "registration",
-            "type": {
-              "val": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-            }
-          },
-          {
-            "name": "component_id",
-            "type": {
-              "val": "bevy_ecs::component::info::ComponentId"
-            }
-          },
-          {
-            "name": "is_dynamic_script_component",
-            "type": {
-              "primitive": "bool"
-            },
-            "has_default": true
-          },
-          {
-            "name": "script_namespace",
-            "type": {
-              "option": {
-                "primitive": "string"
-              }
-            },
-            "has_default": true
-          }
-        ]
-      },
+      "layout": null,
       "generated": false,
       "insignificance": 500,
       "metadata": {
@@ -3805,30 +3771,13 @@
       "crate": "bevy_mod_scripting_bindings",
       "path": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration",
       "namespace": "bms",
-      "documentation": " A reference to a resource type's reflection registration.\n\n In general think of this as a handle to a type.",
+      "documentation": " A reference to a resource type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Opaque with private fields: world accessors trust that `resource_id` belongs to `registration`'s type.",
       "associated_functions": [
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace"
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name"
       ],
-      "layout": {
-        "kind": "Struct",
-        "name": "ScriptResourceRegistration",
-        "fields": [
-          {
-            "name": "registration",
-            "type": {
-              "val": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-            }
-          },
-          {
-            "name": "resource_id",
-            "type": {
-              "val": "bevy_ecs::component::info::ComponentId"
-            }
-          }
-        ]
-      },
+      "layout": null,
       "generated": false,
       "insignificance": 500,
       "metadata": {
@@ -3890,14 +3839,14 @@
       "documentation": " A run condition of a script system, evaluated in Rust without calling into the script, see [`ScriptSystemBuilder::run_if`].",
       "associated_functions": [
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::not_",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_exists",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_changed",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::on_timer",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_added",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::run_once",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::and_",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_added",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::or_",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::run_once",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::any_with_component",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_exists",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::on_timer",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_changed",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::new"
       ],
       "layout": null,
@@ -3918,18 +3867,18 @@
       "namespace": "bms",
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_set",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_script_system",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::run_if",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before_script_system",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::in_set",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource_read",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before_set",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_set",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::run_if",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource_read",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_script_system",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::in_set",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::new"
       ],
       "layout": null,
@@ -9237,37 +9186,6 @@
         "default": {
           "variant": "End"
         }
-      }
-    },
-    "bevy_ecs::component::info::ComponentId": {
-      "identifier": "ComponentId",
-      "crate": "bevy_ecs",
-      "path": "bevy_ecs::component::info::ComponentId",
-      "namespace": "ecs",
-      "documentation": " A value which uniquely identifies the type of a [`Component`] or [`Resource`](crate::resource::Resource) within a\n [`World`](crate::world::World).\n\n Each time a new `Component` type is registered within a `World` using\n e.g. [`World::register_component`](crate::world::World::register_component) or\n [`World::register_component_with_descriptor`](crate::world::World::register_component_with_descriptor)\n or a Resource with e.g. [`World::init_resource`](crate::world::World::init_resource),\n a corresponding `ComponentId` is created to track it.\n\n While the distinction between `ComponentId` and [`TypeId`] may seem superficial, breaking them\n into two separate but related concepts allows components to exist outside of Rust's type system.\n Each Rust type registered as a `Component` will have a corresponding `ComponentId`, but additional\n `ComponentId`s may exist in a `World` to track components which cannot be\n represented as Rust types for scripting or other advanced use-cases.\n\n A `ComponentId` is tightly coupled to its parent `World`. Attempting to use a `ComponentId` from\n one `World` to access the metadata of a `Component` in a different `World` is undefined behavior\n and must not be attempted.\n\n Given a type `T` which implements [`Component`] (including [`Resource`](crate::resource::Resource)), the `ComponentId` for `T` can be retrieved\n from a `World` using [`World::component_id()`](crate::world::World::component_id) or via [`Components::component_id()`].",
-      "associated_functions": [
-        "bevy_ecs::component::info::ComponentId::new"
-      ],
-      "layout": {
-        "kind": "TupleStruct",
-        "name": "ComponentId",
-        "fields": [
-          {
-            "type": {
-              "primitive": "usize"
-            },
-            "has_default": true
-          }
-        ]
-      },
-      "generated": false,
-      "insignificance": 1000,
-      "metadata": {
-        "is_component": false,
-        "is_resource": false,
-        "is_reflect": true,
-        "mapped_to_primitive_kind": null,
-        "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
       }
     },
     "bevy_ecs::lifecycle::AddEvent": {
@@ -31853,33 +31771,6 @@
         "kind": {
           "interopResult": {
             "val": "bevy_curve::easing::JumpAt"
-          }
-        },
-        "documentation": "The constructed value.",
-        "name": "reference"
-      },
-      "documentation": "Constructs a new instance of the type from a table of its fields.\nMissing fields are filled in from the type's default, then from the defaults of the fields' types.\nFor enums use the `variant` key, or construct from a variant directly.\n",
-      "metadata": {}
-    },
-    "bevy_ecs::component::info::ComponentId::new": {
-      "namespace": "bevy_ecs::component::info::ComponentId",
-      "identifier": "new",
-      "overload_index": null,
-      "arguments": [
-        {
-          "kind": {
-            "fields": {
-              "type": "bevy_ecs::component::info::ComponentId"
-            }
-          },
-          "documentation": "The fields of the type, keyed by name or index, or a list of the fields in order.",
-          "name": "payload"
-        }
-      ],
-      "return_type": {
-        "kind": {
-          "interopResult": {
-            "val": "bevy_ecs::component::info::ComponentId"
           }
         },
         "documentation": "The constructed value.",
