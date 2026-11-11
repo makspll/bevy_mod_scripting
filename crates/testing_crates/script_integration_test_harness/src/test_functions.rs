@@ -50,19 +50,15 @@ pub fn register_test_functions(world: &mut App) {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
-            V(ScriptComponentRegistration::new(
-                reg,
-                ComponentId::new(999999999999999),
-            ))
+            // Safety: the id is never registered in any world
+            V(unsafe { ScriptComponentRegistration::new(reg, ComponentId::new(999999999999999)) })
         })
         .register("_get_mock_resource_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
-            V(ScriptResourceRegistration::new(
-                reg,
-                ComponentId::new(999999999999999),
-            ))
+            // Safety: the id is never registered in any world
+            V(unsafe { ScriptResourceRegistration::new(reg, ComponentId::new(999999999999999)) })
         })
         .register("_sleep", |time: f64| {
             std::thread::sleep(std::time::Duration::from_secs_f64(time));

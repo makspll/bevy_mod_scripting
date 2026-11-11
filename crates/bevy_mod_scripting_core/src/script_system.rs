@@ -403,20 +403,20 @@ impl CompiledRunCondition {
     ) -> Self {
         match condition {
             ScriptRunCondition::ResourceExists(resource) => {
-                access.add_resource_read(resource.resource_id);
-                Self::ResourceExists(resource.resource_id)
+                access.add_resource_read(resource.resource_id());
+                Self::ResourceExists(resource.resource_id())
             }
             ScriptRunCondition::ResourceChanged(resource) => {
-                access.add_resource_read(resource.resource_id);
-                Self::ResourceChanged(resource.resource_id)
+                access.add_resource_read(resource.resource_id());
+                Self::ResourceChanged(resource.resource_id())
             }
             ScriptRunCondition::ResourceAdded(resource) => {
-                access.add_resource_read(resource.resource_id);
-                Self::ResourceAdded(resource.resource_id)
+                access.add_resource_read(resource.resource_id());
+                Self::ResourceAdded(resource.resource_id())
             }
             ScriptRunCondition::AnyWithComponent(component) => {
                 let query = QueryBuilder::<Entity>::new(world)
-                    .with_id(component.component_id)
+                    .with_id(component.component_id())
                     .build();
                 access.add(query.component_access().clone());
                 Self::AnyWithComponent(Box::new(query))
@@ -1180,7 +1180,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     resource: res,
                     write,
                 } => {
-                    let component_id = res.resource_id;
+                    let component_id = res.resource_id();
                     let type_id = res.type_registration().type_id();
 
                     let system_param = ScriptSystemParam::Res {
@@ -1671,18 +1671,24 @@ mod test {
     #[test]
     fn read_only_parameters_are_declared_as_reads() {
         let mut world = World::new();
-        let resource = ScriptResourceRegistration::new(
-            ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
-                AccessTestResource,
-            >())),
-            world.init_resource::<AccessTestResource>(),
-        );
-        let component = ScriptComponentRegistration::new(
-            ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
-                AccessTestComponent,
-            >())),
-            world.register_component::<AccessTestComponent>(),
-        );
+        // Safety: the id belongs to the registered type
+        let resource = unsafe {
+            ScriptResourceRegistration::new(
+                ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
+                    AccessTestResource,
+                >())),
+                world.init_resource::<AccessTestResource>(),
+            )
+        };
+        // Safety: the id belongs to the registered type
+        let component = unsafe {
+            ScriptComponentRegistration::new(
+                ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
+                    AccessTestComponent,
+                >())),
+                world.register_component::<AccessTestComponent>(),
+            )
+        };
         let reader = |builder: &mut ScriptSystemBuilder| {
             let mut query = ScriptQueryBuilder::new();
             query.component_read(component.clone());
@@ -1709,12 +1715,15 @@ mod test {
         let mut world = World::new();
         world.init_resource::<AccessTestResource>();
         world.insert_resource(Time::<()>::default());
-        let resource = ScriptResourceRegistration::new(
-            ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
-                AccessTestResource,
-            >())),
-            world.register_component::<AccessTestResource>(),
-        );
+        // Safety: the id belongs to the registered type
+        let resource = unsafe {
+            ScriptResourceRegistration::new(
+                ScriptTypeRegistration::new(Arc::new(bevy_reflect::TypeRegistration::of::<
+                    AccessTestResource,
+                >())),
+                world.register_component::<AccessTestResource>(),
+            )
+        };
 
         let mut changed =
             ScriptConditionSystem::new(vec![ScriptRunCondition::ResourceChanged(resource.clone())]);
@@ -1778,10 +1787,13 @@ mod test {
     fn query_change_filters_and_optional_components() {
         let mut world = World::new();
         let component = |_: &mut World, registration, id| {
-            ScriptComponentRegistration::new(
-                ScriptTypeRegistration::new(Arc::new(registration)),
-                id,
-            )
+            // Safety: callers pass the id registered for the type
+            unsafe {
+                ScriptComponentRegistration::new(
+                    ScriptTypeRegistration::new(Arc::new(registration)),
+                    id,
+                )
+            }
         };
         let id = world.register_component::<AccessTestComponent>();
         let test_component = component(
