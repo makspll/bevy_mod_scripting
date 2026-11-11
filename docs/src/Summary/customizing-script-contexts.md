@@ -68,7 +68,7 @@ use bevy_mod_scripting::prelude::*;
 fn scripting_plugin(app: &mut App) {
     let plugin = LuaScriptingPlugin::default();
     plugin.add_context_initializer(|_context_key: &ContextKey, context: &mut Lua| {
-        let world = ThreadWorldContainer.try_get_world().unwrap();
+        let world = ThreadWorldContainer::try_get_context().unwrap().world;
         world.with_resource::<MyResource>(|res| println!("My resource: {:?}", res));
         Ok(())
     });

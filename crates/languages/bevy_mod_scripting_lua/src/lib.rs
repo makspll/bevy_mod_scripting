@@ -87,9 +87,8 @@ fn register_plugin_globals(lua: &mut Lua) -> Result<(), mlua::Error> {
     lua.globals().set(
         "register_callback",
         lua.create_function(|_lua: &Lua, (callback, func): (String, Function)| {
-            let thread_ctxt = ThreadWorldContainer
-                .try_get_context()
-                .map_err(IntoMluaError::to_lua_error)?;
+            let thread_ctxt =
+                ThreadWorldContainer::try_get_context().map_err(IntoMluaError::to_lua_error)?;
             let world = thread_ctxt.world;
             let attachment = world.current_attachment().0.ok_or_else(|| {
                 mlua::Error::external(

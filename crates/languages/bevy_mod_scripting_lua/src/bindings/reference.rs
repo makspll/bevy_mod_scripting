@@ -36,8 +36,7 @@ impl From<ReflectReference> for LuaReflectReference {
 fn with_world<O>(
     f: impl FnOnce(WorldGuard<'static>) -> Result<O, InteropError>,
 ) -> mlua::Result<O> {
-    let world = ThreadWorldContainer
-        .try_get_context()
+    let world = ThreadWorldContainer::try_get_context()
         .map_err(IntoMluaError::to_lua_error)?
         .world;
     f(world).map_err(IntoMluaError::to_lua_error)

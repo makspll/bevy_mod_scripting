@@ -107,7 +107,7 @@ impl FunctionCallContext {
     /// Tries to access the world, returning an error if the world is not available
     #[profiling::function]
     pub fn world<'l>(&self) -> Result<WorldGuard<'l>, InteropError> {
-        Ok(ThreadWorldContainer.try_get_context().map(|c| c.world)?)
+        Ok(ThreadWorldContainer::try_get_context().map(|c| c.world)?)
     }
     /// Whether the caller uses 1-indexing on all indexes and expects 0-indexing conversions to be performed.
     #[profiling::function]
@@ -762,15 +762,13 @@ mod test {
 
     use super::*;
     use bevy_ecs::{prelude::Component, world::World};
-    use bevy_mod_scripting_world::{ThreadScriptContext, WorldAccessGuard};
+    use bevy_mod_scripting_world::WorldAccessGuard;
 
     fn with_local_world<F: Fn()>(f: F) {
         let mut world = World::default();
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
-        WorldGuard::with_static_guard(&mut world, cache, |world| {
-            ThreadWorldContainer.set_context(ThreadScriptContext { world });
-            f()
-        });
+        // the static guard sets the thread context
+        WorldGuard::with_static_guard(&mut world, cache, |_| f());
     }
 
     #[test]

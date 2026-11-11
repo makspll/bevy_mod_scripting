@@ -1142,7 +1142,7 @@ impl ReflectReference {
         let iter_function = move || {
             // world is not thread safe, we can't capture it in the closure
             // or it will also be non-thread safe
-            let world = ThreadWorldContainer.try_get_context()?.world;
+            let world = ThreadWorldContainer::try_get_context()?.world;
             if len == 0 {
                 return Ok(ScriptValue::Unit);
             }
