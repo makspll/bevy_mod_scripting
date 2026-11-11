@@ -63,12 +63,20 @@ impl SharedClaims {
         }
     }
 
-    /// Releases a claim made with [`Self::try_claim`]
-    pub fn release(&self, write: bool) {
+    /// Releases a claim made with [`Self::try_claim`], returns whether such a claim was held.
+    ///
+    /// Releasing a claim that isn't held does nothing: a read doesn't wrap to a write, a write doesn't free reads.
+    pub fn release(&self, write: bool) -> bool {
         if write {
-            self.0.store(0, Ordering::Release);
+            self.0
+                .compare_exchange(Self::WRITE, 0, Ordering::Release, Ordering::Relaxed)
+                .is_ok()
         } else {
-            self.0.fetch_sub(1, Ordering::Release);
+            self.0
+                .fetch_update(Ordering::Release, Ordering::Relaxed, |maps| {
+                    (maps != 0 && maps != Self::WRITE).then(|| maps - 1)
+                })
+                .is_ok()
         }
     }
 }
@@ -1034,6 +1042,19 @@ mod test {
         assert_eq!(count(), 2);
         access_map.release_access(key());
         assert_eq!(count(), 1);
+
+        // releasing shared claims that aren't held changes nothing
+        let claims = owner.claims();
+        assert!(!claims.release(false), "would wrap to a write");
+        assert!(!claims.release(true));
+        assert!(claims.try_claim(true));
+        assert!(!claims.release(false), "would turn the write into reads");
+        assert!(!claims.try_claim(false));
+        assert!(claims.release(true));
+        assert!(claims.try_claim(false));
+        assert!(!claims.release(true), "would free the read");
+        assert!(!claims.try_claim(true));
+        assert!(claims.release(false));
     }
 
     #[test]
