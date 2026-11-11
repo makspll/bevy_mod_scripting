@@ -46,7 +46,7 @@ use bevy_ecs::{
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
 use bevy_mod_scripting_world::{CachedRegistry, RegistryCache, WorldAccessGuard, WorldGuard};
-use bevy_reflect::{GetTypeRegistration, Reflect, TypeInfo, TypeRegistration};
+use bevy_reflect::{GetTypeRegistration, Reflect, TypeRegistration};
 use bevy_system_reflection::{ReflectSchedule, ReflectSystemSet};
 use std::{
     alloc::Layout,
@@ -1231,13 +1231,9 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         args: Vec<ScriptValue>,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
-        let registry = self.script_function_registry();
-        let registry = registry.read();
-
-        // operators not defined on the type itself fall back to the generic ones on `ReflectReference`, i.e. `eq`
-        let func = registry
-            .get_function(type_id, name)
-            .or_else(|name| registry.get_function(TypeId::of::<ReflectReference>(), name));
+        // operators not defined on the type itself fall back to the generic ones on `ReflectReference`, i.e. `eq`.
+        // The registry is unlocked before the call, which may look up functions itself
+        let func = self.lookup_function([type_id, TypeId::of::<ReflectReference>()], name);
         match func {
             Ok(func) => func.call(args, context),
             Err(name) => Err(InteropError::missing_function(
@@ -1268,34 +1264,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         type_id: TypeId,
         name: impl Into<Cow<'n, str>>,
     ) -> Result<ScriptValue, Cow<'n, str>> {
-        if let Some(registered) = registered_type_id(self, reference, type_id) {
-            // the static members of the type come before the functions shared by all references,
-            // i.e. `PlaybackSettings.remove()` is not the generic `remove`
-            let name = match self.lookup_function([type_id], name) {
-                Ok(func) => return Ok(ScriptValue::Function(func)),
-                Err(name) => name,
-            };
-            let name = match self.lookup_static_member(registered, name) {
-                Ok(member) => return Ok(member),
-                Err(name) => name,
-            };
-            return self
-                .lookup_function([TypeId::of::<ReflectReference>()], name)
-                .map(ScriptValue::Function);
-        }
-        let name = match self.lookup_instance_function(type_id, name) {
-            Ok(func) => return Ok(ScriptValue::Function(func)),
-            Err(name) => name,
-        };
-        if type_id == TypeId::of::<EnumVariantRef>() {
-            return match reference.downcast::<EnumVariantRef>(self.clone()) {
-                Ok(variant) => self
-                    .lookup_function([variant.type_id], name)
-                    .map(ScriptValue::Function),
-                Err(_) => Err(name),
-            };
-        }
-        Err(name)
+        Lookups::with(self, |lookups| lookups.member(reference, type_id, name))
     }
 
     fn lookup_static_member<'n>(
@@ -1303,17 +1272,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         type_id: TypeId,
         name: impl Into<Cow<'n, str>>,
     ) -> Result<ScriptValue, Cow<'n, str>> {
-        let name = match self.lookup_type_function(type_id, name) {
-            Ok(func) => return Ok(ScriptValue::Function(func)),
-            Err(name) => name,
-        };
-        let Ok(type_info) = registered_type_info(self, type_id) else {
-            return Err(name);
-        };
-        match EnumVariantRef::from_name(type_info, &name) {
-            Some(variant) => V(variant).into_script(self.clone()).map_err(|_| name),
-            None => Err(name),
-        }
+        Lookups::with(self, |lookups| lookups.static_member(type_id, name))
     }
 
     fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
@@ -1647,19 +1606,6 @@ pub(crate) trait FunctionLookups {
         name: impl Into<Cow<'n, str>>,
     ) -> Result<DynamicScriptFunction, Cow<'n, str>>;
 
-    /// Looks up a function callable on an instance of the given type, i.e. `value:name(..)` in a script.
-    ///
-    /// Resolution order:
-    /// 1. functions registered on the type itself
-    /// 2. functions registered on [`ReflectReference`], which apply to all instances
-    ///
-    /// Returns the name back if nothing was found.
-    fn lookup_instance_function<'n>(
-        &self,
-        type_id: TypeId,
-        name: impl Into<Cow<'n, str>>,
-    ) -> Result<DynamicScriptFunction, Cow<'n, str>>;
-
     /// Looks up a reserved function (see the "Reserved Functions" section of the book) on the `ReflectReference` namespace,
     /// ignoring functions registered on the types themselves.
     ///
@@ -1669,19 +1615,6 @@ pub(crate) trait FunctionLookups {
         name: impl Into<Cow<'static, str>>,
         context: FunctionCallContext,
     ) -> Result<DynamicScriptFunction, InteropError>;
-
-    /// Looks up a function callable on the static reference to a type, i.e. `Type.name(..)` in a script.
-    ///
-    /// Resolution order:
-    /// 1. functions registered on the type itself
-    /// 2. type level functions registered on [`StaticTypeRef`], with the type bound as their first argument
-    ///
-    /// Returns the name back if nothing was found.
-    fn lookup_type_function<'n>(
-        &self,
-        type_id: TypeId,
-        name: impl Into<Cow<'n, str>>,
-    ) -> Result<DynamicScriptFunction, Cow<'n, str>>;
 }
 
 impl FunctionLookups for WorldAccessGuard<'_> {
@@ -1690,26 +1623,7 @@ impl FunctionLookups for WorldAccessGuard<'_> {
         type_ids: impl IntoIterator<Item = TypeId>,
         name: impl Into<Cow<'n, str>>,
     ) -> Result<DynamicScriptFunction, Cow<'n, str>> {
-        let registry = self.script_function_registry();
-        let registry = registry.read();
-
-        let mut name = name.into();
-        for type_id in type_ids {
-            name = match registry.get_function(type_id, name) {
-                Ok(func) => return Ok(func.clone()),
-                Err(name) => name,
-            };
-        }
-
-        Err(name)
-    }
-
-    fn lookup_instance_function<'n>(
-        &self,
-        type_id: TypeId,
-        name: impl Into<Cow<'n, str>>,
-    ) -> Result<DynamicScriptFunction, Cow<'n, str>> {
-        self.lookup_function([type_id, TypeId::of::<ReflectReference>()], name)
+        Lookups::with(self, |lookups| lookups.function(type_ids, name))
     }
 
     fn lookup_reserved_function(
@@ -1721,30 +1635,6 @@ impl FunctionLookups for WorldAccessGuard<'_> {
             .map_err(|name| {
                 InteropError::missing_function(name, FunctionScope::all_references(), Some(context))
             })
-    }
-
-    fn lookup_type_function<'n>(
-        &self,
-        type_id: TypeId,
-        name: impl Into<Cow<'n, str>>,
-    ) -> Result<DynamicScriptFunction, Cow<'n, str>> {
-        let name = match self.lookup_function([type_id], name) {
-            Ok(func) => return Ok(func),
-            Err(name) => name,
-        };
-        // the same registry read `registered_type_info` would do, types can opt out of the shared functions
-        let type_info = {
-            let registry = self.type_registry();
-            let registry = registry.read();
-            registry
-                .get(type_id)
-                .filter(|registration| !registration.contains::<ReflectNoTypeFunctions>())
-                .map(|registration| registration.type_info())
-        };
-        match type_info {
-            Some(type_info) => lookup_bound_type_function(self, type_info, name),
-            None => Err(name),
-        }
     }
 }
 
@@ -1815,19 +1705,127 @@ fn registered_type_id(
     }
 }
 
-/// A type level function registered on [`StaticTypeRef`], bound to the given type.
-fn lookup_bound_type_function<'n>(
-    guard: &WorldAccessGuard,
-    type_info: &'static TypeInfo,
-    name: Cow<'n, str>,
-) -> Result<DynamicScriptFunction, Cow<'n, str>> {
-    // the type level functions of `StaticTypeRef` are already addressed at that type directly
-    if type_info.type_id() == TypeId::of::<StaticTypeRef>() {
-        return Err(name);
+/// Function lookups under a single read of the function registry, see [`Lookups::with`].
+///
+/// A lookup trying several places reads the registry once, as reading it again while it's read
+/// can deadlock behind a writer waiting on another thread.
+pub(crate) struct Lookups<'a> {
+    world: &'a WorldAccessGuard<'a>,
+    pub(crate) registry: &'a crate::function::script_function::ScriptFunctionRegistry,
+}
+
+impl Lookups<'_> {
+    /// Runs `f` with the function registry read, `f` must not call script functions.
+    pub(crate) fn with<O>(world: &WorldAccessGuard, f: impl FnOnce(&Lookups) -> O) -> O {
+        let registry = world.script_function_registry();
+        let registry = registry.read();
+        f(&Lookups {
+            world,
+            registry: &registry,
+        })
     }
-    let registry = guard.script_function_registry();
-    let registry = registry.read();
-    registry.get_bound_to_type(type_info, name)
+
+    /// See [`FunctionLookups::lookup_function`]
+    pub(crate) fn function<'n>(
+        &self,
+        type_ids: impl IntoIterator<Item = TypeId>,
+        name: impl Into<Cow<'n, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'n, str>> {
+        let mut name = name.into();
+        for type_id in type_ids {
+            name = match self.registry.get_function(type_id, name) {
+                Ok(func) => return Ok(func.clone()),
+                Err(name) => name,
+            };
+        }
+        Err(name)
+    }
+
+    /// Looks up a function callable on the static reference to a type, i.e. `Type.name(..)` in a script:
+    /// functions registered on the type, then the type level functions of [`StaticTypeRef`] with the type bound as their first argument
+    fn type_function<'n>(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'n, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'n, str>> {
+        let name = match self.function([type_id], name) {
+            Ok(func) => return Ok(func),
+            Err(name) => name,
+        };
+        // the same registry read `registered_type_info` would do, types can opt out of the shared functions
+        let type_info = {
+            let registry = self.world.type_registry();
+            let registry = registry.read();
+            registry
+                .get(type_id)
+                .filter(|registration| !registration.contains::<ReflectNoTypeFunctions>())
+                .map(|registration| registration.type_info())
+        };
+        match type_info {
+            // the type level functions of `StaticTypeRef` are already addressed at that type directly
+            Some(type_info) if type_info.type_id() != TypeId::of::<StaticTypeRef>() => {
+                self.registry.get_bound_to_type(type_info, name)
+            }
+            _ => Err(name),
+        }
+    }
+
+    /// See [`WorldExtensions::lookup_static_member`]
+    fn static_member<'n>(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'n, str>>,
+    ) -> Result<ScriptValue, Cow<'n, str>> {
+        let name = match self.type_function(type_id, name) {
+            Ok(func) => return Ok(ScriptValue::Function(func)),
+            Err(name) => name,
+        };
+        let Ok(type_info) = registered_type_info(self.world, type_id) else {
+            return Err(name);
+        };
+        match EnumVariantRef::from_name(type_info, &name) {
+            Some(variant) => V(variant).into_script(self.world.clone()).map_err(|_| name),
+            None => Err(name),
+        }
+    }
+
+    /// See [`WorldExtensions::lookup_member`]
+    pub(crate) fn member<'n>(
+        &self,
+        reference: &ReflectReference,
+        type_id: TypeId,
+        name: impl Into<Cow<'n, str>>,
+    ) -> Result<ScriptValue, Cow<'n, str>> {
+        if let Some(registered) = registered_type_id(self.world, reference, type_id) {
+            // the static members of the type come before the functions shared by all references,
+            // i.e. `PlaybackSettings.remove()` is not the generic `remove`
+            let name = match self.function([type_id], name) {
+                Ok(func) => return Ok(ScriptValue::Function(func)),
+                Err(name) => name,
+            };
+            let name = match self.static_member(registered, name) {
+                Ok(member) => return Ok(member),
+                Err(name) => name,
+            };
+            return self
+                .function([TypeId::of::<ReflectReference>()], name)
+                .map(ScriptValue::Function);
+        }
+        // functions callable on the value: its type's, then the ones shared by all references
+        let name = match self.function([type_id, TypeId::of::<ReflectReference>()], name) {
+            Ok(func) => return Ok(ScriptValue::Function(func)),
+            Err(name) => name,
+        };
+        if type_id == TypeId::of::<EnumVariantRef>() {
+            return match reference.downcast::<EnumVariantRef>(self.world.clone()) {
+                Ok(variant) => self
+                    .function([variant.type_id], name)
+                    .map(ScriptValue::Function),
+                Err(_) => Err(name),
+            };
+        }
+        Err(name)
+    }
 }
 
 impl CachedRegistry for AppScriptFunctionRegistry {
@@ -1905,11 +1903,11 @@ mod test {
 
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         let world = WorldAccessGuard::new_exclusive(&mut world, cache);
+        let lookup_type_function =
+            |type_id, name| Lookups::with(&world, |lookups| lookups.type_function(type_id, name));
 
         // shared functions have the type bound
-        let shared = world
-            .lookup_type_function(TypeId::of::<SimpleTupleStruct>(), "describe")
-            .unwrap();
+        let shared = lookup_type_function(TypeId::of::<SimpleTupleStruct>(), "describe").unwrap();
         assert!(shared.info.arg_info.is_empty());
         assert_eq!(
             shared.info.namespace,
@@ -1917,19 +1915,13 @@ mod test {
         );
 
         // functions on the type itself take priority
-        let own = world
-            .lookup_type_function(TypeId::of::<SimpleStruct>(), "describe")
-            .unwrap();
+        let own = lookup_type_function(TypeId::of::<SimpleStruct>(), "describe").unwrap();
         assert_eq!(
             own.info.namespace,
             FunctionScope::OnType(TypeId::of::<SimpleStruct>())
         );
 
-        assert!(
-            world
-                .lookup_type_function(TypeId::of::<SimpleStruct>(), "missing")
-                .is_err()
-        );
+        assert!(lookup_type_function(TypeId::of::<SimpleStruct>(), "missing").is_err());
     }
 
     #[test]
@@ -1988,6 +1980,33 @@ mod test {
             function.info.namespace,
             FunctionScope::OnType(TypeId::of::<SimpleEnum>())
         );
+    }
+
+    #[test]
+    fn function_registry_is_not_read_while_functions_run() {
+        use crate::function::namespace::NamespaceBuilder;
+        use std::time::Duration;
+
+        let mut world = setup_world(|_, _| {});
+        let lock = world
+            .get_resource_or_init::<AppScriptFunctionRegistry>()
+            .0
+            .0
+            .clone();
+        // a writer queued on another thread blocks new reads, so a read held by the caller would deadlock this one
+        NamespaceBuilder::<SimpleStruct>::new_unregistered(&mut world).register("op", move || {
+            let writer = lock.clone();
+            std::thread::spawn(move || drop(writer.write()));
+            std::thread::sleep(Duration::from_millis(50));
+            lock.try_read_for(Duration::from_secs(1)).is_some()
+        });
+
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        WorldAccessGuard::with_static_guard(&mut world, cache, |world| {
+            let ctx = FunctionCallContext::new(bevy_mod_scripting_asset::Language::Unknown);
+            let result = world.call_operator(TypeId::of::<SimpleStruct>(), "op", vec![], ctx);
+            assert!(matches!(result, Ok(ScriptValue::Bool(true))), "{result:?}");
+        });
     }
 
     #[test]
