@@ -90,17 +90,6 @@ impl Default for ReflectReference {
     }
 }
 
-/// Specifies where we should source the type id from when reflecting a ReflectReference
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum TypeIdSource {
-    /// Use the type id the reference points to after walking the path
-    Tail,
-    /// Given the Tail referene is a container type, use the type id of the elements in the container
-    Element,
-    /// Givent the Tail reference is a container type, use the type id of the keys of the container
-    Key,
-}
-
 #[profiling::all_functions]
 
 impl ReflectReference {
@@ -422,19 +411,6 @@ impl ReflectReference {
     /// Retrieves the type id of the keys in the value the reference points to.
     pub fn key_type_id(&self, world: WorldGuard) -> Result<Option<TypeId>, InteropError> {
         self.with_reflect(world, |r| r.key_type_id())
-    }
-
-    /// Retrieves the type id of the value the reference points to based on the given source.
-    pub fn type_id_of(
-        &self,
-        source: TypeIdSource,
-        world: WorldGuard,
-    ) -> Result<Option<TypeId>, InteropError> {
-        match source {
-            TypeIdSource::Tail => self.tail_type_id(world),
-            TypeIdSource::Element => self.element_type_id(world),
-            TypeIdSource::Key => self.key_type_id(world),
-        }
     }
 
     /// Equivalent to [`Self::reflect_unsafe`] but expecting a non-None value from the reference, i.e. will return an Err if the reference is to a missing key in a dictionary.
@@ -954,7 +930,7 @@ impl ReflectRefIter {
         let next = match &mut self.index {
             IterationKey::Index(i) => {
                 let mut next = self.base.clone();
-                let parsed_path = ReferencePart::IntegerAccess(*i as i64, false);
+                let parsed_path = ReferencePart::IntegerAccess(*i as i64);
                 next.push_path(parsed_path);
                 *i += 1;
                 next
@@ -1045,7 +1021,7 @@ mod test {
             .unwrap();
 
         // index into vec field
-        component_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        component_ref.push_path(ReferencePart::IntegerAccess(0));
         assert_eq!(
             component_ref
                 .tail_type_id(world_guard.clone())
@@ -1078,7 +1054,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        component_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        component_ref.push_path(ReferencePart::IntegerAccess(0));
 
         component_ref
             .with_reflect(world_guard.clone(), |s| {
@@ -1128,7 +1104,7 @@ mod test {
             .unwrap();
 
         // index into vec field
-        resource_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        resource_ref.push_path(ReferencePart::IntegerAccess(0));
 
         assert_eq!(
             resource_ref
@@ -1162,7 +1138,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        resource_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        resource_ref.push_path(ReferencePart::IntegerAccess(0));
 
         resource_ref
             .with_reflect(world_guard.clone(), |s| {
@@ -1231,7 +1207,7 @@ mod test {
             .unwrap();
 
         // index into vec field
-        allocation_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        allocation_ref.push_path(ReferencePart::IntegerAccess(0));
         assert_eq!(
             allocation_ref
                 .tail_type_id(world_guard.clone())
@@ -1264,7 +1240,7 @@ mod test {
             .unwrap();
 
         // index into vec
-        allocation_ref.push_path(ReferencePart::IntegerAccess(0, true));
+        allocation_ref.push_path(ReferencePart::IntegerAccess(0));
 
         allocation_ref
             .with_reflect(world_guard.clone(), |s| {

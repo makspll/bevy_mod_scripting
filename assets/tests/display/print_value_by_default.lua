@@ -24,7 +24,6 @@ local expected_vec3_debug = [[
         ),
     },
     reflect_path: ReferencePath {
-        one_indexed: false,
         path: [],
     },
 }
@@ -54,7 +53,6 @@ ReflectReference {
         ),
     },
     reflect_path: ReferencePath {
-        one_indexed: false,
         path: [],
     },
 }

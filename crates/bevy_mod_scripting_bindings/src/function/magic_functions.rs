@@ -74,9 +74,6 @@ impl MagicFunctions {
                     reason: Box::new("Cannot convert to valid reflection path".to_owned()),
                 },
             )?;
-        reference
-            .reflect_path
-            .set_is_one_indexed(ctxt.convert_to_0_indexed());
         reference.push_path(path);
         ReflectReference::into_script_erased(reference, world)
     }
@@ -105,9 +102,6 @@ impl MagicFunctions {
                     reason: Box::new("Cannot convert to valid reflection path".to_owned()),
                 },
             )?;
-        reference
-            .reflect_path
-            .set_is_one_indexed(ctxt.convert_to_0_indexed());
         reference.push_path(path);
         reference.with_reflect_mut(world.clone(), |r| {
             let target_type_id = r

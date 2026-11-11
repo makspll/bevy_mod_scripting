@@ -332,11 +332,10 @@ impl IntoLua for LuaScriptValue {
                 Value::Table(table)
             }
             ScriptValue::Map(map) => {
-                let hashmap: std::collections::HashMap<String, Value> = map
-                    .into_iter()
-                    .map(|(k, v)| Ok((k, LuaScriptValue::from(v).into_lua(lua)?)))
-                    .collect::<Result<_, mlua::Error>>()?;
-                hashmap.into_lua(lua)?
+                // avoid using into_lua of the hashmap type as that requires an intermediate throwaway map
+                Value::Table(lua.create_table_from(
+                    map.into_iter().map(|(k, v)| (k, LuaScriptValue::from(v))),
+                )?)
             }
         })
     }

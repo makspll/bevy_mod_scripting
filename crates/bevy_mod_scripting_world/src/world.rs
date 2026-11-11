@@ -17,6 +17,7 @@ use bevy_ecs::{
     world::WorldId,
 };
 use bevy_reflect::TypeRegistryArc;
+use smallvec::SmallVec;
 use std::{
     any::{Any, TypeId},
     cell::{Cell, Ref, RefCell},
@@ -87,35 +88,58 @@ pub type RegistryCache = [Rc<RefCell<dyn Any>>; 6];
 
 /// A scope in which values converted from scripts may borrow from the world, see [`WorldAccessGuard::with_call_scope`].
 ///
-/// Accesses claimed in the scope are released when it ends, which is why borrows from it can't outlive it.
+/// Accesses claimed through the scope are released when it ends, which is why borrows from it can't outlive it.
 pub struct CallScope<'w> {
     guard: WorldGuard<'w>,
-    /// The number of access scopes running when this one started, itself included
-    depth: usize,
+    /// The claims made through this scope, released when it's dropped
+    claims: RefCell<SmallVec<[WorldAccessRange; 4]>>,
 }
 
 impl<'w> CallScope<'w> {
+    fn new(guard: WorldGuard<'w>) -> Self {
+        Self {
+            guard,
+            claims: Default::default(),
+        }
+    }
+
     /// The world guard this scope belongs to
     pub fn world(&self) -> WorldGuard<'w> {
         self.guard.clone()
     }
 
     /// Claims read access for a borrow that lives as long as this scope.
-    ///
-    /// Fails while a scope nested in this one runs, as that scope would release the claim when it ends.
     #[track_caller]
     pub fn claim_read_access(&self, key: impl Into<WorldAccessRange>) -> bool {
-        self.is_innermost() && self.guard.claim_read_access(key)
+        self.claim(key.into(), false)
     }
 
     /// Claims write access for a borrow that lives as long as this scope, see [`Self::claim_read_access`].
     #[track_caller]
     pub fn claim_write_access(&self, key: impl Into<WorldAccessRange>) -> bool {
-        self.is_innermost() && self.guard.claim_write_access(key)
+        self.claim(key.into(), true)
     }
 
-    fn is_innermost(&self) -> bool {
-        self.guard.inner.accesses.scope_depth() == self.depth
+    #[track_caller]
+    fn claim(&self, key: WorldAccessRange, write: bool) -> bool {
+        let claimed = if write {
+            self.guard.claim_write_access(key.clone())
+        } else {
+            self.guard.claim_read_access(key.clone())
+        };
+        if claimed {
+            self.claims.borrow_mut().push(key);
+        }
+        claimed
+    }
+}
+
+impl Drop for CallScope<'_> {
+    fn drop(&mut self) {
+        for key in self.claims.get_mut().drain(..).rev() {
+            // Safety: the borrows made under the claim can't outlive the scope
+            unsafe { self.guard.release_access(key) }
+        }
     }
 }
 
@@ -475,24 +499,9 @@ impl<'w> WorldAccessGuard<'w> {
     /// fn f(guard: WorldGuard) { let _ = guard.with_call_scope(|scope| scope); }
     /// ```
     pub fn with_call_scope<O>(&self, f: impl FnOnce(&CallScope<'w>) -> O) -> O {
-        self.inner.accesses.with_scope(|| {
-            let scope = CallScope {
-                guard: self.clone(),
-                depth: self.inner.accesses.scope_depth(),
-            };
-            f(&scope)
-        })
-    }
-
-    /// Runs `f` with a [`CallScope`] that doesn't release its accesses when it ends, for converting owned values cheaply.
-    ///
-    /// Borrows can't outlive the scope either way, accesses left claimed by them are released by the enclosing
-    /// [`Self::with_call_scope`], if there is one.
-    pub fn with_borrow_scope<O>(&self, f: impl FnOnce(&CallScope<'w>) -> O) -> O {
-        f(&CallScope {
-            guard: self.clone(),
-            depth: self.inner.accesses.scope_depth(),
-        })
+        // dropped also when `f` panics
+        let scope = CallScope::new(self.clone());
+        f(&scope)
     }
 
     /// Gets the component id of the given component or resource
@@ -549,13 +558,6 @@ impl<'w> WorldAccessGuard<'w> {
     /// Purely debugging utility to list all accesses currently held.
     pub fn list_accesses(&self) -> Vec<(WorldAccessRange, bool)> {
         self.inner.accesses.list_accesses()
-    }
-
-    /// Should only really be used for testing purposes
-    ///
-    /// Inside an access scope (see [`Self::with_access_scope`]) only releases the accesses claimed in that scope.
-    pub unsafe fn release_all_accesses(&self) {
-        self.inner.accesses.release_all_accesses();
     }
 
     /// Returns the number of accesses currently held.
@@ -752,13 +754,23 @@ mod test {
         guard.with_call_scope(|outer| {
             assert!(outer.claim_read_access(key()));
             guard.with_call_scope(|inner| {
-                // the inner scope would release a claim made for the outer one
-                assert!(!outer.claim_read_access(key()));
+                // each scope only releases its own claims
+                assert!(outer.claim_read_access(key()));
                 assert!(inner.claim_read_access(key()));
             });
-            assert_eq!(guard.access_len(), 1);
+            assert_eq!(guard.access_len(), 2);
         });
         // claims are released when their scope ends
+        assert_eq!(guard.access_len(), 0);
+
+        // also when it panics
+        let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            guard.with_call_scope(|scope| {
+                assert!(scope.claim_write_access(key()));
+                panic!("in call")
+            })
+        }));
+        assert!(panicked.is_err());
         assert_eq!(guard.access_len(), 0);
 
         // failing closures release their claim too

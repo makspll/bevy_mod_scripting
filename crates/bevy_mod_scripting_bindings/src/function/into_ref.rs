@@ -67,8 +67,7 @@ impl IntoScriptErased for ReflectReference {
             Erased::Reference { somes } => {
                 let mut self_ = self_;
                 for _ in 0..somes {
-                    // don't want correction to mess with this
-                    self_.push_path(ReferencePart::IntegerAccess(0, false));
+                    self_.push_path(ReferencePart::IntegerAccess(0));
                 }
                 ScriptValue::Reference(self_)
             }

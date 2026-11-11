@@ -10,7 +10,7 @@ use std::{
 
 use bevy_ecs::component::ComponentId;
 
-use bevy_platform::collections::HashMap;
+use bevy_platform::collections::{HashMap, hash_map::Entry};
 use std::cell::RefCell;
 
 use bevy_ecs::schedule::FixedBitSet;
@@ -385,10 +385,6 @@ struct AccessMapInner {
     component_write_claims: u32,
     world_access: AccessBitField,
     external_accesses: HashMap<usize, ExternalAccess>,
-    /// The length of [`Self::undo`] when each running [`AccessMap::with_scope`] started, innermost last
-    scope_marks: Vec<usize>,
-    /// The changes made inside the running scopes, undone when they end
-    undo: Vec<ScopeUndo>,
 }
 
 /// The claims of one map on a value outside the world, while it counts any it holds the value's [`SharedClaims`].
@@ -410,89 +406,8 @@ impl ExternalAccess {
     }
 }
 
-/// A change to an [`AccessMapInner`], recorded so a scope can roll it back: the state of an access before it changed.
-#[derive(Debug, Clone)]
-enum ScopeUndo {
-    Component(ComponentId, AccessBitField),
-    /// `None` for an external access without an entry
-    External(usize, Option<ExternalAccess>),
-    Global(AccessBitField),
-}
-
-/// Owners which were released while the access map was locked,
-/// dropped once it's unlocked since dropping one can free a value and run arbitrary code.
-type Released = smallvec::SmallVec<[AccessOwner; 4]>;
-
 #[profiling::all_functions]
 impl AccessMapInner {
-    /// Records the current state of an access before it changes, if a scope is running
-    #[inline]
-    fn record(&mut self, key: &WorldAccessRange) {
-        if self.scope_marks.is_empty() {
-            return;
-        }
-        let undo = match key {
-            WorldAccessRange::ComponentOrResource(id) => {
-                ScopeUndo::Component(*id, *self.component_access.entry_mut(id.index()))
-            }
-            WorldAccessRange::External(owner) => {
-                let id = external_access_id(owner);
-                ScopeUndo::External(id, self.external_accesses.get(&id).cloned())
-            }
-            WorldAccessRange::Global => ScopeUndo::Global(self.world_access),
-        };
-        self.undo.push(undo);
-    }
-
-    /// Undoes the changes recorded since the undo log had the given length
-    fn rollback(&mut self, mark: usize, released: &mut Released) {
-        // the external accesses as they were before the rollback, to update their shared claims once it's done
-        let mut external_before = smallvec::SmallVec::<[(usize, ExternalAccess); 4]>::new();
-        while self.undo.len() > mark {
-            let Some(undo) = self.undo.pop() else {
-                break;
-            };
-            match undo {
-                ScopeUndo::Component(id, previous) => {
-                    self.set_component_access(id.index(), previous);
-                }
-                ScopeUndo::External(id, previous) => {
-                    let replaced = match previous {
-                        Some(previous) => self.external_accesses.insert(id, previous),
-                        None => self.external_accesses.remove(&id),
-                    };
-                    if !external_before.iter().any(|(seen, _)| *seen == id) {
-                        external_before.push((id, replaced.clone().unwrap_or_default()));
-                    }
-                    released.extend(replaced.and_then(|access| access.owner));
-                }
-                ScopeUndo::Global(previous) => {
-                    self.world_access = previous;
-                }
-            }
-        }
-
-        let held = |access: &ExternalAccess| {
-            (access.owner.is_some() && access.bits.access_count() != 0)
-                .then(|| access.bits.is_write())
-        };
-        for (id, before) in external_before {
-            let after = self.external_accesses.get(&id);
-            if held(&before) == after.and_then(held) {
-                continue;
-            }
-            before.release_shared();
-            // a claim released in the scope is back, i.e. one made before it (normally released by its caller)
-            if let Some(after) = after
-                && let (Some(write), Some(owner)) = (held(after), &after.owner)
-                && !owner.claims().try_claim(write)
-            {
-                // taken by another map in the meantime, give it up rather than aliasing it
-                released.extend(self.external_accesses.remove(&id).and_then(|a| a.owner));
-            }
-        }
-    }
-
     pub fn claim_component_if_free(&mut self, id: ComponentId, write: bool) -> bool {
         let idx = id.index();
         if write && self.component_access.is_read_only(idx) {
@@ -522,7 +437,6 @@ impl AccessMapInner {
     /// Claims the access if it's free, returns whether it was claimed,
     /// and the key's owner if the map didn't keep it, to be dropped once the map is unlocked.
     fn claim_if_free(&mut self, key: WorldAccessRange, write: bool) -> (bool, Option<AccessOwner>) {
-        self.record(&key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
                 if self.world_access.is_write() || self.world_access.access_count() != 0 && write {
@@ -532,14 +446,15 @@ impl AccessMapInner {
             }
 
             WorldAccessRange::External(owner) => {
-                let access = self
-                    .external_accesses
-                    .entry(external_access_id(&owner))
-                    .or_default();
-                // the first claim of this map claims the value against the other maps
-                if access.bits.access_count() == 0 && !owner.claims().try_claim(write) {
-                    return (false, Some(owner));
-                }
+                // entries only exist while this map holds claims on the value
+                let access = match self.external_accesses.entry(external_access_id(&owner)) {
+                    Entry::Occupied(entry) => entry.into_mut(),
+                    // the first claim of this map claims the value against the other maps
+                    Entry::Vacant(_) if !owner.claims().try_claim(write) => {
+                        return (false, Some(owner));
+                    }
+                    Entry::Vacant(entry) => entry.insert(Default::default()),
+                };
                 let (free, new) = access.bits.claim_if_free(write);
                 access.bits = new;
                 if free && access.owner.is_none() {
@@ -568,7 +483,6 @@ impl AccessMapInner {
     /// Releases a claim, returns the owner of an external value once its last claim is released
     #[inline]
     fn clear_access(&mut self, key: &WorldAccessRange) -> Option<AccessOwner> {
-        self.record(key);
         match key {
             WorldAccessRange::ComponentOrResource(component_id) => {
                 let idx = component_id.index();
@@ -577,15 +491,17 @@ impl AccessMapInner {
             }
 
             WorldAccessRange::External(owner) => {
-                if let Some(access) = self.external_accesses.get_mut(&external_access_id(owner)) {
+                let id = external_access_id(owner);
+                if let Some(access) = self.external_accesses.get_mut(&id) {
                     let was_write = access.bits.is_write();
                     access.bits = access.bits.decrement_count();
-                    if access.bits.access_count() == 0
-                        && let Some(owner) = access.owner.take()
-                    {
-                        // the last claim of this map
-                        owner.claims().release(was_write);
-                        return Some(owner);
+                    if access.bits.access_count() == 0 {
+                        // the last claim of this map, the value may be freed so its entry goes too
+                        let owner = self.external_accesses.remove(&id).and_then(|a| a.owner);
+                        if let Some(owner) = &owner {
+                            owner.claims().release(was_write);
+                        }
+                        return owner;
                     }
                 }
             }
@@ -637,36 +553,11 @@ impl AccessMap {
         !self.0.borrow().cant_access_global
     }
 
-    /// The number of [`Self::with_scope`] scopes currently running
-    pub fn scope_depth(&self) -> usize {
-        self.0.borrow().scope_marks.len()
-    }
-
     fn claim(&self, key: WorldAccessRange, write: bool) -> bool {
         let (claimed, unused_owner) = self.0.borrow_mut().claim_if_free(key, write);
         // dropped once unlocked
         drop(unused_owner);
         claimed
-    }
-}
-
-/// Ends a [`AccessMap::with_scope`] when dropped, so the scope is rolled back even if its closure panics.
-///
-/// Scopes nest and end innermost first (also when a panic unwinds through them),
-/// so the scope ending is always the last one in [`AccessMapInner::scope_marks`],
-/// and it rolls back only the changes recorded after its mark.
-struct ScopeEnd<'a>(&'a RefCell<AccessMapInner>);
-
-impl Drop for ScopeEnd<'_> {
-    fn drop(&mut self) {
-        let mut released = Released::new();
-        {
-            let mut inner = self.0.borrow_mut();
-            if let Some(mark) = inner.scope_marks.pop() {
-                inner.rollback(mark, &mut released);
-            }
-        }
-        drop(released);
     }
 }
 
@@ -681,21 +572,6 @@ impl AccessMap {
         // dropped once unlocked, after the key, which may have been the last other owner
         drop(key);
         drop(released);
-    }
-
-    /// Executes the provided closure within a temporary access scope.
-    ///
-    /// Any accesses claimed or released within the scope are rolled back once the closure returns or panics.
-    /// Scopes can be nested, an inner scope rolls back only its own changes.
-    pub fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
-        // record the changes made inside the scope instead of copying the whole map
-        {
-            let mut inner = self.0.borrow_mut();
-            let mark = inner.undo.len();
-            inner.scope_marks.push(mark);
-        }
-        let _end = ScopeEnd(&self.0);
-        f()
     }
 
     /// Attempts to claim read access for the given key.
@@ -749,32 +625,6 @@ impl AccessMap {
     /// In the case of a global lock, this method considers that as a single active access.
     pub fn count_accesses(&self) -> usize {
         self.list_accesses().len()
-    }
-
-    /// Releases all active accesses, both individual and global.
-    ///
-    /// Inside a [`Self::with_scope`] only the accesses claimed in the innermost scope are released,
-    /// the ones from before it are released by whoever claimed them.
-    pub fn release_all_accesses(&self) {
-        let mut released = Released::new();
-        {
-            let mut inner = self.0.borrow_mut();
-            match inner.scope_marks.last().copied() {
-                // the accesses from before the scope belong to callers, which release them themselves
-                Some(mark) => inner.rollback(mark, &mut released),
-                None => {
-                    inner.component_access.clear();
-                    inner.component_claims = 0;
-                    inner.component_write_claims = 0;
-                    released.extend(inner.external_accesses.drain().filter_map(|(_, a)| {
-                        a.release_shared();
-                        a.owner
-                    }));
-                    inner.world_access = Default::default();
-                }
-            }
-        }
-        drop(released);
     }
 }
 
@@ -943,117 +793,15 @@ mod test {
         assert!(!access_map.claim_read_access(WorldAccessRange::Global));
         access_map.release_access(TestAccess(1));
 
-        // accesses rolled back with a scope don't block it anymore
-        access_map.with_scope(|| {
-            assert!(access_map.claim_read_access(TestAccess(1)));
-            assert!(access_map.claim_read_access(TestAccess(2)));
-            // reads only block global writes
-            assert!(access_map.claim_read_access(WorldAccessRange::Global));
-            access_map.release_access(WorldAccessRange::Global);
-        });
-        assert!(access_map.claim_write_access(WorldAccessRange::Global));
-    }
-
-    #[test]
-    fn access_map_with_scope_unrolls_individual_accesses() {
-        let access_map = AccessMap::new();
-        // Claim a read access outside the scope
-        assert!(access_map.claim_read_access(TestAccess(3)));
-
-        // Inside with_scope, claim additional accesses
-        access_map.with_scope(|| {
-            assert!(access_map.claim_read_access(TestAccess(1)));
-            assert!(access_map.claim_write_access(TestAccess(2)));
-            // At this point, individual_accesses contains keys 0, 1 and 2.
-            let accesses = access_map.list_accesses();
-            assert_eq!(accesses.len(), 3);
-        });
-
-        // After with_scope returns, accesses claimed inside (keys 1 and 2) are unrolled.
-        let accesses = access_map.list_accesses();
-        // Only the access claimed outside (key 3) remains.
-        assert_eq!(accesses.len(), 1);
-        let (k, count) = &accesses[0];
-        assert_eq!(*k, TestAccess(3).into());
-        assert!(!count);
-    }
-
-    #[test]
-    fn access_map_nested_scopes_unroll_only_their_own_accesses() {
-        let access_map = AccessMap::new();
-        access_map.with_scope(|| {
-            assert!(access_map.claim_read_access(TestAccess(1)));
-            access_map.with_scope(|| {
-                assert!(access_map.claim_write_access(TestAccess(2)));
-                // releasing an outer access inside the inner scope only lasts until it ends
-                access_map.release_access(TestAccess(1));
-                assert_eq!(access_map.list_accesses().len(), 1);
-            });
-            // the inner write is gone, the outer read is back
-            assert_eq!(
-                access_map.list_accesses(),
-                vec![(WorldAccessRange::from(TestAccess(1)), false)]
-            );
-            assert!(access_map.claim_write_access(TestAccess(2)));
-        });
-        assert!(access_map.list_accesses().is_empty());
-    }
-
-    #[test]
-    fn access_map_scope_unrolls_when_its_closure_panics() {
-        let access_map = AccessMap::new();
-        access_map.with_scope(|| {
-            assert!(access_map.claim_read_access(TestAccess(1)));
-            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                access_map.with_scope(|| {
-                    assert!(access_map.claim_write_access(TestAccess(2)));
-                    panic!("binding panicked");
-                })
-            }));
-            assert!(result.is_err());
-            // the panicking scope ended, the outer one is intact
-            assert_eq!(
-                access_map.list_accesses(),
-                vec![(WorldAccessRange::from(TestAccess(1)), false)]
-            );
-        });
-        assert!(access_map.list_accesses().is_empty());
-        // no scope is left open, so nothing is recorded anymore
-        assert!(access_map.claim_write_access(TestAccess(3)));
-        assert!(access_map.0.borrow().undo.is_empty());
-    }
-
-    #[test]
-    fn access_map_release_all_in_scope_releases_only_the_scope_accesses() {
-        let access_map = AccessMap::new();
         assert!(access_map.claim_read_access(TestAccess(1)));
-        access_map.with_scope(|| {
-            assert!(access_map.claim_read_access(TestAccess(2)));
-            access_map.with_scope(|| {
-                assert!(access_map.claim_write_access(TestAccess(3)));
-                access_map.release_all_accesses();
-                // only the innermost scope's write is gone
-                let mut accesses = access_map.list_accesses();
-                accesses.sort_by_key(|(k, _)| format!("{k:?}"));
-                assert_eq!(
-                    accesses,
-                    vec![
-                        (WorldAccessRange::from(TestAccess(1)), false),
-                        (WorldAccessRange::from(TestAccess(2)), false)
-                    ]
-                );
-                // and the scope can keep claiming
-                assert!(access_map.claim_write_access(TestAccess(3)));
-            });
-            assert_eq!(access_map.list_accesses().len(), 2);
-        });
-        assert_eq!(
-            access_map.list_accesses(),
-            vec![(WorldAccessRange::from(TestAccess(1)), false)]
-        );
-        // outside a scope everything is released
-        access_map.release_all_accesses();
-        assert!(access_map.list_accesses().is_empty());
+        assert!(access_map.claim_read_access(TestAccess(2)));
+        // reads only block global writes
+        assert!(access_map.claim_read_access(WorldAccessRange::Global));
+        access_map.release_access(WorldAccessRange::Global);
+        access_map.release_access(TestAccess(1));
+        access_map.release_access(TestAccess(2));
+        // released accesses don't block it anymore
+        assert!(access_map.claim_write_access(WorldAccessRange::Global));
     }
 
     #[test]
@@ -1074,12 +822,18 @@ mod test {
         assert_eq!(count(), 2);
         access_map.release_access(key());
         assert_eq!(count(), 1);
+        // no entries are kept for values without claims, they may be freed
+        let entries = || access_map.0.borrow().external_accesses.len();
+        assert_eq!(entries(), 0);
 
         // releasing shared claims that aren't held changes nothing
         let claims = owner.claims();
         assert!(!claims.release(false), "would wrap to a write");
         assert!(!claims.release(true));
         assert!(claims.try_claim(true));
+        // claimed by another map: fails without leaving an entry
+        assert!(!access_map.claim_read_access(key()));
+        assert_eq!(entries(), 0);
         assert!(!claims.release(false), "would turn the write into reads");
         assert!(!claims.try_claim(false));
         assert!(claims.release(true));
@@ -1087,34 +841,6 @@ mod test {
         assert!(!claims.release(true), "would free the read");
         assert!(!claims.try_claim(true));
         assert!(claims.release(false));
-    }
-
-    #[test]
-    fn access_map_scopes_drop_and_restore_owners() {
-        let access_map = AccessMap::new();
-        let owner: AccessOwner = Arc::new(SharedClaims::default());
-        let count = || Arc::strong_count(&owner);
-        let key = || WorldAccessRange::External(owner.clone());
-
-        // claimed in a scope: dropped when it ends
-        access_map.with_scope(|| {
-            assert!(access_map.claim_write_access(key()));
-            assert_eq!(count(), 2);
-        });
-        assert_eq!(count(), 1);
-
-        // claimed before a scope and released in it: back when it ends
-        assert!(access_map.claim_write_access(key()));
-        access_map.with_scope(|| {
-            access_map.release_access(key());
-            assert!(access_map.list_accesses().is_empty());
-        });
-        assert_eq!(access_map.list_accesses(), vec![(key(), true)]);
-        assert_eq!(count(), 2);
-
-        // released outside any scope: dropped
-        access_map.release_all_accesses();
-        assert_eq!(count(), 1);
     }
 
     #[test]
@@ -1132,45 +858,6 @@ mod test {
         let access_map = AccessMap::new();
         assert!(access_map.claim_write_access(WorldAccessRange::External(a)));
         assert!(access_map.claim_write_access(WorldAccessRange::External(b)));
-    }
-
-    #[test]
-    fn subset_map_with_scope_unrolls_individual_accesses() {
-        let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1, 2, 3]));
-
-        // Claim a read access outside the scope
-        assert!(subset_access_map.claim_read_access(TestAccess(3)));
-
-        // Inside with_scope, claim additional accesses
-        subset_access_map.with_scope(|| {
-            assert!(subset_access_map.claim_read_access(TestAccess(1)));
-            assert!(subset_access_map.claim_write_access(TestAccess(2)));
-            // At this point, individual_accesses contains keys 0, 1 and 2.
-            let accesses = subset_access_map.list_accesses();
-            assert_eq!(accesses.len(), 3);
-        });
-
-        // After with_scope returns, accesses claimed inside (keys 1 and 2) are unrolled.
-        let accesses = subset_access_map.list_accesses();
-        // Only the access claimed outside (key 3) remains.
-        assert_eq!(accesses.len(), 1);
-        let (k, count) = &accesses[0];
-        assert_eq!(*k, TestAccess(3).into());
-        assert!(!count);
-    }
-
-    #[test]
-    fn access_map_with_scope_unrolls_global_accesses() {
-        let access_map = AccessMap::new();
-
-        access_map.with_scope(|| {
-            assert!(access_map.claim_write_access(WorldAccessRange::Global));
-            // At this point, global_access is claimed.
-            assert!(!access_map.claim_read_access(TestAccess(1)));
-        });
-
-        let accesses = access_map.list_accesses();
-        assert_eq!(accesses.len(), 0);
     }
 
     #[test]
@@ -1216,8 +903,10 @@ mod test {
         assert!(subset_access_map.claim_read_access(TestAccess(2)));
         assert!(subset_access_map.claim_write_access(TestAccess(1)));
 
-        // the permission survives releasing all accesses
-        subset_access_map.release_all_accesses();
+        // the permission survives releasing the accesses
+        subset_access_map.release_access(TestAccess(2));
+        subset_access_map.release_access(TestAccess(2));
+        subset_access_map.release_access(TestAccess(1));
         assert!(!subset_access_map.claim_write_access(TestAccess(2)));
     }
 
@@ -1232,20 +921,5 @@ mod test {
         assert_eq!(claimed, 63);
         // all reads are still counted, so writes stay blocked
         assert!(!access_map.claim_write_access(TestAccess(0)));
-    }
-
-    #[test]
-    fn subset_map_retains_subset_in_scope() {
-        let subset_access_map = AccessMap::new_subset(AccessByteSet::from_allowed_list(&[1]));
-
-        subset_access_map.with_scope(|| {
-            assert!(subset_access_map.claim_read_access(TestAccess(1)));
-            assert!(!subset_access_map.claim_read_access(TestAccess(2)));
-            assert!(!subset_access_map.claim_write_access(TestAccess(2)));
-        });
-
-        assert!(subset_access_map.claim_read_access(TestAccess(1)));
-        assert!(!subset_access_map.claim_read_access(TestAccess(2)));
-        assert!(!subset_access_map.claim_write_access(TestAccess(2)));
     }
 }

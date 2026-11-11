@@ -40,7 +40,7 @@ impl FromScriptErased for Box<dyn PartialReflect> {
         Self: Sized,
     {
         // the primitives don't borrow from the world
-        let primitive = world.with_borrow_scope(|scope| {
+        let primitive = world.with_call_scope(|scope| {
             match_by_type! (
             match target {
                 ta : usize   => return Ok(<usize>::from_script(value, scope).map(|a| Box::new(a) as _)),

@@ -5,7 +5,6 @@ use crate::{
     callbacks::ScriptCallbacks,
     error::ScriptError,
     event::{CallbackLabel, ScriptErrorMessage},
-    extractors::get_all_access_ids,
     handler::ScriptingHandler,
     script::ScriptContexts,
 };
@@ -26,6 +25,7 @@ use bevy_ecs::{
     archetype::ArchetypeGeneration,
     change_detection::{CheckChangeTicks, Tick},
     message::Messages,
+    query::{Access, ComponentIdSet},
     resource::Resource,
     schedule::{
         InternedScheduleLabel, InternedSystemSet, IntoScheduleConfigs, Schedule,
@@ -1417,6 +1417,40 @@ impl ManageScriptSystems for WorldGuard<'_> {
 
         builder.build::<P>(self.clone(), schedule)
     }
+}
+
+fn individual_conflicts(conflicts: AccessConflicts) -> ComponentIdSet {
+    match conflicts {
+        // todo, not sure what to do here
+        AccessConflicts::All => ComponentIdSet::new(),
+        AccessConflicts::Individual(fixed_bit_set) => fixed_bit_set,
+    }
+}
+
+pub(crate) fn get_all_access_ids(access: &Access) -> Vec<(ComponentId, bool)> {
+    let mut access_all_read = Access::default();
+    access_all_read.read_all();
+
+    let mut access_all_write = Access::default();
+    access_all_write.write_all();
+
+    // read conflicts with each set to figure out the necessary locks:
+    // only writes conflict with reading everything, reads and writes conflict with writing everything
+    let written = individual_conflicts(access.get_conflicts(&access_all_read));
+    let mut read = individual_conflicts(access.get_conflicts(&access_all_write));
+
+    // remove writes from reads
+    read.difference_with(&written);
+
+    let mut result = Vec::new();
+    for c in read.iter() {
+        result.push((c, false));
+    }
+    for c in written.iter() {
+        result.push((c, true));
+    }
+
+    result
 }
 
 #[cfg(test)]

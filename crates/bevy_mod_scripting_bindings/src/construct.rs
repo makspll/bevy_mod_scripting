@@ -207,7 +207,7 @@ pub fn construct(
                     let value = sources.payload.remove("variant").ok_or_else(|| {
                         construct_error("missing 'variant' field in enum constructor payload")
                     })?;
-                    guard.with_borrow_scope(|scope| String::from_script(value, scope))?
+                    guard.with_call_scope(|scope| String::from_script(value, scope))?
                 }
             };
 
