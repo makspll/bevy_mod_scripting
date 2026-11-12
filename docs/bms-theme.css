@@ -204,6 +204,18 @@ body::before {
     background: url(logo.svg) no-repeat center / contain;
 }
 
+/* dark: the same flat tile as the hero logo */
+.navy .menu-title::before,
+.coal .menu-title::before,
+.ayu .menu-title::before {
+    width: 1.5em;
+    height: 1.5em;
+    vertical-align: -0.35em;
+    border-radius: 0.3em;
+    background-color: var(--logo-tile);
+    background-size: 74%;
+}
+
 .sidebar {
     border-inline-end: 1px solid var(--sidebar-spacer);
 }
