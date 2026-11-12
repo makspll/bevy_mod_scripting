@@ -7,20 +7,20 @@
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="../fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="icon" href="../favicon-e7d2d2b5.svg">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
         <link rel="stylesheet" href="../css/general-e96d0476.css">
         <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
@@ -28,8 +28,9 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="../lad-45425c30.css">
+        <link rel="stylesheet" href="../bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="../multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="../lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "../searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a0846749.js"></script>
+        <script src="../toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,18 +184,33 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
-<p>In the future we hope to embedd live WASM code examples into the documentation, for now the best source of example scripts will be our regression test suite available in all supported languages in our <a href="https://github.com/makspll/bevy_mod_scripting/tree/main/assets/tests">github repository</a>.</p>
-<p>For rust examples see <a href="https://github.com/makspll/bevy_mod_scripting/tree/main/examples">this folder</a>.</p>
+<p>Rust examples live in the <a href="https://github.com/makspll/bevy_mod_scripting/tree/main/examples"><code>examples</code></a> folder:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Example</th><th>Shows</th></tr>
+</thead>
+<tbody>
+<tr><td><code>game_of_life</code></td><td>A full app driven by Lua or Rune scripts, with callbacks, static scripts and custom bindings</td></tr>
+<tr><td><code>runscript</code></td><td>Running script files given on the command line</td></tr>
+<tr><td><code>script_loading</code></td><td>Waiting for scripts to load with <code>ScriptPipelineState</code></td></tr>
+<tr><td><code>custom_conversions</code></td><td>Hand-written <code>FromScript</code> / <code>IntoScript</code> conversions</td></tr>
+<tr><td><code>docgen</code></td><td>Generating LAD files and Lua language server definitions</td></tr>
+</tbody>
+</table>
+</div>
+<p>Run one with <code>cargo run --example &lt;name&gt; --features lua54</code> (<code>docgen</code> needs <code>lua_language_server_files</code>).</p>
+<p>For example scripts, see the regression test suite in <a href="https://github.com/makspll/bevy_mod_scripting/tree/main/assets/tests"><code>assets/tests</code></a>, which covers every scripting function in Lua and Rune.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../ScriptSystems/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ScriptTooling/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../ScriptTooling/summary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -204,11 +220,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../ScriptSystems/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ScriptTooling/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../ScriptTooling/summary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -237,9 +253,10 @@
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-8d1048e1.js"></script>
+        <script src="../multi-code-block-b564eaca.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
-        <script src="../mermaid-init-f69ab335.js"></script>
+        <script src="../mermaid-init-bc25465b.js"></script>
+        <script src="../glossary-83c1ca5d.js"></script>
 
 
 

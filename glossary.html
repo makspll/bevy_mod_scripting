@@ -3,44 +3,45 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Scripting IDE Integrations - Bevy Scripting</title>
+        <title>Glossary - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
-        <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-e96d0476.css">
-        <link rel="stylesheet" href="../css/chrome-d279d366.css">
-        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="favicon-e7d2d2b5.svg">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="../lad-45425c30.css">
+        <link rel="stylesheet" href="bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "../";
+            const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a0846749.js"></script>
+        <script src="toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -107,7 +108,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -142,13 +143,13 @@
                     <h1 class="menu-title">Bevy Scripting</h1>
 
                     <div class="right-buttons">
-                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/ScriptTooling/summary.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/glossary.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
                         </a>
 
@@ -182,17 +183,97 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="scripting-ide-integrations"><a class="header" href="#scripting-ide-integrations">Scripting IDE Integrations</a></h1>
+                        <h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
+<p>The key concepts of BMS. Each entry’s first paragraph is shown when hovering over the term elsewhere in the book.</p>
+<!-- Each entry is a `##` heading, an `aliases: a, b; not: phrase` comment listing the words to recognize in other pages
+     (case insensitive, longest first wins, never inside the `not` phrases), then a one paragraph intuition.
+     Keep that paragraph short: it is the hover card. Terms aren't linked on the pages their entry links to. -->
+<h2 id="attachment"><a class="header" href="#attachment">Attachment</a></h2>
+<!-- aliases: attachment, attachments, attached, attaching, attach, detached, detaching, detach -->
+<p>Where a script lives: pinned to an entity, or “static”, pinned to nothing. A script file only runs once attached, and the same file attached twice runs twice, so the attachment, not the file, is what callbacks target.</p>
+<p>In Rust it is a <code>ScriptAttachment</code>: <code>EntityScript(entity, handle)</code>, made by adding a <code>ScriptComponent</code>, or <code>StaticScript(handle)</code>, made with the <code>AttachScript</code> command. See <a href="./Summary/managing-scripts.html">Managing Scripts</a>.</p>
+<h2 id="binding"><a class="header" href="#binding">Binding</a></h2>
+<!-- aliases: bindings, binding -->
+<p>A Rust function or type made available to scripts. Written once in Rust, bindings work in every supported language, and are documented in the generated reference.</p>
+<p>Functions are registered with <code>#[script_bindings]</code> or a <code>NamespaceBuilder</code>, on a type or a namespace. See <a href="./Summary/controlling-script-bindings.html">Controlling Script Bindings</a> and <a href="./ladfiles/bindings.lad.json">Core Bindings</a>.</p>
+<h2 id="callback"><a class="header" href="#callback">Callback</a></h2>
+<!-- aliases: callbacks, callback -->
+<p>A function in a script that BMS calls by name, like an event listener. Everything a script does after loading happens inside a callback.</p>
+<p>A callback is the function passed to <code>register_callback</code>, or else the top level function with that name. Callbacks are triggered by <code>event_handler</code> systems, <code>RunScriptCallback</code> commands, script systems, observers and other scripts. See <a href="./Summary/running-scripts.html">Running Scripts</a> and <a href="./Summary/callbacks.html">Callbacks</a>.</p>
+<h2 id="callback-label"><a class="header" href="#callback-label">Callback label</a></h2>
+<!-- aliases: callback labels, callback label -->
+<p>The name a callback is called by, as a Rust type, so Rust code can’t misspell it.</p>
+<p>Defined with <code>callback_labels!(OnEvent =&gt; "on_event")</code> and used by <code>event_handler::&lt;OnEvent, _&gt;</code> and <code>ScriptCallbackMessage</code>s. See <a href="./Summary/running-scripts.html">Running Scripts</a>.</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<!-- aliases: script contexts, script context, contexts, context -->
+<p>The sandbox a script runs in, holding its global variables and functions, like a separate Lua state. Scripts in different contexts can’t see each other’s globals.</p>
+<p>Contexts are created when scripts are attached, and removed with their last script. While one of its callbacks runs, a context is busy. See <a href="./Summary/contexts.html">Contexts</a>.</p>
+<h2 id="context-policy"><a class="header" href="#context-policy">Context policy</a></h2>
+<!-- aliases: context policies, context policy -->
+<p>The rule deciding which scripts share a context: by default each entity-script pair gets its own, at the other end all scripts share one.</p>
+<p>Set with <code>set_context_policy</code> on the scripting plugin. See <a href="./Summary/contexts.html#context-policies">Contexts</a>.</p>
+<h2 id="core-callbacks"><a class="header" href="#core-callbacks">Core callbacks</a></h2>
+<!-- aliases: core callbacks, core callback -->
+<p>The callbacks BMS calls by itself around loading: <code>on_script_loaded</code>, <code>on_script_unloaded</code> and <code>on_script_reloaded</code>. Use them to set up a script and to carry state across hot reloads.</p>
+<p>See <a href="./ScriptingReference/core-callbacks.html">Core Callbacks</a>.</p>
+<h2 id="event-handler"><a class="header" href="#event-handler">Event handler</a></h2>
+<!-- aliases: event handlers, event handler -->
+<p>A Bevy system which delivers <code>ScriptCallbackMessage</code>s with one callback label to the scripts of one language, the usual way for Rust to call scripts every frame.</p>
+<p>Added as <code>event_handler::&lt;Label, Plugin&gt;</code> in the schedule you want the callbacks to run in. See <a href="./Summary/running-scripts.html#event-handlers">Running Scripts</a>.</p>
+<h2 id="hot-reloading"><a class="header" href="#hot-reloading">Hot reloading</a></h2>
+<!-- aliases: hot reloading, hot reloads, hot reload, hot-reloading, hot-reloadable, reloading, reloaded, reloads, reload -->
+<p>Editing a script file while the game runs, and having the new code take effect without a restart. The script’s top level code runs again in its existing context.</p>
+<p>Needs Bevy’s <code>file_watcher</code> feature. <code>on_script_unloaded</code> can return state which <code>on_script_reloaded</code> receives. See <a href="./Summary/managing-scripts.html#hot-reloading">Managing Scripts</a>.</p>
+<h2 id="initializer"><a class="header" href="#initializer">Initializer</a></h2>
+<!-- aliases: context initializers, context initializer, pre handling initializers, pre handling initializer, runtime initializers, runtime initializer, initializers, initializer -->
+<p>A Rust function run on a context, or runtime, to customize it, i.e. to set globals before the script’s code runs.</p>
+<p>Context initializers run when a context is created or reloaded, pre handling initializers before every callback, runtime initializers once. See <a href="./Summary/customizing-script-contexts.html">Customizing Contexts</a>.</p>
+<h2 id="lad-file"><a class="header" href="#lad-file">LAD file</a></h2>
+<!-- aliases: LAD files, LAD file, LADfiles, LADfile, ladfiles, ladfile -->
+<p>A language agnostic JSON description of every type and function scripts can use. It drives the generated reference pages and the Lua language server definitions.</p>
+<p>See <a href="./ScriptTooling/introduction.html">Editor Support</a>.</p>
+<h2 id="namespace"><a class="header" href="#namespace">Namespace</a></h2>
+<!-- aliases: namespaces, namespace -->
+<p>A named group of types and functions which scripts import, i.e. <code>import_namespace("math")</code>. Types are not globals, so namespaces keep same named types apart.</p>
+<p>Rust types live in the namespace of their crate or binding category, scripts register their own components and events into <code>script.*</code> namespaces. See <a href="./ScriptingReference/namespaces.html">Namespaces</a>.</p>
+<h2 id="reflect-reference"><a class="header" href="#reflect-reference">Reflect reference</a></h2>
+<!-- aliases: reflect references, reflect reference -->
+<p>A script’s pointer into the Bevy world: to a component, a resource, or a value BMS allocated. Reading or writing its fields reads or writes the real value, through reflection.</p>
+<p>Its base is a component, a resource, an allocation or an asset. In Rust it is a <code>ReflectReference</code>, received as <code>R&lt;T&gt;</code>, <code>M&lt;T&gt;</code> or <code>V&lt;T&gt;</code> in binding signatures. See <a href="./ScriptingReference/references.html">References</a>.</p>
+<h2 id="runtime"><a class="header" href="#runtime">Runtime</a></h2>
+<!-- aliases: runtimes, runtime; not: at runtime, runtime error, runtime errors -->
+<p>The engine state shared by all contexts of one language, if the language has one. Contexts are the sandboxes, the runtime is what they run on. Lua has no separate runtime, Rune does.</p>
+<p>Customized with runtime initializers. See <a href="./Summary/customizing-script-contexts.html#runtime-initializers">Customizing Contexts</a>.</p>
+<h2 id="script"><a class="header" href="#script">Script</a></h2>
+<!-- aliases: script assets, script asset, script files, script file -->
+<p>A Lua or Rune source file, loaded as a Bevy asset (<code>ScriptAsset</code>). Loading it runs nothing: it runs once attached.</p>
+<p>See <a href="./Summary/managing-scripts.html">Managing Scripts</a>.</p>
+<h2 id="script-pipeline"><a class="header" href="#script-pipeline">Script pipeline</a></h2>
+<!-- aliases: script pipeline, pipeline -->
+<p>The machinery which turns attachments, detachments and modified assets into loaded, reloaded or unloaded scripts, running the core callbacks along the way.</p>
+<p>Runs in <code>PreUpdate</code>, and immediately for <code>AttachScript</code> / <code>DetachScript</code>. See <a href="./ScriptPipeline/pipeline.html">Script Pipeline</a>.</p>
+<h2 id="script-system"><a class="header" href="#script-system">Script system</a></h2>
+<!-- aliases: script systems, script system -->
+<p>A Bevy system added by a script, which calls one of the script’s callbacks each time its schedule runs, with the queries and resources it asked for.</p>
+<p>Built with <code>bms.system_builder</code> and added with <code>world.add_system</code>. See <a href="./ScriptSystems/introduction.html">Script Systems</a>.</p>
+<h2 id="script-value"><a class="header" href="#script-value">Script value</a></h2>
+<!-- aliases: script values, script value -->
+<p>The language neutral value passed between Rust and scripts: integers, strings, lists, functions, references and so on. Each language converts it to and from its own values.</p>
+<p>In Rust it is <code>ScriptValue</code>, converted with <code>FromScript</code> and <code>IntoScript</code>. See <a href="./Summary/controlling-script-bindings.html#dynamic-functions">Controlling Script Bindings</a>.</p>
+<h2 id="static-script"><a class="header" href="#static-script">Static script</a></h2>
+<!-- aliases: static scripts, static script -->
+<p>A script attached to nothing rather than to an entity, i.e. game wide logic.</p>
+<p>Attached and detached with the <code>AttachScript</code> and <code>DetachScript</code> commands. See <a href="./Summary/managing-scripts.html#static-scripts">Managing Scripts</a>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../Examples/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../ScriptTooling/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="Summary/installation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -202,11 +283,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../Examples/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../ScriptTooling/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="Summary/installation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -226,18 +307,19 @@
         </script>
 
 
-        <script src="../elasticlunr-ef4e11c1.min.js"></script>
-        <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-09f2665d.js"></script>
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
 
-        <script src="../clipboard-1626706a.min.js"></script>
-        <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-609e4cb8.js"></script>
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-8d1048e1.js"></script>
-        <script src="../mermaid-eefea253.min.js"></script>
-        <script src="../mermaid-init-f69ab335.js"></script>
+        <script src="multi-code-block-b564eaca.js"></script>
+        <script src="mermaid-eefea253.min.js"></script>
+        <script src="mermaid-init-bc25465b.js"></script>
+        <script src="glossary-83c1ca5d.js"></script>
 
 
 

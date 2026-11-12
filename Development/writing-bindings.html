@@ -7,20 +7,20 @@
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="../fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="icon" href="../favicon-e7d2d2b5.svg">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
         <link rel="stylesheet" href="../css/general-e96d0476.css">
         <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
@@ -28,8 +28,9 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="../lad-45425c30.css">
+        <link rel="stylesheet" href="../bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="../multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="../lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "../searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a0846749.js"></script>
+        <script src="../toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -193,27 +194,8 @@ They live in <code>crates/bindings/bevy_mod_scripting_bevy_&lt;category&gt;_bind
 <li>calls <code>set_crate_script_namespaces</code> from its plugin’s <code>finish</code>, with the bevy crates it covers, so their types without bindings land in the same namespace</li>
 </ul>
 <h2 id="generic-types"><a class="header" href="#generic-types">Generic types</a></h2>
-<p>Reflection only sees instantiations of generic types (<code>Time&lt;Virtual&gt;</code>, <code>Time&lt;Fixed&gt;</code>), which would be documented as unrelated types. Declare the generic types of the crate from its plugin, instantiated with the marker <code>A</code> in place of their parameter, in the namespace of the category:</p>
-<pre><code class="language-rust ignore">use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
-
-app.register_generic_type::&lt;Time&lt;A&gt;&gt;("time", &amp;["T"], "A clock, i.e. `Time&lt;Virtual&gt;`.");</code></pre>
-<p>The fields of type <code>A</code> are then documented as being of the parameter <code>T</code>, and the instantiations as <code>Time&lt;T&gt;</code> applied to their arguments. Only declare types whose parameter is part of what they are (<code>Handle</code>, <code>Time</code>, <code>ButtonInput</code>), not containers like <code>Arc&lt;T&gt;</code>. Undeclared instantiations get a class each, named after their arguments (<code>render.MeshExtractableData.Indices</code>).</p>
-<p>Further parameters use the markers <code>B</code> and <code>C</code> (<code>Hashed&lt;A, B&gt;</code>). A parameter with bounds the markers don’t satisfy gets a marker of its own, implementing them:</p>
-<pre><code class="language-rust ignore">bevy_mod_scripting_bindings::generic_marker! {
-    /// Stands for the material of `MyMaterialHolder&lt;M&gt;`
-    pub struct M;
-}
-impl MyMaterial for M {}
-
-app.register_type::&lt;M&gt;()
-    .register_generic_type::&lt;MyMaterialHolder&lt;M&gt;&gt;("my_crate", &amp;["M"], "...");</code></pre>
-<p>Functions which return values of the type they are given are declared generic in their signature, with the same marker:</p>
-<pre><code class="language-rust ignore">fn get_component(
-    ctxt: FunctionCallContext,
-    entity: V&lt;Entity&gt;,
-    registration: TypeOf&lt;V&lt;ScriptComponentRegistration&gt;, A&gt;,
-) -&gt; Result&lt;Option&lt;ValueOf&lt;A&gt;&gt;, InteropError&gt;</code></pre>
-<p><code>TypeOf&lt;R, A&gt;</code> is a type passed as <code>R</code>, <code>ValueOf&lt;A&gt;</code> a reference to a value of it. They only change the documentation, i.e. <code>world.get_component(entity, Transform)</code> is a <code>Transform</code> in Lua.</p>
+<p>Declare the generic types of the crate from its plugin, in the namespace of the category (<code>register_generic_type::&lt;Time&lt;A&gt;&gt;("time", ...)</code>), and use the markers in generic function signatures, see <a href="../Summary/controlling-script-bindings.html#generics">Generics</a>.</p>
+<p>Only declare types whose parameter is part of what they are (<code>Handle</code>, <code>Time</code>, <code>ButtonInput</code>), not containers like <code>Arc&lt;T&gt;</code>. Undeclared instantiations get a class each, named after their arguments (<code>render.MeshExtractableData.Indices</code>).</p>
 <h2 id="what-to-bind"><a class="header" href="#what-to-bind">What to bind</a></h2>
 <p>Every reflected type is already usable from scripts without any bindings:</p>
 <ul>
@@ -330,9 +312,10 @@ Run them with:</p>
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-8d1048e1.js"></script>
+        <script src="../multi-code-block-b564eaca.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
-        <script src="../mermaid-init-f69ab335.js"></script>
+        <script src="../mermaid-init-bc25465b.js"></script>
+        <script src="../glossary-83c1ca5d.js"></script>
 
 
 

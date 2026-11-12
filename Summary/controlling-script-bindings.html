@@ -7,20 +7,20 @@
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="../fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="icon" href="../favicon-e7d2d2b5.svg">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
         <link rel="stylesheet" href="../css/general-e96d0476.css">
         <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
@@ -28,8 +28,9 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="../lad-45425c30.css">
+        <link rel="stylesheet" href="../bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="../multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="../lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "../searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a0846749.js"></script>
+        <script src="../toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,11 +184,8 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="controlling-script-bindings"><a class="header" href="#controlling-script-bindings">Controlling Script Bindings</a></h1>
-<p>In this book we refer to anything accessible by a script, which allows it to communicate with your Rust code a <code>binding</code> (which in previous versions was more generically referred to as a script API).</p>
-<p>The “binding” here being used as in: binding <code>script</code> code to <code>rust</code> code.</p>
-<h2 id="namespaces"><a class="header" href="#namespaces">Namespaces</a></h2>
-<p>Namespaces are a way to group functions together, and are used to prevent naming conflicts. You can have multiple namespaces, and each namespace can have multiple functions.</p>
-<p>Language implementations will also look for specific functions registered on your type first before looking at the generic <code>ReflectReference</code> namespace.</p>
+<p>A <strong>binding</strong> is anything a script can access to communicate with your Rust code, i.e. binding <code>script</code> code to <code>rust</code> code. Bindings are written once in Rust, and work in every supported language.</p>
+<p>Functions are registered on a type or a namespace, see <a href="#where-functions-can-live">where functions can live</a>. Scripts reach them through <a href="../ScriptingReference/namespaces.html">namespaces</a>.</p>
 <h2 id="dynamic-functions"><a class="header" href="#dynamic-functions">Dynamic Functions</a></h2>
 <p>Everything callable by scripts must first be registered in the dynamic function registry. Notably we do not make use of the normal bevy function registry to improve performance and usability. This means you cannot call just any function.</p>
 <p>In order for a function to be callable by a script it must adhere to a few requirements:</p>
@@ -198,7 +196,7 @@
 <li>Each return type must also implement <code>GetTypeDependencies</code></li>
 </ul>
 <p>The into/from requirements allow us to convert these types to <code>ScriptValue</code>’s, and each supported scripting language can then marshall these into the script.</p>
-<p>Note these types are implemented for primitives, but if you want to interact with one of your <code>Reflect</code> implementing types, you will need to use one of <code>R&lt;T&gt;</code>, <code>M&lt;T&gt;</code> or <code>V&lt;T&gt;</code> wrappers in place of <code>&amp;T</code>, <code>&amp;mut T</code> and <code>T</code> respectively.</p>
+<p>These traits are implemented for primitives, but if you want to interact with one of your <code>Reflect</code> implementing types, you will need to use one of <code>R&lt;T&gt;</code>, <code>M&lt;T&gt;</code> or <code>V&lt;T&gt;</code> wrappers in place of <code>&amp;T</code>, <code>&amp;mut T</code> and <code>T</code> respectively.</p>
 <p>These wrappers enable us to safely interact with bevy, and claim any necessary mutex’es on <code>Resources</code>, <code>Components</code> or <code>Allocations</code>.</p>
 <p>The <code>GetTypeDependencies</code>, trait is simply a local trait alias for <code>GetTypeRegistration</code> with less strict type requirements. It allows us to register all the types necessary for the function calls, so that you don’t have to register anything manually. If your type implements <code>GetTypeRegistration</code> you should not face any issues on this front.</p>
 <h2 id="registering-script-functions"><a class="header" href="#registering-script-functions">Registering Script Functions</a></h2>
@@ -207,7 +205,7 @@
         .register(
             "hello_world",
             |s: String| {
-                println!(s)
+                println!("{s}")
             },
         );
 
@@ -215,10 +213,10 @@
         .register(
             "hello_world2",
             |s: String| {
-                println!(s)
+                println!("{s}")
             },
         );</code></pre>
-<p>This will allow you to call this function within lua like so:</p>
+<p>This will allow you to call this function within Lua like so:</p>
 <pre><code class="language-lua">some_type:hello_world("hi from method!");
 hello_world2("hi from global!");
 </code></pre>
@@ -275,13 +273,12 @@ You can opt-in to receive this argument in your own function definitions by addi
             |ctx: FunctionCallContext, s: String| {
                 let world = ctx.world()?;
                 let should_use_0_indexing = ctx.convert_to_0_indexed;
-                println!(should_use_0_indexing);
-                println!(s)
+                println!("{should_use_0_indexing} {s}");
                 Ok(())
             },
         );</code></pre>
-<h2 id="generic-arguments"><a class="header" href="#generic-arguments">Generic Arguments</a></h2>
-<p>Sometimes you might want to be generic over the type of argument you’re accepting, you can do so by accepting <code>ScriptValue</code> arguments like so:</p>
+<h2 id="dynamic-arguments"><a class="header" href="#dynamic-arguments">Dynamic Arguments</a></h2>
+<p>To accept any kind of value, i.e. numbers or strings alike, take <code>ScriptValue</code> arguments:</p>
 <pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
         .register(
             "is_integer",
@@ -292,12 +289,51 @@ You can opt-in to receive this argument in your own function definitions by addi
                 }
             },
         );</code></pre>
-<p>You can treat return values similarly.</p>
+<p>You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see <a href="#generics">Generics</a>.</p>
+<h2 id="generics"><a class="header" href="#generics">Generics</a></h2>
+<p>Reflection only knows concrete types (<code>Handle&lt;Image&gt;</code>, <code>Time&lt;Virtual&gt;</code>), so generic signatures and types use <strong>markers</strong> standing for their parameters: <code>A</code>, <code>B</code> and <code>C</code>, from <code>bevy_mod_scripting::bindings::function::generics</code>. Markers only change the documentation and the Lua language server files, the values are references at runtime.</p>
+<blockquote class="blockquote-tag blockquote-tag-note">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p>The markers are real types: <code>A</code> is a reflected unit struct implementing <code>Asset</code>, <code>Default</code>, <code>Clone</code> and the other traits generic parameters are usually bounded by, so <code>Handle&lt;A&gt;</code> and <code>Time&lt;A&gt;</code> are real types too. A <code>Handle&lt;Image&gt;</code> is not a <code>Handle&lt;A&gt;</code>, so <code>V&lt;Handle&lt;A&gt;&gt;</code>, which copies the value out, can’t receive one. Use <code>ValueOf&lt;Handle&lt;A&gt;&gt;</code>. See the <a href="https://docs.rs/bevy_mod_scripting_bindings/latest/bevy_mod_scripting_bindings/function/generics/struct.A.html"><code>A</code> API docs</a>.</p>
+</blockquote>
+<h3 id="generic-functions"><a class="header" href="#generic-functions">Generic functions</a></h3>
+<p>Two wrappers carry the markers in signatures:</p>
+<ul>
+<li><code>ValueOf&lt;T&gt;</code>: a <code>ReflectReference</code>, documented as a <code>T</code>.</li>
+<li><code>TypeOf&lt;R, A&gt;</code>: a type argument passed as <code>R</code>, i.e. a registration, documented as the parameter <code>A</code>.</li>
+</ul>
+<p>Using the same marker ties them together, so <code>get_component</code> returns a value of the type it is given:</p>
+<pre><code class="language-rust ignore">fn get_component(
+    ctxt: FunctionCallContext,
+    entity: V&lt;Entity&gt;,
+    registration: TypeOf&lt;V&lt;ScriptComponentRegistration&gt;, A&gt;,
+) -&gt; Result&lt;Option&lt;ValueOf&lt;A&gt;&gt;, InteropError&gt;</code></pre>
+<pre><code class="language-lua">local bms = import_namespace("bms")
+local Transform = import_namespace("transform").Transform
+
+local transform = bms.world.get_component(assert(bms.current_entity()), Transform) -- typed as a Transform
+print(transform)
+</code></pre>
+<p>A marker can also stand inside a type, i.e. <code>ValueOf&lt;Handle&lt;A&gt;&gt;</code> accepts the handle of any asset type, see <a href="../ScriptingReference/references.html#references-in-rust">References</a>.</p>
+<h3 id="generic-types"><a class="header" href="#generic-types">Generic types</a></h3>
+<p>Instantiations of a generic type would be documented as unrelated types. Declare the generic type from your plugin, instantiated with markers, with its namespace, parameter names and docs:</p>
+<pre><code class="language-rust ignore">use bevy_mod_scripting::bindings::function::generics::{A, GenericTypesAppExt};
+
+app.register_generic_type::&lt;Time&lt;A&gt;&gt;("time", &amp;["T"], "A clock, i.e. `Time&lt;Virtual&gt;`.");</code></pre>
+<p>Fields of type <code>A</code> are then documented as being of the parameter <code>T</code>, and instantiations as <code>Time&lt;T&gt;</code> applied to their arguments. Further parameters use <code>B</code> and <code>C</code> (<code>Hashed&lt;A, B&gt;</code>). A parameter with bounds the markers don’t satisfy gets a marker of its own:</p>
+<pre><code class="language-rust ignore">bevy_mod_scripting::bindings::generic_marker! {
+    /// Stands for the material of `MyMaterialHolder&lt;M&gt;`
+    pub struct M;
+}
+impl MyMaterial for M {}
+
+app.register_type::&lt;M&gt;()
+    .register_generic_type::&lt;MyMaterialHolder&lt;M&gt;&gt;("my_crate", &amp;["M"], "...");</code></pre>
 <h2 id="fallible-functions"><a class="header" href="#fallible-functions">Fallible functions</a></h2>
 <p>Your script functions can return errors either by:</p>
 <ul>
 <li>Returning <code>Result&lt;T: IntoScript, InteropError&gt;</code></li>
-<li>Returning <code>ScriptValue</code> and manually creating the <code>ScriptValue::Error(into_interop_erorr.into())</code> variant.</li>
+<li>Returning <code>ScriptValue</code> and manually creating the <code>ScriptValue::Error(into_interop_error.into())</code> variant.</li>
 </ul>
 <h2 id="reserved-functions"><a class="header" href="#reserved-functions">Reserved Functions</a></h2>
 <p>There are a few reserved functions that you can override by registering them on a specific type:</p>
@@ -307,21 +343,21 @@ You can opt-in to receive this argument in your own function definitions by addi
 <tr><th>Function Name</th><th>Description</th><th>Overridable?</th><th>Has Default Implementation?</th></tr>
 </thead>
 <tbody>
-<tr><td>get</td><td>a getter function, used for indexing into a type</td><td>❌</td><td>✅</td></tr>
-<tr><td>set</td><td>a setter function, used for setting a value on a type</td><td>❌</td><td>✅</td></tr>
-<tr><td>sub</td><td>a subtraction function, used for subtracting two values</td><td>✅</td><td>❌</td></tr>
-<tr><td>add</td><td>an addition function, used for adding two values</td><td>✅</td><td>❌</td></tr>
-<tr><td>mul</td><td>a multiplication function, used for multiplying two values</td><td>✅</td><td>❌</td></tr>
-<tr><td>div</td><td>a division function, used for dividing two values</td><td>✅</td><td>❌</td></tr>
-<tr><td>rem</td><td>a remainder function, used for getting the remainder of two values</td><td>✅</td><td>❌</td></tr>
-<tr><td>neg</td><td>a negation function, used for negating a value</td><td>✅</td><td>❌</td></tr>
-<tr><td>pow</td><td>a power function, used for raising a value to a power</td><td>✅</td><td>❌</td></tr>
-<tr><td>rsub, rdiv, rrem, rpow</td><td>the reflected <code>sub</code>, <code>div</code>, <code>rem</code> and <code>pow</code>, called on the right operand when the left one is not a value, i.e. <code>1 - v</code> calls <code>rsub(v, 1)</code>. <code>add</code> and <code>mul</code> are called with their operands swapped instead</td><td>✅</td><td>❌</td></tr>
-<tr><td>eq</td><td>an equality function, used for checking if two values are equal</td><td>✅</td><td>❌</td></tr>
-<tr><td>lt</td><td>a less than function, used for checking if a value is less than another</td><td>✅</td><td>❌</td></tr>
-<tr><td>iter</td><td>an iterator function, used for iterating over a value</td><td>❌</td><td>✅</td></tr>
-<tr><td>display</td><td>a display function, used for pretty printing values</td><td>❌*</td><td>✅</td></tr>
-<tr><td>debug</td><td>a display function, used for displaying the internals of a value</td><td>❌*</td><td>✅</td></tr>
+<tr><td>get</td><td>a getter function, used for indexing into a type</td><td>no</td><td>yes</td></tr>
+<tr><td>set</td><td>a setter function, used for setting a value on a type</td><td>no</td><td>yes</td></tr>
+<tr><td>sub</td><td>a subtraction function, used for subtracting two values</td><td>yes</td><td>no</td></tr>
+<tr><td>add</td><td>an addition function, used for adding two values</td><td>yes</td><td>no</td></tr>
+<tr><td>mul</td><td>a multiplication function, used for multiplying two values</td><td>yes</td><td>no</td></tr>
+<tr><td>div</td><td>a division function, used for dividing two values</td><td>yes</td><td>no</td></tr>
+<tr><td>rem</td><td>a remainder function, used for getting the remainder of two values</td><td>yes</td><td>no</td></tr>
+<tr><td>neg</td><td>a negation function, used for negating a value</td><td>yes</td><td>no</td></tr>
+<tr><td>pow</td><td>a power function, used for raising a value to a power</td><td>yes</td><td>no</td></tr>
+<tr><td>rsub, rdiv, rrem, rpow</td><td>the reflected <code>sub</code>, <code>div</code>, <code>rem</code> and <code>pow</code>, called on the right operand when the left one is not a value, i.e. <code>1 - v</code> calls <code>rsub(v, 1)</code>. <code>add</code> and <code>mul</code> are called with their operands swapped instead</td><td>yes</td><td>no</td></tr>
+<tr><td>eq</td><td>an equality function, used for checking if two values are equal</td><td>yes</td><td>no</td></tr>
+<tr><td>lt</td><td>a less than function, used for checking if a value is less than another</td><td>yes</td><td>no</td></tr>
+<tr><td>iter</td><td>an iterator function, used for iterating over a value</td><td>no</td><td>yes</td></tr>
+<tr><td>display</td><td>a display function, used for pretty printing values</td><td>no*</td><td>yes</td></tr>
+<tr><td>debug</td><td>a display function, used for displaying the internals of a value</td><td>no*</td><td>yes</td></tr>
 </tbody>
 </table>
 </div>
@@ -345,7 +381,7 @@ You can opt-in to receive this argument in your own function definitions by addi
 </table>
 </div>
 <p>When the same name exists in more than one place, the most specific one wins.
-For <code>ReflectReference</code> and <code>StaticTypeRef</code> in a <code>script_bindings</code> block outside of the crate defining them, use the <code>remote</code> attribute.</p>
+These types are defined by BMS, so <code>script_bindings</code> blocks on <code>ReflectReference</code>, <code>StaticTypeRef</code> or <code>NamespaceMembers</code> in your crate need the <code>remote</code> attribute.</p>
 <h3 id="functions-available-on-every-type"><a class="header" href="#functions-available-on-every-type">Functions available on every type</a></h3>
 <p>The <code>StaticTypeRef</code> namespace is the equivalent for types, i.e. <code>Vec3</code> in <code>Vec3.new(..)</code>.
 Functions registered on it are available on every type, and receive the type as their first argument, which is filled in automatically:</p>
@@ -370,7 +406,7 @@ The same placeholders work for functions on <code>EnumVariantRef</code>, which a
 <h2 id="namespace-members"><a class="header" href="#namespace-members">Namespace members</a></h2>
 <p>Each type registered with the type registry is an entry in the table <code>import_namespace</code> returns for its <a href="../ScriptingReference/namespaces.html">namespace</a>, i.e. <code>import_namespace("math").Vec3</code>.</p>
 <p>Functions which don’t belong to a type are members of a namespace, declared on <code>impl NamespaceMembers</code>:</p>
-<pre><code class="language-rust ignore">#[script_bindings(namespace = "my_game")]
+<pre><code class="language-rust ignore">#[script_bindings(remote, namespace = "my_game")]
 impl NamespaceMembers {
     fn spawn_enemy(health: f32) { /* ... */ }
 }</code></pre>
@@ -385,11 +421,11 @@ my_game.spawn_enemy(5.0)
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../Summary/running-scripts.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../Summary/customizing-script-contexts.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../Summary/customizing-script-contexts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ScriptSystems/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -399,11 +435,11 @@ my_game.spawn_enemy(5.0)
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../Summary/running-scripts.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../Summary/customizing-script-contexts.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../Summary/customizing-script-contexts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ScriptSystems/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -432,9 +468,10 @@ my_game.spawn_enemy(5.0)
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-8d1048e1.js"></script>
+        <script src="../multi-code-block-b564eaca.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
-        <script src="../mermaid-init-f69ab335.js"></script>
+        <script src="../mermaid-init-bc25465b.js"></script>
+        <script src="../glossary-83c1ca5d.js"></script>
 
 
 

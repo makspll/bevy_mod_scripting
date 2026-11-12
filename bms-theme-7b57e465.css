@@ -1,0 +1,594 @@
+/* BMS theme: the logo colours on top of mdbook's `light` (BMS Light) and `navy` (BMS Dark) themes.
+   `rust` and `coal`/`ayu` map onto them too, so a theme saved in local storage still gets the BMS look.
+
+   logo:  #184375 navy   #c8bddc lavender   #594a42 brown   #00017a ink   #3f4561 slate   #fff */
+
+:root {
+    --bms-navy: #184375;
+    --bms-lavender: #c8bddc;
+    --bms-brown: #594a42;
+    --bms-ink: #00017a;
+    --bms-slate: #3f4561;
+    /* the logo's own gradient */
+    --bms-gradient: linear-gradient(90deg, var(--bms-ink), var(--bms-navy) 45%, var(--bms-lavender));
+
+    --body-font: "Inter", "Open Sans", system-ui, sans-serif;
+    --mono-font: "JetBrains Mono", "Source Code Pro", Consolas, Menlo, monospace;
+    --code-font-size: 0.85em;
+    --content-max-width: 800px;
+}
+
+/* ---------- palettes ---------- */
+
+.light,
+.rust {
+    --bg: #ffffff;
+    --fg: #1f2333;
+    --heading-fg: var(--bms-navy);
+
+    --sidebar-bg: var(--bms-navy);
+    --sidebar-fg: #ffffff;
+    --sidebar-non-existant: #9fb1cc;
+    --sidebar-active: var(--bms-lavender);
+    --sidebar-spacer: #2a5689;
+    --sidebar-header-border-color: var(--bms-lavender);
+
+    --scrollbar: #8a91ab;
+    --icons: #6b7190;
+    --icons-hover: var(--bms-navy);
+    --links: var(--bms-navy);
+
+    --inline-code-color: var(--bms-brown);
+    --inline-code-bg: #c8bddc55;
+    --code-bg: #f4f2f8;
+    --code-fg: #2a2e40;
+
+    --theme-popup-bg: #ffffff;
+    --theme-popup-border: var(--bms-lavender);
+    --theme-hover: #f1eef7;
+
+    --quote-bg: #f6f4fa;
+    --quote-border: #e1dbec;
+    --warning-border: var(--bms-brown);
+
+    --table-border-color: #e3e0ea;
+    --table-header-bg: #f1eef7;
+    --table-alternate-bg: #faf9fc;
+
+    --searchbar-border-color: #c9c5d6;
+    --searchbar-bg: #ffffff;
+    --searchbar-fg: #1f2333;
+    --searchbar-shadow-color: var(--bms-lavender);
+    --searchresults-header-fg: #6b7190;
+    --searchresults-border-color: #e3e0ea;
+    --searchresults-li-bg: #f6f4fa;
+    --search-mark-bg: #c8bddc;
+
+    --logo-tile: #ffffff;
+    --logo-tile-border: #e1dbec;
+
+    --footnote-highlight: var(--bms-lavender);
+    --overlay-bg: rgba(24, 67, 117, 0.25);
+
+    --blockquote-note-color: var(--bms-navy);
+    --blockquote-tip-color: #6b5a96;
+    --blockquote-important-color: var(--bms-ink);
+    --blockquote-warning-color: #8a6a4f;
+    --blockquote-caution-color: #b3261e;
+
+    --tok-keyword: #5b3f9e;
+    --tok-type: var(--bms-navy);
+    --tok-fn: #1d5fa8;
+    --tok-string: #7a5a3e;
+    --tok-number: #a8326e;
+    --tok-comment: #7d8299;
+    --tok-meta: var(--bms-ink);
+
+    --color-scheme: light;
+}
+
+.navy,
+.coal,
+.ayu {
+    --bg: #0e1626;
+    --fg: #e6e2ef;
+    --heading-fg: #ffffff;
+
+    /* a shade darker than the page, separated by a hairline */
+    --sidebar-bg: #0a1120;
+    --sidebar-fg: #d6d4e4;
+    --sidebar-non-existant: #8a90ab;
+    --sidebar-active: var(--bms-lavender);
+    --sidebar-spacer: #222c47;
+    --sidebar-header-border-color: var(--bms-lavender);
+    /* the logo's ink blue disappears on navy, a light tile keeps it readable */
+    --logo-tile: rgba(200, 189, 220, 0.14);
+    --logo-tile-border: rgba(200, 189, 220, 0.2);
+
+    --scrollbar: #545b7a;
+    --icons: #8d93ad;
+    --icons-hover: var(--bms-lavender);
+    --links: var(--bms-lavender);
+
+    --inline-code-color: #ffffff;
+    --inline-code-bg: var(--bms-brown);
+    --code-bg: #0a1020;
+    --code-fg: #dcdce8;
+
+    --theme-popup-bg: #18213a;
+    --theme-popup-border: var(--bms-slate);
+    --theme-hover: #232d4a;
+
+    --quote-bg: #141e33;
+    --quote-border: #25304d;
+    --warning-border: #d4b89c;
+
+    --table-border-color: #25304d;
+    --table-header-bg: #18213a;
+    --table-alternate-bg: #111a2d;
+
+    --searchbar-border-color: var(--bms-slate);
+    --searchbar-bg: #18213a;
+    --searchbar-fg: #e6e2ef;
+    --searchbar-shadow-color: var(--bms-lavender);
+    --searchresults-header-fg: #9a9fb8;
+    --searchresults-border-color: #25304d;
+    --searchresults-li-bg: #141e33;
+    --search-mark-bg: var(--bms-brown);
+
+    --footnote-highlight: var(--bms-brown);
+    --overlay-bg: rgba(10, 16, 32, 0.5);
+
+    --blockquote-note-color: #8fb4e6;
+    --blockquote-tip-color: var(--bms-lavender);
+    --blockquote-important-color: #a3a8ff;
+    --blockquote-warning-color: #d4b89c;
+    --blockquote-caution-color: #f2857c;
+
+    /* saturated lavender, plain lavender is too close to the code text */
+    --tok-keyword: #b39af0;
+    --tok-type: #8fb4e6;
+    --tok-fn: #a9c7ef;
+    --tok-string: #d4b89c;
+    --tok-number: #e0a0c0;
+    --tok-comment: #7a809c;
+    --tok-meta: #a3a8ff;
+
+    --color-scheme: dark;
+}
+
+/* only show one light and one dark theme in the picker */
+#mdbook-theme-list li:has(> #mdbook-theme-rust),
+#mdbook-theme-list li:has(> #mdbook-theme-coal),
+#mdbook-theme-list li:has(> #mdbook-theme-ayu) {
+    display: none;
+}
+
+#mdbook-theme-navy {
+    font-size: 0;
+}
+
+#mdbook-theme-navy::after {
+    content: "Dark";
+    font-size: 1.4rem;
+}
+
+/* ---------- chrome ---------- */
+
+body {
+    font-family: var(--body-font);
+    font-feature-settings: "cv11", "calt";
+}
+
+/* the logo gradient as a strip along the top of the window, over the sidebar too */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: var(--bms-gradient);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.menu-title {
+    font-weight: 600;
+    font-size: 2rem;
+    letter-spacing: -0.02em;
+    color: var(--heading-fg);
+}
+
+/* the logo sits on a flat tile, like the hero logo */
+.menu-title::before {
+    content: "";
+    display: inline-block;
+    box-sizing: border-box;
+    width: 1.5em;
+    height: 1.5em;
+    margin-inline-end: 0.4em;
+    vertical-align: -0.35em;
+    border-radius: 0.3em;
+    border: 1px solid var(--logo-tile-border);
+    background: var(--logo-tile) url(logo.svg) no-repeat center / 74%;
+}
+
+.sidebar {
+    border-inline-end: 1px solid var(--sidebar-spacer);
+}
+
+/* ---------- sidebar ----------
+   One rhythm for every row: items are padded blocks with no margins between them,
+   nested lists (sub chapters and the page's headings) hang off a thin guide line. */
+
+.sidebar {
+    font-size: 0.9em;
+}
+
+.sidebar .sidebar-scrollbox {
+    padding: 16px 12px 40px;
+}
+
+.sidebar .chapter,
+.sidebar .chapter .section {
+    line-height: 1.35;
+}
+
+.sidebar .chapter li.chapter-item,
+.sidebar .chapter li.header-item {
+    margin: 0;
+}
+
+/* the empty spacer mdbook emits between the prefix chapters and the first part */
+.sidebar .chapter li.chapter-item:empty {
+    display: none;
+}
+
+.sidebar .chapter-link-wrapper > a {
+    flex: 1;
+    display: block;
+    padding: 6px 10px;
+    margin-block: 1px;
+    border-radius: 6px;
+    transition: background-color 0.15s;
+}
+
+.sidebar .chapter li a:hover {
+    color: var(--sidebar-fg);
+    background: color-mix(in srgb, var(--sidebar-fg) 9%, transparent);
+}
+
+.sidebar .chapter li a.active {
+    color: var(--sidebar-active);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--sidebar-active) 16%, transparent);
+    box-shadow: inset 3px 0 0 var(--sidebar-active);
+}
+
+/* section numbers, for books with `no-section-label = false` */
+.sidebar .chapter li a > strong {
+    color: var(--sidebar-non-existant);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    display: inline-block;
+    min-width: 1.9em;
+}
+
+.sidebar .chapter-fold-toggle {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+}
+
+/* part titles: small labels, separated from the previous group */
+.sidebar .chapter li.part-title {
+    color: var(--sidebar-active);
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 20px 10px 6px;
+    padding-top: 16px;
+    border-top: 1px solid var(--sidebar-spacer);
+}
+
+/* nested lists: sub chapters and "on this page" headings */
+.sidebar .chapter .section,
+.sidebar .on-this-page {
+    margin: 2px 0 6px 12px;
+    padding: 0 0 0 6px;
+    border-inline-start: 1px solid var(--sidebar-spacer);
+}
+
+.sidebar .on-this-page > ol.section {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.sidebar .chapter .section a {
+    font-size: 0.93em;
+    padding: 4px 10px;
+}
+
+.sidebar .chapter a.header-in-summary {
+    color: var(--sidebar-non-existant);
+    font-weight: 400;
+}
+
+.sidebar .chapter a.header-in-summary.current-header {
+    color: var(--sidebar-active);
+}
+
+/* ---------- content ---------- */
+
+.content {
+    line-height: 1.65;
+}
+
+.content h1,
+.content h2,
+.content h3,
+.content h4 {
+    color: var(--heading-fg);
+    letter-spacing: -0.015em;
+    font-weight: 700;
+}
+
+.content h1 a.header,
+.content h2 a.header,
+.content h3 a.header,
+.content h4 a.header {
+    color: inherit;
+}
+
+.content main > h2 {
+    padding-inline-start: 0.6em;
+    border-inline-start: 3px solid transparent;
+    border-image: linear-gradient(180deg, var(--bms-ink), var(--bms-lavender)) 1;
+}
+
+.content main > h3 {
+    font-weight: 600;
+}
+
+/* underline links, the dark theme's lavender links are otherwise close to the body text */
+.content main a:not(.header) {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--links) 40%, transparent);
+    text-underline-offset: 0.2em;
+}
+
+.content main a:not(.header):hover {
+    text-decoration-color: var(--links);
+}
+
+/* code */
+:not(pre) > code.hljs,
+:not(pre) > .hljs {
+    background: var(--inline-code-bg);
+    font-size: 0.85em;
+    padding: 0.12em 0.35em;
+    border-radius: 4px;
+    /* code wrapping over lines, i.e. in table cells, keeps its padding and corners on each line */
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+pre > code.hljs,
+pre > .hljs,
+.light pre > .hljs,
+.navy pre > .hljs {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border-radius: 6px;
+    border: 1px solid var(--table-border-color);
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-built_in,
+.hljs-builtin {
+    color: var(--tok-keyword);
+}
+
+.hljs-type,
+.hljs-title.class_,
+.hljs-class .hljs-title {
+    color: var(--tok-type);
+}
+
+.hljs-title,
+.hljs-title.function_,
+.hljs-section,
+.hljs-name {
+    color: var(--tok-fn);
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attr,
+.hljs-attribute {
+    color: var(--tok-string);
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet {
+    color: var(--tok-number);
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion {
+    color: var(--tok-comment);
+    font-style: italic;
+}
+
+.hljs-meta,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params {
+    color: var(--tok-meta);
+}
+
+/* diagrams */
+pre.mermaid svg {
+    display: block;
+    margin: 0 auto;
+}
+
+/* tables */
+.content table {
+    border-collapse: collapse;
+}
+
+.content table thead th {
+    font-weight: 600;
+}
+
+/* blockquotes and `> [!NOTE]` style alerts */
+blockquote {
+    border-block: none;
+    border-inline-start: 3px solid var(--quote-border);
+    border-radius: 0 6px 6px 0;
+    padding: 0.4em 1.1em;
+}
+
+blockquote.blockquote-tag {
+    background: color-mix(in srgb, var(--blockquote-color, var(--quote-border)) 9%, var(--bg));
+    border-inline-start-width: 4px;
+}
+
+.blockquote-tag-note { --blockquote-color: var(--blockquote-note-color); }
+.blockquote-tag-tip { --blockquote-color: var(--blockquote-tip-color); }
+.blockquote-tag-important { --blockquote-color: var(--blockquote-important-color); }
+.blockquote-tag-warning { --blockquote-color: var(--blockquote-warning-color); }
+.blockquote-tag-caution { --blockquote-color: var(--blockquote-caution-color); }
+
+.blockquote-tag-title {
+    font-weight: 600;
+    font-size: 0.9em;
+    letter-spacing: 0.02em;
+}
+
+/* ---------- landing hero (introduction.md) ---------- */
+
+.bms-hero {
+    text-align: center;
+    padding: 2.5em 1em 2em;
+    margin-block-end: 2em;
+    border-radius: 12px;
+    background:
+        radial-gradient(ellipse at top, color-mix(in srgb, var(--bms-lavender) 12%, transparent), transparent 65%),
+        var(--quote-bg);
+    border: 1px solid var(--quote-border);
+}
+
+.bms-hero img {
+    width: 120px;
+    height: auto;
+    padding: 14px;
+    border-radius: 24px;
+    border: 1px solid var(--logo-tile-border);
+    background: var(--logo-tile);
+}
+
+.bms-hero h1 {
+    margin: 0.3em 0 0.1em;
+    font-size: 2.6em;
+}
+
+.bms-hero .bms-tagline {
+    font-size: 1.15em;
+    opacity: 0.85;
+    margin: 0 0 1.4em;
+}
+
+.bms-hero-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6em;
+}
+
+.content main .bms-hero-links a {
+    display: inline-block;
+    padding: 0.45em 1.1em;
+    border-radius: 999px;
+    border: 1px solid var(--links);
+    color: var(--links);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.content main .bms-hero-links a:first-child {
+    background: var(--bms-navy);
+    border-color: var(--bms-navy);
+    color: #ffffff;
+}
+
+.content main .bms-hero-links a:hover {
+    background: var(--theme-hover);
+}
+
+.content main .bms-hero-links a:first-child:hover {
+    background: var(--bms-ink);
+}
+
+/* ---------- glossary terms (glossary.js) ---------- */
+
+.content main a.glossary-term {
+    color: inherit;
+    text-decoration: underline dotted;
+    text-decoration-color: color-mix(in srgb, var(--links) 70%, transparent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.22em;
+    cursor: help;
+}
+
+.content main a.glossary-term:hover,
+.content main a.glossary-term:focus-visible {
+    color: var(--links);
+    text-decoration-color: var(--links);
+}
+
+.glossary-card {
+    position: absolute;
+    z-index: 1100;
+    max-width: min(360px, calc(100vw - 16px));
+    padding: 0.8em 1em 0.7em;
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: var(--fg);
+    background: var(--theme-popup-bg);
+    border: 1px solid var(--theme-popup-border);
+    border-top: 3px solid var(--bms-lavender);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(10, 16, 32, 0.25);
+}
+
+.glossary-card[hidden] {
+    display: none;
+}
+
+.glossary-card-title {
+    font-weight: 700;
+    color: var(--heading-fg);
+    margin-bottom: 0.25em;
+}
+
+.glossary-card p {
+    margin: 0 0 0.5em;
+}
+
+.glossary-card a {
+    color: var(--links);
+}
+
+.glossary-card-more {
+    font-size: 0.85em;
+    font-weight: 600;
+    text-decoration: none;
+}

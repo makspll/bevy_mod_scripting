@@ -3,24 +3,24 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Installation - Bevy Scripting</title>
+        <title>Introduction - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="icon" href="favicon-e7d2d2b5.svg">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
         <link rel="stylesheet" href="css/general-e96d0476.css">
         <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
@@ -28,8 +28,9 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="lad-45425c30.css">
+        <link rel="stylesheet" href="bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a0846749.js"></script>
+        <script src="toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -148,7 +149,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/Summary/installation.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/introduction.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
                         </a>
 
@@ -182,67 +183,76 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
-<h2 id="cargo"><a class="header" href="#cargo">Cargo</a></h2>
-<p>First you need to install the crate by adding this entry to your <code>Cargo.toml</code> dependencies list:</p>
-<pre><code class="language-toml">bevy_mod_scripting = { version = "0.9.0", features = ["lua54"]}
-</code></pre>
-<p>Choose the language features you wish enabled and add them to the features block.</p>
-<h2 id="bevy-plugin"><a class="header" href="#bevy-plugin">Bevy Plugin</a></h2>
-<p>The next step is to add the BMS plugin to your application.</p>
-<pre><code class="language-rust ignore">app.add_plugins(BMSPlugin);</code></pre>
-<p>You can modify each of the plugins contained within the plugin group using <code>set(MySubPlugin)</code>.</p>
-<h2 id="language-features"><a class="header" href="#language-features">Language Features</a></h2>
-<p>Each language supported by BMS can be switched-on via feature flag as below:</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Language</th><th>Feature Flag</th></tr>
-</thead>
-<tbody>
-<tr><td>Lua51</td><td>lua51</td></tr>
-<tr><td>Lua52</td><td>lua54</td></tr>
-<tr><td>Lua53</td><td>lua53</td></tr>
-<tr><td>Lua54</td><td>lua54</td></tr>
-<tr><td>Luajit</td><td>luajit</td></tr>
-<tr><td>Luajit52</td><td>luajit52</td></tr>
-<tr><td>Luau</td><td>luau</td></tr>
-<tr><td>Rune</td><td>rune</td></tr>
-</tbody>
-</table>
+                        <div class="bms-hero">
+  <img src="logo.svg" alt="">
+  
+<h1>Bevy Mod Scripting</h1>
+
+  
+<p class="bms-tagline">Script your Bevy game: hot-reloadable Lua &amp; Rune with full ECS access</p>
+
+  
+<div class="bms-hero-links">
+    <a href="Summary/installation.html">Install</a>
+    <a href="Summary/managing-scripts.html">User Guide</a>
+    <a href="ScriptingReference/introduction.html">Scripting Reference</a>
+    <a href="https://github.com/makspll/bevy_mod_scripting">GitHub</a>
+  </div>
+
 </div>
-<h3 id="mobile"><a class="header" href="#mobile">Mobile</a></h3>
-<p>CI type-checks <code>bevy_mod_scripting</code> for <code>aarch64-linux-android</code> and <code>aarch64-apple-ios</code>; nothing is run on a device. Both need the target’s C toolchain (Android NDK, Xcode) as the Lua runtimes are built from source, and Android needs a <code>bevy</code> activity feature in your app (e.g. <code>bevy/android-native-activity</code>).</p>
+
+<p>BMS (<code>bevy_mod_scripting</code>) runs Lua and Rune scripts inside a Bevy app. Scripts reach the world through reflection, so any <code>Reflect</code> type, including ones from other crates, can be used from scripts without writing glue code.</p>
+<ul>
+<li>Update game logic without recompiling, with hot reloading of script assets</li>
+<li>Let modders add content through the same bindings your own scripts use</li>
+<li>Bindings are written once in Rust and work in every supported language</li>
+<li>Scripts can add their own systems, components and events</li>
+<li>Generated docs and Lua language server definitions for your bindings</li>
+</ul>
+<h2 id="how-a-script-runs"><a class="header" href="#how-a-script-runs">How a script runs</a></h2>
+<p>Loading a script asset runs nothing. A script runs code when it is <strong>attached</strong>, reloaded or detached, which the script pipeline handles, and when one of its <strong>callbacks</strong> is invoked by name. The schedule each one runs in is in italics.</p>
+<pre class="mermaid">flowchart TB
+    COMP(["ScriptComponent added / removed"]) -- "&lt;i&gt;PreUpdate&lt;/i&gt;" --&gt; PIPE[["script pipeline"]]
+    CMDS(["AttachScript / DetachScript"]) -- "&lt;i&gt;immediately&lt;/i&gt;" --&gt; PIPE
+    PIPE --&gt; LIVE((attached))
+    subgraph CALLBACKS ["callbacks, run by name"]
+        direction LR
+        EH["event_handler&lt;br/&gt;&lt;i&gt;your schedule&lt;/i&gt;"] ~~~ CMD["RunScriptCallback&lt;br/&gt;&lt;i&gt;on command flush&lt;/i&gt;"] ~~~ SYS["script systems&lt;br/&gt;&lt;i&gt;their schedule&lt;/i&gt;"]
+        OBS["observers&lt;br/&gt;&lt;i&gt;on trigger&lt;/i&gt;"] ~~~ OTHER["other scripts&lt;br/&gt;&lt;i&gt;immediately or queued&lt;/i&gt;"]
+    end
+    LIVE &lt;--&gt; CALLBACKS
+    LIVE -. "asset modified, &lt;i&gt;PreUpdate&lt;/i&gt;" .-&gt; PIPE
+
+    click PIPE href "#the-script-pipeline"
+</pre>
+
+<h3 id="the-script-pipeline"><a class="header" href="#the-script-pipeline">The script pipeline</a></h3>
+<pre class="mermaid">flowchart LR
+    subgraph PRE ["script pipeline"]
+        direction LR
+        A(["attached"]) --&gt; L["context initializers&lt;br/&gt;top level code&lt;br/&gt;on_script_loaded"]
+        M(["asset modified"]) --&gt; R["on_script_unloaded&lt;br/&gt;top level code&lt;br/&gt;on_script_loaded&lt;br/&gt;on_script_reloaded"]
+        D(["detached"]) --&gt; U["on_script_unloaded&lt;br/&gt;context removed&lt;br/&gt;with its last script"]
+    end
+</pre>
+
+<ul>
+<li>The <strong>attachment</strong> (entity + script, or a static script) is the script’s identity, see <a href="./Summary/managing-scripts.html">Managing Scripts</a>. Scripts sharing a <a href="./Summary/contexts.html">context</a> share globals.</li>
+<li><strong>Callbacks</strong> run the function passed to <code>register_callback</code>, else the top level function of that name, see <a href="./Summary/running-scripts.html">Running Scripts</a> and <a href="./ScriptingReference/calling-other-scripts.html">Calling Other Scripts</a>.</li>
+<li><code>on_script_*</code> are the <a href="./ScriptingReference/core-callbacks.html">core callbacks</a>. <code>on_script_unloaded</code> can return state, which <code>on_script_reloaded</code> receives.</li>
+<li>Ordering and budgeting are covered in <a href="./ScriptPipeline/pipeline.html">Script Pipeline</a>.</li>
+</ul>
+<h2 id="where-to-start"><a class="header" href="#where-to-start">Where to start</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Language</th><th>Android</th><th>iOS</th></tr>
+<tr><th>You are</th><th>Read</th></tr>
 </thead>
 <tbody>
-<tr><td>Lua51, Lua52, Lua53</td><td>yes</td><td>no: the Lua sources call <code>system</code>, which the iOS SDK marks unavailable (fixed upstream in Lua 5.4)</td></tr>
-<tr><td>Lua54</td><td>yes</td><td>yes</td></tr>
-<tr><td>Luajit, Luajit52</td><td>yes</td><td>no: <code>luajit-src</code> can’t build for iOS, which also forbids JIT</td></tr>
-<tr><td>Luau</td><td>yes</td><td>yes</td></tr>
-<tr><td>Rune</td><td>yes</td><td>yes</td></tr>
-</tbody>
-</table>
-</div>
-<p><code>unsafe_lua_modules</code> loads native libraries at runtime, which iOS restricts.</p>
-<h2 id="extra-features"><a class="header" href="#extra-features">Extra Features</a></h2>
-<p>In order to fit as many use cases as possible, BMS allows you to disable a lot of its functionality.</p>
-<p>By default all of the useful features are enabled, but you may disable them if you wish if you are only needing BMS for script lifecycle management, and want to populate the bindings yourself.</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Feature</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td>core_functions</td><td>If enabled, will enable all core functions, i.e. bevy integrations which let you interact with Bevy via reflection</td></tr>
-<tr><td>bevy_&lt;bevy_crate&gt;_bindings</td><td>enables bindings for the specified bevy crate, e.g. <code>bevy_ecs</code>, <code>bevy_transform</code>, <code>bevy_pbr</code> etc. for a full list of available modules check out <a href="https://github.com/makspll/bevy_mod_scripting/blob/432b91b1022a133b34d1b4a7eb382268f34b76ea/crates/bevy_mod_scripting_functions/Cargo.toml#L14">The Cargo manifest</a></td></tr>
-<tr><td>mlua_async</td><td>Enables <code>mlua/async</code></td></tr>
-<tr><td>mlua_serialize</td><td>Enables <code>mlua/serialize</code></td></tr>
-<tr><td>mlua_macros</td><td>Enables <code>mlua/macros</code></td></tr>
-<tr><td>unsafe_lua_modules</td><td>Allows loading unsafe modules via <code>require</code> in lua</td></tr>
+<tr><td>Adding scripting to a Bevy game</td><td><a href="./Summary/installation.html">Installation</a>, then the <a href="./Summary/managing-scripts.html">User Guide</a></td></tr>
+<tr><td>Writing scripts or mods</td><td>The <a href="./ScriptingReference/introduction.html">Scripting Reference</a></td></tr>
+<tr><td>Upgrading BMS</td><td>The <a href="./ReleaseNotes/guides.html">Release Notes</a></td></tr>
+<tr><td>Contributing to BMS</td><td><a href="./Development/introduction.html">Developing BMS</a></td></tr>
 </tbody>
 </table>
 </div>
@@ -252,7 +262,7 @@
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
 
-                            <a rel="next prefetch" href="Summary/managing-scripts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="glossary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -263,7 +273,7 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
 
-                    <a rel="next prefetch" href="Summary/managing-scripts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="glossary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -292,9 +302,10 @@
         <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="multi-code-block-8d1048e1.js"></script>
+        <script src="multi-code-block-b564eaca.js"></script>
         <script src="mermaid-eefea253.min.js"></script>
-        <script src="mermaid-init-f69ab335.js"></script>
+        <script src="mermaid-init-bc25465b.js"></script>
+        <script src="glossary-83c1ca5d.js"></script>
 
 
 

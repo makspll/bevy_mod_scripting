@@ -3,24 +3,24 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>LADfiles - Bevy Scripting</title>
+        <title>Editor Support - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="../fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="icon" href="../favicon-e7d2d2b5.svg">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
         <link rel="stylesheet" href="../css/general-e96d0476.css">
         <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
@@ -28,8 +28,9 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="../lad-45425c30.css">
+        <link rel="stylesheet" href="../bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="../multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="../lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "../searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a0846749.js"></script>
+        <script src="../toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,7 +183,9 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h2 id="ladfiles"><a class="header" href="#ladfiles">LADfiles</a></h2>
+                        <h1 id="editor-support"><a class="header" href="#editor-support">Editor Support</a></h1>
+<p>BMS generates documentation and editor definitions for all bindings registered in your app, including your own.</p>
+<h2 id="ladfiles"><a class="header" href="#ladfiles">LADfiles</a></h2>
 <p>BMS provides a custom Language Agnostic Declaration format (LAD), which can be used to integrate with other tooling.</p>
 <p>If you use <code>#[script_bindings]</code> macros, these files will magically contain your code comments, bindings as well as everything else required to drive other powerful integrations.</p>
 <p>The declaration file is generated from the type registry and serves as a light abstraction layer simplifying the traversal of all
@@ -201,11 +204,11 @@ available types, namespaces and functions.</p>
 <p>This plugin is only available when one of the sub features (like <code>lua_language_server_files</code>) mentioned in this chapter is enabled.</p>
 <p>You might not want to run this pipeline in your final binary, but rather bundle some of the generated files into some sort of development pack for modding. You can use compiler flags like <code>#[cfg(not(debug_assertions))]</code> to disable ladfile generation at runtime, or simply disable the lower level features within BMS to avoid compiling related dependencies too.</p>
 <h2 id="lua-language-server"><a class="header" href="#lua-language-server">Lua Language Server</a></h2>
-<div class="warning">
-    This feature is in early stages, the definitions provide 90% of the way there, but there are rough edges that will need to be worked out
-</div>
-
-<p><a href="https://github.com/LuaLS/lua-language-server">Luals</a> or LLS, is an open source language server which integrates with many IDE’s.</p>
+<blockquote class="blockquote-tag blockquote-tag-note">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p>This feature is in early stages: the definitions get you 90% of the way there, but there are rough edges.</p>
+</blockquote>
+<p><a href="https://github.com/LuaLS/lua-language-server">LuaLS</a> is an open source language server which integrates with many IDEs.</p>
 <p>It is powered by lua specific annotation or definition files which BMS can generate directly from its own LADfiles.</p>
 <p>To enable this simply enable the <code>lua_language_server_files</code> feature, and a <code>bindings.d.lua</code> definition file, plus a <code>bindings.&lt;namespace&gt;.d.lua</code> file per namespace, will be generated in the LADfile output directory in the <code>Startup</code> schedule.</p>
 <p>Script writers can then use this generated file by pointing their <code>.luarc.json</code> file to these definitions:</p>
@@ -226,11 +229,11 @@ If completions for BMS types are missing, i.e. <code>Vec3.</code> suggests nothi
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../ScriptTooling/summary.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ScriptPipeline/pipeline.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../ScriptPipeline/pipeline.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../Examples/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -240,11 +243,11 @@ If completions for BMS types are missing, i.e. <code>Vec3.</code> suggests nothi
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../ScriptTooling/summary.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ScriptPipeline/pipeline.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../ScriptPipeline/pipeline.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../Examples/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -273,9 +276,10 @@ If completions for BMS types are missing, i.e. <code>Vec3.</code> suggests nothi
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-8d1048e1.js"></script>
+        <script src="../multi-code-block-b564eaca.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
-        <script src="../mermaid-init-f69ab335.js"></script>
+        <script src="../mermaid-init-bc25465b.js"></script>
+        <script src="../glossary-83c1ca5d.js"></script>
 
 
 

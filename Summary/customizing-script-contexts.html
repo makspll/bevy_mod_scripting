@@ -3,24 +3,24 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Modifying Script Contexts - Bevy Scripting</title>
+        <title>Customizing Contexts - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="../fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="icon" href="../favicon-e7d2d2b5.svg">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
         <link rel="stylesheet" href="../css/general-e96d0476.css">
         <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
@@ -28,8 +28,9 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="../lad-45425c30.css">
+        <link rel="stylesheet" href="../bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="../multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="../lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "../searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a0846749.js"></script>
+        <script src="../toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,81 +183,63 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="modifying-script-contexts"><a class="header" href="#modifying-script-contexts">Modifying Script Contexts</a></h1>
-<p>You should be able to achieve what you need by registering script functions in most cases. However sometimes you might want to override the way contexts are loaded, or how the runtime is initialized.</p>
-<p>This is possible using <code>Context Initializers</code> and <code>Context Pre Handling Initializers</code> as well as <code>Runtime Initializers</code>.</p>
-<p>It is however always reccomened to use the dynamic script function registry whenever possible, as it is more flexible and easier to use. It also allows you to introspect available functions easier.</p>
-<h2 id="context-initializers"><a class="header" href="#context-initializers">Context Initializers</a></h2>
-<p>For example, let’s say you want to set a dynamic amount of globals in your script, depending on some setting in your app.</p>
-<p>You could do this by customizing the scripting plugin:</p>
-<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default().add_context_initializer(|_context_key: &amp;ContextKey, context: &amp;mut Lua| {
+                        <h1 id="customizing-contexts"><a class="header" href="#customizing-contexts">Customizing Contexts</a></h1>
+<p>Most of the time, <a href="./controlling-script-bindings.html">registering script functions</a> is all you need: they work in every language, and show up in the generated docs. For anything else, scripting plugins take initializers which run on each <a href="./contexts.html">context</a> or runtime:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Initializer</th><th>Runs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>add_context_initializer</code></td><td>Once a context is created, and when its script is reloaded, before any callbacks</td></tr>
+<tr><td><code>add_context_pre_handling_initializer</code></td><td>Before every callback, and on load and reload</td></tr>
+<tr><td><code>add_runtime_initializer</code></td><td>Once, on the runtime shared by all contexts</td></tr>
+</tbody>
+</table>
+</div>
+<p>Initializers are plain functions (<code>fn</code> pointers), so they can’t capture variables.</p>
+<h2 id="context-initializers"><a class="header" href="#context-initializers">Context initializers</a></h2>
+<p>i.e. setting some globals for every Lua script:</p>
+<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default().add_context_initializer(|_attachment, context| {
     let globals = context.globals();
     for i in 0..10 {
-        globals.set(i, i);
+        globals.set(i, i).map_err(IntoInteropError::to_bms_error)?;
     }
     Ok(())
 });
 
-app.add_plugins(plugin)</code></pre>
-<p>The above will run every time the script is loaded or re-loaded and before it handles any callbacks.</p>
-<h2 id="context-pre-handling-initializers"><a class="header" href="#context-pre-handling-initializers">Context Pre Handling Initializers</a></h2>
-<p>If you want to customize your context before every time it’s about to handle events (and when it’s loaded + reloaded), you can use <code>Context Pre Handling Initializers</code>:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use bevy::prelude::*;
-use bevy_mod_scripting::prelude::*;
-fn scripting_plugin(app: &amp;mut App) {
-    app.add_plugins(LuaScriptingPlugin::default()
-                       .add_context_pre_handling_initializer(|context_key: &amp;ContextKey, context: &amp;mut Lua| {
-        let globals = context.globals();
-        if let Some(script_id) = context_key.script_id.as_ref() {
-            globals.set("script_name", script_id.to_owned());
-        }
+app.add_plugins(plugin);</code></pre>
+<h2 id="pre-handling-initializers"><a class="header" href="#pre-handling-initializers">Pre handling initializers</a></h2>
+<p>These receive the attachment of the script about to run, i.e. to expose its name:</p>
+<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default().add_context_pre_handling_initializer(
+    |attachment, context| {
+        let name = attachment.script().path().map(|p| p.to_string());
+        context
+            .globals()
+            .set("script_name", name)
+            .map_err(IntoInteropError::to_bms_error)?;
         Ok(())
-    }));
-}
-<span class="boring">}</span></code></pre>
-<h2 id="runtime-initializers"><a class="header" href="#runtime-initializers">Runtime Initializers</a></h2>
-<p>Some scripting languages, have the concept of a <code>runtime</code>. This is a global object which is shared between all contexts. You can customize this object using <code>Runtime Initializers</code>:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use bevy::prelude::*;
-use bevy_mod_scripting::prelude::*;
-fn scripting_plugin(app: &amp;mut App) {
-    app.add_plugin(SomeScriptingPlugin::default().add_runtime_initializer(|runtime: &amp;mut Runtime| {
-        runtime.set_max_stack_size(1000);
-        Ok(())
-    }));
-    
-}
-<span class="boring">}</span></code></pre>
-<p>In the case of Lua, the runtime type is <code>()</code> i.e. This is because <code>mlua</code> does not have a separate runtime concept.</p>
-<h2 id="accessing-the-world-in-initializers"><a class="header" href="#accessing-the-world-in-initializers">Accessing the World in Initializers</a></h2>
-<p>You can access the world in these initializers by using the thread local: <code>ThreadWorldContainer</code>:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use bevy::prelude::*;
-use bevy_mod_scripting::prelude::*;
-fn scripting_plugin(app: &amp;mut App) {
-    let plugin = LuaScriptingPlugin::default();
-    plugin.add_context_initializer(|_context_key: &amp;ContextKey, context: &amp;mut Lua| {
-        let world = ThreadWorldContainer::try_get_context().unwrap().world;
-        world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
-        Ok(())
-    });
-    app.add_plugins(plugin);
-}
-<span class="boring">}</span></code></pre>
+    },
+));</code></pre>
+<h2 id="runtime-initializers"><a class="header" href="#runtime-initializers">Runtime initializers</a></h2>
+<p>Some languages have a <code>runtime</code>, shared by all contexts, which is customized with <code>add_runtime_initializer(|runtime| { ... })</code>. Lua’s runtime type is <code>()</code>, as <code>mlua</code> has no separate runtime.</p>
+<h2 id="accessing-the-world"><a class="header" href="#accessing-the-world">Accessing the world</a></h2>
+<p>During initializers, the world is available through the <code>ThreadWorldContainer</code> thread local:</p>
+<pre><code class="language-rust ignore">LuaScriptingPlugin::default().add_context_initializer(|_attachment, _context| {
+    let world = ThreadWorldContainer::try_get_context()?.world;
+    world.with_resource(|res: &amp;MyResource| println!("My resource: {res:?}"))?;
+    Ok(())
+});</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../Summary/controlling-script-bindings.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../Summary/contexts.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../Summary/contexts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../Summary/controlling-script-bindings.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -266,11 +249,11 @@ fn scripting_plugin(app: &amp;mut App) {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../Summary/controlling-script-bindings.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../Summary/contexts.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../Summary/contexts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../Summary/controlling-script-bindings.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -299,9 +282,10 @@ fn scripting_plugin(app: &amp;mut App) {
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-8d1048e1.js"></script>
+        <script src="../multi-code-block-b564eaca.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
-        <script src="../mermaid-init-f69ab335.js"></script>
+        <script src="../mermaid-init-bc25465b.js"></script>
+        <script src="../glossary-83c1ca5d.js"></script>
 
 
 

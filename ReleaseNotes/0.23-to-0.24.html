@@ -7,20 +7,20 @@
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="../fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="icon" href="../favicon-e7d2d2b5.svg">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
         <link rel="stylesheet" href="../css/general-e96d0476.css">
         <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
@@ -28,8 +28,9 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="../lad-45425c30.css">
+        <link rel="stylesheet" href="../bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="../multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="../lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "../searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a0846749.js"></script>
+        <script src="../toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -220,8 +221,29 @@
 <h2 id="rust"><a class="header" href="#rust">Rust</a></h2>
 <h3 id="features-and-crates"><a class="header" href="#features-and-crates">Features and crates</a></h3>
 <ul>
-<li>The <code>rhai</code> feature and <code>bevy_mod_scripting_rhai</code> are removed.</li>
-<li>The generated <code>*_bms_bindings</code> crates are replaced by <code>bevy_mod_scripting_bevy_&lt;category&gt;_bindings</code>. The binding features are now: <code>bevy_{animation, asset, audio, camera, color, ecs, gizmos, input, math, render, sprite, state, text, time, transform, ui, window}_bindings</code>. Features of crates folded into a category are removed (i.e. <code>bevy_pbr_bindings</code>, <code>bevy_mesh_bindings</code>, <code>bevy_image_bindings</code> → <code>bevy_render_bindings</code>), as are the ones without hand-written bindings (i.e. <code>bevy_a11y_bindings</code>, <code>bevy_gltf_bindings</code>, <code>bevy_picking_bindings</code>, <code>bevy_scene_bindings</code>).</li>
+<li>
+<p>The <code>rhai</code> feature and <code>bevy_mod_scripting_rhai</code> are removed.</p>
+</li>
+<li>
+<p>The generated <code>*_bms_bindings</code> crates are replaced by <code>bevy_mod_scripting_bevy_&lt;category&gt;_bindings</code>. The binding features are now <code>bevy_{animation, asset, audio, camera, color, ecs, gizmos, input, math, render, sprite, state, text, time, transform, ui, window}_bindings</code>:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>0.23 feature</th><th>0.24</th></tr>
+</thead>
+<tbody>
+<tr><td><code>bevy_reflect_bindings</code>, <code>bevy_curve_bindings</code>, <code>bevy_shape_bindings</code></td><td><code>bevy_math_bindings</code></td></tr>
+<tr><td><code>bevy_image_bindings</code>, <code>bevy_mesh_bindings</code>, <code>bevy_pbr_bindings</code></td><td><code>bevy_render_bindings</code></td></tr>
+<tr><td><code>bevy_input_focus_bindings</code></td><td><code>bevy_input_bindings</code></td></tr>
+<tr><td><code>bevy_core_pipeline_bindings</code>, <code>bevy_gltf_bindings</code>, <code>bevy_light_bindings</code>, <code>bevy_picking_bindings</code>, <code>bevy_post_process_bindings</code>, <code>bevy_scene_bindings</code>, <code>bevy_sprite_render_bindings</code>, <code>bevy_ui_render_bindings</code>, <code>bevy_ui_widgets_bindings</code></td><td>removed, reachable through reflection</td></tr>
+</tbody>
+</table>
+</div>
+<p>The default features are <code>core_functions</code> and the <code>ecs</code>, <code>input</code>, <code>math</code>, <code>time</code>, <code>transform</code>, <code>color</code> and <code>window</code> bindings.</p>
+</li>
+<li>
+<p><code>mlua</code> is bumped to 0.12, see its <a href="https://github.com/mlua-rs/mlua/blob/main/CHANGELOG.md">changelog</a> if you use it directly.</p>
+</li>
 </ul>
 <h3 id="script-globals-are-removed"><a class="header" href="#script-globals-are-removed">Script globals are removed</a></h3>
 <p><code>AppScriptGlobalsRegistry</code>, <code>#[script_globals]</code>, <code>register_static*</code>, <code>GlobalNamespace</code>, <code>FunctionScope::Global</code>, <code>DummyScriptFunctionRegistry</code> and <code>use_dummy_registry</code> are gone. Put functions in a namespace instead:</p>
@@ -248,7 +270,7 @@ impl NamespaceMembers {
 <li>Registering a function name twice replaces it, there are no overloads (<code>overwrite*</code>, <code>iter_overloads</code>, <code>remove_all_overloads</code> are removed). Take a <code>Union</code> or <code>ScriptValue</code> for arguments of different types.</li>
 <li><code>ScriptFunctionRegistry</code> is keyed by <code>TypeId</code> instead of a namespace: <code>register(type_id, ..)</code>, <code>get_function(type_id, name)</code>, <code>iter_namespace</code> → <code>iter_type</code>.</li>
 <li><code>#[derive(ScriptType)]</code> implements everything a type needs to be used directly in function signatures (<code>FromScript</code>, <code>IntoScript</code>, <code>ArgMeta</code>, <code>GetTypeDependencies</code>, <code>TypedThrough</code>). Use <code>#[script_type(from = custom)]</code> / <code>(into = custom)</code> for a hand written conversion.</li>
-<li>Renames: <code>Namespace</code> → <code>FunctionScope</code>, <code>IntoNamespace</code> → <code>IntoFunctionScope</code>, <code>FromScriptRef</code>/<code>IntoScriptRef</code> → <code>FromScriptErased</code>/<code>IntoScriptErased</code>, <code>try_call_overloads</code> → <code>call_operator</code>.</li>
+<li>Renames: <code>Namespace</code> → <code>FunctionScope</code> (<code>IntoNamespace</code> is removed, use <code>FunctionScope::OnType(TypeId::of::&lt;T&gt;())</code>), <code>FromScriptRef</code>/<code>IntoScriptRef</code> → <code>FromScriptErased</code>/<code>IntoScriptErased</code>, <code>try_call_overloads</code> → <code>call_operator</code>.</li>
 <li>Functions on <code>StaticTypeRef</code> take <code>StaticTypeRef</code> instead of <code>V&lt;StaticTypeRef&gt;</code>.</li>
 </ul>
 <h3 id="script-pipeline"><a class="header" href="#script-pipeline">Script pipeline</a></h3>
@@ -273,7 +295,9 @@ impl NamespaceMembers {
 <li>At most 63 accesses to the same value can be claimed at once, claims beyond fail (the count used to overflow).</li>
 <li>Asset references claim global access, and reading an asset no longer marks it modified.</li>
 <li><code>ThreadWorldContainer::try_get_context()</code> is an associated function (was <code>ThreadWorldContainer.try_get_context()</code>), <code>set_context</code> is replaced by <code>replace_context</code>, which restores the previous context when its guard is dropped. <code>set_cached_registry</code> is replaced by <code>replace_cached_registry</code>.</li>
-<li>Removed: <code>DynamicSystemMeta</code> (its methods are on <code>AccessMap</code>), <code>with_world_access_and_then</code>, <code>as_unsafe_world_cell_readonly</code> (use <code>as_unsafe_world_cell</code>).</li>
+<li>Removed: <code>DynamicSystemMeta</code> and its <code>with_scope</code> / <code>release_all_accesses</code> (claims are released when their <code>CallScope</code> ends), <code>WorldAccessGuard::release_all_accesses</code>, <code>with_world_access_and_then</code>, <code>as_unsafe_world_cell_readonly</code> (use <code>as_unsafe_world_cell</code>).</li>
+<li><code>ReflectReference::type_id_of</code> and <code>TypeIdSource</code> are removed, use <code>tail_type_id</code>, <code>element_type_id</code> or <code>key_type_id</code>.</li>
+<li><code>ReferencePath::set_is_one_indexed</code> is removed: indexes are normalised when the path is created.</li>
 </ul>
 <h3 id="language-implementations"><a class="header" href="#language-implementations">Language implementations</a></h3>
 <ul>
@@ -350,9 +374,10 @@ impl NamespaceMembers {
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-8d1048e1.js"></script>
+        <script src="../multi-code-block-b564eaca.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
-        <script src="../mermaid-init-f69ab335.js"></script>
+        <script src="../mermaid-init-bc25465b.js"></script>
+        <script src="../glossary-83c1ca5d.js"></script>
 
 
 

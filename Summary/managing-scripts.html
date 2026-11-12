@@ -7,20 +7,20 @@
 
 
         <!-- Custom HTML head -->
+        <link rel="preload" href="../fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
 
         <meta name="description" content="Documentation for the Bevy Scripting library">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="icon" href="../favicon-e7d2d2b5.svg">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
         <link rel="stylesheet" href="../css/general-e96d0476.css">
         <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-926f63d1.css">
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
@@ -28,8 +28,9 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../multi-code-block-77737d02.css">
-        <link rel="stylesheet" href="../lad-45425c30.css">
+        <link rel="stylesheet" href="../bms-theme-7b57e465.css">
+        <link rel="stylesheet" href="../multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="../lad-441894ef.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-043f1b25.js";
+            window.path_to_searchindex_js = "../searchindex-abc777da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a0846749.js"></script>
+        <script src="../toc-51566f6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,113 +184,61 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="managing-scripts"><a class="header" href="#managing-scripts">Managing Scripts</a></h1>
-<p>Scripts live in the standard Bevy <code>assets</code> directory. Loading a script means obtaining its byte representation and associated language.</p>
-<p>Evaluating a script means:</p>
+<p>Scripts are Bevy assets (<code>ScriptAsset</code>), loaded from the <code>assets</code> directory like any other asset. A loaded script does nothing until it is <strong>attached</strong>, which evaluates it:</p>
 <ul>
 <li>parsing the script body,</li>
-<li>and creating or updating the resources which store script state (i.e. context)</li>
+<li>creating or updating the script’s <a href="./contexts.html">context</a>, the environment holding its globals.</li>
 </ul>
 <h2 id="script-attachments"><a class="header" href="#script-attachments">Script attachments</a></h2>
-<p>Script attachments represent both the context in which a script “lives” and is executed, as well as its “residency identifier”.</p>
-<p>Scripts can be attached either:</p>
+<p>A <code>ScriptAttachment</code> says where a script “lives”, and is the identity scripts are addressed by:</p>
 <ul>
-<li>to an entity via <code>ScriptComponent</code>’s (i.e. <code>ScriptAttachment::EntityScript</code>)</li>
-<li>or by being statically activated against their script assset (i.e. <code>ScriptAttachment::StaticScript</code>)</li>
+<li><code>ScriptAttachment::EntityScript(entity, handle)</code>: attached to an entity through its <code>ScriptComponent</code>,</li>
+<li><code>ScriptAttachment::StaticScript(handle)</code>: attached to nothing, activated through the <code>AttachScript</code> command.</li>
 </ul>
-<p>When you insert/remove <code>ScriptComponent</code>’s, <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code>’s are sent and processed by the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>.</p>
-<p>Other attachments, like static scripts have to be manually triggered via <code>AttachScript</code> and <code>DetachScript</code> commands.</p>
+<p>Inserting or removing a <code>ScriptComponent</code> sends <code>ScriptLifecycleMessage</code>s (<code>Attached</code> / <code>Detached</code>), which the <a href="../ScriptPipeline/pipeline.html">script pipeline</a> processes. Static scripts are attached and detached with the <code>AttachScript</code> and <code>DetachScript</code> commands.</p>
 <h2 id="loading"><a class="header" href="#loading">Loading</a></h2>
-<p>Scripts can be loaded into memory via the <code>AssetServer</code>.</p>
-<pre><code class="language-rust ignore">let handle = asset_server.load::&lt;ScriptAsset&gt;("my_script.lua");</code></pre>
-<p>Or scripts can be created in memory.</p>
-<pre><code class="language-rust ignore">let mut script = ScriptAsset::from("x = 0".into());
+<p>Load scripts with the <code>AssetServer</code>, or create them in memory:</p>
+<pre><code class="language-rust ignore">let handle = asset_server.load::&lt;ScriptAsset&gt;("my_script.lua");
+
+let mut script = ScriptAsset::from("x = 0".to_string());
 script.language = Language::Lua;
 let handle = script_assets.add(script);</code></pre>
-<p>This will not evaluate any code yet.</p>
-<h2 id="evaluating"><a class="header" href="#evaluating">Evaluating</a></h2>
-<p>A script does not participate in any callbacks until it is evaluated, to evaluate a script you must first attach it to an entity, or to a static script entry.</p>
-<p>To evaluate a script, add it to a <code>ScriptComponent</code> manually attach it.</p>
-<h3 id="load-file-via-assetserver"><a class="header" href="#load-file-via-assetserver">Load File via <code>AssetServer</code></a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">extern crate bevy;
-</span><span class="boring">extern crate bevy_mod_scripting;
-</span><span class="boring">use bevy::prelude::*;
-</span><span class="boring">use bevy_mod_scripting::prelude::*;
-</span>
-fn load_script(asset_server: Res&lt;AssetServer&gt;, mut commands: Commands) {
+<p>Neither runs any code yet.</p>
+<blockquote class="blockquote-tag blockquote-tag-note">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p>Scripts are identified by their handle, not their path. The path is only used in logs and error messages, so scripts created in memory show up by asset id instead.</p>
+</blockquote>
+<h2 id="attaching-scripts-to-entities"><a class="header" href="#attaching-scripts-to-entities">Attaching scripts to entities</a></h2>
+<p>Add a <code>ScriptComponent</code> to an entity:</p>
+<pre><code class="language-rust ignore">fn load_script(asset_server: Res&lt;AssetServer&gt;, mut commands: Commands) {
     let handle = asset_server.load::&lt;ScriptAsset&gt;("my_script.lua");
-    commands.spawn(ScriptComponent(vec![handle]));
-}
-<span class="boring">}</span></code></pre>
-<div class="warning">
-<p>Prefer using strong asset handles, internal references will only persist weak versions of the handle, leaving you in control of the asset handle via the container component.</p>
-</div>
-
-<h3 id="create-scriptasset-and-add-it"><a class="header" href="#create-scriptasset-and-add-it">Create <code>ScriptAsset</code> and Add It</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">extern crate bevy;
-</span><span class="boring">extern crate bevy_mod_scripting;
-</span><span class="boring">use bevy::{asset::Assets, prelude::*};
-</span><span class="boring">use bevy_mod_scripting::prelude::*;
-</span>
-fn add_script(mut script_assets: ResMut&lt;Assets&lt;ScriptAsset&gt;&gt;, mut commands: Commands) {
-    let content: String = "x = 0".into();
-    let mut script = ScriptAsset::from(content);
-    script.language = Language::Lua;
-    let handle = script_assets.add(script);
-    commands.spawn(ScriptComponent(vec![handle]));
-}
-<span class="boring">}</span></code></pre>
-<div class="warning">
-<p>Scripts added directly through assets, or via asset server without an asset path, will not contain path information, and logs will be slightly less useful.</p>
-</div>
-
-<h2 id="static-scripts"><a class="header" href="#static-scripts">Static Scripts</a></h2>
-<p>You can use attach and detach commands, which will run the <a href="../ScriptPipeline/pipeline.html">script pipeline</a>, repeatedly until the requested script attachments are processed. If you don’t want to incur big frametime slowdowns, you can instead send <code>ScriptAttachedMessage</code> and <code>ScriptDetachedMessage</code> manually, and let the pipeline pick these up as normal.</p>
-<h3 id="attach-a-static-script"><a class="header" href="#attach-a-static-script">Attach a static script</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">extern crate bevy;
-</span><span class="boring">extern crate bevy_mod_scripting;
-</span><span class="boring">use bevy::{asset::Assets, prelude::*};
-</span><span class="boring">use bevy_mod_scripting::prelude::*;
-</span>
-fn add_static_script(mut asset_server: ResMut&lt;AssetServer&gt;, mut commands: Commands) {
-    let handle = asset_server.load(script_path);
+    commands.spawn(ScriptComponent::new(vec![handle]));
+}</code></pre>
+<p>In the script, <code>import_namespace("bms").current_entity()</code> returns the entity the script is attached to.</p>
+<h2 id="static-scripts"><a class="header" href="#static-scripts">Static scripts</a></h2>
+<p>Scripts which don’t belong to an entity are attached as static scripts:</p>
+<pre><code class="language-rust ignore">fn add_static_script(asset_server: Res&lt;AssetServer&gt;, mut commands: Commands) {
+    let handle = asset_server.load("scripts/my_script.lua");
     commands.queue(AttachScript::&lt;LuaScriptingPlugin&gt;::new(
-        ScriptAttachment::StaticScript(handle)
-    ))
+        ScriptAttachment::StaticScript(handle),
+    ));
 }
-<span class="boring">}</span></code></pre>
-<h3 id="detach-a-static-script"><a class="header" href="#detach-a-static-script">Detach a static script</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">extern crate bevy;
-</span><span class="boring">extern crate bevy_mod_scripting;
-</span><span class="boring">use bevy::{asset::Assets, prelude::*};
-</span><span class="boring">use bevy_mod_scripting::prelude::*;
-</span>
-fn remove_static_script(existing_handle: Local&lt;Handle&lt;ScriptAsset&gt;&gt;, mut commands: Commands) {
+
+fn remove_static_script(handle: Local&lt;Handle&lt;ScriptAsset&gt;&gt;, mut commands: Commands) {
     commands.queue(DetachScript::&lt;LuaScriptingPlugin&gt;::new(
-        ScriptAttachment::StaticScript(existing_handle)
-    ))
-}
-<span class="boring">}</span></code></pre>
+        ScriptAttachment::StaticScript(handle.clone()),
+    ));
+}</code></pre>
+<p>The commands run the <a href="../ScriptPipeline/pipeline.html">script pipeline</a> until the attachment is processed. To avoid frame time spikes, write <code>ScriptLifecycleMessage</code>s instead, and let the pipeline pick them up as normal.</p>
 <h2 id="unloading"><a class="header" href="#unloading">Unloading</a></h2>
-<p>When you no longer need a script asset you can freely unload it as soon as it has been loaded, but the script attachment will persist.
-In order to trigger the <code>on_script_unloaded</code> etc. callbacks, you need to remove the script from the <code>ScriptComponent</code> or detach it manually via <code>DetachScript</code> if it’s static.</p>
-<p>Once the last script in a context is removed, the context itself will also be removed.</p>
-<h2 id="hot-loading-scripts"><a class="header" href="#hot-loading-scripts">Hot-loading scripts</a></h2>
-<p>To enable hot-loading of assets, you need to enable the necessary Bevy features as normal <a href="https://bevy-cheatbook.github.io/assets/hot-reload.html">see the bevy cheatbook for instructions</a>.</p>
-<p>Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.</p>
-<h2 id="file-extensions"><a class="header" href="#file-extensions">File Extensions</a></h2>
-<p>Normally the set of supported extensions is pre-decided by each language plugin.</p>
-<p>I.e. Lua supports “.lua” extensions.</p>
-<p>Scripts are mapped to the corresponding language plugin based on these and so it is important to use them correctly.</p>
-<p>If you would like to add more extensions, you need to populate them via <code>app.add_supported_script_extensions</code>.</p>
-<pre><code class="language-rust ignore">    app.add_supported_script_extensions(&amp;[".pua"], Language::Lua);</code></pre>
+<p>BMS keeps a handle to each attached script, so dropping your own handles does not unload it. To unload a script, and run its <code>on_script_unloaded</code> <a href="../ScriptingReference/core-callbacks.html">callback</a>, remove it from its <code>ScriptComponent</code> or detach it with <code>DetachScript</code>. Once no handles are left, Bevy drops the asset.</p>
+<p>A context is removed together with the last script in it.</p>
+<h2 id="hot-reloading"><a class="header" href="#hot-reloading">Hot reloading</a></h2>
+<p>Enable Bevy’s <code>file_watcher</code> feature, and changes to script assets are picked up and the scripts reloaded. Use <a href="../ScriptingReference/core-callbacks.html"><code>on_script_unloaded</code> and <code>on_script_reloaded</code></a> to keep state across reloads.</p>
+<h2 id="file-extensions"><a class="header" href="#file-extensions">File extensions</a></h2>
+<p>Each language plugin maps file extensions to its language, i.e. <code>lua</code> and <code>luau</code> for Lua. To add more:</p>
+<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default().add_supported_extension("pua"));</code></pre>
+<p>Next, <a href="./running-scripts.html">run your scripts</a>.</p>
 
                     </main>
 
@@ -342,9 +291,10 @@ In order to trigger the <code>on_script_unloaded</code> etc. callbacks, you need
         <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../multi-code-block-8d1048e1.js"></script>
+        <script src="../multi-code-block-b564eaca.js"></script>
         <script src="../mermaid-eefea253.min.js"></script>
-        <script src="../mermaid-init-f69ab335.js"></script>
+        <script src="../mermaid-init-bc25465b.js"></script>
+        <script src="../glossary-83c1ca5d.js"></script>
 
 
 
