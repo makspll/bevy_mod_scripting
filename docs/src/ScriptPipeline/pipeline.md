@@ -1,15 +1,15 @@
 # Script Pipeline
 
-Processing script atachments and detachments is all done by the script pipeline.
+The script pipeline processes script [attachments and detachments](../Summary/managing-scripts.md), and runs the [core callbacks](../ScriptingReference/core-callbacks.md) along the way.
 
-In versions prior to `16.0` the pipeline was represented by load unload commands, which atomically processed scripts. Since then the pipeline has been maassively overhauled to allow:
+Before `0.16.0` scripts were processed atomically by load and unload commands. Since then the pipeline allows:
 - Customizing callbacks during the process
 - Budgeting the work done by the pipeline each frame
 - Allowing async steps in the process
 
-The new pipeline works like this:
-- A set of systems in `PreUpdate` "filter" incoming `ScriptLifecycleMessage`'s (attachments and detachments, processed in the order they were written) as well as `ScriptAssetModifiedMessage`'s (some generated from asset events, others from component hooks). The filtered events are wrapped in `ForPlugin<P>(inner)` events based on the language of the underlying event's.
-- A set of other systems then converts those into active `ScriptMachine`'s
+The pipeline works like this:
+- A set of systems in `PreUpdate` "filter" incoming `ScriptLifecycleMessage`s (attachments and detachments, processed in the order they were written) as well as `ScriptAssetModifiedMessage`s (some generated from asset events, others from component hooks). The filtered events are wrapped in `ForPlugin<P>(inner)` events based on the language of the underlying events.
+- A set of other systems then converts those into active `ScriptMachine`s
 - Then inside the `ScriptProcessingSchedule<P>`, which is only run in `PreUpdate` if there are active machines, we tick each machine until it either errors or reaches its final state.
 
 ## Script Machines
@@ -20,12 +20,12 @@ Script loading is handled by the following state machines:
 graph TD;
     A[Loading Initialized]
     B[Reloading Initialized 
-Enter: OnReloaded callback]
+Enter: OnUnloaded callback]
 
     A --[ new context ]--> C
     B --[ existing context]--> C
     C[Context Assigned
-Enter: OnReloaded + OnLoaded callbacks]
+Enter: OnLoaded, then OnReloaded callbacks]
 
     C --> D
 
@@ -37,17 +37,17 @@ Enter: OnUnloaded callback]
     G[Resident Removed]
     E --[Last resident]--> F
     E --[More residents]--> G
-    H[Unlading Completed]
+    H[Unloading Completed]
     F --> H
     G --> H
 ```
 
-Hooks, such as `on_script_loaded` are implemented using bevy observers. This allows you to hook into various parts of the loading process and add your own callbacks, i.e.:
+Hooks, such as `on_script_loaded`, are implemented using Bevy observers, so you can hook into each step of the process with your own observers, i.e.:
 
-```rust
-fn main(&mut app: App) {
-    let machines = app.add_observer(|On<LoadingCompleted<LuaScriptingPlugin>>| todo!("do stuff"));
-}
+```rust,ignore
+app.add_observer(|_: On<LoadingCompleted<LuaScriptingPlugin>>| {
+    info!("a script finished loading");
+});
 ```
 
 
@@ -58,7 +58,7 @@ By default all machines are ticked to completion in the frame they start. Settin
 You can override this and many other settings (including disabling the core callbacks) by changing the `ScriptLoadingPipeline<P>` settings via your scripting plugin's `set_pipeline_settings`.
 
 The script loading/unloading order will look as follows:
-- the order in which components are attached/detached, will determing what order scripts will be processed
+- the order in which components are attached/detached, determines the order in which scripts are processed
 - an attachment whose script asset is still loading holds back the attachments and detachments after it, until it finishes loading
 - scripts are processed one-by-one, i.e. each machine is ticked to completion before the next one is started
     - meaning for example if two scripts are loaded, their `on_script_loaded` hooks will not run at the same "lockstep".

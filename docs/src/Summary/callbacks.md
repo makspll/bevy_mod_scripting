@@ -1,36 +1,33 @@
 # Callbacks
 
-Callbacks generally refer to hooks called either manually or via rust event handlers, on scripts which can choose to subscribe to them.
+Callbacks are script functions which BMS calls by name, through an [event handler or a `RunScriptCallback` command](./running-scripts.md), from [other scripts](../ScriptingReference/calling-other-scripts.md), or as one of the [core callbacks](../ScriptingReference/core-callbacks.md).
 
-Callbacks come in two variants:
-- Freestanding, top level functions
-- Registered, or "frozen" callbacks
+They come in two variants:
+- freestanding: top level functions,
+- registered: functions passed to `register_callback`, which are "frozen".
 
 ## Freestanding callbacks
-An example of a freestanding callback:
+
 ```lua
 function on_script_loaded()
     print("doing things")
 end
 ```
 
-this callback is refered to by "name", and on the rust side can be invoked either via `RunScriptCallback` command, or by setting up an event handler system which passes on `ScriptCallbackMessage`'s to scripts.
+The callback is looked up by name each time it runs, so when the script is reloaded, the new version of the function runs.
 
-The key thing to note about this type of callback, is that if the script is ever reloaded, and the contents of this callback change, the logic inside it will also be hot-reloaded.
+## Registered callbacks
 
-## Registerd Callbacks
-You can also register a callback like so:
 ```lua
-register_callback("on_script_loaded", my_registered_callback)
-
-function my_registered_callback()
+local function my_registered_callback()
     print("doing things")
-end 
+end
+
+register_callback("on_script_loaded", my_registered_callback)
 ```
 
-Registered callbacks, take priority over freestanding ones, and contrary to freestanding callbacks, they are "frozen". I.e. once a callback is registereed in this manner,
-hot reloads won't affect the logic inside them.
+Registered callbacks take priority over freestanding ones, and are "frozen": once registered, reloading other scripts won't change them.
 
-This works well when using shared contexts, where scripts will overwrite top level functions when being loaded. You can use the `on_script_loaded` callback to register all your scripts callbacks while they are loaded as top level functions, and when future loads happen, every callback will be issued correctly.
+This matters with [shared contexts](./contexts.md#context-policies), where scripts overwrite each other's top level functions when loaded. Register each script's callbacks while it loads, and every callback will reach the right script.
 
-This functionality is implemented at script plugin level, so some languages might not support this. All core languages do however.
+Registered callbacks are implemented by each language plugin, Lua and Rune both support them.

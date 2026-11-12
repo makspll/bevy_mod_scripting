@@ -65,8 +65,8 @@
     font-family: var(--mono-font);
     font-size: 0.875em;
     background: var(--quote-bg);
-    border-left: 3px solid var(--links);
-    border-radius: 3px;
+    border-left: 3px solid transparent;
+    border-image: linear-gradient(180deg, var(--bms-ink), var(--bms-lavender)) 1;
     padding: 0.6em 1em;
     margin: 0.75em 0 1em;
     overflow-wrap: anywhere;

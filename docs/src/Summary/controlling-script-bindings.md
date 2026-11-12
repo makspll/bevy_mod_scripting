@@ -1,14 +1,8 @@
 # Controlling Script Bindings
 
-In this book we refer to anything accessible by a script, which allows it to communicate with your Rust code a `binding` (which in previous versions was more generically referred to as a script API).
+A **binding** is anything a script can access to communicate with your Rust code, i.e. binding `script` code to `rust` code. Bindings are written once in Rust, and work in every supported language.
 
-The "binding" here being used as in: binding `script` code to `rust` code.
-
-## Namespaces
-
-Namespaces are a way to group functions together, and are used to prevent naming conflicts. You can have multiple namespaces, and each namespace can have multiple functions.
-
-Language implementations will also look for specific functions registered on your type first before looking at the generic `ReflectReference` namespace.
+Functions are registered on a type or a namespace, see [where functions can live](#where-functions-can-live). Scripts reach them through [namespaces](../ScriptingReference/namespaces.md).
 
 ## Dynamic Functions
 
@@ -22,7 +16,7 @@ In order for a function to be callable by a script it must adhere to a few requi
 
 The into/from requirements allow us to convert these types to `ScriptValue`'s, and each supported scripting language can then marshall these into the script.
 
-Note these types are implemented for primitives, but if you want to interact with one of your `Reflect` implementing types, you will need to use one of `R<T>`, `M<T>` or `V<T>` wrappers in place of `&T`, `&mut T` and `T` respectively.
+These traits are implemented for primitives, but if you want to interact with one of your `Reflect` implementing types, you will need to use one of `R<T>`, `M<T>` or `V<T>` wrappers in place of `&T`, `&mut T` and `T` respectively.
 
 These wrappers enable us to safely interact with bevy, and claim any necessary mutex'es on `Resources`, `Components` or `Allocations`.
 
@@ -37,7 +31,7 @@ Registering functions can be done via the `NamespaceBuilder` like below:
         .register(
             "hello_world",
             |s: String| {
-                println!(s)
+                println!("{s}")
             },
         );
 
@@ -45,12 +39,12 @@ Registering functions can be done via the `NamespaceBuilder` like below:
         .register(
             "hello_world2",
             |s: String| {
-                println!(s)
+                println!("{s}")
             },
         );
 ```
 
-This will allow you to call this function within lua like so:
+This will allow you to call this function within Lua like so:
 
 ```lua
 some_type:hello_world("hi from method!");
@@ -60,6 +54,7 @@ hello_world2("hi from global!");
 Note the `new_unregistered` call instead of `new`, this is because `GlobalNamespace` is not a `Reflect` type, and the `new` call also automatically registers the type in the reflection registry.
 
 ## Macros
+
 The above is a bit tedious, so instead you can use the `script_bindings` macro, which applies to impl blocks like so:
 
 ```rust,ignore
@@ -128,16 +123,15 @@ You can use this as follows:
             |ctx: FunctionCallContext, s: String| {
                 let world = ctx.world()?;
                 let should_use_0_indexing = ctx.convert_to_0_indexed;
-                println!(should_use_0_indexing);
-                println!(s)
+                println!("{should_use_0_indexing} {s}");
                 Ok(())
             },
         );
 ```
 
-## Generic Arguments
+## Dynamic Arguments
 
-Sometimes you might want to be generic over the type of argument you're accepting, you can do so by accepting `ScriptValue` arguments like so:
+To accept any kind of value, i.e. numbers or strings alike, take `ScriptValue` arguments:
 
 ```rust,ignore
     NamespaceBuilder::<ReflectReference>::new(&mut world)
@@ -152,13 +146,70 @@ Sometimes you might want to be generic over the type of argument you're acceptin
         );
 ```
 
-You can treat return values similarly.
+You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see [Generics](#generics).
+
+## Generics
+
+Reflection only knows concrete types (`Handle<Image>`, `Time<Virtual>`), so generic signatures and types use **markers** standing for their parameters: `A`, `B` and `C`, from `bevy_mod_scripting::bindings::function::generics`. Markers only change the documentation and the Lua language server files, the values are references at runtime.
+
+> [!NOTE]
+> The markers are real types: `A` is a reflected unit struct implementing `Asset`, `Default`, `Clone` and the other traits generic parameters are usually bounded by, so `Handle<A>` and `Time<A>` are real types too. A `Handle<Image>` is not a `Handle<A>`, so `V<Handle<A>>`, which copies the value out, can't receive one. Use `ValueOf<Handle<A>>`. See the [`A` API docs](https://docs.rs/bevy_mod_scripting_bindings/latest/bevy_mod_scripting_bindings/function/generics/struct.A.html).
+
+### Generic functions
+
+Two wrappers carry the markers in signatures:
+
+- `ValueOf<T>`: a `ReflectReference`, documented as a `T`.
+- `TypeOf<R, A>`: a type argument passed as `R`, i.e. a registration, documented as the parameter `A`.
+
+Using the same marker ties them together, so `get_component` returns a value of the type it is given:
+
+```rust,ignore
+fn get_component(
+    ctxt: FunctionCallContext,
+    entity: V<Entity>,
+    registration: TypeOf<V<ScriptComponentRegistration>, A>,
+) -> Result<Option<ValueOf<A>>, InteropError>
+```
+
+```lua
+local bms = import_namespace("bms")
+local Transform = import_namespace("transform").Transform
+
+local transform = bms.world.get_component(assert(bms.current_entity()), Transform) -- typed as a Transform
+print(transform)
+```
+
+A marker can also stand inside a type, i.e. `ValueOf<Handle<A>>` accepts the handle of any asset type, see [References](../ScriptingReference/references.md#references-in-rust).
+
+### Generic types
+
+Instantiations of a generic type would be documented as unrelated types. Declare the generic type from your plugin, instantiated with markers, with its namespace, parameter names and docs:
+
+```rust,ignore
+use bevy_mod_scripting::bindings::function::generics::{A, GenericTypesAppExt};
+
+app.register_generic_type::<Time<A>>("time", &["T"], "A clock, i.e. `Time<Virtual>`.");
+```
+
+Fields of type `A` are then documented as being of the parameter `T`, and instantiations as `Time<T>` applied to their arguments. Further parameters use `B` and `C` (`Hashed<A, B>`). A parameter with bounds the markers don't satisfy gets a marker of its own:
+
+```rust,ignore
+bevy_mod_scripting::bindings::generic_marker! {
+    /// Stands for the material of `MyMaterialHolder<M>`
+    pub struct M;
+}
+impl MyMaterial for M {}
+
+app.register_type::<M>()
+    .register_generic_type::<MyMaterialHolder<M>>("my_crate", &["M"], "...");
+```
 
 ## Fallible functions
 
 Your script functions can return errors either by:
 - Returning `Result<T: IntoScript, InteropError>`
-- Returning `ScriptValue` and manually creating the `ScriptValue::Error(into_interop_erorr.into())` variant.
+- Returning `ScriptValue` and manually creating the `ScriptValue::Error(into_interop_error.into())` variant.
 
 ## Reserved Functions
 
@@ -166,21 +217,21 @@ There are a few reserved functions that you can override by registering them on 
 
 | Function Name | Description | Overridable? | Has Default Implementation? |
 |---------------|-------------| ------------ | --------------------------- |
-| get | a getter function, used for indexing into a type | ❌ | ✅ |
-| set | a setter function, used for setting a value on a type | ❌ | ✅ |
-| sub | a subtraction function, used for subtracting two values | ✅ | ❌ |
-| add | an addition function, used for adding two values | ✅ | ❌ |
-| mul | a multiplication function, used for multiplying two values | ✅ | ❌ |
-| div | a division function, used for dividing two values | ✅ | ❌ |
-| rem | a remainder function, used for getting the remainder of two values | ✅ | ❌ |
-| neg | a negation function, used for negating a value | ✅ | ❌ |
-| pow | a power function, used for raising a value to a power | ✅ | ❌ | 
-| rsub, rdiv, rrem, rpow | the reflected `sub`, `div`, `rem` and `pow`, called on the right operand when the left one is not a value, i.e. `1 - v` calls `rsub(v, 1)`. `add` and `mul` are called with their operands swapped instead | ✅ | ❌ |
-| eq | an equality function, used for checking if two values are equal | ✅ | ❌ |
-| lt | a less than function, used for checking if a value is less than another | ✅ | ❌ |
-| iter | an iterator function, used for iterating over a value | ❌ | ✅ |
-| display | a display function, used for pretty printing values | ❌\* | ✅ |
-| debug | a display function, used for displaying the internals of a value | ❌\* | ✅ |
+| get | a getter function, used for indexing into a type | no | yes |
+| set | a setter function, used for setting a value on a type | no | yes |
+| sub | a subtraction function, used for subtracting two values | yes | no |
+| add | an addition function, used for adding two values | yes | no |
+| mul | a multiplication function, used for multiplying two values | yes | no |
+| div | a division function, used for dividing two values | yes | no |
+| rem | a remainder function, used for getting the remainder of two values | yes | no |
+| neg | a negation function, used for negating a value | yes | no |
+| pow | a power function, used for raising a value to a power | yes | no | 
+| rsub, rdiv, rrem, rpow | the reflected `sub`, `div`, `rem` and `pow`, called on the right operand when the left one is not a value, i.e. `1 - v` calls `rsub(v, 1)`. `add` and `mul` are called with their operands swapped instead | yes | no |
+| eq | an equality function, used for checking if two values are equal | yes | no |
+| lt | a less than function, used for checking if a value is less than another | yes | no |
+| iter | an iterator function, used for iterating over a value | no | yes |
+| display | a display function, used for pretty printing values | no\* | yes |
+| debug | a display function, used for displaying the internals of a value | no\* | yes |
 
 \* - You can register an instance of `ReflectDisplayWithTypeInfo` type data on `Reflect` implementing types to override their printing behavior
 
@@ -201,7 +252,7 @@ The type in the `impl` block you apply `script_bindings` to (or the one passed t
 | `GlobalNamespace` | the builtin globals, i.e. no prefix | whatever you declare |
 
 When the same name exists in more than one place, the most specific one wins.
-For `ReflectReference` and `StaticTypeRef` in a `script_bindings` block outside of the crate defining them, use the `remote` attribute.
+These types are defined by BMS, so `script_bindings` blocks on `ReflectReference`, `StaticTypeRef` or `NamespaceMembers` in your crate need the `remote` attribute.
 
 ### Functions available on every type
 
@@ -244,7 +295,7 @@ Each type registered with the type registry is an entry in the table `import_nam
 Functions which don't belong to a type are members of a namespace, declared on `impl NamespaceMembers`:
 
 ```rust,ignore
-#[script_bindings(namespace = "my_game")]
+#[script_bindings(remote, namespace = "my_game")]
 impl NamespaceMembers {
     fn spawn_enemy(health: f32) { /* ... */ }
 }

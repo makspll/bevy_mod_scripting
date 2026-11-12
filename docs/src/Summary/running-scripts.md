@@ -1,92 +1,70 @@
-# Attaching Scripts
-
-
-Once you have scripts discovered and loaded, you'll want to run them.
-
-At the moment BMS supports three methods of making scripts runnable: 
-- Attaching them to entities via `ScriptComponent`'s
-- Adding static scripts
-- Creating dynamic systems ⚗️ (see [the script systems section](../ScriptSystems/introduction.md))
-
-And then sending script event's which trigger callbacks on the scripts.
-
-## Attaching scripts to entities
-
-In order to attach a script and make it runnable simply add a `ScriptComponent` to an entity
-```rust,ignore
-    commands.entity(my_entity).insert(ScriptComponent::new(vec![my_script_handle, another_script_handle]));
-```
-
-In the script, `import_namespace("bms").current_entity()` returns the entity the script is attached to.
-
-<div class="warning">
-Be wary of path separators, by default script ID's are derived from asset paths, which are platform dependent. Make sure to use `std::path::PathBuf` if you are targetting multiple platforms.
-</div>
-
-## Making static scripts runnable
-
-Some scripts do not require attaching to an entity. You can run these scripts by loading them first as you would with any other script, then either adding them by issuing a `AttachScript` command like so:
-
-```rust,ignore
-    commands.queue(AttachScript::new(script_attachment));
-```
-
-The script will then be run as any other script but without being attached to any entity.
-
 # Running Scripts
 
-Scripts can run logic either when loaded or when triggered by an event. For example the script:
+Once [attached](./managing-scripts.md), a script runs its top level code, then waits for **callbacks**: functions the script defines, which Rust (or [other scripts](../ScriptingReference/calling-other-scripts.md)) invoke by name.
 
 ```lua
 print("hello from load time")
+
 function on_event(arg1)
-    print("hello from event time")
-    print(arg1)
+    print("hello from event time", arg1)
 end
 ```
 
-Will print "hello from load time" when the script is loaded, and "hello from event time" when the script receives an event targeting the `on_event` callback with a receiver list including this script or entity.
+This prints "hello from load time" when the script is loaded, and "hello from event time" whenever an `on_event` callback targets this script. Besides your own callbacks, BMS calls the [core callbacks](../ScriptingReference/core-callbacks.md) (`on_script_loaded`, ...) on its own.
 
-In order to trigger `on_event` you need to first define a label, then send an event containing the label:
+## Sending callback messages
+
+Define a label for the callback, then write a `ScriptCallbackMessage` with it:
+
 ```rust,ignore
-
 #[derive(Reflect)]
 pub struct MyReflectType;
 
-// define the label, you can define as many as you like here
+// define as many labels as you like here
 callback_labels!(OnEvent => "on_event");
 
-// trigger the event
-fn send_event(mut writer: EventWriter<ScriptCallbackMessage>) {
+fn send_event(mut writer: MessageWriter<ScriptCallbackMessage>) {
     // allocated values live as long as references to them
-    let my_reflect_payload = ReflectReference::new_allocated(MyReflectType);
+    let payload = ReflectReference::new_allocated(MyReflectType);
 
-    writer.send(ScriptCallbackMessage::new_for_all_scripts(
+    writer.write(ScriptCallbackMessage::new_for_all_scripts(
         OnEvent,
-        vec![my_reflect_payload.into()],
+        vec![payload.into()],
     ));
 }
 ```
 
-Note the second argument is the payload we are sending with the event, in this case we are sending an arbitrary reflect type `MyReflectType`. This can be any type you like, as long as it implements `Reflect`.
+The second argument is the list of arguments the callback receives. Any `Reflect` type can be sent as a `ReflectReference`, and the other `ScriptValue` variants carry plain data, i.e. `ScriptValue::Integer(5)`.
 
-Other variants of the `ScriptValue` enum are available for sending different types of data, such as `ScriptValue::Integer` for primtive, types.
+Besides `new_for_all_scripts`, messages can target one script (`new_for_static_script`, `new_for_script_entity`) or each context once (`new_for_all_contexts`).
 
+## Event handlers
 
-# Event Handlers
-
-In order for the events you send to actually be picked up, you need to inject special systems into your application. These systems will listen for the events and trigger the appropriate callbacks on the scripts:
+Messages are only delivered by an `event_handler` system for their label and language:
 
 ```rust,ignore
-app.add_systems(Update, event_handler::<OnEvent, LuaScriptingPlugin>);
+app.add_systems(
+    Update,
+    (
+        send_event,
+        event_handler::<OnEvent, LuaScriptingPlugin>.after(send_event),
+    ),
+);
 ```
 
-Note the system is parameterized by the label we defined earlier, and the scripting plugin we are using. You can add as many of these systems as you like.
+The handler runs the `on_event` callback on every targeted script which defines it. Order the systems writing the messages *before* the handler, otherwise messages are only handled in the next frame.
 
-The event handler will catch all events with the label `OnEvent` and trigger the `on_event` callback on all targeted scripts which have that callback defined.
+## Commands
 
-In order to handle events in the same frame and not accidentally have events "spill over" into the next frame, you should make sure to order any systems which produce these events *before* the event handler systems.
+To run a callback right away, queue a `RunScriptCallback` command for a single script:
 
-# Commands
+```rust,ignore
+commands.queue(RunScriptCallback::<LuaScriptingPlugin>::new(
+    ScriptAttachment::StaticScript(handle),
+    OnEvent.into_callback_label(),
+    vec![ScriptValue::Integer(5)],
+    false, // don't send a `ScriptCallbackResponseMessage`
+));
+```
 
-You can also use manually issued `RunScriptCallback` commands to trigger script callbacks as well. These must be run from a exclusive system, or via a any other system but with limited access to the world (See the `WithWorldGuard` system param, which will allow you to create a `WorldGuard` and use it to run the commands)
+To keep a callback's logic across reloads, or share contexts between scripts, see [Callbacks](./callbacks.md).

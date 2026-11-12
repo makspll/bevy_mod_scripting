@@ -1,81 +1,52 @@
 # Contexts
 
-Each script runs in a context. By default BMS will create an individual context, or sandbox, for each script-entity pair that is run. This means that each script-entity pair will have its own set of global variables and functions that are isolated from other scripts. However, sometimes this might not be desirable. If you are not worried about scripts interfering with each other, or if you want to easily share data between scripts, you can consider using a different context policy.
+Each script runs in a context: the environment holding its global variables and functions. Which scripts share a context is decided by the **context policy** of the scripting plugin. By default each entity-script pair gets its own context, isolated from all other scripts.
 
-## Context Policies
+## Context policies
 
-### Shared Context
-A shared context means that all scripts run in the same context; there is in fact only one context to run in. If the scripts interact heavily with each other, this may be what you want.
+| Policy | Scripts sharing a context |
+|---|---|
+| `ContextPolicy::per_entity_and_script()` (default) | None, the most isolated |
+| `ContextPolicy::per_entity()` | All scripts attached to the same entity |
+| `ContextPolicy::per_script()` | All attachments of the same script, i.e. one script on many entities |
+| `ContextPolicy::shared()` | All scripts, there is only one context |
 
-To enable a shared context, set the corresponding context policy on the scripting plugin:
+Set the policy on the scripting plugin:
+
 ```rust,ignore
 app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
     ContextPolicy::shared(),
 ));
 ```
 
-<div class="warning">
+Sharing a context makes it easy to share data between scripts, at the cost of scripts being able to interfere with each other.
 
-Shared contexts require your scripts to be more careful about how they register callbacks due to the nature of top level functions belonging to the "currently loaded" global script. See [the callbacks section](./callbacks.md)
+> [!WARNING]
+> In a shared context, scripts overwrite each other's top level functions when loaded. Use [registered callbacks](./callbacks.md#registered-callbacks) so each callback reaches the right script.
 
-</div>
+A script's context is busy while one of its callbacks runs, which limits which scripts it can [call immediately](../ScriptingReference/calling-other-scripts.md#which-scripts-can-be-called-immediately).
 
-### Per Script Context
-A per script context provides each script with their own context. However, scripts may be attached to multiple entities, in which case a single script context is shared by multiple entities. 
+## Custom policies
 
-To enable per script contexts, insert the `ContextPolicy::per_script()` resource.
+A policy is a list of rules, tried in order until one applies. `per_script()` could be written as:
+
 ```rust,ignore
-app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
-    ContextPolicy::per_script(),
-));
+let policy = ContextPolicy {
+    priorities: vec![Arc::new(ContextRule::Script), Arc::new(ContextRule::Shared)],
+};
 ```
 
-### Per Entity Context
-A per entity context provides each entity with their own context. The scripts attached to an entity via `ScriptComponent` all run in the same context.
+Each rule maps the script's attachment to a `ContextKey`, and scripts with the same key share a context:
 
-To enable per entity contexts, insert the `ContextPolicy::per_entity()` resource.
-```rust,ignore
-app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
-    ContextPolicy::per_entity(),
-));
-```
-
-### Per Entity and Script Context
-A per entity-and-script context provides each entity-script pair with their own context. This is a maximally isolated way to run scripts.
-
-To enable per entity-and-script contexts, insert the `ContextPolicy::per_entity_and_script()` resource.
-```rust,ignore
-app.add_plugins(LuaScriptingPlugin::default().set_context_policy(
-    ContextPolicy::per_entity_and_script(),
-));
-```
-
-## Custom Policies
-
-Here is another way to write the `per_script()` policy.
-```rust,ignore
-let policy_a = ContextPolicy::per_script();
-let policy_b = ContextPolicy { priorities: vec![ContextRule::Script, ContextRule::Shared] };
-assert_eq!(policy_a, policy_b);
-```
-Reminding ourselves how `ContextKey` is defined,
 ```rust,ignore
 pub struct ContextKey {
     pub entity: Option<Entity>,
-    pub script: Option<Handle<ScriptAsset>>,
+    pub script: Option<AssetId<ScriptAsset>>,
 }
 ```
-we read `policy_b` like this: if `ContextKey` has a script, return a `ContextKey` with only a script. Failing that `ContextRule::Shared` always returns an empty `ContextKey`.
 
-One may also provide an entirely custom rule by implementing the `ContextKeySelector` trait.
+So the policy reads: if there is a script, the key is just the script. Failing that, `ContextRule::Shared` always applies, returning the empty key.
 
-## Context Loading Settings
+For entirely custom rules, implement `ContextKeySelector`, or pass a closure `Fn(&ScriptAttachment) -> Option<ContextKey>`.
 
-All context loading settings are stored in a separate resource per scripting plugin namely: `ContextLoadingSettings<Plugin>`. 
-
-The settings are as follows:
-- `loader` - the load and unload strategy for contexts. Each scripting plugin will have a load and unload function which is hooked up through here
-- `context_initializers` - stores all context initializers for the plugin
-- `context_pre_handling_initializers` - stores all context pre-handling initializers for the plugin
-
-More advanced applications might want to customize these settings to suit their needs.
+To change what is in a context, see [Customizing Contexts](./customizing-script-contexts.md).

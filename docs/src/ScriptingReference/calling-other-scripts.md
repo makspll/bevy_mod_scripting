@@ -7,7 +7,7 @@ Scripts can run callbacks of other scripts, in any scripting language, using two
 | `bms.run_script_callback(label, target, ...args)` | Immediately, before the call returns | What the callback returned |
 | `bms.queue_script_callback(label, target, ...args)` | As soon as the current callback finishes, in the same frame | Nothing |
 
-```lua
+```multi-lang-example,lua,ignore
 local bms = import_namespace("bms")
 local ScriptAttachment, Recipients = bms.ScriptAttachment, bms.Recipients
 local enemy_script = ScriptAttachment.new_entity_script(enemy, bms.current_script())
@@ -19,7 +19,7 @@ local remaining_health = bms.run_script_callback("take_damage", enemy_script, 10
 bms.queue_script_callback("on_hit", Recipients.all_scripts())
 ```
 
-```rune
+```multi-lang-example,rune,ignore
 let bms = import_namespace("bms");
 let ScriptAttachment = bms.ScriptAttachment;
 let Recipients = bms.Recipients;
@@ -64,14 +64,7 @@ While a callback runs, its script context is busy, so `bms.run_script_callback` 
 
 These calls return an error instead. `bms.queue_script_callback` works for all of them, since queued callbacks only run once the current callback has finished.
 
-Whether scripts share a context depends on the context policy of the scripting plugin:
-
-| Context policy | Scripts sharing a context |
-|---|---|
-| `ContextPolicy::per_entity_and_script()` (default) | None |
-| `ContextPolicy::per_entity()` | All scripts attached to the same entity |
-| `ContextPolicy::per_script()` | All attachments of the same script |
-| `ContextPolicy::shared()` | All scripts |
+Which scripts share a context depends on the [context policy](../Summary/contexts.md#context-policies) of the scripting plugin, by default none do.
 
 ## Queued callbacks
 

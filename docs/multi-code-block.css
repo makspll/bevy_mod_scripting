@@ -21,6 +21,7 @@
 .multi-lang-example-tabs button.active {
     opacity: 1;
     font-weight: bold;
+    box-shadow: inset 0 2px 0 var(--bms-lavender);
 }
 
 .multi-lang-example > pre {

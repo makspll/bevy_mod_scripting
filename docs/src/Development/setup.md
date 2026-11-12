@@ -1,12 +1,12 @@
 # Setup
 
-this crate contains a work in progress `xtask` setup which in theory should allow you to setup everything you need for local development by running:
+BMS uses an `xtask` setup, which sets up everything you need for local development:
 
 ```sh
 cargo xtask init
 ```
 
-This command currently supports the following IDE's
+It currently configures the following IDEs:
 
 - [VSCode](https://code.visualstudio.com/)
 

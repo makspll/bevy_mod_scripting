@@ -16,8 +16,53 @@
         }
     }
 
-    const theme = lastThemeWasLight ? 'default' : 'dark';
-    mermaid.initialize({ startOnLoad: true, theme });
+    // the BMS palette (see bms-theme.css)
+    const themeVariables = lastThemeWasLight
+        ? {
+            darkMode: false,
+            background: '#ffffff',
+            primaryColor: '#f1eef7',
+            primaryBorderColor: '#184375',
+            primaryTextColor: '#1f2333',
+            secondaryColor: '#e3ecf7',
+            tertiaryColor: '#f6f4fa',
+            lineColor: '#3f4561',
+            textColor: '#1f2333',
+            clusterBkg: '#faf9fc',
+            clusterBorder: '#c8bddc',
+            noteBkgColor: '#f6f1ea',
+            noteBorderColor: '#594a42',
+            edgeLabelBackground: '#ffffff',
+        }
+        : {
+            darkMode: true,
+            background: '#0e1626',
+            primaryColor: '#18213a',
+            primaryBorderColor: '#c8bddc',
+            primaryTextColor: '#e6e2ef',
+            secondaryColor: '#3f4561',
+            tertiaryColor: '#141e33',
+            lineColor: '#c8bddc',
+            textColor: '#e6e2ef',
+            clusterBkg: '#111a2d',
+            clusterBorder: '#3f4561',
+            noteBkgColor: '#594a42',
+            noteBorderColor: '#d4b89c',
+            noteTextColor: '#ffffff',
+            edgeLabelBackground: '#0e1626',
+        };
+    mermaid.initialize({
+        // rendered once the fonts are loaded, as mermaid sizes the nodes to the text
+        startOnLoad: false,
+        theme: 'base',
+        // allows `click` links between diagrams, scripts are still stripped
+        securityLevel: 'antiscript',
+        flowchart: { wrappingWidth: 320 },
+        themeVariables: { fontFamily: 'Inter, sans-serif', ...themeVariables },
+    });
+    Promise.all([document.fonts.load('16px Inter'), document.fonts.load('italic 16px Inter')])
+        .catch(() => {})
+        .then(() => mermaid.run());
 
     // Simplest way to make mermaid re-render the diagrams in the new theme is via refreshing the page
 
