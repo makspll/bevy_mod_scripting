@@ -87,21 +87,12 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
         script_callbacks: ScriptCallbacks<P>,
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError> {
-        let result = {
-            let _executing = ExecutingContext::enter(script_ctxt).map_err(|reason| {
-                // the guard still carries the attachment of the callback which is running right now
-                let caller = world.current_attachment().0;
-                reason.into_error(caller.as_ref(), attachment, callback)
-            })?;
-            let mut script_ctxt = script_ctxt.lock();
-            let script_ctxt = &mut *script_ctxt;
-            WorldGuard::with_existing_static_guard(world.clone(), |world| {
-                // restored on drop (also on panic), so that a callback running inside another one leaves the outer callback's attachment intact
-                let _restore = RestoreAttachmentOnDrop(
-                    &world,
-                    world
-                        .replace_cached_registry(CurrentScriptAttachment(Some(attachment.clone()))),
-                );
+        run_in_script_context::<P, _>(
+            attachment,
+            callback,
+            script_ctxt,
+            world,
+            |script_ctxt, world| {
                 let world_id = world.id();
                 let callbacks = script_callbacks.callbacks.read();
                 if let Some(callback) = callbacks
@@ -114,16 +105,63 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
                     drop(callbacks);
                     Self::handler()(args, attachment, callback, script_ctxt, world_id)
                 }
-            })
-        };
-
-        // the context is unlocked again, so once the outermost callback is done
-        // the callbacks it queued can run, including ones for its own script
-        if ExecutingContext::none_running() {
-            run_queued_callbacks(world);
-        }
-        result
+            },
+        )
     }
+}
+
+/// Locks the context and runs `f` in it as a callback of `attachment` named `callback`, see [`ScriptingHandler::handle`].
+pub fn run_in_script_context<P: IntoScriptPluginParams, R>(
+    attachment: &ScriptAttachment,
+    callback: &CallbackLabel,
+    script_ctxt: &Arc<Mutex<P::C>>,
+    world: WorldGuard,
+    f: impl FnOnce(&mut P::C, WorldGuard) -> Result<R, InteropError>,
+) -> Result<R, InteropError> {
+    let result = {
+        let _executing = ExecutingContext::enter(script_ctxt).map_err(|reason| {
+            // the guard still carries the attachment of the callback which is running right now
+            let caller = world.current_attachment().0;
+            reason.into_error(caller.as_ref(), attachment, callback)
+        })?;
+        let mut script_ctxt = script_ctxt.lock();
+        let script_ctxt = &mut *script_ctxt;
+        WorldGuard::with_existing_static_guard(world.clone(), |world| {
+            // restored on drop (also on panic), so that a callback running inside another one leaves the outer callback's attachment intact
+            let _restore = RestoreAttachmentOnDrop(
+                &world,
+                world.replace_cached_registry(CurrentScriptAttachment(Some(attachment.clone()))),
+            );
+            f(script_ctxt, world.clone())
+        })
+    };
+
+    // the context is unlocked again, so once the outermost callback is done
+    // the callbacks it queued can run, including ones for its own script
+    if ExecutingContext::none_running() {
+        run_queued_callbacks(world);
+    }
+    result
+}
+
+/// Runs `f` in the context of the given script of plugin `P`, if it is loaded.
+///
+/// This is the [`ScriptContextRunner`](bevy_mod_scripting_bindings::ScriptContextRunner) each [`crate::ScriptingPlugin`] registers.
+pub fn run_in_context_of_attachment<P: IntoScriptPluginParams>(
+    script_contexts: &ScriptContexts<P>,
+    world: WorldGuard,
+    attachment: &ScriptAttachment,
+    f: &mut dyn FnMut(WorldGuard, bevy_mod_scripting_asset::Language) -> Result<(), InteropError>,
+) -> Option<Result<(), InteropError>> {
+    let context = script_contexts.read().get_if_resident(attachment)?;
+    let context = context.as_loaded()?.clone();
+    Some(run_in_script_context::<P, _>(
+        attachment,
+        &CallbackLabel::from("run_in_context"),
+        &context,
+        world,
+        |_, world| f(world, P::LANGUAGE),
+    ))
 }
 
 /// Immediately runs the callback on every loaded script of plugin `P` among the given recipients.

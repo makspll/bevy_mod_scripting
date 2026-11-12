@@ -33,6 +33,20 @@ pub type ScriptCallbackRunner = dyn Fn(
     + Sync
     + 'static;
 
+/// Runs the given function inside the context of one script handled by one scripting plugin, like a callback of that script:
+/// the context is locked, and the world and the script's attachment are available to script functions.
+/// The function is given the language of the script.
+///
+/// Returns `None` if the script is not handled by the plugin or is not loaded.
+pub type ScriptContextRunner = dyn Fn(
+        WorldGuard,
+        &ScriptAttachment,
+        &mut dyn FnMut(WorldGuard, Language) -> Result<(), InteropError>,
+    ) -> Option<Result<(), InteropError>>
+    + Send
+    + Sync
+    + 'static;
+
 /// Reports an error of a callback run outside of the systems which normally report them, i.e. of script observers.
 ///
 /// Given the script the callback ran on if known, a description of where the error happened, and the error.
@@ -59,6 +73,7 @@ pub struct QueuedScriptCallback {
 #[derive(Clone, Resource, Default)]
 pub struct AppScriptCallbackRunners {
     runners: Arc<RwLock<Vec<(Language, Arc<ScriptCallbackRunner>)>>>,
+    context_runners: Arc<RwLock<Vec<(Language, Arc<ScriptContextRunner>)>>>,
     queue: Arc<CallbackQueue>,
     error_sink: Arc<RwLock<Option<Arc<ScriptCallbackErrorSink>>>>,
 }
@@ -79,6 +94,42 @@ impl AppScriptCallbackRunners {
             Some((_, existing)) => *existing = runner,
             None => runners.push((language, runner)),
         }
+    }
+
+    /// Registers the context runner for the given language, replacing the previous one if there was one.
+    pub fn register_context_runner(&self, language: Language, runner: Arc<ScriptContextRunner>) {
+        let mut runners = self.context_runners.write();
+        match runners.iter_mut().find(|(l, _)| *l == language) {
+            Some((_, existing)) => *existing = runner,
+            None => runners.push((language, runner)),
+        }
+    }
+
+    /// Runs `f` inside the context of the given script, see [`ScriptContextRunner`].
+    ///
+    /// Use it to call script functions stored on the Rust side (i.e. [`ScriptValue::Function`]s) from outside a callback.
+    /// Errors if the script is not loaded, or its context is busy.
+    pub fn run_in_context(
+        &self,
+        world: WorldGuard,
+        attachment: &ScriptAttachment,
+        f: &mut dyn FnMut(WorldGuard, Language) -> Result<(), InteropError>,
+    ) -> Result<(), InteropError> {
+        // `f` can run callbacks, so the lock must not be held while it runs
+        let runners = self
+            .context_runners
+            .read()
+            .iter()
+            .map(|(_, runner)| runner.clone())
+            .collect::<Vec<_>>();
+        for runner in runners {
+            if let Some(result) = runner(world.clone(), attachment, f) {
+                return result;
+            }
+        }
+        Err(InteropError::string(format!(
+            "Cannot run in the context of script {attachment}: the script is not loaded"
+        )))
     }
 
     /// Sets where errors reported with [`Self::report_error`] go, replacing the previous sink.
