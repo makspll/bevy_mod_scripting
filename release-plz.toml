@@ -6,6 +6,8 @@
 semver_check = false
 dependencies_update = false
 publish_timeout = "30m"
+# only the top level CHANGELOG.md is maintained, see `changelog_include` on `bevy_mod_scripting`
+changelog_update = false
 git_release_enable = false
 git_tag_enable = false
 git_release_body = """
@@ -38,6 +40,7 @@ commit_parsers = [
 name = "bevy_mod_scripting"
 publish_features = ["lua54"]
 version_group = "main"
+changelog_update = true
 git_release_latest = true
 git_release_enable = true
 git_tag_enable = true
