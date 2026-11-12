@@ -64,6 +64,9 @@
     --searchresults-li-bg: #f6f4fa;
     --search-mark-bg: #c8bddc;
 
+    --logo-tile: #ffffff;
+    --logo-tile-border: #e1dbec;
+
     --footnote-highlight: var(--bms-lavender);
     --overlay-bg: rgba(24, 67, 117, 0.25);
 
@@ -98,8 +101,9 @@
     --sidebar-active: var(--bms-lavender);
     --sidebar-spacer: #222c47;
     --sidebar-header-border-color: var(--bms-lavender);
-    /* the logo's ink blue disappears on navy, so the hero logo sits on a flat light tile */
+    /* the logo's ink blue disappears on navy, a light tile keeps it readable */
     --logo-tile: rgba(200, 189, 220, 0.14);
+    --logo-tile-border: rgba(200, 189, 220, 0.2);
 
     --scrollbar: #545b7a;
     --icons: #8d93ad;
@@ -194,26 +198,18 @@ body::before {
     color: var(--heading-fg);
 }
 
+/* the logo sits on a flat tile, like the hero logo */
 .menu-title::before {
     content: "";
     display: inline-block;
-    width: 1.3em;
-    height: 1.3em;
-    margin-inline-end: 0.4em;
-    vertical-align: -0.25em;
-    background: url(logo.svg) no-repeat center / contain;
-}
-
-/* dark: the same flat tile as the hero logo */
-.navy .menu-title::before,
-.coal .menu-title::before,
-.ayu .menu-title::before {
+    box-sizing: border-box;
     width: 1.5em;
     height: 1.5em;
+    margin-inline-end: 0.4em;
     vertical-align: -0.35em;
     border-radius: 0.3em;
-    background-color: var(--logo-tile);
-    background-size: 74%;
+    border: 1px solid var(--logo-tile-border);
+    background: var(--logo-tile) url(logo.svg) no-repeat center / 74%;
 }
 
 .sidebar {
@@ -495,7 +491,8 @@ blockquote.blockquote-tag {
     height: auto;
     padding: 14px;
     border-radius: 24px;
-    background: var(--logo-tile, transparent);
+    border: 1px solid var(--logo-tile-border);
+    background: var(--logo-tile);
 }
 
 .bms-hero h1 {
