@@ -15985,6 +15985,23 @@
         {
           "args": [
             {
+              "val": "bevy_mesh::mesh::Mesh"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::ArcMutexValue<bevy_mesh::mesh::Mesh>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
               "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
             }
           ],
@@ -16002,11 +16019,11 @@
         {
           "args": [
             {
-              "val": "bevy_mesh::mesh::Mesh"
+              "val": "bevy_render::storage::ShaderBuffer"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::ArcMutexValue<bevy_mesh::mesh::Mesh>::new"
+            "bevy_asset::handle::ArcMutexValue<bevy_render::storage::ShaderBuffer>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16053,45 +16070,28 @@
         {
           "args": [
             {
-              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::ArcMutexValue<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_render::storage::ShaderBuffer"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::ArcMutexValue<bevy_render::storage::ShaderBuffer>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
               "val": "bevy_mod_scripting_asset::script_asset::ScriptAsset"
             }
           ],
           "associated_functions": [
             "bevy_asset::handle::ArcMutexValue<bevy_mod_scripting_asset::script_asset::ScriptAsset>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
+              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::ArcMutexValue<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16192,11 +16192,11 @@
         {
           "args": [
             {
-              "val": "bevy_render::storage::ShaderBuffer"
+              "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_render::storage::ShaderBuffer>::new"
+            "bevy_asset::handle::Handle<bevy_sprite_render::mesh2d::color_material::ColorMaterial>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16215,40 +16215,6 @@
           "associated_functions": [
             "bevy_asset::handle::Handle<bevy_mod_scripting_asset::script_asset::ScriptAsset>::asset_path",
             "bevy_asset::handle::Handle<bevy_mod_scripting_asset::script_asset::ScriptAsset>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_sprite_render::mesh2d::color_material::ColorMaterial>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16283,6 +16249,40 @@
           ],
           "associated_functions": [
             "bevy_asset::handle::Handle<bevy_animation::AnimationClip>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
+              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::Handle<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
+              "val": "bevy_render::storage::ShaderBuffer"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::Handle<bevy_render::storage::ShaderBuffer>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16377,11 +16377,11 @@
         {
           "args": [
             {
-              "val": "bevy_image::image::Image"
+              "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::HandleTemplate<bevy_image::image::Image>::new"
+            "bevy_asset::handle::HandleTemplate<bevy_sprite_render::mesh2d::color_material::ColorMaterial>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16394,11 +16394,11 @@
         {
           "args": [
             {
-              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
+              "val": "bevy_image::image::Image"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::HandleTemplate<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
+            "bevy_asset::handle::HandleTemplate<bevy_image::image::Image>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16428,11 +16428,11 @@
         {
           "args": [
             {
-              "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
+              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::HandleTemplate<bevy_sprite_render::mesh2d::color_material::ColorMaterial>::new"
+            "bevy_asset::handle::HandleTemplate<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
           ],
           "metadata": {
             "is_component": false,

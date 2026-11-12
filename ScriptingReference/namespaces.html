@@ -37,10 +37,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-e0ab3b47.js";
+            window.path_to_searchindex_js = "../searchindex-86775c5b.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-7593d81c.js"></script>
+        <script src="../toc-a0846749.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -214,7 +214,6 @@ world.add_default_component(bms.current_entity(), transform.Transform)
 <li>If two types in a namespace share a short name, the first one registered wins.</li>
 <li>Each call reads the shared type catalogue, so the result is always up to date. A table imported earlier does not pick up later registrations: import again.</li>
 <li>A namespace which does not exist is an error, with suggestions: <code>namespace "transfrom" does not exist. ... Did you mean: transform?</code></li>
-<li>To also expose every type as a global named after it (i.e. <code>Vec3</code>), as before 0.24, set <code>CoreScriptGlobalsPlugin::register_static_references</code>. Types sharing a name then shadow each other.</li>
 </ul>
 <h2 id="overriding-the-namespace-of-a-type"><a class="header" href="#overriding-the-namespace-of-a-type">Overriding the namespace of a type</a></h2>
 <pre><code class="language-rust ignore">// on types with script bindings: keeps a namespace set before (with a warning)

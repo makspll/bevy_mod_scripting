@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-e0ab3b47.js";
+            window.path_to_searchindex_js = "searchindex-86775c5b.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-7593d81c.js"></script>
+        <script src="toc-a0846749.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1525,19 +1525,17 @@ if event.recipients:variant() == Recipients.AllScripts then ... end
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="migrating-from-023-to-024"><a class="header" href="#migrating-from-023-to-024">Migrating from 0.23 to 0.24</a></h1>
+<p>See the <a href="#0240---hand-written-bindings-typed-scripts-script-systems-rune">release notes</a> for what’s new. Most important changes first.</p>
 <h2 id="scripts-1"><a class="header" href="#scripts-1">Scripts</a></h2>
-<p>The only globals left are <code>import_namespace</code>, <code>export_namespace</code> and <code>register_callback</code>. Everything else, <code>world</code> included, is imported from a namespace, see <a href="#namespaces-1">Namespaces</a>:</p>
-<pre><code class="language-diff">+ local world = import_namespace("bms").world
-  world.spawn()
-</code></pre>
-<p>Types (<code>Vec3</code>, <code>Transform</code>, and the deprecated <code>types</code> table) are imported from their namespace. Bevy types are grouped by category (<code>math</code>, <code>ecs</code>, <code>transform</code>, <code>ui</code>, …), BMS’ types live in <code>bms</code>:</p>
-<pre><code class="language-diff">- local t = Transform.from_translation(Vec3.new(1, 2, 3))
+<h3 id="rhai-is-removed"><a class="header" href="#rhai-is-removed">Rhai is removed</a></h3>
+<p>Port Rhai scripts to Lua, or to Rune (the <code>rune</code> feature).</p>
+<h3 id="everything-is-imported"><a class="header" href="#everything-is-imported">Everything is imported</a></h3>
+<p>The only globals left are <code>import_namespace</code>, <code>export_namespace</code> and <code>register_callback</code>. Everything else, <code>world</code> and types included, is imported from a namespace, see <a href="#namespaces-1">Namespaces</a>. Bevy types are grouped by category (<code>math</code>, <code>ecs</code>, <code>transform</code>, <code>ui</code>, …), BMS’ types and functions live in <code>bms</code>:</p>
+<pre><code class="language-diff">+ local bms = import_namespace("bms")
++ local world = bms.world
 + local Vec3 = import_namespace("math").Vec3
 + local Transform = import_namespace("transform").Transform
-+ local t = Transform.from_translation(Vec3.new(1, 2, 3))
-</code></pre>
-<p>BMS’ functions moved to <code>bms</code>: <code>construct</code>, <code>system_builder</code>, <code>run_script_callback</code>, <code>queue_script_callback</code>, <code>pack_args</code>, <code>unpack_args</code> and <code>log_*</code>. <code>entity</code> and <code>script_asset</code> are now functions:</p>
-<pre><code class="language-diff">+ local bms = import_namespace("bms")
+  local t = Transform.from_translation(Vec3.new(1, 2, 3))
 - log_info("hi")
 + bms.log_info("hi")
 - world.despawn(entity)
@@ -1545,83 +1543,292 @@ if event.recipients:variant() == Recipients.AllScripts then ... end
 - script_asset
 + bms.current_script()
 </code></pre>
-<p>Query results are plain lists of the entity followed by the components, <code>result:entity()</code> and <code>result:components()</code> are removed:</p>
+<p><code>construct</code>, <code>system_builder</code>, <code>run_script_callback</code>, <code>queue_script_callback</code>, <code>pack_args</code> and <code>unpack_args</code> moved to <code>bms</code> the same way. The deprecated <code>types</code> table is removed.</p>
+<h3 id="query-results-are-lists"><a class="header" href="#query-results-are-lists">Query results are lists</a></h3>
+<p>The entity followed by the components, in the order they were added to the query:</p>
 <pre><code class="language-diff">  for _, result in pairs(world.query():component(Transform):build()) do
 -     local entity, transform = result:entity(), result:components()[1]
 +     local entity, transform = result[1], result[2]
   end
 </code></pre>
-<p>Other changes:</p>
+<h3 id="other-changes-1"><a class="header" href="#other-changes-1">Other changes</a></h3>
 <ul>
+<li>The bindings are hand-written: functions of Bevy types which were generated before may be missing or named differently, check the generated docs.</li>
 <li><code>world.get_type_by_name</code> only takes full paths, i.e. <code>"bevy_transform::components::transform::Transform"</code> or <code>"script.my_game.Enemy"</code>.</li>
-<li>Numbers work on the left of operators: <code>2 * v</code>, <code>1 - v</code> (dispatched to <code>mul</code>, <code>rsub</code>, …), in Rhai too.</li>
+<li>Script systems: <code>resource</code> and query <code>component</code>s are writes, systems writing the same data no longer run in parallel, use <code>resource_read</code> / <code>component_read</code> where you only read. Sets are values (<code>world.register_new_system_set(namespace, name)</code>, <code>world.get_system_set_by_name</code>) instead of names.</li>
+<li>Asset references can’t be used in non-exclusive script systems, nor together with a mutably borrowed component in the same call.</li>
+<li>Lua’s <code>math.random</code> is seeded with <code>0</code> in new contexts, and callbacks reach scripts in attachment order, see <a href="#determinism">Determinism</a>.</li>
 </ul>
 <h2 id="rust-1"><a class="header" href="#rust-1">Rust</a></h2>
+<h3 id="features-and-crates"><a class="header" href="#features-and-crates">Features and crates</a></h3>
 <ul>
-<li>Script globals are removed (<code>AppScriptGlobalsRegistry</code>, <code>#[script_globals]</code>, <code>register_static*</code>, <code>GlobalNamespace</code>, <code>FunctionScope::Global</code>, <code>DummyScriptFunctionRegistry</code>, <code>use_dummy_registry</code>, …). Put functions in a namespace instead:
+<li>The <code>rhai</code> feature and <code>bevy_mod_scripting_rhai</code> are removed.</li>
+<li>The generated <code>*_bms_bindings</code> crates are replaced by <code>bevy_mod_scripting_bevy_&lt;category&gt;_bindings</code>. The binding features are now: <code>bevy_{animation, asset, audio, camera, color, ecs, gizmos, input, math, render, sprite, state, text, time, transform, ui, window}_bindings</code>. Features of crates folded into a category are removed (i.e. <code>bevy_pbr_bindings</code>, <code>bevy_mesh_bindings</code>, <code>bevy_image_bindings</code> → <code>bevy_render_bindings</code>), as are the ones without hand-written bindings (i.e. <code>bevy_a11y_bindings</code>, <code>bevy_gltf_bindings</code>, <code>bevy_picking_bindings</code>, <code>bevy_scene_bindings</code>).</li>
+</ul>
+<h3 id="script-globals-are-removed"><a class="header" href="#script-globals-are-removed">Script globals are removed</a></h3>
+<p><code>AppScriptGlobalsRegistry</code>, <code>#[script_globals]</code>, <code>register_static*</code>, <code>GlobalNamespace</code>, <code>FunctionScope::Global</code>, <code>DummyScriptFunctionRegistry</code> and <code>use_dummy_registry</code> are gone. Put functions in a namespace instead:</p>
 <pre><code class="language-rust ignore">#[script_bindings(namespace = "my_game")]
 impl NamespaceMembers {
     /// `import_namespace("my_game").spawn_enemy(5)` in scripts
     fn spawn_enemy(ctxt: FunctionCallContext, hp: usize) -&gt; Result&lt;(), InteropError&gt; { .. }
 }</code></pre>
-Values go in <code>AppScriptNamespaceMembers::register_value</code>, made each time the namespace is imported.</li>
-<li>Types with bindings from the bevy crates are in category namespaces. Move a type with <code>app.override_script_namespace</code>.</li>
-<li>Registering a function name twice replaces it, there are no overloads (<code>overwrite*</code>, <code>iter_overloads</code>, <code>remove_all_overloads</code> are removed). Take a <code>Union</code> or <code>ScriptValue</code> for arguments of different types.</li>
-<li><code>#[derive(ScriptType)]</code> implements everything a type needs to be used directly in function signatures (<code>FromScript</code>, <code>IntoScript</code>, <code>ArgMeta</code>, <code>GetTypeDependencies</code>, <code>TypedThrough</code>). Use <code>#[script_type(from = custom)]</code> / <code>(into = custom)</code> for a hand written conversion.</li>
-<li>Renames: <code>Namespace</code> → <code>FunctionScope</code>, <code>IntoNamespace</code> → <code>IntoFunctionScope</code>, <code>FromScriptRef</code>/<code>IntoScriptRef</code> → <code>FromScriptErased</code>/<code>IntoScriptErased</code>, <code>try_call_overloads</code> → <code>call_operator</code>.</li>
-<li>Functions on <code>StaticTypeRef</code> take <code>StaticTypeRef</code> instead of <code>V&lt;StaticTypeRef&gt;</code>.</li>
-<li><code>ScriptFunctionRegistry</code> is keyed by <code>TypeId</code> instead of <code>FunctionScope</code>: <code>register(type_id, ..)</code>, <code>get_function(type_id, name)</code>, <code>iter_namespace</code> → <code>iter_type</code>.</li>
-<li>Values allocated for scripts are owned by the references to them and freed with the last one, the allocator is removed (<code>ReflectAllocator</code>, <code>AppReflectAllocator</code>, <code>WorldExtensions::allocator</code>, <code>AllocatorDiagnosticPlugin</code>, <code>ScriptingSystemSet::GarbageCollection</code>, <code>InteropError::GarbageCollectedAllocation</code>). Drop the allocator argument:
-<pre><code class="language-rust ignore">// before
-let reference = ReflectReference::new_allocated(value, &amp;mut world.allocator().write());
-// after
-let reference = ReflectReference::new_allocated(value);</code></pre>
-<code>new_allocated_boxed</code> and <code>new_allocated_boxed_partial_reflect</code> (renamed from <code>new_allocated_boxed_parial_reflect</code>) change the same way.</li>
-<li><code>FromScript::from_script</code> takes a <code>&amp;CallScope</code> instead of a <code>WorldGuard</code>, and <code>R</code>/<code>M</code> borrow from it, so they can’t be kept past the function call (<code>M&lt;'static, T&gt;</code> arguments no longer compile). Get the guard with <code>scope.world()</code>, and convert outside of script functions in <code>guard.with_call_scope(|scope| ..)</code> (releases the claims when it ends) or <code>guard.with_borrow_scope(|scope| ..)</code> (for owned values):
+<p>Values go in <code>AppScriptNamespaceMembers::register_value</code>, made each time the namespace is imported. Types with bindings from the bevy crates are in category namespaces, move a type with <code>app.override_script_namespace</code>.</p>
+<h3 id="borrowed-arguments-end-with-the-call"><a class="header" href="#borrowed-arguments-end-with-the-call">Borrowed arguments end with the call</a></h3>
+<p><code>FromScript::from_script</code> takes a <code>&amp;CallScope</code> instead of a <code>WorldGuard</code>, and <code>R</code>/<code>M</code> borrow from it, so they can’t be kept past the function call (<code>M&lt;'static, T&gt;</code> arguments no longer compile). Get the guard with <code>scope.world()</code>, and convert outside of script functions in <code>guard.with_call_scope(|scope| ..)</code>, which replaces <code>with_access_scope</code> and releases the claims when it ends:</p>
 <pre><code class="language-rust ignore">fn from_script&lt;'s&gt;(value: ScriptValue, scope: &amp;'s CallScope&lt;'_&gt;) -&gt; Result&lt;Self::This&lt;'s&gt;, InteropError&gt; {
     let world = scope.world();
     ..
 }</code></pre>
-</li>
-<li><code>WorldAccessGuard::with_access_scope</code> is replaced by <code>with_call_scope</code>. <code>DynamicSystemMeta</code> is removed (its methods are on <code>AccessMap</code>), as are <code>with_world_access_and_then</code> and <code>as_unsafe_world_cell_readonly</code> (use <code>as_unsafe_world_cell</code>).</li>
+<h3 id="the-allocator-is-removed"><a class="header" href="#the-allocator-is-removed">The allocator is removed</a></h3>
+<p>Values allocated for scripts are owned by the references to them and freed with the last one. <code>ReflectAllocator</code>, <code>AppReflectAllocator</code>, <code>WorldExtensions::allocator</code>, <code>AllocatorDiagnosticPlugin</code>, <code>ScriptingSystemSet::GarbageCollection</code> and <code>InteropError::GarbageCollectedAllocation</code> are gone, drop the allocator argument:</p>
+<pre><code class="language-diff">- let reference = ReflectReference::new_allocated(value, &amp;mut world.allocator().write());
++ let reference = ReflectReference::new_allocated(value);
+</code></pre>
+<p><code>new_allocated_boxed</code> and <code>new_allocated_boxed_partial_reflect</code> (renamed from <code>new_allocated_boxed_parial_reflect</code>) change the same way.</p>
+<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
+<ul>
+<li>Registering a function name twice replaces it, there are no overloads (<code>overwrite*</code>, <code>iter_overloads</code>, <code>remove_all_overloads</code> are removed). Take a <code>Union</code> or <code>ScriptValue</code> for arguments of different types.</li>
+<li><code>ScriptFunctionRegistry</code> is keyed by <code>TypeId</code> instead of a namespace: <code>register(type_id, ..)</code>, <code>get_function(type_id, name)</code>, <code>iter_namespace</code> → <code>iter_type</code>.</li>
+<li><code>#[derive(ScriptType)]</code> implements everything a type needs to be used directly in function signatures (<code>FromScript</code>, <code>IntoScript</code>, <code>ArgMeta</code>, <code>GetTypeDependencies</code>, <code>TypedThrough</code>). Use <code>#[script_type(from = custom)]</code> / <code>(into = custom)</code> for a hand written conversion.</li>
+<li>Renames: <code>Namespace</code> → <code>FunctionScope</code>, <code>IntoNamespace</code> → <code>IntoFunctionScope</code>, <code>FromScriptRef</code>/<code>IntoScriptRef</code> → <code>FromScriptErased</code>/<code>IntoScriptErased</code>, <code>try_call_overloads</code> → <code>call_operator</code>.</li>
+<li>Functions on <code>StaticTypeRef</code> take <code>StaticTypeRef</code> instead of <code>V&lt;StaticTypeRef&gt;</code>.</li>
+</ul>
+<h3 id="script-pipeline-1"><a class="header" href="#script-pipeline-1">Script pipeline</a></h3>
+<ul>
+<li><code>ScriptAttachedMessage(a)</code> / <code>ScriptDetachedMessage(a)</code> are one message, <code>ScriptLifecycleMessage::Attached(a)</code> / <code>::Detached(a)</code>, processed in the order they were written. An attachment whose script is still loading holds back the ones after it.</li>
+<li><code>LoadedWithHandles</code> is <code>ScriptLifecycleQueue</code>, <code>get_ready</code> yields <code>(event, Option&lt;(StrongScriptHandle, Language)&gt;)</code>. <code>GetScriptHandle::get_script_handle</code> returns an <code>Option</code> (<code>None</code>: the event doesn’t wait for its script to load).</li>
 <li><code>ScriptLoadingPipeline::time_budget: Option&lt;Duration&gt;</code> is replaced by <code>tick_budget: Option&lt;usize&gt;</code>, the maximum amount of pipeline steps per frame, unlimited by default. <code>ActiveMachines::budget</code> and <code>RunProcessingPipelineOnce::new</code> take the same step count.</li>
-<li><code>ScriptAttachedMessage(a)</code> / <code>ScriptDetachedMessage(a)</code> are one message, <code>ScriptLifecycleMessage::Attached(a)</code> / <code>::Detached(a)</code>, so attachments and detachments are processed in the order they were written. <code>GetScriptHandle::get_script_handle</code> returns an <code>Option</code> (<code>None</code>: the event doesn’t wait for its script to load) and <code>ScriptLifecycleQueue::get_ready</code>, formerly known as <code>LoadedWithHandles</code> yields <code>(event, Option&lt;(StrongScriptHandle, Language)&gt;)</code>.</li>
-<li>An attachment whose script is still loading holds back the attachments and detachments after it, and callbacks reach scripts in a deterministic order (attachment order, until scripts are removed), see <a href="#determinism">Determinism</a>. Lua’s <code>math.random</code> is seeded with <code>0</code> in new contexts.</li>
-<li>Script systems are identified by attachment and callback label (adding one again replaces it) and are removed with their script. <code>ScriptSystemSet</code> holds a recycled slot instead of the callback label, <code>ScriptSystemBuilder</code> no longer implements <code>IntoSystem</code> (use <code>ScriptSystemBuilder::build</code>), and their errors are sent as <code>ScriptErrorMessage</code>s instead of being logged. <code>WorldAccessGuard::new_non_exclusive</code> takes an <code>Option&lt;Arc&lt;ArchetypeFilter&gt;&gt;</code>, restricting component accesses to the given archetypes (<code>None</code> for no restriction).</li>
-<li>Script system parameters are declared to Bevy as they’re accessed: <code>resource</code> and query <code>component</code>s as writes (they were declared as reads, or as accessing nothing for resources, while scripts could write them), <code>resource_read</code> / <code>component_read</code> as reads. Script systems writing the same resources or components no longer run in parallel. <code>ScriptQueryBuilder::as_query_state</code> takes a <code>QueryAccess</code>: <code>Declared</code> declares the written components as written (for queries reported to the scheduler), <code>MatchOnly</code> declares all components as read (i.e. for <code>EntityRef</code> queries only finding entities).</li>
-<li>Script systems are put in and ordered against system set values (<code>ReflectSystemSet</code>) instead of names: scripts register sets with <code>world.register_new_system_set(namespace, name)</code>, Rust sets are registered into a namespace with <code>app.register_script_system_set(namespace, name, set)</code> (<code>ScriptSystemSetAppExt</code>, now in <code>bevy_mod_scripting_bindings</code>), both are found with <code>world.get_system_set_by_name</code>. <code>ScriptSystemBuilder::{in_set, before_set, after_set}</code> take a <code>SystemSet</code>. <code>ReflectSystemSet</code> is opaque, and only its set nodes of a schedule graph have a node id.</li>
-<li><code>ScriptQueryResult</code> converts to a list instead of a reference, its script functions are removed.</li>
-<li><code>ScriptQueryResult::components</code> is a <code>Vec&lt;Option&lt;ReflectReference&gt;&gt;</code>, <code>None</code> for absent optional components. <code>ArchetypeFilter::allow</code> / <code>is_allowed</code> and <code>WorldAccessGuard::check_archetype_access</code> take whether the component is written.</li>
-<li><code>AccessByteSet::from_allowed_lists(read_write, read_only)</code> creates subsets with read only accesses. At most 63 accesses to the same value can be claimed at once, claims beyond fail (the count used to overflow).</li>
-<li><code>WorldAccessRange::External</code> holds the value’s owner (<code>AccessOwner</code>) instead of an id, and the access map keeps it alive until the claim is released. Build it from the value (<code>(&amp;allocation_id).into()</code>); <code>WorldAccessRange</code> is no longer <code>Copy</code>.</li>
-<li><code>ReflectReference::new_component_ref_by_id</code> / <code>new_resource_ref_by_id</code> are <code>unsafe</code>: the type id must be the type of the component or resource. <code>ReflectBaseType::base_id</code> is private, read it with <code>base_id()</code>.</li>
-<li>Asset references claim global access, so assets can’t be accessed in non-exclusive script systems, nor while the same call holds a component write (i.e. an <code>M&lt;Transform&gt;</code> argument next to an asset reference). Reading an asset no longer marks it modified.</li>
-<li><code>ThreadWorldContainer::try_get_context()</code> is an associated function (was <code>ThreadWorldContainer.try_get_context()</code>), <code>set_context</code> is removed (use <code>replace_context</code>, which restores the previous context). <code>WorldAccessGuard::set_cached_registry</code> is removed, use <code>replace_cached_registry</code>.</li>
+</ul>
+<h3 id="script-systems-1"><a class="header" href="#script-systems-1">Script systems</a></h3>
+<ul>
+<li>Systems are identified by attachment and callback label (adding one again replaces it) and are removed with their script. Their errors are sent as <code>ScriptErrorMessage</code>s instead of being logged.</li>
+<li><code>ScriptSystemBuilder</code> no longer implements <code>IntoSystem</code>, use <code>ScriptSystemBuilder::build</code>. <code>in_set</code>, <code>before_set</code> and <code>after_set</code> take a <code>SystemSet</code>. <code>ScriptSystemSet</code> holds a recycled slot instead of the callback label.</li>
+<li>Rust sets are exposed to scripts with <code>app.register_script_system_set(namespace, name, set)</code> (<code>ScriptSystemSetAppExt</code>, now in <code>bevy_mod_scripting_bindings</code>). <code>ReflectSystemSet</code> is opaque.</li>
+<li><code>ScriptQueryBuilder::as_query_state</code> takes a <code>QueryAccess</code>: <code>Declared</code> for queries reported to the scheduler, <code>MatchOnly</code> for queries only finding entities.</li>
+<li><code>ScriptQueryResult</code> converts to a list instead of a reference, and its <code>components</code> are a <code>Vec&lt;Option&lt;ReflectReference&gt;&gt;</code>, <code>None</code> for absent optional components.</li>
+</ul>
+<h3 id="world-access"><a class="header" href="#world-access">World access</a></h3>
+<ul>
+<li><code>ReflectReference::new_component_ref_by_id</code> / <code>new_resource_ref_by_id</code>, <code>ScriptComponentRegistration::new</code> and <code>ScriptResourceRegistration::new</code> are <code>unsafe</code>: the type must be the type of the component or resource id. <code>ReflectBaseType::base_id</code> is private, read it with <code>base_id()</code>.</li>
+<li><code>WorldAccessGuard::new_non_exclusive</code> takes an <code>Option&lt;Arc&lt;ArchetypeFilter&gt;&gt;</code>, restricting component accesses to the given archetypes (<code>None</code> for no restriction).</li>
+<li><code>WorldAccessRange::External</code> holds the value itself (<code>AccessOwner</code>) instead of an id and is no longer <code>Copy</code>, build it from the value: <code>(&amp;allocation_id).into()</code>.</li>
+<li>At most 63 accesses to the same value can be claimed at once, claims beyond fail (the count used to overflow).</li>
+<li>Asset references claim global access, and reading an asset no longer marks it modified.</li>
+<li><code>ThreadWorldContainer::try_get_context()</code> is an associated function (was <code>ThreadWorldContainer.try_get_context()</code>), <code>set_context</code> is replaced by <code>replace_context</code>, which restores the previous context when its guard is dropped. <code>set_cached_registry</code> is replaced by <code>replace_cached_registry</code>.</li>
+<li>Removed: <code>DynamicSystemMeta</code> (its methods are on <code>AccessMap</code>), <code>with_world_access_and_then</code>, <code>as_unsafe_world_cell_readonly</code> (use <code>as_unsafe_world_cell</code>).</li>
 </ul>
 <h3 id="language-implementations"><a class="header" href="#language-implementations">Language implementations</a></h3>
 <ul>
 <li>Dispatch every script operation through <code>bevy_mod_scripting_bindings::dispatch</code> (<code>index</code>, <code>set_index</code>, <code>static_index</code>, <code>binary</code>, <code>unary</code>, <code>len</code>, <code>iter</code>, <code>display</code>, <code>debug</code>), see <a href="#necessary-features">Necessary Features</a>. <code>WorldExtensions::lookup_function</code>, <code>lookup_instance_function</code>, <code>lookup_type_function</code> and <code>lookup_reserved_function</code> are private.</li>
 <li>Convert the new <code>ScriptValue::Type(TypeId)</code>, a type itself (what <code>world</code> and <code>StaticTypeRef</code> are).</li>
 <li>Set <code>bindings::builtins::builtins()</code> (<code>import_namespace</code>, <code>export_namespace</code>) and your <code>register_callback</code> as globals, nothing else. Don’t set <code>world</code>, <code>entity</code> or <code>script_asset</code> anymore.</li>
-<li><code>LuaStaticReflectReference</code> / <code>RhaiStaticReflectReference</code> are <code>LuaTypeRef</code> / <code>RhaiTypeRef</code>.</li>
+<li><code>LuaStaticReflectReference</code> is <code>LuaTypeRef</code>.</li>
 </ul>
 <h3 id="documentation-tooling"><a class="header" href="#documentation-tooling">Documentation tooling</a></h3>
 <ul>
-<li>The Lua language server files are split per namespace (<code>bindings.d.lua</code>, <code>bindings.&lt;namespace&gt;.d.lua</code>, point <code>workspace.library</code> at the directory), classes are named after their namespace (<code>math.Vec3</code>), and generic types are declared once (<code>Handle&lt;Image&gt;</code>, needs LuaLS 3.17+), with their fields in terms of their parameters (<code>---@field context T</code>) and, for enums, a generic class per variant (<code>Handle.Strong&lt;A&gt;</code>). The mdbook pages of generic types show their layout and functions, the ones of a single instantiation titled by it (<code>Time&lt;Virtual&gt;.pause</code>).</li>
+<li>The Lua language server files are split per namespace (<code>bindings.d.lua</code>, <code>bindings.&lt;namespace&gt;.d.lua</code>): point <code>workspace.library</code> at the directory. Classes are named after their namespace (<code>math.Vec3</code>), and generic classes need LuaLS 3.17+.</li>
 <li><code>cargo xtask docgen</code> is replaced by <code>cargo xtask docs</code> (all binding features, <code>--test-bindings</code> for the script test functions). <code>cargo xtask bless-lad</code> updates the LAD test fixtures.</li>
-<li><code>ThroughTypeInfo</code> is flat (<code>ThroughTypeInfo::Vec(..)</code>, <code>ThroughTypeInfo::Ref(type_info)</code>), <code>ThroughTypeInfo::TypeInfo</code> is <code>Opaque</code>. <code>#[derive(TypedThrough)]</code> documents a type as opaque, <code>#[typed_through(value)]</code> as a value.</li>
-<li>LAD: <code>LadFieldOrVariableKind</code> → <code>LadTypeKind</code>; <code>globals</code> is removed, builtin functions are <code>LadFunctionNamespace::Global</code> (the mdbook “Globals” and “Functions” pages are one “Builtins” page), namespaces have <code>values</code> (<code>add_instance*</code> → <code>add_namespace_value_of</code> / <code>add_namespace_instance</code>); new <code>namespaces</code>, <code>generic_types</code>, <code>LadTypeDefinition::generic_type</code>, <code>LadFunction::receiver</code>, <code>LadFunctionMetadata::operator</code> (replaces <code>is_operator</code>); arguments are always named and never include the call context; <code>polymorphizied_types</code> is removed. <code>ArgumentVisitor</code> has an <code>Output</code> type and <code>visit_*</code> methods.</li>
-<li>Generic types:
+<li><code>ThroughTypeInfo</code> is flat (<code>ThroughTypeInfo::Vec(..)</code>, <code>ThroughTypeInfo::Ref(type_info)</code>, replacing <code>TypedWrapper</code> / <code>UntypedWrapper</code>), <code>ThroughTypeInfo::TypeInfo</code> is <code>Opaque</code>. <code>#[derive(TypedThrough)]</code> documents a type as opaque, <code>#[typed_through(value)]</code> as a value.</li>
+<li><code>generate_lad_file</code> takes the <code>AppGenericTypes</code>, see <code>app.register_generic_type</code>.</li>
+<li>LAD format:
 <ul>
-<li>They are declared with <code>app.register_generic_type::&lt;Handle&lt;A&gt;&gt;("asset", &amp;["A"], docs)</code> (<code>GenericTypesAppExt</code>, stored in <code>AppGenericTypes</code>, which <code>generate_lad_file</code> now takes) or <code>LadFileBuilder::add_generic_type</code>, the markers <code>A</code>, <code>B</code>, <code>C</code> standing in for the parameters (<code>bindings::function::generics</code>), or a marker of your own declared with <code>generic_marker!</code> and registered. The bindings crates declare their own (<code>Handle</code>, <code>AssetId</code>, <code>Time</code>, <code>ButtonInput</code>, <code>Range</code>, <code>Hashed</code>, …). Instantiations of undeclared generic types get a Lua class each (<code>core.Range.f32</code>).</li>
-<li>In Lua, a type’s functions are on <code>X.Functions</code>, which both its values (<code>X : ReflectReference, X.Functions</code>) and its table in its namespace (<code>X.Type</code>, an alias of <code>X.Static | bms.ScriptComponentRegistration&lt;X&gt;</code>) extend, so values don’t show registration functions and type tables don’t show fields. Registration classes are generic in the type they register, generic functions take <code>bms.ScriptComponentRegistration&lt;A&gt;</code>. LAD: <code>LadTypeMetadata::registration</code>.</li>
-<li>Their layout is in terms of the parameter (<code>LadGenericType::layout</code>, a parameter being <code>LadNamedType::Param</code>, i.e. <code>{ "ref": { "param": "T" } }</code>, instantiated with <code>replace_param</code>).</li>
-<li><code>Ref</code>/<code>Mut</code>/<code>Val</code> hold a <code>LadNamedType</code>: a type id as before, or a declared generic type applied to arguments (<code>{ "generic_type": "bevy_asset::handle::Handle", "args": [...] }</code>), which is how instantiations are named everywhere (<code>ArgumentVisitor::visit_generic</code>).</li>
-<li>Instantiations of declared generic types aren’t types of the file anymore: they are recorded on the generic type (<code>LadGenericType::instantiations</code>, with their arguments, metadata and functions, see <code>LadFile::get_instantiation</code>). <code>LadFunctionNamespace::Type</code>/<code>Variant</code> and <code>LadTypeKind::Fields</code> name types by <code>LadNamedType</code>. <code>LadTypeDefinition::generic_type</code>, <code>LadFile::get_generic_instance</code> and <code>LadFile::documented_types</code> are removed.</li>
-<li>The functions of an instantiation are in <code>LadInstantiation::associated_functions</code>. In Lua they are on a subclass of the generic class (<code>time.Time.Virtual : time.Time&lt;time.Virtual&gt;</code>), as are the functions of its variants (<code>asset.Handle.Image.Strong : asset.Handle.Strong&lt;render.Image&gt;</code>), and the mdbook page of the generic type lists them, titled by the instantiation (<code>Time&lt;Virtual&gt;.pause</code>).</li>
+<li><code>LadFieldOrVariableKind</code> → <code>LadTypeKind</code>. <code>Ref</code>/<code>Mut</code>/<code>Val</code> hold a <code>LadNamedType</code>: a type id as before, or a generic type applied to arguments (<code>{ "generic_type": "bevy_asset::handle::Handle", "args": [...] }</code>).</li>
+<li><code>globals</code> is removed, builtin functions are <code>LadFunctionNamespace::Global</code> (the mdbook “Globals” and “Functions” pages are one “Builtins” page). Namespaces have <code>values</code> (<code>add_instance*</code> → <code>add_namespace_value_of</code> / <code>add_namespace_instance</code>).</li>
+<li>Instantiations of declared generic types are recorded on the generic type (<code>generic_types</code>, <code>LadGenericType::instantiations</code>, <code>LadFile::get_instantiation</code>) instead of being types of the file. <code>polymorphizied_types</code> is removed.</li>
+<li><code>LadFunctionMetadata::is_operator</code> → <code>operator</code>. Arguments are always named and never include the call context.</li>
+<li><code>ArgumentVisitor</code> has an <code>Output</code> type and <code>visit_*</code> methods per kind (<code>visit_generic</code>, <code>visit_type</code>, <code>visit_tuple_with_rest</code>, …).</li>
 </ul>
 </li>
-<li>Generic functions are declared in their signature with <code>TypeOf&lt;R, A&gt;</code> (a type, passed as <code>R</code>) and <code>ValueOf&lt;A&gt;</code> (a value of it, a reference at runtime), see <code>bindings::function::generics</code>. <code>world.get_component</code>, <code>get_resource</code>, <code>insert_component</code>, <code>bms.construct</code> and the asset functions of <code>world</code> (<code>load_asset</code>, <code>get_asset</code>, <code>add_asset</code>, …, taking a <code>ValueOf&lt;Handle&lt;A&gt;&gt;</code>) use them, so in Lua <code>world.get_component(entity, Transform)</code> is a <code>transform.Transform?</code> and <code>world.load_asset(path, Image)</code> an <code>asset.Handle&lt;render.Image&gt;</code> (<code>---@generic A</code>, with an <code>---@overload</code> for untyped registrations). LAD: <code>LadFunction::generics</code>, <code>LadTypeKind::Type { of, erased }</code> (<code>ArgumentVisitor::visit_type</code>), and <code>ThroughTypeInfo::TypeOf</code>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="0240---hand-written-bindings-typed-scripts-script-systems-rune"><a class="header" href="#0240---hand-written-bindings-typed-scripts-script-systems-rune">0.24.0 - Hand-written bindings, typed scripts, script systems, Rune</a></h1>
+<p>See the <a href="#migrating-from-023-to-024">migration guide</a> for breaking changes.</p>
+<h2 id="hand-written-bevy-bindings"><a class="header" href="#hand-written-bevy-bindings">Hand-written Bevy bindings</a></h2>
+<p>Codegen is gone. The Bevy bindings are written, documented and tested by hand, one crate per category, designed for scripts rather than mirrored from Rust:</p>
+<pre><code class="language-lua">local Vec3 = import_namespace("math").Vec3
+local Transform = import_namespace("transform").Transform
+local KeyCode = import_namespace("input").KeyCode
+local Color = import_namespace("color").Color
+local ui = import_namespace("ui")
+
+local t = Transform.from_translation(Vec3.new(1, 2, 3)):looking_at(Vec3.zero(), Vec3.unit_y())
+t.translation = 2 * t.translation            -- numbers work on either side of operators
+
+if KeyCode.just_pressed(KeyCode.Space) then  -- no `ButtonInput&lt;KeyCode&gt;` resource lookups
+    local node = ui.Node.new({ width = ui.Val.px(100) })
+    local red = Color.hex("#ff0000"):mix(Color.named("rebecca_purple"), 0.5)
+end
+</code></pre>
+<ul>
+<li>Covers math, ecs, time, transform, color, input, window, asset, camera, render, sprite, text and ui, plus new bindings for gizmos (<code>Gizmos.line(a, b, color)</code>), animation players, audio playback settings and states (<code>world.get_state</code>, <code>world.set_next_state</code>).</li>
+<li>Things which panic in Rust are errors or <code>nil</code> in scripts: <code>normalize</code> of a zero vector, integer division by zero, <code>Entity.from_bits</code> of an invalid id, <code>Dir3.new</code> of a zero vector.</li>
+<li>No generic type paths: <code>world.time()</code>, <code>world.virtual_time()</code>, <code>Window.primary()</code>, <code>world.find_entity_by_name(name)</code>.</li>
+<li>Everything without a binding stays reachable through reflection: fields, <code>Type.new{..}</code>, variants.</li>
+<li>The examples in the binding docs run as tests, in every language.</li>
+</ul>
+<h2 id="everything-is-imported-1"><a class="header" href="#everything-is-imported-1">Everything is imported</a></h2>
+<p>Scripts get three globals: <code>import_namespace</code>, <code>export_namespace</code> and <code>register_callback</code>. Types live in short category namespaces (<code>math</code>, <code>ecs</code>, <code>transform</code>, <code>ui</code>, …) instead of globals which shadowed each other, and so does <code>world</code>:</p>
+<pre><code class="language-lua">local bms = import_namespace("bms")
+local world = bms.world
+bms.log_info("hi from " .. tostring(bms.current_entity()))
+</code></pre>
+<p>Exposing your own functions is one attribute, no globals registry:</p>
+<pre><code class="language-rust ignore">#[script_bindings(namespace = "my_game")]
+impl NamespaceMembers {
+    /// `import_namespace("my_game").spawn_enemy(5)` in scripts
+    fn spawn_enemy(ctxt: FunctionCallContext, hp: usize) -&gt; Result&lt;(), InteropError&gt; { .. }
+}</code></pre>
+<h2 id="types-constructors-and-enums"><a class="header" href="#types-constructors-and-enums">Types, constructors and enums</a></h2>
+<p>A type is a value now (<code>ScriptValue::Type</code>), not an allocated <code>StaticTypeRef</code> reference. What you import from a namespace is the type: it is its registration wherever one is expected, and it carries the type’s static functions, the shared <code>new</code> constructor and its enum variants. Calling <code>Vec3.new{}</code> no longer allocates the type and clones it back out on every call.</p>
+<pre><code class="language-lua">local time = import_namespace("time")
+local Timer, TimerMode = time.Timer, time.TimerMode
+
+world.add_default_component(entity, Transform)        -- the type as a registration
+local timer = Timer.from_seconds(2, TimerMode.Repeating)
+local image = Image.load("player.png")                -- on every asset type, a typed `Handle&lt;Image&gt;`
+
+if event.key_code == KeyCode.KeyA then end            -- values compare against variants directly
+local eased = EaseFunction.Linear:sample(0.5)         -- variants have their enum's functions
+</code></pre>
+<ul>
+<li>Every reflected value has <code>==</code> (through <code>reflect_partial_eq</code>) and <code>:clone()</code>, and operators a type doesn’t define fall back to the ones shared by all references.</li>
+<li><code>#v</code> goes through the type’s <code>len</code> function, so types can override it.</li>
+<li>Asset types get <code>load(path)</code>, <code>add_asset(value)</code> and <code>get_asset(handle)</code>, next to <code>world.load_asset</code>, <code>world.add_asset</code>, <code>world.is_loaded</code>, <code>world.load_state</code> and <code>world.asset_path</code>.</li>
+<li><code>#[reflect(NoTypeFunctions)]</code> hides the shared type functions (i.e. <code>new</code>) from a type.</li>
+<li>One function per name, taking a <code>Union</code> for different operand types (<code>Union&lt;R&lt;Vec3&gt;, f32&gt;</code> borrows): overloads, and the failed attempts they cost on every call, are gone.</li>
+<li><code>#[derive(ScriptType)]</code> implements everything a type needs to be used directly in function signatures.</li>
+</ul>
+<h2 id="scripts-your-editor-understands"><a class="header" href="#scripts-your-editor-understands">Scripts your editor understands</a></h2>
+<p>The Lua language server files describe what scripts actually get back. Functions are generic in the type they are given, and generic types are declared once in terms of their parameters:</p>
+<pre><code class="language-lua">local transform = world.get_component(entity, Transform) -- transform.Transform?
+local image = world.load_asset("player.png", Image)       -- asset.Handle&lt;render.Image&gt;
+local state = world.get_state(GameState)                  -- my_game.GameState?
+local t = world.get_type_by_name("bevy_transform::components::transform::Transform") -- the Transform type
+</code></pre>
+<ul>
+<li>A file per namespace, classes named after their namespace (<code>math.Vec3</code>), no type globals.</li>
+<li>Type tables and values are separate classes: <code>Transform.from_xyz</code> completes on the type, fields on the value, and passing a resource where a component is expected is flagged.</li>
+<li>Enum variants extend their enum, so <code>Timer.from_seconds(2, TimerMode.Repeating)</code> type-checks, and <code>MyEnum.Variant:new{..}</code> checks its fields.</li>
+<li>Container fields are typed as what reading them gives: <code>integer[] | ReflectReference</code>.</li>
+<li>The Lua tests of BMS are type-checked against the generated files in CI, with zero diagnostics.</li>
+</ul>
+<p>Declare your own generic types with <code>app.register_generic_type::&lt;Handle&lt;A&gt;&gt;("asset", &amp;["A"], docs)</code>, and generic functions with <code>TypeOf&lt;R, A&gt;</code> / <code>ValueOf&lt;A&gt;</code> in their signature:</p>
+<pre><code class="language-rust ignore">fn get_component(
+    ctxt: FunctionCallContext,
+    entity: V&lt;Entity&gt;,
+    registration: TypeOf&lt;V&lt;ScriptComponentRegistration&gt;, A&gt;,
+) -&gt; Result&lt;Option&lt;ValueOf&lt;A&gt;&gt;, InteropError&gt;</code></pre>
+<p>The mdbook pages got the same treatment, and a rework: generic types show their layout and functions once, generics no longer vanish as HTML tags, rustdoc links resolve, and summaries are readable.</p>
+<h2 id="script-systems-2"><a class="header" href="#script-systems-2">Script systems</a></h2>
+<p>Script systems grew into something you can build a mod’s logic on.</p>
+<h3 id="parameters-and-queries"><a class="header" href="#parameters-and-queries">Parameters and queries</a></h3>
+<p>Systems declare what they read and write, so Bevy runs them in parallel with everything they don’t conflict with:</p>
+<pre><code class="language-lua">bms.system_builder("steer_enemies", attachment)
+    :query(world.query()
+        :component(Transform)          -- read + write
+        :component_read(game.Enemy)    -- read only, readers run in parallel
+        :optional_read(game.Shield)    -- nil for entities without it
+        :changed(game.Target))         -- only entities whose target changed since the last run
+    :resource_read(game.Difficulty)
+</code></pre>
+<pre><code class="language-lua">function steer_enemies(enemies, difficulty)
+    for _, result in ipairs(enemies) do
+        local entity, transform, enemy, shield = result[1], result[2], result[3], result[4]
+    end
+end
+</code></pre>
+<ul>
+<li><code>added</code> / <code>changed</code> filters, relative to the system’s last run (or the last update in <code>world.query()</code>).</li>
+<li>Queries of a system may share components if <code>with</code> / <code>without</code> make them disjoint, like in Rust.</li>
+<li>Query results are plain lists instead of allocated values.</li>
+</ul>
+<h3 id="ordering-and-sets-1"><a class="header" href="#ordering-and-sets-1">Ordering and sets</a></h3>
+<p>Order against systems, other scripts’ systems, and sets, including Rust sets:</p>
+<pre><code class="language-lua">local propagate = import_namespace("transform.TransformSystems").Propagate
+local ai = world.register_new_system_set("script.my_mod", "ai") -- other scripts import it from `script.my_mod`
+
+builder:in_set(ai)
+       :before_set(propagate)
+       :after_script_system("on_physics", other_attachment)
+</code></pre>
+<p>The bindings register the main Bevy sets, expose your own with:</p>
+<pre><code class="language-rust ignore">app.register_script_system_set("my_game.GameSystems", "Combat", GameSystems::Combat);</code></pre>
+<h3 id="run-conditions-1"><a class="header" href="#run-conditions-1">Run conditions</a></h3>
+<p>Evaluated in Rust, without calling into the script:</p>
+<pre><code class="language-lua">local c = bms.conditions
+builder:run_if(c.any_with_component(game.Enemy))
+       :run_if(c.not_(c.resource_exists(game.Paused)))
+       :run_if(c.on_timer(0.5))
+</code></pre>
+<p><code>resource_exists</code>, <code>resource_changed</code>, <code>resource_added</code>, <code>any_with_component</code>, <code>on_timer</code>, <code>run_once</code>, and the combinators <code>not_</code>, <code>and_</code>, <code>or_</code>.</p>
+<h3 id="lifecycle"><a class="header" href="#lifecycle">Lifecycle</a></h3>
+<ul>
+<li>A system is identified by its script and callback label: adding it again replaces it, and it is removed when its script unloads or reloads.</li>
+<li>Systems can be added to schedules which are running (i.e. from <code>on_script_loaded</code>), the change is applied once the schedule finishes.</li>
+<li>Errors are sent as <code>ScriptErrorMessage</code>s like those of other callbacks, and invalid parameters are reported once instead of every frame.</li>
+<li>A non-exclusive system can only touch what it declared, on the entities its queries match.</li>
+</ul>
+<p>See <a href="#script-systems">Script Systems</a>.</p>
+<h2 id="determinism-1"><a class="header" href="#determinism-1">Determinism</a></h2>
+<p>Given the same inputs, scripts load in the same order and callbacks reach scripts in the same order, on every run and machine:</p>
+<ul>
+<li>Script contexts and their residents are kept in insertion order instead of randomly seeded maps, so callback order, reload order and the “first” script of a shared context are stable.</li>
+<li>Attachments and detachments are one ordered <code>ScriptLifecycleMessage</code> stream: removing and re-inserting a script component in the same frame no longer ends up unloaded, and a detachment waits for its attachment whose script is still loading.</li>
+<li>The pipeline budget counts steps (<code>tick_budget</code>) rather than wall clock time.</li>
+<li>Lua’s <code>math.random</code> is seeded with <code>0</code> in new contexts.</li>
+<li>Broadcast callbacks are no longer delivered twice to loaded scripts while another script is loading.</li>
+</ul>
+<p>See <a href="#determinism">Determinism</a> for what BMS can’t control.</p>
+<h2 id="rune"><a class="header" href="#rune">Rune</a></h2>
+<p><a href="https://rune-rs.github.io/">Rune</a> is the second supported language, behind the <code>rune</code> feature. It replaces Rhai, which is removed:</p>
+<pre><code class="language-rust ignore">pub fn on_script_loaded() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    for result in world.query().component(life_state_type(world)).build() {
+        let cells = result[1].cells;
+        cells[0] += 255;
+    }
+}</code></pre>
+<p>Operators, indexing and member lookups go through one language agnostic <code>dispatch</code> module, so every language resolves <code>v.x</code>, <code>v:method()</code> and <code>2 * v</code> by the same rules, and adding a language is mostly converting values, see <a href="#necessary-features">Necessary Features</a>.</p>
+<h2 id="faster-interop"><a class="header" href="#faster-interop">Faster interop</a></h2>
+<p>Method calls from Lua cost less than half of what they did (<code>cargo bench</code>, medians of 3 runs on the same machine):</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>0.23</th><th>0.24</th><th></th></tr>
+</thead>
+<tbody>
+<tr><td><code>v:length()</code></td><td>1.45µs</td><td>0.67µs</td><td>-54%</td></tr>
+<tr><td><code>v:normalize()</code> (returns a value)</td><td>2.49µs</td><td>1.04µs</td><td>-58%</td></tr>
+<tr><td><code>a + b</code></td><td>1.57µs</td><td>1.02µs</td><td>-35%</td></tr>
+<tr><td><code>v.x</code></td><td>554ns</td><td>426ns</td><td>-23%</td></tr>
+<tr><td><code>v.x = 2</code></td><td>484ns</td><td>519ns</td><td>+7%</td></tr>
+<tr><td>calling an empty function</td><td>309ns</td><td>178ns</td><td>-42%</td></tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>Values returned to scripts are owned by the references to them and freed with the last one: the allocator, its lock and the garbage collection system are gone.</li>
+<li><code>v:method</code> reuses one Lua function per registered function, and call locations are only looked up for errors.</li>
+<li>Claiming the whole world (every asset access, <code>world.spawn</code>, …) no longer scans every component’s claims.</li>
+</ul>
+<h2 id="soundness"><a class="header" href="#soundness">Soundness</a></h2>
+<p>The world access machinery was reviewed and tightened:</p>
+<ul>
+<li>Borrowed arguments (<code>R&lt;T&gt;</code>, <code>M&lt;T&gt;</code>) are tied to the function call, keeping them past it no longer compiles.</li>
+<li>Claims are released when callbacks fail or panic, can’t overflow, and hold across guards for values reachable from several of them.</li>
+<li>Script systems declare exactly what they access to Bevy: written components and resources used to be declared as reads, letting writers run in parallel.</li>
+<li>Reading an asset no longer takes it mutably, or marks it modified (i.e. re-uploading an <code>Image</code> every frame).</li>
+<li>Constructors which trust the caller with a type and component id pairing are <code>unsafe</code>, and registrations can’t be forged through reflection.</li>
+</ul>
+<h2 id="other-changes-2"><a class="header" href="#other-changes-2">Other changes</a></h2>
+<ul>
+<li>Cyclic Lua tables are an error instead of a stack overflow.</li>
+<li>Lua functions called from Rust return all of their values intact.</li>
+<li>Indexes are normalised when values are created, so values pass between 0 and 1 indexed languages correctly.</li>
+<li><code>DynamicScriptFunction</code>s compare equal to their clones.</li>
+<li>The function registry is not locked while functions run, which could deadlock with a writer on another thread.</li>
+<li>Android and iOS builds are checked, and the script tests run on an emulator, in CI.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
@@ -1911,7 +2118,6 @@ world.add_default_component(bms.current_entity(), transform.Transform)
 <li>If two types in a namespace share a short name, the first one registered wins.</li>
 <li>Each call reads the shared type catalogue, so the result is always up to date. A table imported earlier does not pick up later registrations: import again.</li>
 <li>A namespace which does not exist is an error, with suggestions: <code>namespace "transfrom" does not exist. ... Did you mean: transform?</code></li>
-<li>To also expose every type as a global named after it (i.e. <code>Vec3</code>), as before 0.24, set <code>CoreScriptGlobalsPlugin::register_static_references</code>. Types sharing a name then shadow each other.</li>
 </ul>
 <h2 id="overriding-the-namespace-of-a-type"><a class="header" href="#overriding-the-namespace-of-a-type">Overriding the namespace of a type</a></h2>
 <pre><code class="language-rust ignore">// on types with script bindings: keeps a namespace set before (with a warning)
@@ -2054,7 +2260,7 @@ Scripts which are still loading or unloading are skipped when targeting many scr
 <li>They never run in the middle of the callback which queued them, even if it keeps using the world afterwards.</li>
 <li>To stop callbacks from queueing each other endlessly, at most 1024 queued callbacks run in one go. Any beyond that run later, and an error is reported.</li>
 </ul>
-<h2 id="script-systems-1"><a class="header" href="#script-systems-1">Script systems</a></h2>
+<h2 id="script-systems-3"><a class="header" href="#script-systems-3">Script systems</a></h2>
 <p>Script systems running in parallel with other systems (i.e. not marked <code>exclusive</code>) cannot use <code>bms.run_script_callback</code>, as another system might be running the target script at the same time.
 Callbacks they queue run at the end of the frame instead, in the <code>ScriptingSystemSet::RunQueuedCallbacks</code> system set in the <code>Last</code> schedule.</p>
 <h2 id="limits"><a class="header" href="#limits">Limits</a></h2>
@@ -2083,7 +2289,7 @@ Callbacks they queue run at the end of the frame instead, in the <code>Scripting
 <div class="lad-page"></div>
 
 <p>The only globals of scripts. Everything else is imported from a namespace, see the namespace pages under Types, i.e. <code>import_namespace("bms").world</code>.</p>
-<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h2 id="functions-1"><a class="header" href="#functions-1">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2210,7 +2416,7 @@ bms.world.spawn()
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-1"><a class="header" href="#functions-1">Functions</a></h2>
+<h2 id="functions-2"><a class="header" href="#functions-2">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2285,7 +2491,7 @@ playing, but is presently paused.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-2"><a class="header" href="#functions-2">Functions</a></h2>
+<h2 id="functions-3"><a class="header" href="#functions-3">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2329,7 +2535,7 @@ entity with that ID.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-3"><a class="header" href="#functions-3">Functions</a></h2>
+<h2 id="functions-4"><a class="header" href="#functions-4">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2394,7 +2600,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <h1 id="animationeventdata"><a class="header" href="#animationeventdata"><code>AnimationEventData</code></a></h1>
 <div class="lad-page"></div>
 
-<h2 id="functions-4"><a class="header" href="#functions-4">Functions</a></h2>
+<h2 id="functions-5"><a class="header" href="#functions-5">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2434,7 +2640,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-5"><a class="header" href="#functions-5">Functions</a></h2>
+<h2 id="functions-6"><a class="header" href="#functions-6">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2558,7 +2764,7 @@ information.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-6"><a class="header" href="#functions-6">Functions</a></h2>
+<h2 id="functions-7"><a class="header" href="#functions-7">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2633,7 +2839,7 @@ spawned.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-7"><a class="header" href="#functions-7">Functions</a></h2>
+<h2 id="functions-8"><a class="header" href="#functions-8">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2784,7 +2990,7 @@ connected to a bone named <code>Stomach</code>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-8"><a class="header" href="#functions-8">Functions</a></h2>
+<h2 id="functions-9"><a class="header" href="#functions-9">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2814,7 +3020,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-9"><a class="header" href="#functions-9">Functions</a></h2>
+<h2 id="functions-10"><a class="header" href="#functions-10">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2875,7 +3081,7 @@ assert!(node.index() == 3);
 </tbody>
 </table>
 </div>
-<h2 id="functions-10"><a class="header" href="#functions-10">Functions</a></h2>
+<h2 id="functions-11"><a class="header" href="#functions-11">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2943,7 +3149,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-11"><a class="header" href="#functions-11">Functions</a></h2>
+<h2 id="functions-12"><a class="header" href="#functions-12">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3013,8 +3219,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
 <h2 id="instantiations"><a class="header" href="#instantiations">Instantiations</a></h2>
-<p><a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#image">Image</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</p>
-<h2 id="functions-12"><a class="header" href="#functions-12">Functions</a></h2>
+<p><a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#image">Image</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;</p>
+<h2 id="functions-13"><a class="header" href="#functions-13">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3026,10 +3232,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-11" class="lad-function"><a class="header" href="#new-11"><code>new</code></a></h3>
-<p class="lad-note">On <code>ArcMutexValue&lt;ColorMaterial&gt;</code>, <code>ArcMutexValue&lt;Mesh&gt;</code>, <code>ArcMutexValue&lt;Image&gt;</code>, <code>ArcMutexValue&lt;TextureAtlasLayout&gt;</code>, <code>ArcMutexValue&lt;SpriteMeshMaterial&gt;</code>, <code>ArcMutexValue&lt;ShaderBuffer&gt;</code>, <code>ArcMutexValue&lt;ScriptAsset&gt;</code></p>
+<p class="lad-note">On <code>ArcMutexValue&lt;Mesh&gt;</code>, <code>ArcMutexValue&lt;ColorMaterial&gt;</code>, <code>ArcMutexValue&lt;ShaderBuffer&gt;</code>, <code>ArcMutexValue&lt;Image&gt;</code>, <code>ArcMutexValue&lt;TextureAtlasLayout&gt;</code>, <code>ArcMutexValue&lt;ScriptAsset&gt;</code>, <code>ArcMutexValue&lt;SpriteMeshMaterial&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;&gt;) -&gt; <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#mesh">Mesh</a>&gt;&gt;) -&gt; <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -3061,7 +3267,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 <h2 id="instantiations-1"><a class="header" href="#instantiations-1">Instantiations</a></h2>
 <p><a href="#assetida">AssetId</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</p>
-<h2 id="functions-13"><a class="header" href="#functions-13">Functions</a></h2>
+<h2 id="functions-14"><a class="header" href="#functions-14">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3105,7 +3311,7 @@ usage and is not suitable for identifying assets across app runs.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-14"><a class="header" href="#functions-14">Functions</a></h2>
+<h2 id="functions-15"><a class="header" href="#functions-15">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3169,7 +3375,7 @@ clones internal owned <a href="#assetpath"><code>AssetPaths</code></a>.
 This also means that you should use <a href="#assetpath"><code>AssetPath::parse</code></a> in cases where <code>&amp;str</code> is the explicit type.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-15"><a class="header" href="#functions-15">Functions</a></h2>
+<h2 id="functions-16"><a class="header" href="#functions-16">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3213,8 +3419,8 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h2 id="instantiations-2"><a class="header" href="#instantiations-2">Instantiations</a></h2>
-<p><a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#handlea">Handle</a>&lt;()&gt;, <a href="#handlea">Handle</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#animationclip">AnimationClip</a>&gt;</p>
-<h2 id="functions-16"><a class="header" href="#functions-16">Functions</a></h2>
+<p><a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#handlea">Handle</a>&lt;()&gt;, <a href="#handlea">Handle</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#animationclip">AnimationClip</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;</p>
+<h2 id="functions-17"><a class="header" href="#functions-17">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3226,7 +3432,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-15" class="lad-function"><a class="header" href="#new-15"><code>new</code></a></h3>
-<p class="lad-note">On <code>Handle&lt;Mesh&gt;</code>, <code>Handle&lt;()&gt;</code>, <code>Handle&lt;Image&gt;</code>, <code>Handle&lt;ShaderBuffer&gt;</code>, <code>Handle&lt;ScriptAsset&gt;</code>, <code>Handle&lt;SpriteMeshMaterial&gt;</code>, <code>Handle&lt;ColorMaterial&gt;</code>, <code>Handle&lt;TextureAtlasLayout&gt;</code>, <code>Handle&lt;AnimationClip&gt;</code></p>
+<p class="lad-note">On <code>Handle&lt;Mesh&gt;</code>, <code>Handle&lt;()&gt;</code>, <code>Handle&lt;Image&gt;</code>, <code>Handle&lt;ColorMaterial&gt;</code>, <code>Handle&lt;ScriptAsset&gt;</code>, <code>Handle&lt;TextureAtlasLayout&gt;</code>, <code>Handle&lt;AnimationClip&gt;</code>, <code>Handle&lt;SpriteMeshMaterial&gt;</code>, <code>Handle&lt;ShaderBuffer&gt;</code></p>
 
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;&gt;) -&gt; <a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
@@ -3286,8 +3492,8 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </table>
 </div>
 <h2 id="instantiations-3"><a class="header" href="#instantiations-3">Instantiations</a></h2>
-<p><a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
-<h2 id="functions-17"><a class="header" href="#functions-17">Functions</a></h2>
+<p><a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
+<h2 id="functions-18"><a class="header" href="#functions-18">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3299,7 +3505,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </table>
 </div>
 <h3 id="new-16" class="lad-function"><a class="header" href="#new-16"><code>new</code></a></h3>
-<p class="lad-note">On <code>HandleTemplate&lt;ShaderBuffer&gt;</code>, <code>HandleTemplate&lt;Image&gt;</code>, <code>HandleTemplate&lt;SpriteMeshMaterial&gt;</code>, <code>HandleTemplate&lt;ScriptAsset&gt;</code>, <code>HandleTemplate&lt;ColorMaterial&gt;</code>, <code>HandleTemplate&lt;TextureAtlasLayout&gt;</code>, <code>HandleTemplate&lt;Mesh&gt;</code></p>
+<p class="lad-note">On <code>HandleTemplate&lt;ShaderBuffer&gt;</code>, <code>HandleTemplate&lt;ColorMaterial&gt;</code>, <code>HandleTemplate&lt;Image&gt;</code>, <code>HandleTemplate&lt;ScriptAsset&gt;</code>, <code>HandleTemplate&lt;SpriteMeshMaterial&gt;</code>, <code>HandleTemplate&lt;TextureAtlasLayout&gt;</code>, <code>HandleTemplate&lt;Mesh&gt;</code></p>
 
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;&gt;) -&gt; <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;</p>
@@ -3350,7 +3556,7 @@ in sequence and unload one before loading the next. See this
 details.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-18"><a class="header" href="#functions-18">Functions</a></h2>
+<h2 id="functions-19"><a class="header" href="#functions-19">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3412,7 +3618,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-19"><a class="header" href="#functions-19">Functions</a></h2>
+<h2 id="functions-20"><a class="header" href="#functions-20">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3499,7 +3705,7 @@ components. Changes to this component will <em>not</em> be applied to already-pl
 </tbody>
 </table>
 </div>
-<h2 id="functions-20"><a class="header" href="#functions-20">Functions</a></h2>
+<h2 id="functions-21"><a class="header" href="#functions-21">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3600,7 +3806,7 @@ spatial audio.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-21"><a class="header" href="#functions-21">Functions</a></h2>
+<h2 id="functions-22"><a class="header" href="#functions-22">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3644,7 +3850,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-22"><a class="header" href="#functions-22">Functions</a></h2>
+<h2 id="functions-23"><a class="header" href="#functions-23">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3714,7 +3920,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-23"><a class="header" href="#functions-23">Functions</a></h2>
+<h2 id="functions-24"><a class="header" href="#functions-24">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3756,7 +3962,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <h2 id="instantiations-4"><a class="header" href="#instantiations-4">Instantiations</a></h2>
 <p><a href="#hashedv-s">Hashed</a>&lt;<a href="#cow">Cow</a>, <a href="#fixedhasher">FixedHasher</a>&gt;</p>
-<h2 id="functions-24"><a class="header" href="#functions-24">Functions</a></h2>
+<h2 id="functions-25"><a class="header" href="#functions-25">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3862,7 +4068,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-25"><a class="header" href="#functions-25">Functions</a></h2>
+<h2 id="functions-26"><a class="header" href="#functions-26">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4050,7 +4256,7 @@ particularly at the start of the string</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-26"><a class="header" href="#functions-26">Functions</a></h2>
+<h2 id="functions-27"><a class="header" href="#functions-27">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4090,7 +4296,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-27"><a class="header" href="#functions-27">Functions</a></h2>
+<h2 id="functions-28"><a class="header" href="#functions-28">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4318,7 +4524,7 @@ Missing fields are filled in from the enum’s default if it is this variant, th
 </tbody>
 </table>
 </div>
-<h2 id="functions-28"><a class="header" href="#functions-28">Functions</a></h2>
+<h2 id="functions-29"><a class="header" href="#functions-29">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4395,7 +4601,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-29"><a class="header" href="#functions-29">Functions</a></h2>
+<h2 id="functions-30"><a class="header" href="#functions-30">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4506,7 +4712,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-30"><a class="header" href="#functions-30">Functions</a></h2>
+<h2 id="functions-31"><a class="header" href="#functions-31">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4676,7 +4882,7 @@ while sets made from an interned set (i.e. the ones scripts use) only have the s
 <p>Represents a script loaded into memory as an asset</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-31"><a class="header" href="#functions-31">Functions</a></h2>
+<h2 id="functions-32"><a class="header" href="#functions-32">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4753,7 +4959,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-32"><a class="header" href="#functions-32">Functions</a></h2>
+<h2 id="functions-33"><a class="header" href="#functions-33">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4794,7 +5000,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-33"><a class="header" href="#functions-33">Functions</a></h2>
+<h2 id="functions-34"><a class="header" href="#functions-34">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4942,7 +5148,7 @@ The short name is a more human-readable version of the type name.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-34"><a class="header" href="#functions-34">Functions</a></h2>
+<h2 id="functions-35"><a class="header" href="#functions-35">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4985,7 +5191,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-35"><a class="header" href="#functions-35">Functions</a></h2>
+<h2 id="functions-36"><a class="header" href="#functions-36">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5126,7 +5332,7 @@ The short name is a more human-readable version of the type name.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-36"><a class="header" href="#functions-36">Functions</a></h2>
+<h2 id="functions-37"><a class="header" href="#functions-37">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5196,7 +5402,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </ul>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-37"><a class="header" href="#functions-37">Functions</a></h2>
+<h2 id="functions-38"><a class="header" href="#functions-38">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5421,7 +5627,7 @@ The short name is a more human-readable version of the type name.</p>
 <p>A run condition of a script system, evaluated in Rust without calling into the script, see <a href="#scriptsystembuilder"><code>ScriptSystemBuilder::run_if</code></a>.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-38"><a class="header" href="#functions-38">Functions</a></h2>
+<h2 id="functions-39"><a class="header" href="#functions-39">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5571,7 +5777,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A builder for systems living in scripts</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-39"><a class="header" href="#functions-39">Functions</a></h2>
+<h2 id="functions-40"><a class="header" href="#functions-40">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5836,7 +6042,7 @@ The short name is a more human-readable version of the type name.</p>
 <p>A tuple variant of script value</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-40"><a class="header" href="#functions-40">Functions</a></h2>
+<h2 id="functions-41"><a class="header" href="#functions-41">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5938,7 +6144,7 @@ graph will emit an error at runtime.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-41"><a class="header" href="#functions-41">Functions</a></h2>
+<h2 id="functions-42"><a class="header" href="#functions-42">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6031,7 +6237,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-42"><a class="header" href="#functions-42">Functions</a></h2>
+<h2 id="functions-43"><a class="header" href="#functions-43">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6097,7 +6303,7 @@ or when <a href="#camera-1">writing to the final render target texture</a>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-43"><a class="header" href="#functions-43">Functions</a></h2>
+<h2 id="functions-44"><a class="header" href="#functions-44">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6168,7 +6374,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-44"><a class="header" href="#functions-44">Functions</a></h2>
+<h2 id="functions-45"><a class="header" href="#functions-45">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6209,7 +6415,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-45"><a class="header" href="#functions-45">Functions</a></h2>
+<h2 id="functions-46"><a class="header" href="#functions-46">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6258,7 +6464,7 @@ in the same frame.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-46"><a class="header" href="#functions-46">Functions</a></h2>
+<h2 id="functions-47"><a class="header" href="#functions-47">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6318,7 +6524,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-47"><a class="header" href="#functions-47">Functions</a></h2>
+<h2 id="functions-48"><a class="header" href="#functions-48">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6362,7 +6568,7 @@ rendering, allowing multiple cameras to layer their results when MSAA is enabled
 </tbody>
 </table>
 </div>
-<h2 id="functions-48"><a class="header" href="#functions-48">Functions</a></h2>
+<h2 id="functions-49"><a class="header" href="#functions-49">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6447,7 +6653,7 @@ As the size of the projection increases, the size of objects decreases.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-49"><a class="header" href="#functions-49">Functions</a></h2>
+<h2 id="functions-50"><a class="header" href="#functions-50">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6507,7 +6713,7 @@ without this component also belong to layer <code>0</code>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-50"><a class="header" href="#functions-50">Functions</a></h2>
+<h2 id="functions-51"><a class="header" href="#functions-51">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6615,7 +6821,7 @@ swapchain or an <a href="#image"><code>Image</code></a>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-51"><a class="header" href="#functions-51">Functions</a></h2>
+<h2 id="functions-52"><a class="header" href="#functions-52">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6690,7 +6896,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-52"><a class="header" href="#functions-52">Functions</a></h2>
+<h2 id="functions-53"><a class="header" href="#functions-53">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6744,7 +6950,7 @@ the projection will be 200 world units wide and 600 world units tall.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-53"><a class="header" href="#functions-53">Functions</a></h2>
+<h2 id="functions-54"><a class="header" href="#functions-54">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6857,7 +7063,7 @@ example have the following values:
 </tbody>
 </table>
 </div>
-<h2 id="functions-54"><a class="header" href="#functions-54">Functions</a></h2>
+<h2 id="functions-55"><a class="header" href="#functions-55">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6930,7 +7136,7 @@ fn update_viewport(
 </tbody>
 </table>
 </div>
-<h2 id="functions-55"><a class="header" href="#functions-55">Functions</a></h2>
+<h2 id="functions-56"><a class="header" href="#functions-56">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -6977,7 +7183,7 @@ For more information, see module level documentation.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-56"><a class="header" href="#functions-56">Functions</a></h2>
+<h2 id="functions-57"><a class="header" href="#functions-57">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7043,7 +7249,7 @@ For more information, see module level documentation.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-57"><a class="header" href="#functions-57">Functions</a></h2>
+<h2 id="functions-58"><a class="header" href="#functions-58">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7229,7 +7435,7 @@ first convert this <a href="#color-1"><code>Color</code></a> into your desired c
 </tbody>
 </table>
 </div>
-<h2 id="functions-58"><a class="header" href="#functions-58">Functions</a></h2>
+<h2 id="functions-59"><a class="header" href="#functions-59">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7581,7 +7787,7 @@ Further information on this color model can be found on <a href="https://en.wiki
 </tbody>
 </table>
 </div>
-<h2 id="functions-59"><a class="header" href="#functions-59">Functions</a></h2>
+<h2 id="functions-60"><a class="header" href="#functions-60">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7638,7 +7844,7 @@ Further information on this color model can be found on <a href="https://en.wiki
 </tbody>
 </table>
 </div>
-<h2 id="functions-60"><a class="header" href="#functions-60">Functions</a></h2>
+<h2 id="functions-61"><a class="header" href="#functions-61">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7695,7 +7901,7 @@ Further information on this color model can be found on <a href="https://en.wiki
 </tbody>
 </table>
 </div>
-<h2 id="functions-61"><a class="header" href="#functions-61">Functions</a></h2>
+<h2 id="functions-62"><a class="header" href="#functions-62">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7751,7 +7957,7 @@ Further information on this color model can be found on <a href="https://en.wiki
 </tbody>
 </table>
 </div>
-<h2 id="functions-62"><a class="header" href="#functions-62">Functions</a></h2>
+<h2 id="functions-63"><a class="header" href="#functions-63">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7807,7 +8013,7 @@ Further information on this color model can be found on <a href="https://en.wiki
 </tbody>
 </table>
 </div>
-<h2 id="functions-63"><a class="header" href="#functions-63">Functions</a></h2>
+<h2 id="functions-64"><a class="header" href="#functions-64">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7864,7 +8070,7 @@ Further information on this color model can be found on <a href="https://en.wiki
 </tbody>
 </table>
 </div>
-<h2 id="functions-64"><a class="header" href="#functions-64">Functions</a></h2>
+<h2 id="functions-65"><a class="header" href="#functions-65">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7962,7 +8168,7 @@ HDR color clamps the lightness to <code>1.0</code> but can push saturation outsi
 </tbody>
 </table>
 </div>
-<h2 id="functions-65"><a class="header" href="#functions-65">Functions</a></h2>
+<h2 id="functions-66"><a class="header" href="#functions-66">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8011,7 +8217,7 @@ HDR color can push saturation and value outside <code>[0.0, 1.0]</code>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-66"><a class="header" href="#functions-66">Functions</a></h2>
+<h2 id="functions-67"><a class="header" href="#functions-67">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8058,7 +8264,7 @@ Further information on this color model can be found on <a href="https://bottoss
 </tbody>
 </table>
 </div>
-<h2 id="functions-67"><a class="header" href="#functions-67">Functions</a></h2>
+<h2 id="functions-68"><a class="header" href="#functions-68">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8104,7 +8310,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-68"><a class="header" href="#functions-68">Functions</a></h2>
+<h2 id="functions-69"><a class="header" href="#functions-69">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8160,7 +8366,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-69"><a class="header" href="#functions-69">Functions</a></h2>
+<h2 id="functions-70"><a class="header" href="#functions-70">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8217,7 +8423,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-70"><a class="header" href="#functions-70">Functions</a></h2>
+<h2 id="functions-71"><a class="header" href="#functions-71">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8327,7 +8533,7 @@ assert!(c.alpha == 0.5);
 </tbody>
 </table>
 </div>
-<h2 id="functions-71"><a class="header" href="#functions-71">Functions</a></h2>
+<h2 id="functions-72"><a class="header" href="#functions-72">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8387,7 +8593,7 @@ assert!(c.alpha == 0.5);
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-72"><a class="header" href="#functions-72">Functions</a></h2>
+<h2 id="functions-73"><a class="header" href="#functions-73">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8417,7 +8623,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-73"><a class="header" href="#functions-73">Functions</a></h2>
+<h2 id="functions-74"><a class="header" href="#functions-74">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8447,7 +8653,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-74"><a class="header" href="#functions-74">Functions</a></h2>
+<h2 id="functions-75"><a class="header" href="#functions-75">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8482,7 +8688,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <h2 id="instantiations-5"><a class="header" href="#instantiations-5">Instantiations</a></h2>
 <p><a href="#ranget">Range</a>&lt;<a href="#f32">f32</a>&gt;</p>
-<h2 id="functions-75"><a class="header" href="#functions-75">Functions</a></h2>
+<h2 id="functions-76"><a class="header" href="#functions-76">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8514,7 +8720,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-76"><a class="header" href="#functions-76">Functions</a></h2>
+<h2 id="functions-77"><a class="header" href="#functions-77">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8580,7 +8786,7 @@ See <code>ComponentHooks::on_add</code> for more information.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-77"><a class="header" href="#functions-77">Functions</a></h2>
+<h2 id="functions-78"><a class="header" href="#functions-78">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8668,7 +8874,7 @@ assert_eq!(&amp;**world.entity(child1.unwrap()).get::&lt;Children&gt;().unwrap()
 </tbody>
 </table>
 </div>
-<h2 id="functions-78"><a class="header" href="#functions-78">Functions</a></h2>
+<h2 id="functions-79"><a class="header" href="#functions-79">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8726,7 +8932,7 @@ See <code>ComponentHooks::on_despawn</code> for more information.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-79"><a class="header" href="#functions-79">Functions</a></h2>
+<h2 id="functions-80"><a class="header" href="#functions-80">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8769,7 +8975,7 @@ See <code>ComponentHooks::on_discard</code> for more information.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-80"><a class="header" href="#functions-80">Functions</a></h2>
+<h2 id="functions-81"><a class="header" href="#functions-81">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8840,7 +9046,7 @@ fn exclusive_system(world: &amp;mut World) {
 }</code></pre>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-81"><a class="header" href="#functions-81">Functions</a></h2>
+<h2 id="functions-82"><a class="header" href="#functions-82">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8936,7 +9142,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-82"><a class="header" href="#functions-82">Functions</a></h2>
+<h2 id="functions-83"><a class="header" href="#functions-83">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8978,7 +9184,7 @@ See <code>ComponentHooks::on_insert</code> for more information.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-83"><a class="header" href="#functions-83">Functions</a></h2>
+<h2 id="functions-84"><a class="header" href="#functions-84">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9024,7 +9230,7 @@ used instead as the default unique identifier.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-84"><a class="header" href="#functions-84">Functions</a></h2>
+<h2 id="functions-85"><a class="header" href="#functions-85">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9109,7 +9315,7 @@ See <code>ComponentHooks::on_remove</code> for more information.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-85"><a class="header" href="#functions-85">Functions</a></h2>
+<h2 id="functions-86"><a class="header" href="#functions-86">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9179,7 +9385,7 @@ let Gizmos = import_namespace("gizmos").Gizmos;
 let Vec3 = import_namespace("math").Vec3;
 Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());
 </code></pre>
-<h2 id="functions-86"><a class="header" href="#functions-86">Functions</a></h2>
+<h2 id="functions-87"><a class="header" href="#functions-87">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9372,7 +9578,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 <h2 id="instantiations-6"><a class="header" href="#instantiations-6">Instantiations</a></h2>
 <p><a href="#axist">Axis</a>&lt;<a href="#gamepadinput">GamepadInput</a>&gt;</p>
-<h2 id="functions-87"><a class="header" href="#functions-87">Functions</a></h2>
+<h2 id="functions-88"><a class="header" href="#functions-88">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9420,7 +9626,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 <h2 id="instantiations-7"><a class="header" href="#instantiations-7">Instantiations</a></h2>
 <p><a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;</p>
-<h2 id="functions-88"><a class="header" href="#functions-88">Functions</a></h2>
+<h2 id="functions-89"><a class="header" href="#functions-89">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9530,7 +9736,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-89"><a class="header" href="#functions-89">Functions</a></h2>
+<h2 id="functions-90"><a class="header" href="#functions-90">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9620,7 +9826,7 @@ and updated by <code>gamepad_event_processing_system</code>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-90"><a class="header" href="#functions-90">Functions</a></h2>
+<h2 id="functions-91"><a class="header" href="#functions-91">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9728,7 +9934,7 @@ gamepad axis event. It is also used in the <a href="#gamepad"><code>Gamepad</cod
 </tbody>
 </table>
 </div>
-<h2 id="functions-91"><a class="header" href="#functions-91">Functions</a></h2>
+<h2 id="functions-92"><a class="header" href="#functions-92">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9842,7 +10048,7 @@ It is also used in the <a href="#gamepad"><code>Gamepad</code></a> component.</p
 </tbody>
 </table>
 </div>
-<h2 id="functions-92"><a class="header" href="#functions-92">Functions</a></h2>
+<h2 id="functions-93"><a class="header" href="#functions-93">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -10013,7 +10219,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-93"><a class="header" href="#functions-93">Functions</a></h2>
+<h2 id="functions-94"><a class="header" href="#functions-94">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -10106,7 +10312,7 @@ fn set_focus_from_world(world: &amp;mut World) {
 </tbody>
 </table>
 </div>
-<h2 id="functions-94"><a class="header" href="#functions-94">Functions</a></h2>
+<h2 id="functions-95"><a class="header" href="#functions-95">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -10383,7 +10589,7 @@ exceptions:</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-95"><a class="header" href="#functions-95">Functions</a></h2>
+<h2 id="functions-96"><a class="header" href="#functions-96">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -11672,7 +11878,7 @@ resource.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-96"><a class="header" href="#functions-96">Functions</a></h2>
+<h2 id="functions-97"><a class="header" href="#functions-97">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -11830,7 +12036,7 @@ haven’t mapped for you yet, this lets you use <a href="#keycode"><code>KeyCode
 </tbody>
 </table>
 </div>
-<h2 id="functions-97"><a class="header" href="#functions-97">Functions</a></h2>
+<h2 id="functions-98"><a class="header" href="#functions-98">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -11986,7 +12192,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-98"><a class="header" href="#functions-98">Functions</a></h2>
+<h2 id="functions-99"><a class="header" href="#functions-99">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12027,7 +12233,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-99"><a class="header" href="#functions-99">Functions</a></h2>
+<h2 id="functions-100"><a class="header" href="#functions-100">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12067,7 +12273,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-100"><a class="header" href="#functions-100">Functions</a></h2>
+<h2 id="functions-101"><a class="header" href="#functions-101">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12107,7 +12313,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-101"><a class="header" href="#functions-101">Functions</a></h2>
+<h2 id="functions-102"><a class="header" href="#functions-102">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12148,7 +12354,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-102"><a class="header" href="#functions-102">Functions</a></h2>
+<h2 id="functions-103"><a class="header" href="#functions-103">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12183,7 +12389,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-103"><a class="header" href="#functions-103">Functions</a></h2>
+<h2 id="functions-104"><a class="header" href="#functions-104">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12225,7 +12431,7 @@ A three-dimensional capsule is defined as a surface at a distance (radius) from 
 </tbody>
 </table>
 </div>
-<h2 id="functions-104"><a class="header" href="#functions-104">Functions</a></h2>
+<h2 id="functions-105"><a class="header" href="#functions-105">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12258,7 +12464,7 @@ A three-dimensional capsule is defined as a surface at a distance (radius) from 
 </tbody>
 </table>
 </div>
-<h2 id="functions-105"><a class="header" href="#functions-105">Functions</a></h2>
+<h2 id="functions-106"><a class="header" href="#functions-106">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12308,7 +12514,7 @@ W (West) ┼─────► E (East)
 </tbody>
 </table>
 </div>
-<h2 id="functions-106"><a class="header" href="#functions-106">Functions</a></h2>
+<h2 id="functions-107"><a class="header" href="#functions-107">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12408,7 +12614,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-107"><a class="header" href="#functions-107">Functions</a></h2>
+<h2 id="functions-108"><a class="header" href="#functions-108">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12449,7 +12655,7 @@ required to be the same.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-108"><a class="header" href="#functions-108">Functions</a></h2>
+<h2 id="functions-109"><a class="header" href="#functions-109">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12490,7 +12696,7 @@ required to be the same.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-109"><a class="header" href="#functions-109">Functions</a></h2>
+<h2 id="functions-110"><a class="header" href="#functions-110">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12523,7 +12729,7 @@ required to be the same.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-110"><a class="header" href="#functions-110">Functions</a></h2>
+<h2 id="functions-111"><a class="header" href="#functions-111">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12639,7 +12845,7 @@ required to be the same.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-111"><a class="header" href="#functions-111">Functions</a></h2>
+<h2 id="functions-112"><a class="header" href="#functions-112">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12769,7 +12975,7 @@ required to be the same.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-112"><a class="header" href="#functions-112">Functions</a></h2>
+<h2 id="functions-113"><a class="header" href="#functions-113">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12820,7 +13026,7 @@ required to be the same.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-113"><a class="header" href="#functions-113">Functions</a></h2>
+<h2 id="functions-114"><a class="header" href="#functions-114">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12928,7 +13134,7 @@ assert_eq!(f.sample_clamped(2.0), 1.0);</code></pre>
 </tbody>
 </table>
 </div>
-<h2 id="functions-114"><a class="header" href="#functions-114">Functions</a></h2>
+<h2 id="functions-115"><a class="header" href="#functions-115">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13251,7 +13457,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-115"><a class="header" href="#functions-115">Functions</a></h2>
+<h2 id="functions-116"><a class="header" href="#functions-116">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13445,7 +13651,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-116"><a class="header" href="#functions-116">Functions</a></h2>
+<h2 id="functions-117"><a class="header" href="#functions-117">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13653,7 +13859,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-117"><a class="header" href="#functions-117">Functions</a></h2>
+<h2 id="functions-118"><a class="header" href="#functions-118">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13871,7 +14077,7 @@ CSS step function specification.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-118"><a class="header" href="#functions-118">Functions</a></h2>
+<h2 id="functions-119"><a class="header" href="#functions-119">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13945,7 +14151,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-119"><a class="header" href="#functions-119">Functions</a></h2>
+<h2 id="functions-120"><a class="header" href="#functions-120">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13986,7 +14192,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-120"><a class="header" href="#functions-120">Functions</a></h2>
+<h2 id="functions-121"><a class="header" href="#functions-121">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14187,7 +14393,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-121"><a class="header" href="#functions-121">Functions</a></h2>
+<h2 id="functions-122"><a class="header" href="#functions-122">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14229,7 +14435,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-122"><a class="header" href="#functions-122">Functions</a></h2>
+<h2 id="functions-123"><a class="header" href="#functions-123">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14430,7 +14636,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-123"><a class="header" href="#functions-123">Functions</a></h2>
+<h2 id="functions-124"><a class="header" href="#functions-124">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14465,7 +14671,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-124"><a class="header" href="#functions-124">Functions</a></h2>
+<h2 id="functions-125"><a class="header" href="#functions-125">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14701,7 +14907,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-125"><a class="header" href="#functions-125">Functions</a></h2>
+<h2 id="functions-126"><a class="header" href="#functions-126">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14759,7 +14965,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-126"><a class="header" href="#functions-126">Functions</a></h2>
+<h2 id="functions-127"><a class="header" href="#functions-127">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14823,7 +15029,7 @@ the minimum and maximum corners.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-127"><a class="header" href="#functions-127">Functions</a></h2>
+<h2 id="functions-128"><a class="header" href="#functions-128">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14974,7 +15180,7 @@ the minimum and maximum corners.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-128"><a class="header" href="#functions-128">Functions</a></h2>
+<h2 id="functions-129"><a class="header" href="#functions-129">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15015,7 +15221,7 @@ the minimum and maximum corners.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-129"><a class="header" href="#functions-129">Functions</a></h2>
+<h2 id="functions-130"><a class="header" href="#functions-130">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15067,7 +15273,7 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);</code></pre>
 </tbody>
 </table>
 </div>
-<h2 id="functions-130"><a class="header" href="#functions-130">Functions</a></h2>
+<h2 id="functions-131"><a class="header" href="#functions-131">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15204,7 +15410,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-131"><a class="header" href="#functions-131">Functions</a></h2>
+<h2 id="functions-132"><a class="header" href="#functions-132">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15239,7 +15445,7 @@ The set of points some distance from a circle centered at the origin</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-132"><a class="header" href="#functions-132">Functions</a></h2>
+<h2 id="functions-133"><a class="header" href="#functions-133">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15272,7 +15478,7 @@ The set of points some distance from a circle centered at the origin</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-133"><a class="header" href="#functions-133">Functions</a></h2>
+<h2 id="functions-134"><a class="header" href="#functions-134">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15319,7 +15525,7 @@ the minimum and maximum corners.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-134"><a class="header" href="#functions-134">Functions</a></h2>
+<h2 id="functions-135"><a class="header" href="#functions-135">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15359,7 +15565,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-135"><a class="header" href="#functions-135">Functions</a></h2>
+<h2 id="functions-136"><a class="header" href="#functions-136">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15553,7 +15759,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-136"><a class="header" href="#functions-136">Functions</a></h2>
+<h2 id="functions-137"><a class="header" href="#functions-137">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15753,7 +15959,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-137"><a class="header" href="#functions-137">Functions</a></h2>
+<h2 id="functions-138"><a class="header" href="#functions-138">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -16172,7 +16378,7 @@ assert!(v.length() == 5.0);
 </tbody>
 </table>
 </div>
-<h2 id="functions-138"><a class="header" href="#functions-138">Functions</a></h2>
+<h2 id="functions-139"><a class="header" href="#functions-139">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -16591,7 +16797,7 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 </tbody>
 </table>
 </div>
-<h2 id="functions-139"><a class="header" href="#functions-139">Functions</a></h2>
+<h2 id="functions-140"><a class="header" href="#functions-140">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -16643,7 +16849,7 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 </tbody>
 </table>
 </div>
-<h2 id="functions-140"><a class="header" href="#functions-140">Functions</a></h2>
+<h2 id="functions-141"><a class="header" href="#functions-141">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -16982,7 +17188,7 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-141"><a class="header" href="#functions-141">Functions</a></h2>
+<h2 id="functions-142"><a class="header" href="#functions-142">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17066,7 +17272,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-142"><a class="header" href="#functions-142">Functions</a></h2>
+<h2 id="functions-143"><a class="header" href="#functions-143">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17155,7 +17361,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 This type is only meant for short-term transmission between same versions and should not be stored anywhere.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-143"><a class="header" href="#functions-143">Functions</a></h2>
+<h2 id="functions-144"><a class="header" href="#functions-144">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17272,7 +17478,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-144"><a class="header" href="#functions-144">Functions</a></h2>
+<h2 id="functions-145"><a class="header" href="#functions-145">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17334,7 +17540,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-145"><a class="header" href="#functions-145">Functions</a></h2>
+<h2 id="functions-146"><a class="header" href="#functions-146">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17373,7 +17579,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-146"><a class="header" href="#functions-146">Functions</a></h2>
+<h2 id="functions-147"><a class="header" href="#functions-147">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17496,7 +17702,7 @@ This type is only meant for short-term transmission between same versions and sh
 </tbody>
 </table>
 </div>
-<h2 id="functions-147"><a class="header" href="#functions-147">Functions</a></h2>
+<h2 id="functions-148"><a class="header" href="#functions-148">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17593,7 +17799,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </ul>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-148"><a class="header" href="#functions-148">Functions</a></h2>
+<h2 id="functions-149"><a class="header" href="#functions-149">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17634,7 +17840,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-149"><a class="header" href="#functions-149">Functions</a></h2>
+<h2 id="functions-150"><a class="header" href="#functions-150">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17703,7 +17909,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-150"><a class="header" href="#functions-150">Functions</a></h2>
+<h2 id="functions-151"><a class="header" href="#functions-151">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17772,7 +17978,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-151"><a class="header" href="#functions-151">Functions</a></h2>
+<h2 id="functions-152"><a class="header" href="#functions-152">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17845,7 +18051,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-152"><a class="header" href="#functions-152">Functions</a></h2>
+<h2 id="functions-153"><a class="header" href="#functions-153">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17881,7 +18087,7 @@ vector prepass.</p>
 motion vectors for background pixels (those with no geometry, i.e. depth == 0 in reversed-Z).
 Add this component to opt out, for example if you are writing custom background motion vectors
 for your own effect.</p>
-<h2 id="functions-153"><a class="header" href="#functions-153">Functions</a></h2>
+<h2 id="functions-154"><a class="header" href="#functions-154">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -17937,7 +18143,7 @@ bandwidth usage which can be unsuitable for low end mobile or other bandwidth-co
 </tbody>
 </table>
 </div>
-<h2 id="functions-154"><a class="header" href="#functions-154">Functions</a></h2>
+<h2 id="functions-155"><a class="header" href="#functions-155">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18011,7 +18217,7 @@ and explanation of the methods used.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-155"><a class="header" href="#functions-155">Functions</a></h2>
+<h2 id="functions-156"><a class="header" href="#functions-156">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18065,7 +18271,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 despawned after the first <code>ReadbackComplete</code> event fires for it.</p>
 <pre><code class="language-ignore">commands.spawn(ReadbackOnce::buffer(handle));
 </code></pre>
-<h2 id="functions-156"><a class="header" href="#functions-156">Functions</a></h2>
+<h2 id="functions-157"><a class="header" href="#functions-157">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18120,7 +18326,7 @@ fn take_screenshot(mut commands: Commands) {
 </tbody>
 </table>
 </div>
-<h2 id="functions-157"><a class="header" href="#functions-157">Functions</a></h2>
+<h2 id="functions-158"><a class="header" href="#functions-158">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18160,7 +18366,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-158"><a class="header" href="#functions-158">Functions</a></h2>
+<h2 id="functions-159"><a class="header" href="#functions-159">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18197,7 +18403,7 @@ embedding a raw <code>Buffer</code>, <a href="#shaderbuffer"><code>ShaderBuffer<
 buffer can be resized without regenerating the materials that embed it.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-159"><a class="header" href="#functions-159">Functions</a></h2>
+<h2 id="functions-160"><a class="header" href="#functions-160">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18275,7 +18481,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-160"><a class="header" href="#functions-160">Functions</a></h2>
+<h2 id="functions-161"><a class="header" href="#functions-161">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18368,7 +18574,7 @@ be found in the Bevy examples.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-161"><a class="header" href="#functions-161">Functions</a></h2>
+<h2 id="functions-162"><a class="header" href="#functions-162">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18427,7 +18633,7 @@ for efficient rendering of related game objects.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-162"><a class="header" href="#functions-162">Functions</a></h2>
+<h2 id="functions-163"><a class="header" href="#functions-163">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18471,7 +18677,7 @@ The default is <a href="#uvchannel"><code>UvChannel::Uv0</code></a>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-163"><a class="header" href="#functions-163">Functions</a></h2>
+<h2 id="functions-164"><a class="header" href="#functions-164">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18539,7 +18745,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-164"><a class="header" href="#functions-164">Functions</a></h2>
+<h2 id="functions-165"><a class="header" href="#functions-165">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18614,7 +18820,7 @@ We use a separate type because 2d doesn’t support all the transparency modes t
 </tbody>
 </table>
 </div>
-<h2 id="functions-165"><a class="header" href="#functions-165">Functions</a></h2>
+<h2 id="functions-166"><a class="header" href="#functions-166">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18684,7 +18890,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-166"><a class="header" href="#functions-166">Functions</a></h2>
+<h2 id="functions-167"><a class="header" href="#functions-167">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18807,7 +19013,7 @@ of a rectangle, with values increasing inwards.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-167"><a class="header" href="#functions-167">Functions</a></h2>
+<h2 id="functions-168"><a class="header" href="#functions-168">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18852,7 +19058,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-168"><a class="header" href="#functions-168">Functions</a></h2>
+<h2 id="functions-169"><a class="header" href="#functions-169">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18944,7 +19150,7 @@ fn setup(
 </tbody>
 </table>
 </div>
-<h2 id="functions-169"><a class="header" href="#functions-169">Functions</a></h2>
+<h2 id="functions-170"><a class="header" href="#functions-170">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -18999,7 +19205,7 @@ fn setup(
 </tbody>
 </table>
 </div>
-<h2 id="functions-170"><a class="header" href="#functions-170">Functions</a></h2>
+<h2 id="functions-171"><a class="header" href="#functions-171">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19040,7 +19246,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-171"><a class="header" href="#functions-171">Functions</a></h2>
+<h2 id="functions-172"><a class="header" href="#functions-172">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19112,7 +19318,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-172"><a class="header" href="#functions-172">Functions</a></h2>
+<h2 id="functions-173"><a class="header" href="#functions-173">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19184,7 +19390,7 @@ The default is <code>Blend</code>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-173"><a class="header" href="#functions-173">Functions</a></h2>
+<h2 id="functions-174"><a class="header" href="#functions-174">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19255,7 +19461,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-174"><a class="header" href="#functions-174">Functions</a></h2>
+<h2 id="functions-175"><a class="header" href="#functions-175">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19341,7 +19547,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-175"><a class="header" href="#functions-175">Functions</a></h2>
+<h2 id="functions-176"><a class="header" href="#functions-176">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19424,7 +19630,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-176"><a class="header" href="#functions-176">Functions</a></h2>
+<h2 id="functions-177"><a class="header" href="#functions-177">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19519,7 +19725,7 @@ This can be used to either use and look up a specific section of a texture, or a
 </tbody>
 </table>
 </div>
-<h2 id="functions-177"><a class="header" href="#functions-177">Functions</a></h2>
+<h2 id="functions-178"><a class="header" href="#functions-178">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19628,7 +19834,7 @@ sections will be scaled or tiled.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-178"><a class="header" href="#functions-178">Functions</a></h2>
+<h2 id="functions-179"><a class="header" href="#functions-179">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19734,7 +19940,7 @@ should follow the root font size.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-179"><a class="header" href="#functions-179">Functions</a></h2>
+<h2 id="functions-180"><a class="header" href="#functions-180">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19799,7 +20005,7 @@ let more_font_features: FontFeatures = [
 </tbody>
 </table>
 </div>
-<h2 id="functions-180"><a class="header" href="#functions-180">Functions</a></h2>
+<h2 id="functions-181"><a class="header" href="#functions-181">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19839,7 +20045,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-181"><a class="header" href="#functions-181">Functions</a></h2>
+<h2 id="functions-182"><a class="header" href="#functions-182">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19889,7 +20095,7 @@ which can have a strong performance impact.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-182"><a class="header" href="#functions-182">Functions</a></h2>
+<h2 id="functions-183"><a class="header" href="#functions-183">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19978,7 +20184,7 @@ rendered with grayscale antialiasing, but this can be changed to achieve a pixel
 </tbody>
 </table>
 </div>
-<h2 id="functions-183"><a class="header" href="#functions-183">Functions</a></h2>
+<h2 id="functions-184"><a class="header" href="#functions-184">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20054,7 +20260,7 @@ by calling <code>FontCx::get_family</code>.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-184"><a class="header" href="#functions-184">Functions</a></h2>
+<h2 id="functions-185"><a class="header" href="#functions-185">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20136,7 +20342,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-185"><a class="header" href="#functions-185">Functions</a></h2>
+<h2 id="functions-186"><a class="header" href="#functions-186">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20212,7 +20418,7 @@ let variations = FontVariations::builder()
 </tbody>
 </table>
 </div>
-<h2 id="functions-186"><a class="header" href="#functions-186">Functions</a></h2>
+<h2 id="functions-187"><a class="header" href="#functions-187">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20252,7 +20458,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-187"><a class="header" href="#functions-187">Functions</a></h2>
+<h2 id="functions-188"><a class="header" href="#functions-188">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20303,7 +20509,7 @@ weights, that will be documented where you purchased the font.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-188"><a class="header" href="#functions-188">Functions</a></h2>
+<h2 id="functions-189"><a class="header" href="#functions-189">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20344,7 +20550,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-189"><a class="header" href="#functions-189">Functions</a></h2>
+<h2 id="functions-190"><a class="header" href="#functions-190">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20396,7 +20602,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-190"><a class="header" href="#functions-190">Functions</a></h2>
+<h2 id="functions-191"><a class="header" href="#functions-191">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20533,7 +20739,7 @@ does not affect the text entity’s position.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-191"><a class="header" href="#functions-191">Functions</a></h2>
+<h2 id="functions-192"><a class="header" href="#functions-192">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20622,7 +20828,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-192"><a class="header" href="#functions-192">Functions</a></h2>
+<h2 id="functions-193"><a class="header" href="#functions-193">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20698,7 +20904,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-193"><a class="header" href="#functions-193">Functions</a></h2>
+<h2 id="functions-194"><a class="header" href="#functions-194">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20768,7 +20974,7 @@ world.spawn(Text::new("hello ")).with_children(|parent| {
 </tbody>
 </table>
 </div>
-<h2 id="functions-194"><a class="header" href="#functions-194">Functions</a></h2>
+<h2 id="functions-195"><a class="header" href="#functions-195">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20868,7 +21074,7 @@ world.spawn(Text2d::new("hello ")).with_children(|parent| {
 </tbody>
 </table>
 </div>
-<h2 id="functions-195"><a class="header" href="#functions-195">Functions</a></h2>
+<h2 id="functions-196"><a class="header" href="#functions-196">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20935,7 +21141,7 @@ the font face, the font size, the line height, and the antialiasing method.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-196"><a class="header" href="#functions-196">Functions</a></h2>
+<h2 id="functions-197"><a class="header" href="#functions-197">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21021,7 +21227,7 @@ to <code>TextLayoutInfo</code> for rendering.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-197"><a class="header" href="#functions-197">Functions</a></h2>
+<h2 id="functions-198"><a class="header" href="#functions-198">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21082,7 +21288,7 @@ but each node has its own <a href="#textfont"><code>TextFont</code></a> and <cod
 </tbody>
 </table>
 </div>
-<h2 id="functions-198"><a class="header" href="#functions-198">Functions</a></h2>
+<h2 id="functions-199"><a class="header" href="#functions-199">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21164,7 +21370,7 @@ but each node has its own <a href="#textfont"><code>TextFont</code></a> and <cod
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-199"><a class="header" href="#functions-199">Functions</a></h2>
+<h2 id="functions-200"><a class="header" href="#functions-200">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21378,7 +21584,7 @@ processed according to the new <a href="#timet"><code>timestep()</code></a> valu
 </tbody>
 </table>
 </div>
-<h2 id="functions-200"><a class="header" href="#functions-200">Functions</a></h2>
+<h2 id="functions-201"><a class="header" href="#functions-201">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21408,7 +21614,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-201"><a class="header" href="#functions-201">Functions</a></h2>
+<h2 id="functions-202"><a class="header" href="#functions-202">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21500,7 +21706,7 @@ theoretically also happen at other times.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-202"><a class="header" href="#functions-202">Functions</a></h2>
+<h2 id="functions-203"><a class="header" href="#functions-203">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21557,7 +21763,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);</code></pre>
 </tbody>
 </table>
 </div>
-<h2 id="functions-203"><a class="header" href="#functions-203">Functions</a></h2>
+<h2 id="functions-204"><a class="header" href="#functions-204">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21670,7 +21876,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);</code></pre>
 </div>
 <h2 id="instantiations-8"><a class="header" href="#instantiations-8">Instantiations</a></h2>
 <p><a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;, <a href="#timet">Time</a>&lt;()&gt;, <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;, <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;</p>
-<h2 id="functions-204"><a class="header" href="#functions-204">Functions</a></h2>
+<h2 id="functions-205"><a class="header" href="#functions-205">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21893,7 +22099,7 @@ For non-repeating timers, this will always be 0 or 1.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-205"><a class="header" href="#functions-205">Functions</a></h2>
+<h2 id="functions-206"><a class="header" href="#functions-206">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -22100,7 +22306,7 @@ assert!(timer.finished());
 </tbody>
 </table>
 </div>
-<h2 id="functions-206"><a class="header" href="#functions-206">Functions</a></h2>
+<h2 id="functions-207"><a class="header" href="#functions-207">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -22220,7 +22426,7 @@ falling behind real time.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-207"><a class="header" href="#functions-207">Functions</a></h2>
+<h2 id="functions-208"><a class="header" href="#functions-208">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -22299,7 +22505,7 @@ before the <a href="#globaltransform"><code>GlobalTransform</code></a> is update
 </tbody>
 </table>
 </div>
-<h2 id="functions-208"><a class="header" href="#functions-208">Functions</a></h2>
+<h2 id="functions-209"><a class="header" href="#functions-209">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -22504,7 +22710,7 @@ before the <a href="#globaltransform"><code>GlobalTransform</code></a> is update
 </tbody>
 </table>
 </div>
-<h2 id="functions-209"><a class="header" href="#functions-209">Functions</a></h2>
+<h2 id="functions-210"><a class="header" href="#functions-210">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -22946,7 +23152,7 @@ the start of the content stays visible.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-210"><a class="header" href="#functions-210">Functions</a></h2>
+<h2 id="functions-211"><a class="header" href="#functions-211">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23106,7 +23312,7 @@ the start of the content stays visible.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-211"><a class="header" href="#functions-211">Functions</a></h2>
+<h2 id="functions-212"><a class="header" href="#functions-212">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23254,7 +23460,7 @@ the start of the content stays visible.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-212"><a class="header" href="#functions-212">Functions</a></h2>
+<h2 id="functions-213"><a class="header" href="#functions-213">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23385,7 +23591,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-213"><a class="header" href="#functions-213">Functions</a></h2>
+<h2 id="functions-214"><a class="header" href="#functions-214">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23430,7 +23636,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-214"><a class="header" href="#functions-214">Functions</a></h2>
+<h2 id="functions-215"><a class="header" href="#functions-215">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23505,7 +23711,7 @@ as half the height or width.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-215"><a class="header" href="#functions-215">Functions</a></h2>
+<h2 id="functions-216"><a class="header" href="#functions-216">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23582,7 +23788,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-216"><a class="header" href="#functions-216">Functions</a></h2>
+<h2 id="functions-217"><a class="header" href="#functions-217">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23666,7 +23872,7 @@ handle size without a frame delay.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-217"><a class="header" href="#functions-217">Functions</a></h2>
+<h2 id="functions-218"><a class="header" href="#functions-218">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23771,7 +23977,7 @@ assert_eq!(
 </tbody>
 </table>
 </div>
-<h2 id="functions-218"><a class="header" href="#functions-218">Functions</a></h2>
+<h2 id="functions-219"><a class="header" href="#functions-219">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23815,7 +24021,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-219"><a class="header" href="#functions-219">Functions</a></h2>
+<h2 id="functions-220"><a class="header" href="#functions-220">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23892,7 +24098,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-220"><a class="header" href="#functions-220">Functions</a></h2>
+<h2 id="functions-221"><a class="header" href="#functions-221">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -23968,7 +24174,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-221"><a class="header" href="#functions-221">Functions</a></h2>
+<h2 id="functions-222"><a class="header" href="#functions-222">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24050,7 +24256,7 @@ The order of nodes with the same <code>GlobalZIndex</code> is stable between fra
 </tbody>
 </table>
 </div>
-<h2 id="functions-222"><a class="header" href="#functions-222">Functions</a></h2>
+<h2 id="functions-223"><a class="header" href="#functions-223">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24097,7 +24303,7 @@ This may cause items to appear out-of-order when doing so would fill in holes le
 </tbody>
 </table>
 </div>
-<h2 id="functions-223"><a class="header" href="#functions-223">Functions</a></h2>
+<h2 id="functions-224"><a class="header" href="#functions-224">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24183,7 +24389,7 @@ grid line than <code>start</code> then <code>end</code> will be ignored and the 
 </tbody>
 </table>
 </div>
-<h2 id="functions-224"><a class="header" href="#functions-224">Functions</a></h2>
+<h2 id="functions-225"><a class="header" href="#functions-225">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24225,7 +24431,7 @@ See below for the different “track sizing functions” you can specify.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-225"><a class="header" href="#functions-225">Functions</a></h2>
+<h2 id="functions-226"><a class="header" href="#functions-226">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24268,7 +24474,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-226"><a class="header" href="#functions-226">Functions</a></h2>
+<h2 id="functions-227"><a class="header" href="#functions-227">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24345,7 +24551,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-227"><a class="header" href="#functions-227">Functions</a></h2>
+<h2 id="functions-228"><a class="header" href="#functions-228">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24396,7 +24602,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-228"><a class="header" href="#functions-228">Functions</a></h2>
+<h2 id="functions-229"><a class="header" href="#functions-229">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24480,7 +24686,7 @@ the start of the content stays visible.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-229"><a class="header" href="#functions-229">Functions</a></h2>
+<h2 id="functions-230"><a class="header" href="#functions-230">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24636,7 +24842,7 @@ the start of the content stays visible.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-230"><a class="header" href="#functions-230">Functions</a></h2>
+<h2 id="functions-231"><a class="header" href="#functions-231">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24756,7 +24962,7 @@ the start of the content stays visible.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-231"><a class="header" href="#functions-231">Functions</a></h2>
+<h2 id="functions-232"><a class="header" href="#functions-232">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -24872,7 +25078,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-232"><a class="header" href="#functions-232">Functions</a></h2>
+<h2 id="functions-233"><a class="header" href="#functions-233">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25015,7 +25221,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-233"><a class="header" href="#functions-233">Functions</a></h2>
+<h2 id="functions-234"><a class="header" href="#functions-234">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25193,7 +25399,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-234"><a class="header" href="#functions-234">Functions</a></h2>
+<h2 id="functions-235"><a class="header" href="#functions-235">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25236,7 +25442,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-235"><a class="header" href="#functions-235">Functions</a></h2>
+<h2 id="functions-236"><a class="header" href="#functions-236">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25348,7 +25554,7 @@ set <code>Outline::color</code> to <a href="#color-1"><code>Color::NONE</code></
 </tbody>
 </table>
 </div>
-<h2 id="functions-236"><a class="header" href="#functions-236">Functions</a></h2>
+<h2 id="functions-237"><a class="header" href="#functions-237">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25389,7 +25595,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-237"><a class="header" href="#functions-237">Functions</a></h2>
+<h2 id="functions-238"><a class="header" href="#functions-238">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25474,7 +25680,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-238"><a class="header" href="#functions-238">Functions</a></h2>
+<h2 id="functions-239"><a class="header" href="#functions-239">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25549,7 +25755,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-239"><a class="header" href="#functions-239">Functions</a></h2>
+<h2 id="functions-240"><a class="header" href="#functions-240">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25590,7 +25796,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-240"><a class="header" href="#functions-240">Functions</a></h2>
+<h2 id="functions-241"><a class="header" href="#functions-241">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25664,7 +25870,7 @@ N tracks longhand and are not subject to the same limitations.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-241"><a class="header" href="#functions-241">Functions</a></h2>
+<h2 id="functions-242"><a class="header" href="#functions-242">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25708,7 +25914,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-242"><a class="header" href="#functions-242">Functions</a></h2>
+<h2 id="functions-243"><a class="header" href="#functions-243">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25771,7 +25977,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-243"><a class="header" href="#functions-243">Functions</a></h2>
+<h2 id="functions-244"><a class="header" href="#functions-244">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -25873,7 +26079,7 @@ such as logical pixels, percentages, or automatically determined values.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-244"><a class="header" href="#functions-244">Functions</a></h2>
+<h2 id="functions-245"><a class="header" href="#functions-245">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26038,7 +26244,7 @@ assert!(node.width[0] == 100.0);
 </tbody>
 </table>
 </div>
-<h2 id="functions-245"><a class="header" href="#functions-245">Functions</a></h2>
+<h2 id="functions-246"><a class="header" href="#functions-246">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26117,7 +26323,7 @@ not siblings in a given UI hierarchy.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-246"><a class="header" href="#functions-246">Functions</a></h2>
+<h2 id="functions-247"><a class="header" href="#functions-247">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26185,7 +26391,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-247"><a class="header" href="#functions-247">Functions</a></h2>
+<h2 id="functions-248"><a class="header" href="#functions-248">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26231,7 +26437,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-248"><a class="header" href="#functions-248">Functions</a></h2>
+<h2 id="functions-249"><a class="header" href="#functions-249">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26317,7 +26523,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-249"><a class="header" href="#functions-249">Functions</a></h2>
+<h2 id="functions-250"><a class="header" href="#functions-250">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26402,7 +26608,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-250"><a class="header" href="#functions-250">Functions</a></h2>
+<h2 id="functions-251"><a class="header" href="#functions-251">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26446,7 +26652,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-251"><a class="header" href="#functions-251">Functions</a></h2>
+<h2 id="functions-252"><a class="header" href="#functions-252">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26490,7 +26696,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-252"><a class="header" href="#functions-252">Functions</a></h2>
+<h2 id="functions-253"><a class="header" href="#functions-253">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26577,7 +26783,7 @@ may be observed with <a href="#presentmode"><code>Immediate</code></a> mode, but
 </tbody>
 </table>
 </div>
-<h2 id="functions-253"><a class="header" href="#functions-253">Functions</a></h2>
+<h2 id="functions-254"><a class="header" href="#functions-254">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26672,7 +26878,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-254"><a class="header" href="#functions-254">Functions</a></h2>
+<h2 id="functions-255"><a class="header" href="#functions-255">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26760,7 +26966,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-255"><a class="header" href="#functions-255">Functions</a></h2>
+<h2 id="functions-256"><a class="header" href="#functions-256">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26802,7 +27008,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-256"><a class="header" href="#functions-256">Functions</a></h2>
+<h2 id="functions-257"><a class="header" href="#functions-257">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -26924,7 +27130,7 @@ to change the window mode:</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-257"><a class="header" href="#functions-257">Functions</a></h2>
+<h2 id="functions-258"><a class="header" href="#functions-258">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27053,7 +27259,7 @@ The z-order of windows within the same window level may change dynamically on us
 </tbody>
 </table>
 </div>
-<h2 id="functions-258"><a class="header" href="#functions-258">Functions</a></h2>
+<h2 id="functions-259"><a class="header" href="#functions-259">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27123,7 +27329,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-259"><a class="header" href="#functions-259">Functions</a></h2>
+<h2 id="functions-260"><a class="header" href="#functions-260">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27193,7 +27399,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
-<h2 id="functions-260"><a class="header" href="#functions-260">Functions</a></h2>
+<h2 id="functions-261"><a class="header" href="#functions-261">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27263,7 +27469,7 @@ a more vague defaulting choice.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-261"><a class="header" href="#functions-261">Functions</a></h2>
+<h2 id="functions-262"><a class="header" href="#functions-262">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27333,7 +27539,7 @@ required to disable maximizing is not yet exposed by winit.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-262"><a class="header" href="#functions-262">Functions</a></h2>
+<h2 id="functions-263"><a class="header" href="#functions-263">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27414,7 +27620,7 @@ the limits of the screen will not get back that previous requested size.</p>
 </tbody>
 </table>
 </div>
-<h2 id="functions-263"><a class="header" href="#functions-263">Functions</a></h2>
+<h2 id="functions-264"><a class="header" href="#functions-264">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27494,7 +27700,7 @@ assert!(resolution.width() == 800.0);
 </tbody>
 </table>
 </div>
-<h2 id="functions-264"><a class="header" href="#functions-264">Functions</a></h2>
+<h2 id="functions-265"><a class="header" href="#functions-265">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27605,7 +27811,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A boolean value</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-265"><a class="header" href="#functions-265">Functions</a></h2>
+<h2 id="functions-266"><a class="header" href="#functions-266">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27636,7 +27842,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An 8-bit character</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-266"><a class="header" href="#functions-266">Functions</a></h2>
+<h2 id="functions-267"><a class="header" href="#functions-267">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27674,7 +27880,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A stateful and callable dynamic function</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-267"><a class="header" href="#functions-267">Functions</a></h2>
+<h2 id="functions-268"><a class="header" href="#functions-268">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27704,7 +27910,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-268"><a class="header" href="#functions-268">Functions</a></h2>
+<h2 id="functions-269"><a class="header" href="#functions-269">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27735,7 +27941,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A 64-bit floating point number</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-269"><a class="header" href="#functions-269">Functions</a></h2>
+<h2 id="functions-270"><a class="header" href="#functions-270">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27766,7 +27972,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>Function call context, if accepted by a function, means the function can access the world in arbitrary ways.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-270"><a class="header" href="#functions-270">Functions</a></h2>
+<h2 id="functions-271"><a class="header" href="#functions-271">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27797,7 +28003,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 128-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-271"><a class="header" href="#functions-271">Functions</a></h2>
+<h2 id="functions-272"><a class="header" href="#functions-272">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27828,7 +28034,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 16-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-272"><a class="header" href="#functions-272">Functions</a></h2>
+<h2 id="functions-273"><a class="header" href="#functions-273">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27859,7 +28065,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 32-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-273"><a class="header" href="#functions-273">Functions</a></h2>
+<h2 id="functions-274"><a class="header" href="#functions-274">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27890,7 +28096,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 64-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-274"><a class="header" href="#functions-274">Functions</a></h2>
+<h2 id="functions-275"><a class="header" href="#functions-275">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27921,7 +28127,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 8-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-275"><a class="header" href="#functions-275">Functions</a></h2>
+<h2 id="functions-276"><a class="header" href="#functions-276">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27952,7 +28158,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed pointer-sized integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-276"><a class="header" href="#functions-276">Functions</a></h2>
+<h2 id="functions-277"><a class="header" href="#functions-277">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27997,7 +28203,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A reference to a reflectable type</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-277"><a class="header" href="#functions-278">Functions</a></h2>
+<h2 id="functions-278"><a class="header" href="#functions-279">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28006,7 +28212,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tbody>
 <tr><td><a href="#clear-1"><code>clear</code></a></td><td>Clears the container, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#clone"><code>clone</code></a></td><td>Creates an independent copy of the value, so that changing one doesn’t change the other.</td></tr>
-<tr><td><a href="#functions-278"><code>functions</code></a></td><td>Lists the functions available on the reference.</td></tr>
+<tr><td><a href="#functions-279"><code>functions</code></a></td><td>Lists the functions available on the reference.</td></tr>
 <tr><td><a href="#insert"><code>insert</code></a></td><td>Inserts the value into the reference at the specified index, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#map_get"><code>map_get</code></a></td><td>Gets and clones the value under the specified key if the underlying type is a map type.</td></tr>
 <tr><td><a href="#new-276"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
@@ -28040,7 +28246,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <li><code>reference</code>: The value to copy.</li>
 </ul>
 <p><strong>Returns</strong>: The copy.</p>
-<h3 id="functions-278" class="lad-function"><a class="header" href="#functions-278"><code>functions</code></a></h3>
+<h3 id="functions-279" class="lad-function"><a class="header" href="#functions-279"><code>functions</code></a></h3>
 <div class="lad-signature">
 <p><strong>functions</strong>(reference: <a href="#reflectreference">ReflectReference</a>) -&gt; Vec&lt;<a href="#functioninfo">FunctionInfo</a>&gt;</p>
 </div>
@@ -28232,7 +28438,7 @@ An enum value is equal to an enum variant, i.e. <code>MyEnum.Variant</code>, if 
 <p>A value representing the union of all representable values</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-279"><a class="header" href="#functions-279">Functions</a></h2>
+<h2 id="functions-280"><a class="header" href="#functions-280">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28263,7 +28469,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A type itself, used to reach its static members, i.e. <code>Vec3</code> in <code>Vec3.new{}</code>. Functions on it are shared by all types</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-280"><a class="header" href="#functions-280">Functions</a></h2>
+<h2 id="functions-281"><a class="header" href="#functions-281">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28348,7 +28554,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A heap allocated string</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-281"><a class="header" href="#functions-281">Functions</a></h2>
+<h2 id="functions-282"><a class="header" href="#functions-282">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28379,7 +28585,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 128-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-282"><a class="header" href="#functions-282">Functions</a></h2>
+<h2 id="functions-283"><a class="header" href="#functions-283">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28410,7 +28616,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 16-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-283"><a class="header" href="#functions-283">Functions</a></h2>
+<h2 id="functions-284"><a class="header" href="#functions-284">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28441,7 +28647,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 32-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-284"><a class="header" href="#functions-284">Functions</a></h2>
+<h2 id="functions-285"><a class="header" href="#functions-285">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28472,7 +28678,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 64-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-285"><a class="header" href="#functions-285">Functions</a></h2>
+<h2 id="functions-286"><a class="header" href="#functions-286">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28503,7 +28709,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 8-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-286"><a class="header" href="#functions-286">Functions</a></h2>
+<h2 id="functions-287"><a class="header" href="#functions-287">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28534,7 +28740,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned pointer-sized integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-287"><a class="header" href="#functions-287">Functions</a></h2>
+<h2 id="functions-288"><a class="header" href="#functions-288">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28565,7 +28771,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bevy App.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-288"><a class="header" href="#functions-288">Functions</a></h2>
+<h2 id="functions-289"><a class="header" href="#functions-289">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
