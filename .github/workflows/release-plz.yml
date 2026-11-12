@@ -27,6 +27,9 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      # needed to verify crates depending on bevy_audio (alsa-sys) / bevy_gilrs (libudev-sys) when publishing
+      - name: Install Linux dependencies
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libasound2-dev libudev-dev pkg-config
       - name: Run release-plz
         uses: MarcoIeni/release-plz-action@v0.5
         with:
