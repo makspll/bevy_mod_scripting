@@ -11,8 +11,8 @@ use crate::{
     error::ScriptError,
     event::ScriptErrorMessage,
     handler::{
-        run_callback_on_recipients, run_queued_callbacks_system, script_error_logger,
-        send_script_errors,
+        run_callback_on_recipients, run_in_context_of_attachment, run_queued_callbacks_system,
+        script_error_logger, send_script_errors,
     },
     pipeline::ScriptLoadingPipeline,
     script::{ScriptComponentsChangeCache, script_component_changed_handler},
@@ -210,6 +210,15 @@ fn register_callback_runner<P: IntoScriptPluginParams>(app: &mut App) {
                     label,
                     args,
                 )
+            }),
+        );
+    let script_contexts = world.get_resource_or_init::<ScriptContexts<P>>().clone();
+    world
+        .get_resource_or_init::<AppScriptCallbackRunners>()
+        .register_context_runner(
+            P::LANGUAGE,
+            Arc::new(move |world, attachment, f| {
+                run_in_context_of_attachment::<P>(&script_contexts, world, attachment, f)
             }),
         );
 }
