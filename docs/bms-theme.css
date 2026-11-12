@@ -323,6 +323,12 @@ pre > .hljs,
     color: var(--tok-meta);
 }
 
+/* diagrams */
+pre.mermaid svg {
+    display: block;
+    margin: 0 auto;
+}
+
 /* tables */
 .content table {
     border-collapse: collapse;

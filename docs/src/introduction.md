@@ -20,23 +20,40 @@ BMS (`bevy_mod_scripting`) runs Lua and Rune scripts inside a Bevy app. Scripts 
 
 ## How a script runs
 
-A script only runs code at the points below: when it is attached (or reloaded, or detached), and whenever one of its callbacks is invoked.
+Loading a script asset runs nothing. A script runs code when it is **attached**, reloaded or detached, which the script pipeline handles, and when one of its **callbacks** is invoked by name. The schedule each one runs in is in italics.
 
 ```mermaid
-flowchart TD
-    ATTACH["<b>Attach</b><br/>ScriptComponent inserted<br/>AttachScript command<br/>ScriptLifecycleMessage::Attached"]
-    ATTACH --> LOAD["<b>Load</b>, in the script pipeline<br/>wait for the asset<br/>assign a context, run context initializers<br/>run the top level code<br/>on_script_loaded()"]
-    LOAD --> LIVE(["Attached"])
-    LIVE <-- "invoked by name" --> CB["<b>Callbacks</b><br/>Rust: ScriptCallbackMessage + event_handler<br/>Rust: RunScriptCallback command<br/>Scripts: bms.run_script_callback, exports<br/>Script systems, each schedule run<br/>Observers, on triggered events"]
-    LIVE -- "asset modified" --> RELOAD["<b>Reload</b><br/>on_script_unloaded() returns state<br/>run the top level code again<br/>on_script_loaded()<br/>on_script_reloaded(state)"]
-    RELOAD --> LIVE
-    LIVE -- "ScriptComponent removed,<br/>DetachScript, Detached message" --> UNLOAD["<b>Unload</b><br/>on_script_unloaded()<br/>context removed with its last script"]
+flowchart TB
+    COMP(["ScriptComponent added / removed"]) -- "<i>PreUpdate</i>" --> PIPE[["script pipeline"]]
+    CMDS(["AttachScript / DetachScript"]) -- "<i>immediately</i>" --> PIPE
+    PIPE --> LIVE((attached))
+    subgraph CALLBACKS ["callbacks, run by name"]
+        direction LR
+        EH["event_handler<br/><i>your schedule</i>"] ~~~ CMD["RunScriptCallback<br/><i>on command flush</i>"] ~~~ SYS["script systems<br/><i>their schedule</i>"]
+        OBS["observers<br/><i>on trigger</i>"] ~~~ OTHER["other scripts<br/><i>immediately or queued</i>"]
+    end
+    LIVE <--> CALLBACKS
+    LIVE -. "asset modified, <i>PreUpdate</i>" .-> PIPE
+
+    click PIPE href "#the-script-pipeline"
 ```
 
-- **Loading** a script asset runs nothing, only [attaching](./Summary/managing-scripts.md) it does. The attachment (entity + script, or a static script) is the script's identity.
-- Scripts sharing a [context](./Summary/contexts.md) share globals, the context policy decides which do.
-- **Callbacks** are functions the script defines, run by name: the one passed to `register_callback` if any, else the top level function. Pre handling initializers run before each. See [Running Scripts](./Summary/running-scripts.md), [Callbacks](./Summary/callbacks.md), the [core callbacks](./ScriptingReference/core-callbacks.md) and [Calling Other Scripts](./ScriptingReference/calling-other-scripts.md).
-- The [script pipeline](./ScriptPipeline/pipeline.md) has the details on ordering and budgeting.
+### The script pipeline
+
+```mermaid
+flowchart LR
+    subgraph PRE ["script pipeline"]
+        direction LR
+        A(["attached"]) --> L["context initializers<br/>top level code<br/>on_script_loaded"]
+        M(["asset modified"]) --> R["on_script_unloaded<br/>top level code<br/>on_script_loaded<br/>on_script_reloaded"]
+        D(["detached"]) --> U["on_script_unloaded<br/>context removed<br/>with its last script"]
+    end
+```
+
+- The **attachment** (entity + script, or a static script) is the script's identity, see [Managing Scripts](./Summary/managing-scripts.md). Scripts sharing a [context](./Summary/contexts.md) share globals.
+- **Callbacks** run the function passed to `register_callback`, else the top level function of that name, see [Running Scripts](./Summary/running-scripts.md) and [Calling Other Scripts](./ScriptingReference/calling-other-scripts.md).
+- `on_script_*` are the [core callbacks](./ScriptingReference/core-callbacks.md). `on_script_unloaded` can return state, which `on_script_reloaded` receives.
+- Ordering and budgeting are covered in [Script Pipeline](./ScriptPipeline/pipeline.md).
 
 ## Where to start
 

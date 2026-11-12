@@ -7,7 +7,7 @@ Scripts can run callbacks of other scripts, in any scripting language, using two
 | `bms.run_script_callback(label, target, ...args)` | Immediately, before the call returns | What the callback returned |
 | `bms.queue_script_callback(label, target, ...args)` | As soon as the current callback finishes, in the same frame | Nothing |
 
-```multi-lang-example,lua
+```multi-lang-example,lua,ignore
 local bms = import_namespace("bms")
 local ScriptAttachment, Recipients = bms.ScriptAttachment, bms.Recipients
 local enemy_script = ScriptAttachment.new_entity_script(enemy, bms.current_script())
@@ -19,7 +19,7 @@ local remaining_health = bms.run_script_callback("take_damage", enemy_script, 10
 bms.queue_script_callback("on_hit", Recipients.all_scripts())
 ```
 
-```multi-lang-example,rune
+```multi-lang-example,rune,ignore
 let bms = import_namespace("bms");
 let ScriptAttachment = bms.ScriptAttachment;
 let Recipients = bms.Recipients;

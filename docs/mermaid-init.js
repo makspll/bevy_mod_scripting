@@ -52,11 +52,17 @@
             edgeLabelBackground: '#0e1626',
         };
     mermaid.initialize({
-        startOnLoad: true,
+        // rendered once the fonts are loaded, as mermaid sizes the nodes to the text
+        startOnLoad: false,
         theme: 'base',
+        // allows `click` links between diagrams, scripts are still stripped
+        securityLevel: 'antiscript',
         flowchart: { wrappingWidth: 320 },
         themeVariables: { fontFamily: 'Inter, sans-serif', ...themeVariables },
     });
+    Promise.all([document.fonts.load('16px Inter'), document.fonts.load('italic 16px Inter')])
+        .catch(() => {})
+        .then(() => mermaid.run());
 
     // Simplest way to make mermaid re-render the diagrams in the new theme is via refreshing the page
 
