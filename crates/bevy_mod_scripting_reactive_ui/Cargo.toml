@@ -1,0 +1,30 @@
+[package]
+name = "bevy_mod_scripting_reactive_ui"
+description = "Prototype of reactive, script driven bevy_ui trees for bevy_mod_scripting"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish = false
+
+
+[dependencies]
+bevy_app = { workspace = true }
+bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
+bevy_reflect = { workspace = true }
+bevy_color = { workspace = true }
+bevy_log = { workspace = true }
+bevy_platform = { workspace = true }
+bevy_ui = { version = "0.20", default-features = false }
+bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
+parking_lot = { workspace = true }
+
+[lints]
+workspace = true
