@@ -21,12 +21,12 @@
 
 - [Overview](./ScriptingReference/introduction.md)
 - [Namespaces](./ScriptingReference/namespaces.md)
+- [References](./ScriptingReference/references.md)
 - [Core Callbacks](./ScriptingReference/core-callbacks.md)
 - [Constructing Arbitrary Types](./ScriptingReference/constructing-arbitrary-types.md)
 - [Calling Other Scripts](./ScriptingReference/calling-other-scripts.md)
 - [Events and Messages](./ScriptingReference/events-and-messages.md)
 - [Bundles](./ScriptingReference/bundles.md)
-- [Asset Operations](./ScriptingReference/asset-operations.md)
 - [Core Bindings](./ladfiles/bindings.lad.json)
 
 # Developing BMS

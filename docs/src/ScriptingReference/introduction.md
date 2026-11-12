@@ -23,10 +23,10 @@ print(bms.current_entity())
 | Page | Covers |
 |---|---|
 | [Namespaces](./namespaces.md) | Importing types, script defined components and events, exporting functions |
+| [References](./references.md) | What script values point at, assets and handles |
 | [Core Callbacks](./core-callbacks.md) | `on_script_loaded`, `on_script_unloaded`, `on_script_reloaded` |
 | [Constructing Arbitrary Types](./constructing-arbitrary-types.md) | `Type.new`, enums and `bms.construct` |
 | [Calling Other Scripts](./calling-other-scripts.md) | `bms.run_script_callback` and `bms.queue_script_callback` |
 | [Events and Messages](./events-and-messages.md) | Sending and observing Bevy events and messages |
 | [Bundles](./bundles.md) | Inserting and spawning bundles |
-| [Asset Operations](./asset-operations.md) | Loading, adding and reading assets |
 | [Core Bindings](../ladfiles/bindings.lad.json) | Every type and function available to scripts |

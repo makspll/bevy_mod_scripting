@@ -95,7 +95,7 @@ Rust types live in the namespace of their crate or binding category, scripts reg
 
 A script's pointer into the Bevy world: to a component, a resource, or a value BMS allocated. Reading or writing its fields reads or writes the real value, through reflection.
 
-In Rust it is a `ReflectReference`, wrapped as `R<T>`, `M<T>` or `V<T>` in binding signatures. See [Controlling Script Bindings](./Summary/controlling-script-bindings.md#dynamic-functions).
+Its base is a component, a resource, an allocation or an asset. In Rust it is a `ReflectReference`, received as `R<T>`, `M<T>` or `V<T>` in binding signatures. See [References](./ScriptingReference/references.md).
 
 ## Runtime
 <!-- aliases: runtimes, runtime; not: at runtime, runtime error, runtime errors -->
