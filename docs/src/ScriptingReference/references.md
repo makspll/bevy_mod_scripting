@@ -41,6 +41,9 @@ if world.is_loaded(handle) then
 end
 ```
 
+> [!WARNING]
+> For now, reading or writing through an asset reference needs exclusive access to the whole world: Bevy's `ReflectAsset` only reaches assets through the world as a whole, not through the `Assets<T>` resource alone. Asset access therefore conflicts with any other access held at the same time (i.e. inside a query iteration), and isn't possible in non-exclusive script systems.
+
 Every asset type has `load`, `add_asset` and `get_asset`, and `world` has the same operations taking the asset type, plus `is_loaded`, `load_state` and `asset_path` for any handle. They are listed with their types in [Core Bindings](../core_bindings/types/world.html). An asset type needs `app.register_asset_reflect::<T>()` to be usable from scripts.
 
 ## References in Rust
