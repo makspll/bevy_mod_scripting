@@ -52,6 +52,8 @@ pub(crate) enum Expr {
         selector: NodeId,
         key: String,
     },
+    /// Computed by a script side graph, which sends its values with `commit`
+    Slot(u32),
 }
 
 /// What a script passes where a [`UiValue`] is expected: one, or a plain value.
@@ -87,6 +89,7 @@ fn clone_expr(expr: &Expr) -> Expr {
             selector: *selector,
             key: key.clone(),
         },
+        Expr::Slot(slot) => Expr::Slot(*slot),
     }
 }
 
@@ -98,7 +101,7 @@ impl Expr {
     /// The signals, computeds, watches and selectors (with the key asked about) this reads.
     pub fn sources(&self, out: &mut Vec<(NodeId, Option<String>)>) {
         match self {
-            Expr::Const(_) => {}
+            Expr::Const(_) | Expr::Slot(_) => {}
             Expr::Path { source, .. } => out.push((*source, None)),
             Expr::Is { selector, key } => out.push((*selector, Some(key.clone()))),
             Expr::Format { args, .. } => args.iter().for_each(|a| a.sources(out)),
@@ -137,6 +140,7 @@ impl Expr {
     ) -> Result<ScriptValue, InteropError> {
         Ok(match self {
             Expr::Const(v) => v.clone(),
+            Expr::Slot(_) => ScriptValue::Unit,
             Expr::Path { source, path } => read_path(runtime, world, *source, path)?,
             Expr::Format { pieces, args } => {
                 let mut out = String::new();

@@ -180,6 +180,12 @@ pub(crate) struct Runtime {
     pub dirty_effects: BTreeSet<NodeId>,
     pub events: Vec<QueuedEvent>,
     pub watches: Vec<NodeId>,
+    /// Properties bound by a script side graph: slot -> the entity and property its writes go to
+    pub slots: HashMap<(ScriptAttachment, u32), (Entity, Prop)>,
+    /// Watches a script side graph subscribed to, and the script it belongs to
+    pub subscribed: HashMap<NodeId, ScriptAttachment>,
+    /// Scripts whose script side graph has work, with the subscribed watches which changed
+    pub script_flushes: HashMap<ScriptAttachment, Vec<NodeId>>,
 }
 
 impl Runtime {
@@ -378,8 +384,20 @@ impl Runtime {
         }
         self.dirty.remove(&id);
         self.dirty_effects.remove(&id);
-        if matches!(node.kind, NodeKind::Watch { .. }) {
-            self.watches.retain(|w| *w != id);
+        match &node.kind {
+            NodeKind::Watch { .. } => {
+                self.watches.retain(|w| *w != id);
+                self.subscribed.remove(&id);
+            }
+            NodeKind::Binding {
+                source: BindingSource::Expr(expr),
+                ..
+            } => {
+                if let Expr::Slot(slot) = **expr {
+                    self.slots.remove(&(node.attachment.clone(), slot));
+                }
+            }
+            _ => {}
         }
         Some(node)
     }
@@ -412,6 +430,12 @@ impl Runtime {
             }
         }
         for id in changed {
+            if let Some(attachment) = self.subscribed.get(&id) {
+                self.script_flushes
+                    .entry(attachment.clone())
+                    .or_default()
+                    .push(id);
+            }
             self.mark_subs_dirty(id);
         }
     }
@@ -439,6 +463,7 @@ impl Runtime {
             self.remove(id);
         }
         self.events.retain(|e| e.attachment != *attachment);
+        self.script_flushes.remove(attachment);
         self.def_index.retain(|(a, _), _| a != attachment);
         containers
     }
@@ -1029,6 +1054,14 @@ impl Cx<'_, '_> {
             },
             self.attachment.clone(),
         );
+        // a script side graph computes it, and sends its values with `commit`
+        if let BindingSource::Expr(expr) = &source
+            && let Expr::Slot(slot) = **expr
+        {
+            rt.slots
+                .insert((self.attachment.clone(), slot), (entity, prop));
+            return Ok(id);
+        }
         // what a value computed in Rust reads is known up front
         if let BindingSource::Expr(expr) = &source {
             let mut sources = Vec::new();

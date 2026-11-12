@@ -24,6 +24,7 @@
 mod element;
 mod expr;
 mod runtime;
+mod script_graph;
 
 use std::collections::VecDeque;
 
@@ -47,7 +48,7 @@ use bevy_mod_scripting_bindings::{
     function::{from::V, namespace::NamespaceBuilder},
 };
 use bevy_mod_scripting_core::event::ScriptLifecycleMessage;
-use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_mod_scripting_script::{Recipients, ScriptAttachment};
 use bevy_reflect::Reflect;
 use bevy_ui::{BackgroundColor, Interaction, Node, UiSystems, widget::Text};
 pub use element::{ComponentDef, UiElement};
@@ -102,6 +103,7 @@ impl Plugin for ReactiveUiPlugin {
             );
         register_functions(app.world_mut());
         expr::register(app.world_mut());
+        script_graph::register(app.world_mut());
     }
 
     fn finish(&self, app: &mut App) {
@@ -477,7 +479,11 @@ pub fn flush_reactive_ui(world: &mut World, mut interactions: Local<Option<Inter
     {
         let mut rt = runtime.lock();
         rt.poll_watches(world);
-        if rt.events.is_empty() && rt.dirty.is_empty() && rt.dirty_effects.is_empty() {
+        if rt.events.is_empty()
+            && rt.dirty.is_empty()
+            && rt.dirty_effects.is_empty()
+            && rt.script_flushes.is_empty()
+        {
             return;
         }
     }
@@ -557,7 +563,7 @@ fn flush_pass(
         }
         (attachments, side_effects)
     };
-    if attachments.is_empty() {
+    if attachments.is_empty() && runtime.lock().script_flushes.is_empty() {
         return Pass::Idle;
     }
     for attachment in attachments {
@@ -595,7 +601,36 @@ fn flush_pass(
             );
         }
     }
-    Pass::Ran { side_effects }
+    // script side graphs, once the Rust work (which may have asked for them) is done
+    let script_flushes = std::mem::take(&mut runtime.lock().script_flushes);
+    let ran_scripts = !script_flushes.is_empty();
+    for (attachment, changed) in script_flushes {
+        let changed = changed
+            .into_iter()
+            .map(|id| ScriptValue::Integer(id as i64))
+            .collect();
+        let results = runners.run(
+            guard.clone(),
+            &Recipients::from(attachment.clone()),
+            script_graph::FLUSH_CALLBACK,
+            vec![ScriptValue::List(changed)],
+        );
+        let errors = match results {
+            Ok(results) => results.into_iter().filter_map(|(_, r)| r.err()).collect(),
+            Err(e) => vec![e],
+        };
+        for e in errors {
+            runners.report_error(
+                guard.clone(),
+                Some(&attachment),
+                "running reactive ui".into(),
+                e,
+            );
+        }
+    }
+    Pass::Ran {
+        side_effects: side_effects || ran_scripts,
+    }
 }
 
 /// Runs the queued handlers, then the dirty nodes, then the dirty effects of one script, inside its context.

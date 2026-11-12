@@ -3,6 +3,8 @@ local bms = import_namespace("bms")
 local world = bms.world
 local DynamicComponent = bms.DynamicComponent
 local ui = import_namespace("reactive_ui")
+-- the reactive graph running in Lua, for `hp_lua`
+local rx = load(ui.lua_runtime())()
 
 local Health = world.register_new_component("script.reactive_ui", "Health", true)
 local Item = world.register_new_component("script.reactive_ui", "Item", true)
@@ -47,6 +49,7 @@ end)
 
 local Inventory = ui.define("Inventory", function(p)
     local hp = ui.watch(p.player, Health)
+    local hp_lua = rx.watch(p.player, Health)
     local selected = ui.signal(nil)
     local is_selected = ui.selector(selected)
     local clicks = ui.signal(0)
@@ -71,6 +74,10 @@ local Inventory = ui.define("Inventory", function(p)
         ui.text({ name = "version", text = "v" .. Reloads }),
         ui.text({ name = "title", text = function() return "Inventory (" .. #visible:get() .. ")" end }),
         ui.text({ name = "hp", text = ui.format("{}/{}", { ui.path(hp, "data.current"), ui.path(hp, "data.max") }) }),
+        ui.text({ name = "hp_lua", text = rx.bind(function()
+            local h = hp_lua:get().data
+            return h.current .. "/" .. h.max
+        end) }),
         ui.dynamic(function()
             local h = hp:get().data
             if h.current < h.max * 0.25 then return ui.text({ key = "low", name = "low", text = "LOW HP" }) end
@@ -131,6 +138,7 @@ local checks = {
         expect("version", "v1")
         expect("title", "Inventory (3)")
         expect("hp", "100/100")
+        expect("hp_lua", "100/100")
         assert(find("low") == nil, "low hp shown at full health")
         expect("clicks", "clicks: 0")
         expect("count_Sword", "x1")
@@ -138,6 +146,7 @@ local checks = {
     end,
     [1] = function()
         expect("hp", "20/100")
+        expect("hp_lua", "20/100")
         expect("low", "LOW HP")
     end,
     [2] = function()
@@ -163,6 +172,7 @@ local checks = {
         expect("title", "Inventory (1)")
         expect("clicks", "clicks: 1")
         expect("hp", "20/100")
+        expect("hp_lua", "20/100")
         expect("count_Shield", "x5")
     end,
 }
