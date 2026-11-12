@@ -1,5 +1,5 @@
 {
-  "version": "0.23.0",
+  "version": "0.24.0",
   "namespaces": {
     "alloc": {
       "types": {
@@ -2247,10 +2247,10 @@
         "bevy_image::image::Image::height",
         "bevy_image::image::Image::size",
         "bevy_image::image::Image::width",
-        "bevy_image::image::Image::load",
+        "bevy_image::image::Image::get_asset",
         "bevy_image::image::Image::new",
         "bevy_image::image::Image::add_asset",
-        "bevy_image::image::Image::get_asset"
+        "bevy_image::image::Image::load"
       ],
       "layout": null,
       "generated": false,
@@ -2274,10 +2274,10 @@
       "associated_functions": [
         "bevy_image::texture_atlas::TextureAtlasLayout::from_grid",
         "bevy_image::texture_atlas::TextureAtlasLayout::len",
-        "bevy_image::texture_atlas::TextureAtlasLayout::load",
+        "bevy_image::texture_atlas::TextureAtlasLayout::get_asset",
         "bevy_image::texture_atlas::TextureAtlasLayout::new",
         "bevy_image::texture_atlas::TextureAtlasLayout::add_asset",
-        "bevy_image::texture_atlas::TextureAtlasLayout::get_asset"
+        "bevy_image::texture_atlas::TextureAtlasLayout::load"
       ],
       "layout": {
         "kind": "Struct",
@@ -3524,10 +3524,10 @@
       "associated_functions": [
         "bevy_mesh::mesh::Mesh::count_vertices",
         "bevy_mesh::mesh::Mesh::from_shape",
-        "bevy_mesh::mesh::Mesh::load",
+        "bevy_mesh::mesh::Mesh::get_asset",
         "bevy_mesh::mesh::Mesh::new",
         "bevy_mesh::mesh::Mesh::add_asset",
-        "bevy_mesh::mesh::Mesh::get_asset"
+        "bevy_mesh::mesh::Mesh::load"
       ],
       "layout": {
         "kind": "Struct",
@@ -3621,22 +3621,22 @@
       "namespace": "gizmos",
       "documentation": " Immediate mode debug drawing: lines and shapes drawn this frame.\n\n Every function draws straight away, the shapes are shown for the current frame only.\n Needs the gizmo plugin, without it the functions fail with an error.\n\n ```multi-lang-example,lua,ignore\n local Color = import_namespace(\"color\").Color\n local Gizmos = import_namespace(\"gizmos\").Gizmos\n local Vec3 = import_namespace(\"math\").Vec3\n Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())\n ```\n\n ```multi-lang-example,rune,ignore\n let Color = import_namespace(\"color\").Color;\n let Gizmos = import_namespace(\"gizmos\").Gizmos;\n let Vec3 = import_namespace(\"math\").Vec3;\n Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());\n ```",
       "associated_functions": [
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cross",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::axes",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::sphere",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cuboid",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cross",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::axes",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cuboid",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::sphere",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::new"
       ],
       "layout": {
@@ -3661,8 +3661,8 @@
       "documentation": " A reference to a variant of an enum, independent of any value of that enum.\n\n This is what scripts see when accessing `MyEnum.Variant`, it can be compared to\n the result of `value:variant()` and used to construct values of the variant.",
       "associated_functions": [
         "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::new",
-        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq",
-        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::variant_name"
+        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::variant_name",
+        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq"
       ],
       "layout": {
         "kind": "Struct",
@@ -3722,8 +3722,8 @@
       "namespace": "bms",
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.\n\n Opaque with private fields: world accessors trust that `component_id` belongs to `registration`'s type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace"
       ],
       "layout": null,
@@ -3744,15 +3744,15 @@
       "namespace": "bms",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component_read",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::changed",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::added",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::optional_read",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::optional",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component_read",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::changed",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::optional",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::added",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::new"
       ],
       "layout": null,
@@ -3773,9 +3773,9 @@
       "namespace": "bms",
       "documentation": " A reference to a resource type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Opaque with private fields: world accessors trust that `resource_id` belongs to `registration`'s type.",
       "associated_functions": [
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace",
-        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::short_name"
+        "bevy_mod_scripting_bindings::query::ScriptResourceRegistration::namespace"
       ],
       "layout": null,
       "generated": false,
@@ -3839,14 +3839,14 @@
       "documentation": " A run condition of a script system, evaluated in Rust without calling into the script, see [`ScriptSystemBuilder::run_if`].",
       "associated_functions": [
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::not_",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::or_",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_changed",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::and_",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_added",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::or_",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::run_once",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::any_with_component",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_exists",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::on_timer",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_changed",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::run_once",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::new"
       ],
       "layout": null,
@@ -3867,18 +3867,18 @@
       "namespace": "bms",
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::run_if",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_script_system",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before_script_system",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::in_set",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource_read",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before_set",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_set",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::run_if",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource_read",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_script_system",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::in_set",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::new"
       ],
       "layout": null,
@@ -3899,10 +3899,10 @@
       "namespace": "bms",
       "documentation": " Describes the designated recipients of a script event",
       "associated_functions": [
-        "bevy_mod_scripting_script::Recipients::entity_script",
-        "bevy_mod_scripting_script::Recipients::all_scripts",
         "bevy_mod_scripting_script::Recipients::all_contexts",
         "bevy_mod_scripting_script::Recipients::static_script",
+        "bevy_mod_scripting_script::Recipients::entity_script",
+        "bevy_mod_scripting_script::Recipients::all_scripts",
         "bevy_mod_scripting_script::Recipients::new"
       ],
       "layout": [
@@ -3973,8 +3973,8 @@
       "namespace": "bms",
       "documentation": " Specifies a unique attachment of a script. These attachments are mapped to [`bevy_mod_scripting_core::ContextKey`]'s depending on the context policy used.",
       "associated_functions": [
-        "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
         "bevy_mod_scripting_script::ScriptAttachment::new_entity_script",
+        "bevy_mod_scripting_script::ScriptAttachment::new_static_script",
         "bevy_mod_scripting_script::ScriptAttachment::new"
       ],
       "layout": [
@@ -5061,8 +5061,8 @@
       "documentation": " A reflectable schedule.",
       "associated_functions": [
         "bevy_system_reflection::ReflectSchedule::render_dot",
-        "bevy_system_reflection::ReflectSchedule::get_system_by_name",
-        "bevy_system_reflection::ReflectSchedule::systems"
+        "bevy_system_reflection::ReflectSchedule::systems",
+        "bevy_system_reflection::ReflectSchedule::get_system_by_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -7690,21 +7690,21 @@
       "path": "ReflectReference",
       "documentation": "A reference to a reflectable type",
       "associated_functions": [
-        "ReflectReference::clear",
-        "ReflectReference::debug",
-        "ReflectReference::clone",
+        "ReflectReference::push",
         "ReflectReference::variant_name",
-        "ReflectReference::len",
-        "ReflectReference::remove",
-        "ReflectReference::pop",
-        "ReflectReference::insert",
+        "ReflectReference::eq",
         "ReflectReference::functions",
         "ReflectReference::iter",
-        "ReflectReference::variant",
-        "ReflectReference::eq",
-        "ReflectReference::push",
-        "ReflectReference::display",
+        "ReflectReference::len",
         "ReflectReference::map_get",
+        "ReflectReference::debug",
+        "ReflectReference::clear",
+        "ReflectReference::variant",
+        "ReflectReference::pop",
+        "ReflectReference::insert",
+        "ReflectReference::display",
+        "ReflectReference::remove",
+        "ReflectReference::clone",
         "ReflectReference::new"
       ],
       "layout": null,
@@ -7739,10 +7739,10 @@
       "path": "StaticTypeRef",
       "documentation": "A type itself, used to reach its static members, i.e. `Vec3` in `Vec3.new{}`. Functions on it are shared by all types",
       "associated_functions": [
-        "StaticTypeRef::load",
+        "StaticTypeRef::get_asset",
         "StaticTypeRef::new",
         "StaticTypeRef::add_asset",
-        "StaticTypeRef::get_asset"
+        "StaticTypeRef::load"
       ],
       "layout": null,
       "generated": false,
@@ -7971,10 +7971,10 @@
       "namespace": "animation",
       "documentation": " A list of [`VariableCurve`]s and the [`AnimationTargetId`]s to which they\n apply.\n\n Because animation clips refer to targets by UUID, they can target any\n entity with that ID.",
       "associated_functions": [
-        "bevy_animation::AnimationClip::load",
+        "bevy_animation::AnimationClip::get_asset",
         "bevy_animation::AnimationClip::new",
         "bevy_animation::AnimationClip::add_asset",
-        "bevy_animation::AnimationClip::get_asset"
+        "bevy_animation::AnimationClip::load"
       ],
       "layout": {
         "kind": "Struct",
@@ -10268,10 +10268,10 @@
       "namespace": "bms",
       "documentation": " Represents a script loaded into memory as an asset",
       "associated_functions": [
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::load",
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::get_asset",
         "bevy_mod_scripting_asset::script_asset::ScriptAsset::new",
         "bevy_mod_scripting_asset::script_asset::ScriptAsset::add_asset",
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::get_asset"
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::load"
       ],
       "layout": null,
       "generated": false,
@@ -10627,10 +10627,10 @@
       "namespace": "render",
       "documentation": " A storage buffer that is prepared as a [`RenderAsset`] and uploaded to the GPU.\n\n This buffer primarily exists in order to be embedded into a material that\n implements the [`bevy_render_macros::AsBindGroup`] trait. Compared to\n embedding a raw [`Buffer`], [`ShaderBuffer`] has the advantage that the\n buffer can be resized without regenerating the materials that embed it.",
       "associated_functions": [
-        "bevy_render::storage::ShaderBuffer::load",
+        "bevy_render::storage::ShaderBuffer::get_asset",
         "bevy_render::storage::ShaderBuffer::new",
         "bevy_render::storage::ShaderBuffer::add_asset",
-        "bevy_render::storage::ShaderBuffer::get_asset"
+        "bevy_render::storage::ShaderBuffer::load"
       ],
       "layout": null,
       "generated": false,
@@ -11218,10 +11218,10 @@
       "namespace": "sprite",
       "documentation": " A [2d material](Material2d) that renders [2d meshes](crate::Mesh2d) with a texture tinted by a uniform color",
       "associated_functions": [
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::load",
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::get_asset",
         "bevy_sprite_render::mesh2d::color_material::ColorMaterial::new",
         "bevy_sprite_render::mesh2d::color_material::ColorMaterial::add_asset",
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::get_asset"
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::load"
       ],
       "layout": {
         "kind": "Struct",
@@ -11328,10 +11328,10 @@
       "path": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial",
       "namespace": "sprite",
       "associated_functions": [
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::load",
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::get_asset",
         "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::new",
         "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::add_asset",
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::get_asset"
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::load"
       ],
       "layout": {
         "kind": "Struct",
@@ -15985,6 +15985,23 @@
         {
           "args": [
             {
+              "val": "bevy_mod_scripting_asset::script_asset::ScriptAsset"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::ArcMutexValue<bevy_mod_scripting_asset::script_asset::ScriptAsset>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
               "val": "bevy_mesh::mesh::Mesh"
             }
           ],
@@ -16058,23 +16075,6 @@
           ],
           "associated_functions": [
             "bevy_asset::handle::ArcMutexValue<bevy_image::texture_atlas::TextureAtlasLayout>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_mod_scripting_asset::script_asset::ScriptAsset"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::ArcMutexValue<bevy_mod_scripting_asset::script_asset::ScriptAsset>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16192,11 +16192,12 @@
         {
           "args": [
             {
-              "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
+              "val": "bevy_mod_scripting_asset::script_asset::ScriptAsset"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_sprite_render::mesh2d::color_material::ColorMaterial>::new"
+            "bevy_asset::handle::Handle<bevy_mod_scripting_asset::script_asset::ScriptAsset>::asset_path",
+            "bevy_asset::handle::Handle<bevy_mod_scripting_asset::script_asset::ScriptAsset>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16209,12 +16210,11 @@
         {
           "args": [
             {
-              "val": "bevy_mod_scripting_asset::script_asset::ScriptAsset"
+              "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_mod_scripting_asset::script_asset::ScriptAsset>::asset_path",
-            "bevy_asset::handle::Handle<bevy_mod_scripting_asset::script_asset::ScriptAsset>::new"
+            "bevy_asset::handle::Handle<bevy_sprite_render::mesh2d::color_material::ColorMaterial>::new"
           ],
           "metadata": {
             "is_component": false,
