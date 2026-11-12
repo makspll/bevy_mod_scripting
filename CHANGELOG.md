@@ -7,6 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.23.0...v0.24.0) - 2026-11-12
+
+### Added
+
+- bump mlua -> 0.12 ([#706](https://github.com/makspll/bevy_mod_scripting/pull/706))
+- *(ladfile)* split type tables from values in Lua, generic markers, a class per undeclared instantiation ([#684](https://github.com/makspll/bevy_mod_scripting/pull/684))
+- *(ladfile)* container fields as T[] | ReflectReference, Time<()> as time.Time.Unit, strict LuaLS check ([#683](https://github.com/makspll/bevy_mod_scripting/pull/683))
+- *(ladfile)* type registrations found by name, types are their registrations in Lua ([#680](https://github.com/makspll/bevy_mod_scripting/pull/680))
+- *(ladfile)* readable generated binding docs in mdbook ([#679](https://github.com/makspll/bevy_mod_scripting/pull/679))
+- *(bms)* type the references clocks, the primary window and states return ([#676](https://github.com/makspll/bevy_mod_scripting/pull/676))
+- *(ladfile)* enum variants extend their enum in Lua, docgen testlib declares test types ([#673](https://github.com/makspll/bevy_mod_scripting/pull/673))
+- *(ladfile)* type the asset functions of world by the asset type ([#670](https://github.com/makspll/bevy_mod_scripting/pull/670))
+- *(ladfile)* [**breaking**] generic function signatures, so get_component returns the type it is given ([#668](https://github.com/makspll/bevy_mod_scripting/pull/668))
+- *(ladfile)* [**breaking**] functions on generic types, in terms of their parameters ([#667](https://github.com/makspll/bevy_mod_scripting/pull/667))
+- *(ladfile)* render the layouts of generic types in Lua and mdbook ([#666](https://github.com/makspll/bevy_mod_scripting/pull/666))
+- *(ladfile)* [**breaking**] record instantiations of generic types on the generic type ([#665](https://github.com/makspll/bevy_mod_scripting/pull/665))
+- *(ladfile)* [**breaking**] describe generic types, in terms of their parameters and by name ([#663](https://github.com/makspll/bevy_mod_scripting/pull/663))
+- *(ladfile)* mark bundle and asset types in the type metadata ([#660](https://github.com/makspll/bevy_mod_scripting/pull/660))
+- optional components, added/changed filters and disjoint queries ([#651](https://github.com/makspll/bevy_mod_scripting/pull/651))
+- script system ordering by label/set and run conditions ([#650](https://github.com/makspll/bevy_mod_scripting/pull/650))
+- read only script system parameters (+ access declaration fixes) ([#648](https://github.com/makspll/bevy_mod_scripting/pull/648))
+- stabilise script systems (lifecycle, errors, soundness) ([#647](https://github.com/makspll/bevy_mod_scripting/pull/647))
+- [**breaking**] remove the Rhai backend, add a Rune backend ([#640](https://github.com/makspll/bevy_mod_scripting/pull/640))
+- [**breaking**] namespace members and builtins replace script globals ([#635](https://github.com/makspll/bevy_mod_scripting/pull/635))
+- [**breaking**] document generic types in LAD files and the Lua declarations ([#631](https://github.com/makspll/bevy_mod_scripting/pull/631))
+- [**breaking**] reach types through category namespaces instead of globals ([#629](https://github.com/makspll/bevy_mod_scripting/pull/629))
+- [**breaking**] hand-written gizmos, animation, audio and state bindings ([#628](https://github.com/makspll/bevy_mod_scripting/pull/628))
+- [**breaking**] hand-written sprite, text and ui bindings ([#627](https://github.com/makspll/bevy_mod_scripting/pull/627))
+- [**breaking**] hand-written asset, camera and render bindings ([#626](https://github.com/makspll/bevy_mod_scripting/pull/626))
+- [**breaking**] hand-written color, input and window bindings ([#625](https://github.com/makspll/bevy_mod_scripting/pull/625))
+- [**breaking**] hand-written time and transform bindings ([#624](https://github.com/makspll/bevy_mod_scripting/pull/624))
+- [**breaking**] hand-written ecs bindings, generic eq and clone ([#623](https://github.com/makspll/bevy_mod_scripting/pull/623))
+- [**breaking**] hand-written math bindings ([#621](https://github.com/makspll/bevy_mod_scripting/pull/621))
+- [**breaking**] remove the deprecated types global and short names in get_type_by_name ([#615](https://github.com/makspll/bevy_mod_scripting/pull/615))
+
+### Fixed
+
+- *(bms)* [**breaking**] Simplify scoping mechanisms within access maps, tidy up ([#704](https://github.com/makspll/bevy_mod_scripting/pull/704))
+- [**breaking**] allocation claims don't hold across guards ([#701](https://github.com/makspll/bevy_mod_scripting/pull/701))
+- [**breaking**] release world access claims on panic, tidy WorldAccessGuard ([#699](https://github.com/makspll/bevy_mod_scripting/pull/699))
+- [**breaking**] script function equality and partial_reflect typo ([#697](https://github.com/makspll/bevy_mod_scripting/pull/697))
+- don't hold the function registry lock while calling functions ([#700](https://github.com/makspll/bevy_mod_scripting/pull/700))
+- cyclic lua tables overflow the stack ([#698](https://github.com/makspll/bevy_mod_scripting/pull/698))
+- NonMaxU32 conversion from scripts is unsound ([#696](https://github.com/makspll/bevy_mod_scripting/pull/696))
+- [**breaking**] harden type registrations and world accessors ([#695](https://github.com/makspll/bevy_mod_scripting/pull/695))
+- [**breaking**] read assets immutably under a global claim ([#690](https://github.com/makspll/bevy_mod_scripting/pull/690))
+- [**breaking**] make by-id reflect reference constructors unsafe ([#689](https://github.com/makspll/bevy_mod_scripting/pull/689))
+- [**breaking**] tie script argument borrows to the call scope ([#693](https://github.com/makspll/bevy_mod_scripting/pull/693))
+- release access claims when *_and_then closures fail ([#687](https://github.com/makspll/bevy_mod_scripting/pull/687))
+- only requeue callbacks targeting a specific script ([#688](https://github.com/makspll/bevy_mod_scripting/pull/688))
+- keep Lua function return values intact ([#686](https://github.com/makspll/bevy_mod_scripting/pull/686))
+- *(ladfile)* valid varargs, named unregistered types, NoTypeFunctions opt-out, check declarations with LuaLS ([#685](https://github.com/makspll/bevy_mod_scripting/pull/685))
+- detachments wait for attachments whose script is still loading
+- [**breaking**] deterministic script processing and callback order
+- asset path tests on windows ([#639](https://github.com/makspll/bevy_mod_scripting/pull/639))
+
+### Other
+
+- release notes
+- O(1) global access claims ([#702](https://github.com/makspll/bevy_mod_scripting/pull/702))
+- [**breaking**] query results as plain lists ([#652](https://github.com/makspll/bevy_mod_scripting/pull/652))
+- register the script's own names, add compound assignment and tuple fields ([#641](https://github.com/makspll/bevy_mod_scripting/pull/641))
+- [**breaking**] delete allocator + other optimisations ([#637](https://github.com/makspll/bevy_mod_scripting/pull/637))
+- [**breaking**] reduce script interop call overhead ([#636](https://github.com/makspll/bevy_mod_scripting/pull/636))
+
+### Refactored
+
+- [**breaking**] single-threaded AccessMap, remove dead world guard APIs ([#692](https://github.com/makspll/bevy_mod_scripting/pull/692))
+- *(ladfile_builder)* document the asset functions of asset types as generics ([#677](https://github.com/makspll/bevy_mod_scripting/pull/677))
+- refactor
+- [**breaking**] merge attach/detach messages into ScriptLifecycleMessage
+- [**breaking**] flat ThroughTypeInfo, ScriptType derive, richer LAD and shared backend visitor ([#633](https://github.com/makspll/bevy_mod_scripting/pull/633))
+- [**breaking**] language-agnostic dispatch, type values and shared currying ([#632](https://github.com/makspll/bevy_mod_scripting/pull/632))
+
 ## [0.23.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.22.0...v0.23.0) - 2026-10-14
 
 ### Added
