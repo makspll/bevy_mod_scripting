@@ -98,8 +98,8 @@
     --sidebar-active: var(--bms-lavender);
     --sidebar-spacer: #222c47;
     --sidebar-header-border-color: var(--bms-lavender);
-    /* the logo's ink blue disappears on navy, so it gets a lavender halo */
-    --logo-halo: drop-shadow(0 0 1px rgba(200, 189, 220, 0.9)) drop-shadow(0 0 10px rgba(200, 189, 220, 0.45));
+    /* the logo's ink blue disappears on navy, so it gets a thin lavender outline */
+    --logo-halo: drop-shadow(0 0 0.6px rgba(200, 189, 220, 0.9)) drop-shadow(0 0 0.6px rgba(200, 189, 220, 0.9));
 
     --scrollbar: #545b7a;
     --icons: #8d93ad;
@@ -474,7 +474,7 @@ blockquote.blockquote-tag {
     margin-block-end: 2em;
     border-radius: 12px;
     background:
-        radial-gradient(ellipse at top, color-mix(in srgb, var(--bms-lavender) 35%, transparent), transparent 70%),
+        radial-gradient(ellipse at top, color-mix(in srgb, var(--bms-lavender) 12%, transparent), transparent 65%),
         var(--quote-bg);
     border: 1px solid var(--quote-border);
 }
@@ -484,13 +484,9 @@ blockquote.blockquote-tag {
     height: auto;
 }
 
-/* dark: the logo sits on a soft lavender disc, its ink blue disappears on navy otherwise */
-.navy .bms-hero img,
-.coal .bms-hero img,
-.ayu .bms-hero img {
-    /* no border-radius: it would clip the logo's corners, the gradient fades out on its own */
-    padding: 18px;
-    background: radial-gradient(circle, rgba(200, 189, 220, 0.55) 0%, rgba(200, 189, 220, 0.18) 55%, transparent 72%);
+/* dark: a thin lavender outline, the logo's ink blue disappears on navy otherwise */
+.bms-hero img {
+    filter: var(--logo-halo, none);
 }
 
 .bms-hero h1 {
