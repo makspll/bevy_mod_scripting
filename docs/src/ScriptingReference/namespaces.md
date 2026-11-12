@@ -32,7 +32,6 @@ Import once at the top of a script, and keep the types you use in locals. In Lua
 * If two types in a namespace share a short name, the first one registered wins.
 * Each call reads the shared type catalogue, so the result is always up to date. A table imported earlier does not pick up later registrations: import again.
 * A namespace which does not exist is an error, with suggestions: `namespace "transfrom" does not exist. ... Did you mean: transform?`
-* To also expose every type as a global named after it (i.e. `Vec3`), as before 0.24, set `CoreScriptGlobalsPlugin::register_static_references`. Types sharing a name then shadow each other.
 
 ## Overriding the namespace of a type
 
