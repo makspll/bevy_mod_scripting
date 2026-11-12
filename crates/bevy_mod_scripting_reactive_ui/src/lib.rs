@@ -22,6 +22,7 @@
 #![allow(deprecated)]
 
 mod element;
+mod expr;
 mod runtime;
 
 use std::collections::VecDeque;
@@ -51,10 +52,11 @@ use bevy_reflect::Reflect;
 use bevy_ui::{BackgroundColor, Interaction, Node, UiSystems, widget::Text};
 pub use element::{ComponentDef, UiElement};
 use element::{ElementData, ElementKind, Func, elements_from_script, new_element, parse_props};
+pub use expr::UiValue;
 use parking_lot::Mutex;
 use runtime::{
     CurrentRuntime, Cx, Def, Instance, NodeId, NodeKind, QueuedEvent, Root, Runtime, deps_changed,
-    read, runtime, slot_node, write,
+    read, run_rust_binding, runtime, slot_node, take_rust_bindings, write,
 };
 pub use runtime::{ReactiveUi, UiHandlers, UiRoot};
 use std::sync::Arc;
@@ -90,6 +92,7 @@ impl Plugin for ReactiveUiPlugin {
             .register_type::<ComponentDef>()
             .register_type::<Signal>()
             .register_type::<Selector>()
+            .register_type::<UiValue>()
             .add_systems(
                 PostUpdate,
                 (forget_detached_scripts, flush_reactive_ui)
@@ -98,6 +101,7 @@ impl Plugin for ReactiveUiPlugin {
                     .before(UiSystems::Layout),
             );
         register_functions(app.world_mut());
+        expr::register(app.world_mut());
     }
 
     fn finish(&self, app: &mut App) {
@@ -519,6 +523,20 @@ fn flush_pass(
         if poll && let Err(e) = guard.with_world_access(|w| rt.poll_watches(w)) {
             bevy_log::error!("reactive ui could not check watched components: {e:?}");
         }
+        // values computed in Rust don't need their script's context
+        let rust_bindings = take_rust_bindings(&mut rt);
+        drop(rt);
+        for (id, attachment) in rust_bindings {
+            if let Err(e) = run_rust_binding(runtime, guard, id) {
+                runners.report_error(
+                    guard.clone(),
+                    Some(&attachment),
+                    "running reactive ui".into(),
+                    e,
+                );
+            }
+        }
+        let rt = runtime.lock();
         let side_effects = !rt.events.is_empty() || !rt.dirty_effects.is_empty();
         let mut attachments: Vec<ScriptAttachment> = Vec::new();
         let dirty = rt

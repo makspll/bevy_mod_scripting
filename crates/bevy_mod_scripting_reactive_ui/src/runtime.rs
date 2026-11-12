@@ -31,6 +31,7 @@ use crate::element::{
     ComponentDef, ElementKind, Func, Prop, PropValue, UiElement, apply_prop, element_from_script,
     elements_from_script, script_values_equal,
 };
+use crate::expr::Expr;
 
 /// Identifies a node of the reactive graph. Ids are never reused.
 pub type NodeId = u32;
@@ -56,6 +57,15 @@ pub struct UiHandlers {
     pub(crate) hover: Option<Func>,
 }
 
+/// What a bound property is computed by.
+#[derive(Clone)]
+pub(crate) enum BindingSource {
+    /// A script function, what it reads is recorded each time it runs
+    Script(Func),
+    /// A value computed in Rust, it reads the same things every time
+    Expr(Arc<Expr>),
+}
+
 pub(crate) enum NodeKind {
     Signal {
         value: ScriptValue,
@@ -77,7 +87,7 @@ pub(crate) enum NodeKind {
     Binding {
         entity: Entity,
         prop: Prop,
-        f: Func,
+        source: BindingSource,
     },
     Region {
         container: Entity,
@@ -683,6 +693,64 @@ pub(crate) fn deps_changed(
     Ok(false)
 }
 
+/// The dirty bindings computed only in Rust, which can run without entering their script's context.
+pub(crate) fn take_rust_bindings(rt: &mut Runtime) -> Vec<(NodeId, ScriptAttachment)> {
+    let ids = rt
+        .dirty
+        .iter()
+        .copied()
+        .filter(|id| match rt.nodes.get(id) {
+            Some(GraphNode {
+                kind:
+                    NodeKind::Binding {
+                        source: BindingSource::Expr(expr),
+                        ..
+                    },
+                dirty: true,
+                ..
+            }) => !expr.reads_computed(rt),
+            _ => false,
+        })
+        .collect::<Vec<_>>();
+    ids.into_iter()
+        .filter_map(|id| {
+            rt.dirty.remove(&id);
+            rt.nodes.get(&id).map(|n| (id, n.attachment.clone()))
+        })
+        .collect()
+}
+
+/// Runs a binding computed only in Rust.
+pub(crate) fn run_rust_binding(
+    runtime: &Mutex<Runtime>,
+    world: &WorldGuard,
+    id: NodeId,
+) -> Result<(), InteropError> {
+    let (entity, prop, expr) = match runtime.lock().nodes.get_mut(&id) {
+        Some(GraphNode {
+            kind:
+                NodeKind::Binding {
+                    entity,
+                    prop,
+                    source: BindingSource::Expr(expr),
+                },
+            dirty,
+            check,
+            ..
+        }) => {
+            *dirty = false;
+            *check = false;
+            (*entity, *prop, expr.clone())
+        }
+        _ => return Ok(()),
+    };
+    let value = expr.eval(runtime, world)?;
+    world.with_world_mut_access(|w| match w.get_entity_mut(entity) {
+        Ok(mut e) => apply_prop(&mut e, prop, &value),
+        Err(_) => Ok(()),
+    })?
+}
+
 /// Reads a node, recording the read for the running observer.
 pub(crate) fn read(
     runtime: &Mutex<Runtime>,
@@ -883,9 +951,14 @@ impl Cx<'_, '_> {
                 for (prop, value) in &data.props {
                     match value {
                         PropValue::Static(v) => self.apply(entity, *prop, v)?,
-                        PropValue::Bound(f) => {
-                            bindings.push((*prop, self.create_binding(entity, *prop, f.clone())?))
-                        }
+                        PropValue::Bound(f) => bindings.push((
+                            *prop,
+                            self.create_binding(entity, *prop, BindingSource::Script(f.clone()))?,
+                        )),
+                        PropValue::Expr(e) => bindings.push((
+                            *prop,
+                            self.create_binding(entity, *prop, BindingSource::Expr(e.clone()))?,
+                        )),
                         PropValue::Handler(_) => {}
                     }
                 }
@@ -941,40 +1014,81 @@ impl Cx<'_, '_> {
         }
     }
 
-    fn create_binding(&self, entity: Entity, prop: Prop, f: Func) -> Result<NodeId, InteropError> {
-        let id = self.runtime.lock().create(
-            NodeKind::Binding { entity, prop, f },
+    fn create_binding(
+        &self,
+        entity: Entity,
+        prop: Prop,
+        source: BindingSource,
+    ) -> Result<NodeId, InteropError> {
+        let mut rt = self.runtime.lock();
+        let id = rt.create(
+            NodeKind::Binding {
+                entity,
+                prop,
+                source: source.clone(),
+            },
             self.attachment.clone(),
         );
+        // what a value computed in Rust reads is known up front
+        if let BindingSource::Expr(expr) = &source {
+            let mut sources = Vec::new();
+            expr.sources(&mut sources);
+            for (source, key) in sources {
+                match key {
+                    Some(key) => rt.link_selector(id, source, key),
+                    None => rt.link(id, source),
+                }
+            }
+        }
+        drop(rt);
         self.run_binding(id)?;
         Ok(id)
     }
 
     pub fn run_binding(&self, id: NodeId) -> Result<(), InteropError> {
-        let (entity, prop, f) = {
+        let (entity, prop, source) = {
             let mut rt = self.runtime.lock();
-            rt.clear_deps(id);
+            let source = match rt.nodes.get_mut(&id) {
+                Some(GraphNode {
+                    kind: NodeKind::Binding { source, .. },
+                    ..
+                }) => source.clone(),
+                _ => return Ok(()),
+            };
+            if let BindingSource::Script(_) = source {
+                rt.clear_deps(id);
+            }
             match rt.nodes.get_mut(&id) {
                 Some(GraphNode {
-                    kind: NodeKind::Binding { entity, prop, f },
+                    kind: NodeKind::Binding { entity, prop, .. },
                     dirty,
                     check,
                     ..
                 }) => {
                     *dirty = false;
                     *check = false;
-                    (*entity, *prop, f.clone())
+                    (*entity, *prop, source)
                 }
                 _ => return Ok(()),
             }
         };
-        let value = with_frame(
-            Frame {
-                observer: Some(id),
-                instance: None,
-            },
-            || self.call(&f, vec![]),
-        )?;
+        let value = match source {
+            BindingSource::Script(f) => with_frame(
+                Frame {
+                    observer: Some(id),
+                    instance: None,
+                },
+                || self.call(&f, vec![]),
+            )?,
+            BindingSource::Expr(expr) => {
+                let mut sources = Vec::new();
+                expr.sources(&mut sources);
+                for (source, _) in sources {
+                    update_computed(self.runtime, &self.call_context(), source)?;
+                }
+                expr.eval(self.runtime, &self.world)?
+            }
+        };
         self.apply(entity, prop, &value)
     }
 
@@ -1169,7 +1283,7 @@ impl Cx<'_, '_> {
                 let new = &element.0;
                 for (prop, old_value) in &old_element.0.props {
                     if !new.props.iter().any(|(p, _)| p == prop) {
-                        if let PropValue::Bound(_) = old_value {
+                        if let PropValue::Bound(_) | PropValue::Expr(_) = old_value {
                             self.drop_binding(&mut bindings, *prop);
                         }
                         if !matches!(old_value, PropValue::Handler(_)) {
@@ -1194,21 +1308,16 @@ impl Cx<'_, '_> {
                             self.drop_binding(&mut bindings, *prop);
                             self.apply(entity, *prop, v)?;
                         }
+                        // components only re-run on reload: rebinding from scratch keeps this simple
                         PropValue::Bound(f) => {
-                            match bindings.iter().find(|(p, _)| p == prop).map(|(_, id)| *id) {
-                                Some(id) => {
-                                    if let Some(GraphNode {
-                                        kind: NodeKind::Binding { f: old_f, .. },
-                                        ..
-                                    }) = self.runtime.lock().nodes.get_mut(&id)
-                                    {
-                                        *old_f = f.clone();
-                                    }
-                                    self.run_binding(id)?;
-                                }
-                                None => bindings
-                                    .push((*prop, self.create_binding(entity, *prop, f.clone())?)),
-                            }
+                            self.drop_binding(&mut bindings, *prop);
+                            let source = BindingSource::Script(f.clone());
+                            bindings.push((*prop, self.create_binding(entity, *prop, source)?));
+                        }
+                        PropValue::Expr(e) => {
+                            self.drop_binding(&mut bindings, *prop);
+                            let source = BindingSource::Expr(e.clone());
+                            bindings.push((*prop, self.create_binding(entity, *prop, source)?));
                         }
                         PropValue::Handler(_) => {}
                     }

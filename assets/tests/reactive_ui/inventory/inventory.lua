@@ -33,10 +33,11 @@ local Slot = ui.define("Slot", function(p)
     local item = ui.watch(p.entity, Item)
     return ui.node({
         name = "slot_" .. p.name,
-        bg = function() return p.selected:is(p.name) and "#ffcc00" or "#333333" end,
+        -- computed in Rust, no script code runs when these change
+        bg = ui.select(ui.is(p.selected, p.name), "#ffcc00", "#333333"),
         on_click = function() p.on_select(p.name) end,
     }, {
-        ui.text({ name = "count_" .. p.name, text = function() return "x" .. item:get().data.count end }),
+        ui.text({ name = "count_" .. p.name, text = ui.format("x{}", { ui.path(item, "data.count") }) }),
     })
 end)
 
@@ -69,10 +70,7 @@ local Inventory = ui.define("Inventory", function(p)
     return ui.node({ direction = "column" }, {
         ui.text({ name = "version", text = "v" .. Reloads }),
         ui.text({ name = "title", text = function() return "Inventory (" .. #visible:get() .. ")" end }),
-        ui.text({ name = "hp", text = function()
-            local h = hp:get().data
-            return h.current .. "/" .. h.max
-        end }),
+        ui.text({ name = "hp", text = ui.format("{}/{}", { ui.path(hp, "data.current"), ui.path(hp, "data.max") }) }),
         ui.dynamic(function()
             local h = hp:get().data
             if h.current < h.max * 0.25 then return ui.text({ key = "low", name = "low", text = "LOW HP" }) end

@@ -316,10 +316,16 @@ fn callback_benchmarks(criterion: &mut Criterion) {
 fn reactive_ui_benchmarks(criterion: &mut Criterion) {
     let mut group = criterion.benchmark_group("reactive_ui");
     // the same ui with properties bound to script closures, or to paths evaluated in Rust where possible
-    let variants = [(
-        "Closures",
-        include_str!("../assets/benchmarks/reactive_ui/closures.lua"),
-    )];
+    let variants = [
+        (
+            "Closures",
+            include_str!("../assets/benchmarks/reactive_ui/closures.lua"),
+        ),
+        (
+            "Paths",
+            include_str!("../assets/benchmarks/reactive_ui/paths.lua"),
+        ),
+    ];
     let scenarios = [
         ("health", "health tick"),
         ("mount", "inventory mount or unmount 200"),

@@ -10,6 +10,8 @@ use bevy_mod_scripting_bindings::{
 use bevy_reflect::Reflect;
 use bevy_ui::{BackgroundColor, Display, FlexDirection, Node, UiRect, Val, widget::Text};
 
+use crate::expr::{Expr, UiValue};
+
 /// A script function stored on the Rust side.
 pub type Func = DynamicScriptFunction;
 
@@ -67,6 +69,8 @@ pub(crate) enum PropValue {
     Static(ScriptValue),
     /// Bound to a function, re-run when the signals it reads change
     Bound(Func),
+    /// Bound to a value computed in Rust
+    Expr(Arc<Expr>),
     Handler(Func),
 }
 
@@ -147,6 +151,10 @@ pub(crate) fn parse_props(
                     "`{name}` must be a function, got: {v:?}"
                 )));
             }
+            ScriptValue::Reference(r) => match r.downcast::<UiValue>(world.clone()) {
+                Ok(value) => PropValue::Expr(value.0),
+                Err(_) => PropValue::Static(ScriptValue::Reference(r)),
+            },
             v => PropValue::Static(v),
         };
         out.push((prop, value));
