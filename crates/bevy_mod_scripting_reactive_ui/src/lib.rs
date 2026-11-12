@@ -160,22 +160,26 @@ fn register_functions(world: &mut World) {
         "node",
         |ctx: FunctionCallContext, props: Option<ScriptValue>, children: Option<ScriptValue>| {
             let world = ctx.world()?;
+            let runtime = runtime(&ctx)?;
             let (key, props) = parse_props(props, &world)?;
             let children = match children {
-                Some(children) => elements_from_script(&children, &world)?,
+                Some(children) => elements_from_script(&children, &runtime)?,
                 None => Vec::new(),
             };
-            Ok::<_, InteropError>(new_element(ElementData {
-                kind: ElementKind::Node,
-                key,
-                props,
-                children,
-            }))
+            Ok::<_, InteropError>(new_element(
+                &runtime,
+                ElementData {
+                    kind: ElementKind::Node,
+                    key,
+                    props,
+                    children,
+                },
+            ))
         },
     )
     .register("text", |ctx: FunctionCallContext, props: ScriptValue| {
         let (key, props) = parse_props(Some(props), &ctx.world()?)?;
-        Ok::<_, InteropError>(new_element(ElementData {
+        Ok::<_, InteropError>(new_element(&*runtime(&ctx)?, ElementData {
             kind: ElementKind::Text,
             key,
             props,
@@ -193,7 +197,7 @@ fn register_functions(world: &mut World) {
                     .transpose()?,
                 _ => None,
             };
-            Ok::<_, InteropError>(new_element(ElementData {
+            Ok::<_, InteropError>(new_element(&*runtime(&ctx)?, ElementData {
                 kind: ElementKind::Component(*def, props),
                 key,
                 props: Vec::new(),
@@ -392,13 +396,16 @@ fn register_functions(world: &mut World) {
         runtime::selector(&*runtime(&ctx)?, attachment, source.into_inner().0)
             .map(|id| V(Selector(id)))
     })
-    .register("dynamic", |f: Func| {
-        new_element(ElementData {
-            kind: ElementKind::Dynamic(f),
-            key: None,
-            props: Vec::new(),
-            children: Vec::new(),
-        })
+    .register("dynamic", |ctx: FunctionCallContext, f: Func| {
+        Ok::<_, InteropError>(new_element(
+            &*runtime(&ctx)?,
+            ElementData {
+                kind: ElementKind::Dynamic(f),
+                key: None,
+                props: Vec::new(),
+                children: Vec::new(),
+            },
+        ))
     });
 
     NamespaceBuilder::<Selector>::new(world).register(
@@ -480,6 +487,8 @@ pub fn flush_reactive_ui(world: &mut World, mut interactions: Local<Option<Inter
         if rt.events.is_empty() && rt.dirty.is_empty() && rt.dirty_effects.is_empty() {
             return;
         }
+        // elements built in earlier flushes are mounted or gone
+        rt.elements.reset();
     }
     let cache = WorldGuard::setup_cache(world, CurrentScriptAttachment(None));
     WorldAccessGuard::with_static_guard(world, cache, |guard| {

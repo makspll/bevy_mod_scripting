@@ -180,6 +180,7 @@ pub(crate) struct Runtime {
     pub dirty_effects: BTreeSet<NodeId>,
     pub events: Vec<QueuedEvent>,
     pub watches: Vec<NodeId>,
+    pub elements: crate::element::ElementArena,
 }
 
 impl Runtime {
@@ -1122,7 +1123,7 @@ impl Cx<'_, '_> {
             },
             || self.call(&f, vec![]),
         )
-        .and_then(|v| elements_from_script(&v, &self.world));
+        .and_then(|v| elements_from_script(&v, self.runtime));
         let elements = match result {
             Ok(elements) => elements,
             Err(e) => {
@@ -1222,7 +1223,7 @@ impl Cx<'_, '_> {
             },
             || self.call(&render, vec![props]),
         )
-        .and_then(|v| element_from_script(&v, &self.world));
+        .and_then(|v| element_from_script(&v, self.runtime));
         let element = match result {
             Ok(Some(element)) => element,
             Ok(None) => crate::element::empty_node(),
