@@ -1,10 +1,9 @@
 # Script Systems
 
-<div class="warning">
-Script systems are an experimental feature
-</div>
+> [!WARNING]
+> Script systems are an experimental feature.
 
-It's possible within BMS to inject new systems from within scripts themselves.
+Scripts can add their own systems to Bevy schedules. Each system runs a [callback](../Summary/callbacks.md) of the script which added it.
 
 Systems introduced by scripts *can* run in parallel to other systems, and can be freely inserted between any other system, including other script systems.
 
@@ -13,15 +12,15 @@ BMS also provides utilities for visualising schedules using dot graphs, allowing
 
 ## Schedules
 
-Bevy doesn't support reflecting schedules, so BMS rolls it's own schedule registry resource: `AppScheduleRegistry`, which can be used to add any custom schedules you want to interact with. The default Bevy schedules will be pre-populated for you.
+Bevy doesn't support reflecting schedules, so BMS rolls its own schedule registry resource: `AppScheduleRegistry`, which can be used to add any custom schedules you want to interact with. The default Bevy schedules will be pre-populated for you.
 
 Once you've registered your schedule you will be able to interact with it in scripts like below:
 
 ```lua
 local world = import_namespace("bms").world
 local update_schedule = world.get_schedule_by_name("Update")
-local systems = update:systems()
-local system_with_name = update:get_system_by_name("my_system")
+local systems = update_schedule:systems()
+local system_with_name = update_schedule:get_system_by_name("my_system")
 ```
 
 ## Inserting Systems
@@ -89,7 +88,7 @@ A script system is identified by its attachment and callback label: adding it ag
 
 Bevy cannot change a schedule while it runs, i.e. `PreUpdate` where scripts are loaded. Systems added to (or removed from) a running schedule are added (or removed) once it finishes, removed systems stop running right away. `world.add_system` then returns a system which can be used for ordering, but has no node in the schedule yet.
 
-Errors in script systems are sent as `ScriptErrorMessage`s, like those of other callbacks.
+Errors in script systems are sent as `ScriptErrorMessage`s, like those of other callbacks. Script systems can call other scripts with the limits described in [Calling Other Scripts](../ScriptingReference/calling-other-scripts.md#script-systems).
 
 ## Parameters
 

@@ -1,133 +1,92 @@
 # Managing Scripts
 
-Scripts live in the standard Bevy `assets` directory. Loading a script means obtaining its byte representation and associated language.
+Scripts are Bevy assets (`ScriptAsset`), loaded from the `assets` directory like any other asset. A loaded script does nothing until it is **attached**, which evaluates it:
 
-Evaluating a script means:
 - parsing the script body,
-- and creating or updating the resources which store script state (i.e. context)
+- creating or updating the script's [context](./contexts.md), the environment holding its globals.
 
 ## Script attachments
 
-Script attachments represent both the context in which a script "lives" and is executed, as well as its "residency identifier".
+A `ScriptAttachment` says where a script "lives", and is the identity scripts are addressed by:
 
-Scripts can be attached either:
-- to an entity via `ScriptComponent`'s (i.e. `ScriptAttachment::EntityScript`)
-- or by being statically activated against their script assset (i.e. `ScriptAttachment::StaticScript`)
+- `ScriptAttachment::EntityScript(entity, handle)`: attached to an entity through its `ScriptComponent`,
+- `ScriptAttachment::StaticScript(handle)`: attached to nothing, activated through the `AttachScript` command.
 
-When you insert/remove `ScriptComponent`'s, `ScriptAttachedMessage` and `ScriptDetachedMessage`'s are sent and processed by the [script pipeline](../ScriptPipeline/pipeline.md).
+Inserting or removing a `ScriptComponent` sends `ScriptLifecycleMessage`s (`Attached` / `Detached`), which the [script pipeline](../ScriptPipeline/pipeline.md) processes. Static scripts are attached and detached with the `AttachScript` and `DetachScript` commands.
 
-Other attachments, like static scripts have to be manually triggered via `AttachScript` and `DetachScript` commands.
+## Loading
 
+Load scripts with the `AssetServer`, or create them in memory:
 
-## Loading 
-Scripts can be loaded into memory via the `AssetServer`.
 ```rust,ignore
 let handle = asset_server.load::<ScriptAsset>("my_script.lua");
-```
-Or scripts can be created in memory. 
-```rust,ignore
-let mut script = ScriptAsset::from("x = 0".into());
+
+let mut script = ScriptAsset::from("x = 0".to_string());
 script.language = Language::Lua;
 let handle = script_assets.add(script);
 ```
-This will not evaluate any code yet. 
 
-## Evaluating
-A script does not participate in any callbacks until it is evaluated, to evaluate a script you must first attach it to an entity, or to a static script entry.
+Neither runs any code yet.
 
-To evaluate a script, add it to a `ScriptComponent` manually attach it.
+> [!NOTE]
+> Scripts created in memory, or loaded without an asset path, have no path information, so their logs are less useful.
 
-### Load File via `AssetServer`
-```rust
-# extern crate bevy;
-# extern crate bevy_mod_scripting;
-# use bevy::prelude::*;
-# use bevy_mod_scripting::prelude::*;
+## Attaching scripts to entities
 
+Add a `ScriptComponent` to an entity:
+
+```rust,ignore
 fn load_script(asset_server: Res<AssetServer>, mut commands: Commands) {
     let handle = asset_server.load::<ScriptAsset>("my_script.lua");
-    commands.spawn(ScriptComponent(vec![handle]));
+    commands.spawn(ScriptComponent::new(vec![handle]));
 }
 ```
 
-<div class="warning">
+In the script, `import_namespace("bms").current_entity()` returns the entity the script is attached to.
 
-Prefer using strong asset handles, internal references will only persist weak versions of the handle, leaving you in control of the asset handle via the container component.
+> [!TIP]
+> Keep strong handles in the `ScriptComponent`. BMS only keeps weak handles internally, so the component decides how long the asset lives.
 
-</div>
+## Static scripts
 
-### Create `ScriptAsset` and Add It
-```rust
-# extern crate bevy;
-# extern crate bevy_mod_scripting;
-# use bevy::{asset::Assets, prelude::*};
-# use bevy_mod_scripting::prelude::*;
+Scripts which don't belong to an entity are attached as static scripts:
 
-fn add_script(mut script_assets: ResMut<Assets<ScriptAsset>>, mut commands: Commands) {
-    let content: String = "x = 0".into();
-    let mut script = ScriptAsset::from(content);
-    script.language = Language::Lua;
-    let handle = script_assets.add(script);
-    commands.spawn(ScriptComponent(vec![handle]));
-}
-```
-<div class="warning">
-
-Scripts added directly through assets, or via asset server without an asset path, will not contain path information, and logs will be slightly less useful.
-
-</div>
-
-## Static Scripts
-You can use attach and detach commands, which will run the [script pipeline](../ScriptPipeline/pipeline.md), repeatedly until the requested script attachments are processed. If you don't want to incur big frametime slowdowns, you can instead send `ScriptAttachedMessage` and `ScriptDetachedMessage` manually, and let the pipeline pick these up as normal.
-
-### Attach a static script
-```rust
-# extern crate bevy;
-# extern crate bevy_mod_scripting;
-# use bevy::{asset::Assets, prelude::*};
-# use bevy_mod_scripting::prelude::*;
-
-fn add_static_script(mut asset_server: ResMut<AssetServer>, mut commands: Commands) {
-    let handle = asset_server.load(script_path);
+```rust,ignore
+fn add_static_script(asset_server: Res<AssetServer>, mut commands: Commands) {
+    let handle = asset_server.load("scripts/my_script.lua");
     commands.queue(AttachScript::<LuaScriptingPlugin>::new(
-        ScriptAttachment::StaticScript(handle)
-    ))
+        ScriptAttachment::StaticScript(handle),
+    ));
 }
-```
 
-### Detach a static script
-```rust
-# extern crate bevy;
-# extern crate bevy_mod_scripting;
-# use bevy::{asset::Assets, prelude::*};
-# use bevy_mod_scripting::prelude::*;
-
-fn remove_static_script(existing_handle: Local<Handle<ScriptAsset>>, mut commands: Commands) {
+fn remove_static_script(handle: Local<Handle<ScriptAsset>>, mut commands: Commands) {
     commands.queue(DetachScript::<LuaScriptingPlugin>::new(
-        ScriptAttachment::StaticScript(existing_handle)
-    ))
+        ScriptAttachment::StaticScript(handle.clone()),
+    ));
 }
 ```
+
+The commands run the [script pipeline](../ScriptPipeline/pipeline.md) until the attachment is processed. To avoid frame time spikes, write `ScriptLifecycleMessage`s instead, and let the pipeline pick them up as normal.
 
 ## Unloading
-When you no longer need a script asset you can freely unload it as soon as it has been loaded, but the script attachment will persist.
-In order to trigger the `on_script_unloaded` etc. callbacks, you need to remove the script from the `ScriptComponent` or detach it manually via `DetachScript` if it's static.
 
-Once the last script in a context is removed, the context itself will also be removed.
+Script assets can be unloaded as soon as they are loaded, the attachment keeps running. To unload a script, and run its `on_script_unloaded` [callback](../ScriptingReference/core-callbacks.md), remove it from its `ScriptComponent` or detach it with `DetachScript`.
 
-## Hot-loading scripts
-To enable hot-loading of assets, you need to enable the necessary Bevy features as normal [see the bevy cheatbook for instructions](https://bevy-cheatbook.github.io/assets/hot-reload.html).
+A context is removed together with the last script in it.
 
-Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.
+## Hot reloading
 
-## File Extensions
-Normally the set of supported extensions is pre-decided by each language plugin.
+Enable Bevy's `file_watcher` feature, and changes to script assets are picked up and the scripts reloaded. Use [`on_script_unloaded` and `on_script_reloaded`](../ScriptingReference/core-callbacks.md) to keep state across reloads.
 
-I.e. Lua supports ".lua" extensions.
+## File extensions
 
-Scripts are mapped to the corresponding language plugin based on these and so it is important to use them correctly.
+Each language plugin maps file extensions to its language, i.e. `lua` and `luau` for Lua. To add more:
 
-If you would like to add more extensions, you need to populate them via `app.add_supported_script_extensions`.
 ```rust,ignore
-    app.add_supported_script_extensions(&[".pua"], Language::Lua);
+app.add_plugins(LuaScriptingPlugin::default().add_supported_extension("pua"));
 ```
+
+> [!WARNING]
+> Script asset paths are platform dependent. Build them with `std::path::PathBuf` if you target multiple platforms.
+
+Next, [run your scripts](./running-scripts.md).

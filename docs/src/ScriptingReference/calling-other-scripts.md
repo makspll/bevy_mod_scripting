@@ -64,14 +64,7 @@ While a callback runs, its script context is busy, so `bms.run_script_callback` 
 
 These calls return an error instead. `bms.queue_script_callback` works for all of them, since queued callbacks only run once the current callback has finished.
 
-Whether scripts share a context depends on the context policy of the scripting plugin:
-
-| Context policy | Scripts sharing a context |
-|---|---|
-| `ContextPolicy::per_entity_and_script()` (default) | None |
-| `ContextPolicy::per_entity()` | All scripts attached to the same entity |
-| `ContextPolicy::per_script()` | All attachments of the same script |
-| `ContextPolicy::shared()` | All scripts |
+Which scripts share a context depends on the [context policy](../Summary/contexts.md#context-policies) of the scripting plugin, by default none do.
 
 ## Queued callbacks
 

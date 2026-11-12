@@ -1,14 +1,8 @@
 # Controlling Script Bindings
 
-In this book we refer to anything accessible by a script, which allows it to communicate with your Rust code a `binding` (which in previous versions was more generically referred to as a script API).
+A **binding** is anything a script can access to communicate with your Rust code, i.e. binding `script` code to `rust` code. Bindings are written once in Rust, and work in every supported language.
 
-The "binding" here being used as in: binding `script` code to `rust` code.
-
-## Namespaces
-
-Namespaces are a way to group functions together, and are used to prevent naming conflicts. You can have multiple namespaces, and each namespace can have multiple functions.
-
-Language implementations will also look for specific functions registered on your type first before looking at the generic `ReflectReference` namespace.
+Functions are registered on a type or a namespace, see [where functions can live](#where-functions-can-live). Scripts reach them through [namespaces](../ScriptingReference/namespaces.md).
 
 ## Dynamic Functions
 
@@ -22,7 +16,7 @@ In order for a function to be callable by a script it must adhere to a few requi
 
 The into/from requirements allow us to convert these types to `ScriptValue`'s, and each supported scripting language can then marshall these into the script.
 
-Note these types are implemented for primitives, but if you want to interact with one of your `Reflect` implementing types, you will need to use one of `R<T>`, `M<T>` or `V<T>` wrappers in place of `&T`, `&mut T` and `T` respectively.
+These traits are implemented for primitives, but if you want to interact with one of your `Reflect` implementing types, you will need to use one of `R<T>`, `M<T>` or `V<T>` wrappers in place of `&T`, `&mut T` and `T` respectively.
 
 These wrappers enable us to safely interact with bevy, and claim any necessary mutex'es on `Resources`, `Components` or `Allocations`.
 
@@ -37,7 +31,7 @@ Registering functions can be done via the `NamespaceBuilder` like below:
         .register(
             "hello_world",
             |s: String| {
-                println!(s)
+                println!("{s}")
             },
         );
 
@@ -45,12 +39,12 @@ Registering functions can be done via the `NamespaceBuilder` like below:
         .register(
             "hello_world2",
             |s: String| {
-                println!(s)
+                println!("{s}")
             },
         );
 ```
 
-This will allow you to call this function within lua like so:
+This will allow you to call this function within Lua like so:
 
 ```lua
 some_type:hello_world("hi from method!");
@@ -60,6 +54,7 @@ hello_world2("hi from global!");
 Note the `new_unregistered` call instead of `new`, this is because `GlobalNamespace` is not a `Reflect` type, and the `new` call also automatically registers the type in the reflection registry.
 
 ## Macros
+
 The above is a bit tedious, so instead you can use the `script_bindings` macro, which applies to impl blocks like so:
 
 ```rust,ignore
@@ -128,8 +123,7 @@ You can use this as follows:
             |ctx: FunctionCallContext, s: String| {
                 let world = ctx.world()?;
                 let should_use_0_indexing = ctx.convert_to_0_indexed;
-                println!(should_use_0_indexing);
-                println!(s)
+                println!("{should_use_0_indexing} {s}");
                 Ok(())
             },
         );
@@ -158,7 +152,7 @@ You can treat return values similarly.
 
 Your script functions can return errors either by:
 - Returning `Result<T: IntoScript, InteropError>`
-- Returning `ScriptValue` and manually creating the `ScriptValue::Error(into_interop_erorr.into())` variant.
+- Returning `ScriptValue` and manually creating the `ScriptValue::Error(into_interop_error.into())` variant.
 
 ## Reserved Functions
 

@@ -1,4 +1,9 @@
+# Editor Support
+
+BMS generates documentation and editor definitions for all bindings registered in your app, including your own.
+
 ## LADfiles
+
 BMS provides a custom Language Agnostic Declaration format (LAD), which can be used to integrate with other tooling.
 
 If you use `#[script_bindings]` macros, these files will magically contain your code comments, bindings as well as everything else required to drive other powerful integrations.
@@ -27,11 +32,10 @@ You might not want to run this pipeline in your final binary, but rather bundle 
 
 ## Lua Language Server
 
-<div class="warning">
-    This feature is in early stages, the definitions provide 90% of the way there, but there are rough edges that will need to be worked out
-</div>
+> [!NOTE]
+> This feature is in early stages: the definitions get you 90% of the way there, but there are rough edges.
 
-[Luals](https://github.com/LuaLS/lua-language-server) or LLS, is an open source language server which integrates with many IDE's.
+[LuaLS](https://github.com/LuaLS/lua-language-server) is an open source language server which integrates with many IDEs.
 
 It is powered by lua specific annotation or definition files which BMS can generate directly from its own LADfiles.
 

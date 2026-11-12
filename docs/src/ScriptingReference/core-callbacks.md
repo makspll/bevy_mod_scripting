@@ -7,7 +7,7 @@ The three core callbacks are:
 - `on_script_unloaded`
 - `on_script_reloaded`
 
-For more information on how callbacks generally work see [the callbacks section](../Summary/callbacks.md).
+For how callbacks work in general, see [Callbacks](../Summary/callbacks.md). They run as part of the [script pipeline](../ScriptPipeline/pipeline.md).
 
 ## `on_script_loaded`
 
