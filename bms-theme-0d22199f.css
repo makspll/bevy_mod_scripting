@@ -243,7 +243,7 @@ body::before {
     display: none;
 }
 
-.sidebar .chapter-link-wrapper > a {
+.sidebar .chapter-link-wrapper > a:not(.chapter-fold-toggle) {
     flex: 1;
     display: block;
     padding: 6px 10px;
@@ -273,10 +273,36 @@ body::before {
     min-width: 1.9em;
 }
 
+/* the fold chevron: a fixed size box, so its glyph rotates in place */
 .sidebar .chapter-fold-toggle {
+    flex: none;
     display: flex;
     align-items: center;
-    padding: 0 8px;
+    justify-content: center;
+    width: 28px;
+    margin-block: 1px;
+    padding: 0;
+    border-radius: 6px;
+    opacity: 0.6;
+}
+
+.sidebar .chapter-fold-toggle:hover {
+    opacity: 1;
+}
+
+/* drawn with borders instead of mdbook's "❱" glyph, which many fonts lack */
+.sidebar .chapter-fold-toggle div {
+    font-size: 0;
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.2s ease;
+}
+
+.sidebar .chapter li.expanded > span > .chapter-fold-toggle div {
+    transform: rotate(45deg);
 }
 
 /* part titles: small labels, separated from the previous group */
@@ -345,6 +371,16 @@ body::before {
     padding-inline-start: 0.6em;
     border-inline-start: 3px solid transparent;
     border-image: linear-gradient(180deg, var(--bms-ink), var(--bms-lavender)) 1;
+}
+
+/* mdbook marks the linked heading with a "»" 30px to its left, which on h2s lands on the bar: move it past the bar */
+.content main > h2:target::before {
+    margin-inline-start: calc(-30px - 0.6em - 3px);
+    width: calc(30px + 0.6em + 3px);
+}
+
+.content main :is(h1, h2, h3, h4, h5, h6):target::before {
+    color: var(--links);
 }
 
 .content main > h3 {
