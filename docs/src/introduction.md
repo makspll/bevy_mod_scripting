@@ -18,6 +18,26 @@ BMS (`bevy_mod_scripting`) runs Lua and Rune scripts inside a Bevy app. Scripts 
 - Scripts can add their own systems, components and events
 - Generated docs and Lua language server definitions for your bindings
 
+## How a script runs
+
+A script only runs code at the points below: when it is attached (or reloaded, or detached), and whenever one of its callbacks is invoked.
+
+```mermaid
+flowchart TD
+    ATTACH["<b>Attach</b><br/>ScriptComponent inserted<br/>AttachScript command<br/>ScriptLifecycleMessage::Attached"]
+    ATTACH --> LOAD["<b>Load</b>, in the script pipeline<br/>wait for the asset<br/>assign a context, run context initializers<br/>run the top level code<br/>on_script_loaded()"]
+    LOAD --> LIVE(["Attached"])
+    LIVE <-- "invoked by name" --> CB["<b>Callbacks</b><br/>Rust: ScriptCallbackMessage + event_handler<br/>Rust: RunScriptCallback command<br/>Scripts: bms.run_script_callback, exports<br/>Script systems, each schedule run<br/>Observers, on triggered events"]
+    LIVE -- "asset modified" --> RELOAD["<b>Reload</b><br/>on_script_unloaded() returns state<br/>run the top level code again<br/>on_script_loaded()<br/>on_script_reloaded(state)"]
+    RELOAD --> LIVE
+    LIVE -- "ScriptComponent removed,<br/>DetachScript, Detached message" --> UNLOAD["<b>Unload</b><br/>on_script_unloaded()<br/>context removed with its last script"]
+```
+
+- **Loading** a script asset runs nothing, only [attaching](./Summary/managing-scripts.md) it does. The attachment (entity + script, or a static script) is the script's identity.
+- Scripts sharing a [context](./Summary/contexts.md) share globals, the context policy decides which do.
+- **Callbacks** are functions the script defines, run by name: the one passed to `register_callback` if any, else the top level function. Pre handling initializers run before each. See [Running Scripts](./Summary/running-scripts.md), [Callbacks](./Summary/callbacks.md), the [core callbacks](./ScriptingReference/core-callbacks.md) and [Calling Other Scripts](./ScriptingReference/calling-other-scripts.md).
+- The [script pipeline](./ScriptPipeline/pipeline.md) has the details on ordering and budgeting.
+
 ## Where to start
 
 | You are | Read |

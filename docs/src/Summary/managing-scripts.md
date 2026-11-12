@@ -29,7 +29,7 @@ let handle = script_assets.add(script);
 Neither runs any code yet.
 
 > [!NOTE]
-> Scripts created in memory, or loaded without an asset path, have no path information, so their logs are less useful.
+> Scripts are identified by their handle, not their path. The path is only used in logs and error messages, so scripts created in memory show up by asset id instead.
 
 ## Attaching scripts to entities
 
@@ -43,9 +43,6 @@ fn load_script(asset_server: Res<AssetServer>, mut commands: Commands) {
 ```
 
 In the script, `import_namespace("bms").current_entity()` returns the entity the script is attached to.
-
-> [!TIP]
-> Keep strong handles in the `ScriptComponent`. BMS only keeps weak handles internally, so the component decides how long the asset lives.
 
 ## Static scripts
 
@@ -70,7 +67,7 @@ The commands run the [script pipeline](../ScriptPipeline/pipeline.md) until the 
 
 ## Unloading
 
-Script assets can be unloaded as soon as they are loaded, the attachment keeps running. To unload a script, and run its `on_script_unloaded` [callback](../ScriptingReference/core-callbacks.md), remove it from its `ScriptComponent` or detach it with `DetachScript`.
+BMS keeps a handle to each attached script, so dropping your own handles does not unload it. To unload a script, and run its `on_script_unloaded` [callback](../ScriptingReference/core-callbacks.md), remove it from its `ScriptComponent` or detach it with `DetachScript`. Once no handles are left, Bevy drops the asset.
 
 A context is removed together with the last script in it.
 
@@ -85,8 +82,5 @@ Each language plugin maps file extensions to its language, i.e. `lua` and `luau`
 ```rust,ignore
 app.add_plugins(LuaScriptingPlugin::default().add_supported_extension("pua"));
 ```
-
-> [!WARNING]
-> Script asset paths are platform dependent. Build them with `std::path::PathBuf` if you target multiple platforms.
 
 Next, [run your scripts](./running-scripts.md).

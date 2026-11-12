@@ -39,7 +39,7 @@
     --links: var(--bms-navy);
 
     --inline-code-color: var(--bms-brown);
-    --inline-code-bg: #c8bddc40;
+    --inline-code-bg: #c8bddc55;
     --code-bg: #f4f2f8;
     --code-fg: #2a2e40;
 
@@ -138,7 +138,8 @@
     --blockquote-warning-color: #d4b89c;
     --blockquote-caution-color: #f2857c;
 
-    --tok-keyword: var(--bms-lavender);
+    /* saturated lavender, plain lavender is too close to the code text */
+    --tok-keyword: #b39af0;
     --tok-type: #8fb4e6;
     --tok-fn: #a9c7ef;
     --tok-string: #d4b89c;
@@ -240,9 +241,15 @@ body {
     font-weight: 600;
 }
 
-.content a:hover {
-    text-decoration-color: var(--bms-lavender);
+/* underline links, the dark theme's lavender links are otherwise close to the body text */
+.content main a:not(.header) {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--links) 40%, transparent);
     text-underline-offset: 0.2em;
+}
+
+.content main a:not(.header):hover {
+    text-decoration-color: var(--links);
 }
 
 /* code */
@@ -252,6 +259,9 @@ body {
     font-size: 0.85em;
     padding: 0.12em 0.35em;
     border-radius: 4px;
+    /* code wrapping over lines, i.e. in table cells, keeps its padding and corners on each line */
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
 
 pre > code.hljs,
@@ -383,7 +393,7 @@ blockquote.blockquote-tag {
     gap: 0.6em;
 }
 
-.content .bms-hero-links a {
+.content main .bms-hero-links a {
     display: inline-block;
     padding: 0.45em 1.1em;
     border-radius: 999px;
@@ -393,16 +403,16 @@ blockquote.blockquote-tag {
     text-decoration: none;
 }
 
-.content .bms-hero-links a:first-child {
+.content main .bms-hero-links a:first-child {
     background: var(--bms-navy);
     border-color: var(--bms-navy);
     color: #ffffff;
 }
 
-.content .bms-hero-links a:hover {
+.content main .bms-hero-links a:hover {
     background: var(--theme-hover);
 }
 
-.content .bms-hero-links a:first-child:hover {
+.content main .bms-hero-links a:first-child:hover {
     background: var(--bms-ink);
 }

@@ -36,9 +36,9 @@ use bevy_mod_scripting_script::ScriptAttachment;
 pub use context_key::*;
 pub use script_context::*;
 
-/// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
+/// A unique identifier for a script: its asset handle.
 ///
-/// I.e. an asset with the path `path/to/asset.ext` will have the script id `path/to/asset.ext`
+/// The asset path, if any, is only used for display.
 pub type ScriptId = Handle<ScriptAsset>;
 
 #[derive(Component, Reflect, Clone, Default, Debug, PartialEq, Eq)]

@@ -160,21 +160,21 @@ There are a few reserved functions that you can override by registering them on 
 
 | Function Name | Description | Overridable? | Has Default Implementation? |
 |---------------|-------------| ------------ | --------------------------- |
-| get | a getter function, used for indexing into a type | ❌ | ✅ |
-| set | a setter function, used for setting a value on a type | ❌ | ✅ |
-| sub | a subtraction function, used for subtracting two values | ✅ | ❌ |
-| add | an addition function, used for adding two values | ✅ | ❌ |
-| mul | a multiplication function, used for multiplying two values | ✅ | ❌ |
-| div | a division function, used for dividing two values | ✅ | ❌ |
-| rem | a remainder function, used for getting the remainder of two values | ✅ | ❌ |
-| neg | a negation function, used for negating a value | ✅ | ❌ |
-| pow | a power function, used for raising a value to a power | ✅ | ❌ | 
-| rsub, rdiv, rrem, rpow | the reflected `sub`, `div`, `rem` and `pow`, called on the right operand when the left one is not a value, i.e. `1 - v` calls `rsub(v, 1)`. `add` and `mul` are called with their operands swapped instead | ✅ | ❌ |
-| eq | an equality function, used for checking if two values are equal | ✅ | ❌ |
-| lt | a less than function, used for checking if a value is less than another | ✅ | ❌ |
-| iter | an iterator function, used for iterating over a value | ❌ | ✅ |
-| display | a display function, used for pretty printing values | ❌\* | ✅ |
-| debug | a display function, used for displaying the internals of a value | ❌\* | ✅ |
+| get | a getter function, used for indexing into a type | no | yes |
+| set | a setter function, used for setting a value on a type | no | yes |
+| sub | a subtraction function, used for subtracting two values | yes | no |
+| add | an addition function, used for adding two values | yes | no |
+| mul | a multiplication function, used for multiplying two values | yes | no |
+| div | a division function, used for dividing two values | yes | no |
+| rem | a remainder function, used for getting the remainder of two values | yes | no |
+| neg | a negation function, used for negating a value | yes | no |
+| pow | a power function, used for raising a value to a power | yes | no | 
+| rsub, rdiv, rrem, rpow | the reflected `sub`, `div`, `rem` and `pow`, called on the right operand when the left one is not a value, i.e. `1 - v` calls `rsub(v, 1)`. `add` and `mul` are called with their operands swapped instead | yes | no |
+| eq | an equality function, used for checking if two values are equal | yes | no |
+| lt | a less than function, used for checking if a value is less than another | yes | no |
+| iter | an iterator function, used for iterating over a value | no | yes |
+| display | a display function, used for pretty printing values | no\* | yes |
+| debug | a display function, used for displaying the internals of a value | no\* | yes |
 
 \* - You can register an instance of `ReflectDisplayWithTypeInfo` type data on `Reflect` implementing types to override their printing behavior
 

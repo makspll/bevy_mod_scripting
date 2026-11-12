@@ -32,6 +32,7 @@
             clusterBorder: '#c8bddc',
             noteBkgColor: '#f6f1ea',
             noteBorderColor: '#594a42',
+            edgeLabelBackground: '#ffffff',
         }
         : {
             darkMode: true,
@@ -48,10 +49,12 @@
             noteBkgColor: '#594a42',
             noteBorderColor: '#d4b89c',
             noteTextColor: '#ffffff',
+            edgeLabelBackground: '#0e1626',
         };
     mermaid.initialize({
         startOnLoad: true,
         theme: 'base',
+        flowchart: { wrappingWidth: 320 },
         themeVariables: { fontFamily: 'Inter, sans-serif', ...themeVariables },
     });
 
