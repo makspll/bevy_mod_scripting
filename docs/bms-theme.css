@@ -176,10 +176,15 @@ body {
     font-feature-settings: "cv11", "calt";
 }
 
-#mdbook-menu-bar {
-    border-block-start: 3px solid transparent;
-    border-image: var(--bms-gradient) 1;
-    border-image-width: 3px 0 0 0;
+/* the logo gradient as a strip along the top of the window, over the sidebar too */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: var(--bms-gradient);
+    z-index: 1000;
+    pointer-events: none;
 }
 
 .menu-title {
@@ -483,8 +488,8 @@ blockquote.blockquote-tag {
 .navy .bms-hero img,
 .coal .bms-hero img,
 .ayu .bms-hero img {
+    /* no border-radius: it would clip the logo's corners, the gradient fades out on its own */
     padding: 18px;
-    border-radius: 50%;
     background: radial-gradient(circle, rgba(200, 189, 220, 0.55) 0%, rgba(200, 189, 220, 0.18) 55%, transparent 72%);
 }
 
@@ -528,4 +533,60 @@ blockquote.blockquote-tag {
 
 .content main .bms-hero-links a:first-child:hover {
     background: var(--bms-ink);
+}
+
+/* ---------- glossary terms (glossary.js) ---------- */
+
+.content main a.glossary-term {
+    color: inherit;
+    text-decoration: underline dotted;
+    text-decoration-color: color-mix(in srgb, var(--links) 70%, transparent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.22em;
+    cursor: help;
+}
+
+.content main a.glossary-term:hover,
+.content main a.glossary-term:focus-visible {
+    color: var(--links);
+    text-decoration-color: var(--links);
+}
+
+.glossary-card {
+    position: absolute;
+    z-index: 1100;
+    max-width: min(360px, calc(100vw - 16px));
+    padding: 0.8em 1em 0.7em;
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: var(--fg);
+    background: var(--theme-popup-bg);
+    border: 1px solid var(--theme-popup-border);
+    border-top: 3px solid var(--bms-lavender);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(10, 16, 32, 0.25);
+}
+
+.glossary-card[hidden] {
+    display: none;
+}
+
+.glossary-card-title {
+    font-weight: 700;
+    color: var(--heading-fg);
+    margin-bottom: 0.25em;
+}
+
+.glossary-card p {
+    margin: 0 0 0.5em;
+}
+
+.glossary-card a {
+    color: var(--links);
+}
+
+.glossary-card-more {
+    font-size: 0.85em;
+    font-weight: 600;
+    text-decoration: none;
 }

@@ -6,7 +6,7 @@ title = "Bevy Scripting"
 description = "Documentation for the Bevy Scripting library"
 
 [output.html]
-additional-js = ["multi-code-block.js", "mermaid.min.js", "mermaid-init.js"]
+additional-js = ["multi-code-block.js", "mermaid.min.js", "mermaid-init.js", "glossary.js"]
 additional-css = ["bms-theme.css", "multi-code-block.css", "lad.css"]
 default-theme = "light"
 preferred-dark-theme = "navy"
