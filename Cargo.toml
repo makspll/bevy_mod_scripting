@@ -133,6 +133,7 @@ bevy_mod_scripting_script = { path = "crates/bevy_mod_scripting_script", version
 lua_language_server_lad_backend = { path = "crates/lad_backends/lua_language_server_lad_backend", version = "0.24.0", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.24.0" }
 bevy_mod_scripting_world = { path = "crates/bevy_mod_scripting_world", version = "0.24.0", default-features = true}
+bevy_mod_scripting_reactive_ui = { path = "crates/bevy_mod_scripting_reactive_ui" }
 # bevy
 
 
@@ -281,6 +282,7 @@ members = [
     "crates/bevy_mod_scripting_bindings_domain",
     "crates/bindings/*",
     "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax", "crates/bevy_mod_scripting_world",
+    "crates/bevy_mod_scripting_reactive_ui",
 ]
 resolver = "2"
 exclude = ["crates/macro_tests", "xtask"]

@@ -56,6 +56,7 @@ pub fn install_test_plugin(app: &mut App, include_test_functions: bool) {
         CoreScriptGlobalsPlugin::default(),
         ConstructorsPlugin::default(),
         BMSScriptingInfrastructurePlugin::default(),
+        bevy_mod_scripting_reactive_ui::ReactiveUiPlugin,
     ));
     if include_test_functions {
         register_test_functions(app);
@@ -507,6 +508,65 @@ pub fn run_plugin_callback_command_benchmark<
             |command| span.in_scope(|| command.apply(world)),
             BatchSize::SmallInput,
         );
+    });
+}
+
+/// Benchmarks the reactive ui flush which follows one change.
+///
+/// The script mounts its ui when loaded and defines a `bench_step` callback making the change, which runs outside the measurement.
+/// Only the flush updating the ui is measured.
+pub fn run_reactive_ui_benchmark<
+    P: IntoScriptPluginParams + Plugin,
+    F: Fn() -> P,
+    M: Measurement<Value = Duration>,
+>(
+    plugin_maker: F,
+    benchmark_id: &str,
+    content: &str,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+) {
+    use bevy_mod_scripting_core::event::CallbackLabel;
+    use bevy_mod_scripting_reactive_ui::flush_reactive_ui;
+
+    let (mut app, attachments) = setup_callback_benchmark_app(plugin_maker, content, 1);
+    let world = app.world_mut();
+    let step = || {
+        RunScriptCallback::<P>::new(
+            attachments[0].clone(),
+            CallbackLabel::from("bench_step"),
+            vec![],
+            false,
+        )
+    };
+    let flush = |world: &mut bevy_ecs::world::World| {
+        if let Err(err) = world.run_system_cached(flush_reactive_ui) {
+            panic!("could not run the reactive ui flush: {err}");
+        }
+    };
+    // first render, then one step to check the script works
+    flush(world);
+    if let Err(err) = step().apply(world) {
+        panic!("benchmark step failed: {err}");
+    }
+    flush(world);
+    let errors = world.resource::<Messages<ScriptErrorMessage>>();
+    if let Some(error) = errors.iter_current_update_messages().next() {
+        panic!("benchmark ui failed: {:?}", error.error);
+    }
+
+    criterion.bench_function(benchmark_id, |b| {
+        b.iter_custom(|iters| {
+            let mut total = Duration::ZERO;
+            for _ in 0..iters {
+                if let Err(err) = step().apply(world) {
+                    panic!("benchmark step failed: {err}");
+                }
+                let start = Instant::now();
+                flush(world);
+                total += start.elapsed();
+            }
+            total
+        })
     });
 }
 
