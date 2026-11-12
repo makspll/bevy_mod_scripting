@@ -12,10 +12,11 @@ Most values scripts get from Rust are **references**: they point at a value livi
 Accessing a field extends the path, so the result still points into the same value:
 
 ```lua
-local world = import_namespace("bms").world
+local bms = import_namespace("bms")
+local world = bms.world
 local Transform = import_namespace("transform").Transform
 
-local transform = world.get_component(entity, Transform)
+local transform = assert(world.get_component(assert(bms.current_entity()), Transform))
 transform.translation.x = 5        -- writes the component
 
 local copy = transform:clone()     -- a new allocation, independent of the component
@@ -36,7 +37,7 @@ local handle = Image.load("textures/icon.png")  -- a Handle<Image>, loading in t
 -- later
 if world.is_loaded(handle) then
     local image = Image.get_asset(handle)       -- a reference into Assets<Image>
-    -- reading or writing its fields reads or writes the asset
+    print(image)                                -- reading or writing its fields reads or writes the asset
 end
 ```
 
@@ -46,23 +47,27 @@ Every asset type has `load`, `add_asset` and `get_asset`, and `world` has the sa
 
 Binding signatures choose how they receive references: `R<T>` borrows, `M<T>` borrows mutably, `V<T>` copies the value out, see [Controlling Script Bindings](../Summary/controlling-script-bindings.md#dynamic-functions). Return a `ReflectReference` to give scripts a reference, i.e. `ReflectReference::new_allocated(value)`.
 
-Handles work the same way. Take `V<Handle<Image>>` to accept a handle of one asset type, or a `ReflectReference` to accept the handle of any asset type and get an `UntypedHandle` out of it:
+For references whose type matters only to the docs, use `ValueOf<T>`: a `ReflectReference` at runtime, documented as `T`. Combined with the `A` [marker](../Summary/controlling-script-bindings.md#generics) for a generic parameter, a function can take the handle of any asset type, and still show up as taking a `Handle<A>` in the docs and the Lua language server files:
 
 ```rust,ignore
-#[script_bindings(namespace = "my_game")]
+use bevy_mod_scripting::bindings::function::generics::{A, ValueOf};
+
+#[script_bindings(remote, namespace = "my_game")]
 impl NamespaceMembers {
     /// Works with the handles `Image.load`, `world.load_asset` and others return.
-    fn asset_id(ctxt: FunctionCallContext, handle: ReflectReference) -> Result<String, InteropError> {
+    fn asset_id(ctxt: FunctionCallContext, handle: ValueOf<Handle<A>>) -> Result<String, InteropError> {
         let untyped: UntypedHandle = handle.try_untyped_asset_handle(ctxt.world()?)?;
         Ok(untyped.id().to_string())
     }
 
     /// Gives scripts a reference to an asset, as `Image.get_asset` does.
-    fn icon(ctxt: FunctionCallContext) -> Result<ReflectReference, InteropError> {
+    fn icon(ctxt: FunctionCallContext) -> Result<ValueOf<Image>, InteropError> {
         let world = ctxt.world()?;
         // `Icons` is a resource of your game, holding `Handle<Image>`s
         let handle = world.with_resource(|icons: &Icons| icons.default.clone().untyped())?;
-        ReflectReference::new_asset_ref(handle, TypeId::of::<Image>(), world)
+        ReflectReference::new_asset_ref(handle, TypeId::of::<Image>(), world).map(ValueOf::new)
     }
 }
 ```
+
+For a handle of one asset type, take `ValueOf<Handle<Image>>`. `V<Handle<Image>>` works too, but copies the handle out first.

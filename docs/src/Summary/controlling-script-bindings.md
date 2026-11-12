@@ -129,9 +129,9 @@ You can use this as follows:
         );
 ```
 
-## Generic Arguments
+## Dynamic Arguments
 
-Sometimes you might want to be generic over the type of argument you're accepting, you can do so by accepting `ScriptValue` arguments like so:
+To accept any kind of value, i.e. numbers or strings alike, take `ScriptValue` arguments:
 
 ```rust,ignore
     NamespaceBuilder::<ReflectReference>::new(&mut world)
@@ -146,7 +146,64 @@ Sometimes you might want to be generic over the type of argument you're acceptin
         );
 ```
 
-You can treat return values similarly.
+You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see [Generics](#generics).
+
+## Generics
+
+Reflection only knows concrete types (`Handle<Image>`, `Time<Virtual>`), so generic signatures and types use **markers** standing for their parameters: `A`, `B` and `C`, from `bevy_mod_scripting::bindings::function::generics`. Markers only change the documentation and the Lua language server files, the values are references at runtime.
+
+> [!NOTE]
+> The markers are real types: `A` is a reflected unit struct implementing `Asset`, `Default`, `Clone` and the other traits generic parameters are usually bounded by, so `Handle<A>` and `Time<A>` are real types too. A `Handle<Image>` is not a `Handle<A>`, so `V<Handle<A>>`, which copies the value out, can't receive one. Use `ValueOf<Handle<A>>`. See the [`A` API docs](https://docs.rs/bevy_mod_scripting_bindings/latest/bevy_mod_scripting_bindings/function/generics/struct.A.html).
+
+### Generic functions
+
+Two wrappers carry the markers in signatures:
+
+- `ValueOf<T>`: a `ReflectReference`, documented as a `T`.
+- `TypeOf<R, A>`: a type argument passed as `R`, i.e. a registration, documented as the parameter `A`.
+
+Using the same marker ties them together, so `get_component` returns a value of the type it is given:
+
+```rust,ignore
+fn get_component(
+    ctxt: FunctionCallContext,
+    entity: V<Entity>,
+    registration: TypeOf<V<ScriptComponentRegistration>, A>,
+) -> Result<Option<ValueOf<A>>, InteropError>
+```
+
+```lua
+local bms = import_namespace("bms")
+local Transform = import_namespace("transform").Transform
+
+local transform = bms.world.get_component(assert(bms.current_entity()), Transform) -- typed as a Transform
+print(transform)
+```
+
+A marker can also stand inside a type, i.e. `ValueOf<Handle<A>>` accepts the handle of any asset type, see [References](../ScriptingReference/references.md#references-in-rust).
+
+### Generic types
+
+Instantiations of a generic type would be documented as unrelated types. Declare the generic type from your plugin, instantiated with markers, with its namespace, parameter names and docs:
+
+```rust,ignore
+use bevy_mod_scripting::bindings::function::generics::{A, GenericTypesAppExt};
+
+app.register_generic_type::<Time<A>>("time", &["T"], "A clock, i.e. `Time<Virtual>`.");
+```
+
+Fields of type `A` are then documented as being of the parameter `T`, and instantiations as `Time<T>` applied to their arguments. Further parameters use `B` and `C` (`Hashed<A, B>`). A parameter with bounds the markers don't satisfy gets a marker of its own:
+
+```rust,ignore
+bevy_mod_scripting::bindings::generic_marker! {
+    /// Stands for the material of `MyMaterialHolder<M>`
+    pub struct M;
+}
+impl MyMaterial for M {}
+
+app.register_type::<M>()
+    .register_generic_type::<MyMaterialHolder<M>>("my_crate", &["M"], "...");
+```
 
 ## Fallible functions
 
@@ -195,7 +252,7 @@ The type in the `impl` block you apply `script_bindings` to (or the one passed t
 | `GlobalNamespace` | the builtin globals, i.e. no prefix | whatever you declare |
 
 When the same name exists in more than one place, the most specific one wins.
-For `ReflectReference` and `StaticTypeRef` in a `script_bindings` block outside of the crate defining them, use the `remote` attribute.
+These types are defined by BMS, so `script_bindings` blocks on `ReflectReference`, `StaticTypeRef` or `NamespaceMembers` in your crate need the `remote` attribute.
 
 ### Functions available on every type
 
@@ -238,7 +295,7 @@ Each type registered with the type registry is an entry in the table `import_nam
 Functions which don't belong to a type are members of a namespace, declared on `impl NamespaceMembers`:
 
 ```rust,ignore
-#[script_bindings(namespace = "my_game")]
+#[script_bindings(remote, namespace = "my_game")]
 impl NamespaceMembers {
     fn spawn_enemy(health: f32) { /* ... */ }
 }

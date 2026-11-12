@@ -13,40 +13,9 @@ Scripts reach types through the namespace of their category, i.e. `import_namesp
 
 ## Generic types
 
-Reflection only sees instantiations of generic types (`Time<Virtual>`, `Time<Fixed>`), which would be documented as unrelated types. Declare the generic types of the crate from its plugin, instantiated with the marker `A` in place of their parameter, in the namespace of the category:
+Declare the generic types of the crate from its plugin, in the namespace of the category (`register_generic_type::<Time<A>>("time", ...)`), and use the markers in generic function signatures, see [Generics](../Summary/controlling-script-bindings.md#generics).
 
-```rust,ignore
-use bevy_mod_scripting_bindings::function::generics::{A, GenericTypesAppExt};
-
-app.register_generic_type::<Time<A>>("time", &["T"], "A clock, i.e. `Time<Virtual>`.");
-```
-
-The fields of type `A` are then documented as being of the parameter `T`, and the instantiations as `Time<T>` applied to their arguments. Only declare types whose parameter is part of what they are (`Handle`, `Time`, `ButtonInput`), not containers like `Arc<T>`. Undeclared instantiations get a class each, named after their arguments (`render.MeshExtractableData.Indices`).
-
-Further parameters use the markers `B` and `C` (`Hashed<A, B>`). A parameter with bounds the markers don't satisfy gets a marker of its own, implementing them:
-
-```rust,ignore
-bevy_mod_scripting_bindings::generic_marker! {
-    /// Stands for the material of `MyMaterialHolder<M>`
-    pub struct M;
-}
-impl MyMaterial for M {}
-
-app.register_type::<M>()
-    .register_generic_type::<MyMaterialHolder<M>>("my_crate", &["M"], "...");
-```
-
-Functions which return values of the type they are given are declared generic in their signature, with the same marker:
-
-```rust,ignore
-fn get_component(
-    ctxt: FunctionCallContext,
-    entity: V<Entity>,
-    registration: TypeOf<V<ScriptComponentRegistration>, A>,
-) -> Result<Option<ValueOf<A>>, InteropError>
-```
-
-`TypeOf<R, A>` is a type passed as `R`, `ValueOf<A>` a reference to a value of it. They only change the documentation, i.e. `world.get_component(entity, Transform)` is a `Transform` in Lua.
+Only declare types whose parameter is part of what they are (`Handle`, `Time`, `ButtonInput`), not containers like `Arc<T>`. Undeclared instantiations get a class each, named after their arguments (`render.MeshExtractableData.Indices`).
 
 ## What to bind
 
