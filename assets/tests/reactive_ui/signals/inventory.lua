@@ -112,12 +112,14 @@ end
 
 local actions = {
     [1] = function()
-        world.get_component(State.player, Health).data = { current = 20, max = 100 }
+        local hp = assert(world.get_component(State.player, Health)) --[[@as bms.DynamicComponent]]
+        hp.data = { current = 20, max = 100 }
     end,
     [2] = function() ui.interact(find("slot_Sword"), "press") end,
     [3] = function() State.search:set("sh") end,
     [4] = function()
-        world.get_component(State.entities.Shield, Item).data = { name = "Shield", count = 5 }
+        local shield = assert(world.get_component(State.entities.Shield, Item)) --[[@as bms.DynamicComponent]]
+        shield.data = { name = "Shield", count = 5 }
     end,
     [5] = function()
         world.despawn(State.entities.Sword)
