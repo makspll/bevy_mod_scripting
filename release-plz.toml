@@ -96,7 +96,6 @@ version_group = "main"
 [[package]]
 name = "bevy_mod_scripting_rune"
 version_group = "main"
-release = false
 
 [[package]]
 name = "bevy_mod_scripting_functions"
