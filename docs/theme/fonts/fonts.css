@@ -1,0 +1,50 @@
+/* Inter and JetBrains Mono are under the SIL Open Font License 1.1, see INTER-LICENSE.txt and JETBRAINS-MONO-LICENSE.txt.
+   The files are subset to Latin with `pyftsubset`. */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('{{ resource "fonts/Inter-Regular.woff2" }}') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('{{ resource "fonts/Inter-Italic.woff2" }}') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('{{ resource "fonts/Inter-SemiBold.woff2" }}') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('{{ resource "fonts/Inter-Bold.woff2" }}') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('{{ resource "fonts/JetBrainsMono-Regular.woff2" }}') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('{{ resource "fonts/JetBrainsMono-Bold.woff2" }}') format('woff2');
+}

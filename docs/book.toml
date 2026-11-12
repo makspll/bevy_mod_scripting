@@ -7,7 +7,9 @@ description = "Documentation for the Bevy Scripting library"
 
 [output.html]
 additional-js = ["multi-code-block.js", "mermaid.min.js", "mermaid-init.js"]
-additional-css = ["multi-code-block.css", "lad.css"]
+additional-css = ["bms-theme.css", "multi-code-block.css", "lad.css"]
+default-theme = "light"
+preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/makspll/bevy_mod_scripting"
 edit-url-template = "https://github.com/makspll/bevy_mod_scripting/edit/main/docs/{path}"
 

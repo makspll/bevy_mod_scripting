@@ -1,26 +1,43 @@
 # Summary
 
+[Introduction](./introduction.md)
 [Installation](./Summary/installation.md)
 
-# Quick Start
+# User Guide
 
 - [Managing Scripts](./Summary/managing-scripts.md)
 - [Running Scripts](./Summary/running-scripts.md)
-- [Controlling Script Bindings](./Summary/controlling-script-bindings.md)
-- [Modifying Script Contexts](./Summary/customizing-script-contexts.md)
-- [Contexts](./Summary/contexts.md)
 - [Callbacks](./Summary/callbacks.md)
+- [Contexts](./Summary/contexts.md)
+- [Customizing Contexts](./Summary/customizing-script-contexts.md)
+- [Controlling Script Bindings](./Summary/controlling-script-bindings.md)
 - [Script Systems](./ScriptSystems/introduction.md)
-- [Examples](./Examples/introduction.md)
-- [Scripting IDE Integrations](./ScriptTooling/summary.md)
-
-# Script Tooling
-
-- [LADfiles](./ScriptTooling/introduction.md)
-
-# Script Pipeline
-
 - [Script Pipeline](./ScriptPipeline/pipeline.md)
+- [Editor Support](./ScriptTooling/introduction.md)
+- [Examples](./Examples/introduction.md)
+
+# Scripting Reference
+
+- [Overview](./ScriptingReference/introduction.md)
+- [Namespaces](./ScriptingReference/namespaces.md)
+- [Core Callbacks](./ScriptingReference/core-callbacks.md)
+- [Constructing Arbitrary Types](./ScriptingReference/constructing-arbitrary-types.md)
+- [Calling Other Scripts](./ScriptingReference/calling-other-scripts.md)
+- [Events and Messages](./ScriptingReference/events-and-messages.md)
+- [Bundles](./ScriptingReference/bundles.md)
+- [Asset Operations](./ScriptingReference/asset-operations.md)
+- [Core Bindings](./ladfiles/bindings.lad.json)
+
+# Developing BMS
+
+- [Overview](./Development/introduction.md)
+    - [Setup](./Development/setup.md)
+    - [Writing Bindings](./Development/writing-bindings.md)
+- [New Languages](./Development/AddingLanguages/introduction.md)
+    - [Evaluating Feasibility](./Development/AddingLanguages/evaluating-feasibility.md)
+    - [Necessary Features](./Development/AddingLanguages/necessary-features.md)
+- [RFCs](./RequestsForComments/summary.md)
+    1. [Abandoning Codegen](./RequestsForComments/1-abandoning_codegen/1-abandoning_codegen.md)
 
 # Release Notes
 
@@ -40,27 +57,3 @@
     - [0.23.0](./ReleaseNotes/0.23.0.md)
     - [0.23-to-0.24](./ReleaseNotes/0.23-to-0.24.md)
     - [0.24.0](./ReleaseNotes/0.24.0.md)
-
-# Scripting Reference
-
-- [Introduction](./ScriptingReference/introduction.md)
-- [Constructing Arbitrary Types](./ScriptingReference/constructing-arbitrary-types.md)
-- [Events and Messages](./ScriptingReference/events-and-messages.md)
-- [Bundles](./ScriptingReference/bundles.md)
-- [Namespaces](./ScriptingReference/namespaces.md)
-- [Calling Other Scripts](./ScriptingReference/calling-other-scripts.md)
-- [Core Bindings](./ladfiles/bindings.lad.json)
-- [Core Callbacks](./ScriptingReference/core-callbacks.md)
-- [Asset Operations](./ScriptingReference/asset-operations.md)
-
-# Developing BMS
-
-- [Introduction](./Development/introduction.md)
-    - [Setup](./Development/setup.md) 
-    - [Writing Bindings](./Development/writing-bindings.md)
-- [New Languages](./Development/AddingLanguages/introduction.md)
-    - [Evaluating Feasibility](./Development/AddingLanguages/evaluating-feasibility.md)
-    - [Necessary Features](./Development/AddingLanguages/necessary-features.md)
-
-- [RFC's](./RequestsForComments/summary.md)
-    1. [Abandoning Codegen](./RequestsForComments/1-abandoning_codegen/1-abandoning_codegen.md)
