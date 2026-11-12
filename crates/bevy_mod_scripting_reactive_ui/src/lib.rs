@@ -33,10 +33,10 @@ use bevy_ecs::{
     hierarchy::Children,
     message::MessageReader,
     name::Name,
-    query::Changed,
+    query::{Changed, QueryState},
     reflect::AppTypeRegistry,
     schedule::{IntoScheduleConfigs, SystemSet},
-    system::{Commands, Res},
+    system::{Commands, Local, Res},
     world::World,
 };
 use bevy_mod_scripting_bindings::{
@@ -53,10 +53,10 @@ pub use element::{ComponentDef, UiElement};
 use element::{ElementData, ElementKind, Func, elements_from_script, new_element, parse_props};
 use parking_lot::Mutex;
 use runtime::{
-    CurrentRuntime, Cx, Def, Instance, NodeId, NodeKind, QueuedEvent, Root, Runtime, UiHandlers,
+    CurrentRuntime, Cx, Def, Instance, NodeId, NodeKind, QueuedEvent, Root, Runtime, deps_changed,
     read, runtime, slot_node, write,
 };
-pub use runtime::{ReactiveUi, UiRoot};
+pub use runtime::{ReactiveUi, UiHandlers, UiRoot};
 use std::sync::Arc;
 
 /// How many times a flush re-runs work made dirty by the work it ran (i.e. effects setting signals) before leaving it for the next frame.
@@ -66,6 +66,14 @@ pub const MAX_FLUSH_ITERATIONS: usize = 16;
 #[derive(Clone, Copy, Debug, Reflect)]
 #[reflect(opaque, Clone)]
 pub struct Signal(NodeId);
+
+/// Tells whether a key is the value of a signal, made by `selector`.
+///
+/// `selector:is(key)` only re-runs its reader when `key` becomes or stops being selected,
+/// so a list of items each checking whether they are selected only re-runs two of them when the selection changes.
+#[derive(Clone, Copy, Debug, Reflect)]
+#[reflect(opaque, Clone)]
+pub struct Selector(NodeId);
 
 /// The systems updating reactive UI trees, in [`PostUpdate`] before the UI layout.
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
@@ -81,6 +89,7 @@ impl Plugin for ReactiveUiPlugin {
             .register_type::<UiElement>()
             .register_type::<ComponentDef>()
             .register_type::<Signal>()
+            .register_type::<Selector>()
             .add_systems(
                 PostUpdate,
                 (forget_detached_scripts, flush_reactive_ui)
@@ -374,6 +383,11 @@ fn register_functions(world: &mut World) {
         },
     )
     .register("define", define)
+    .register("selector", |ctx: FunctionCallContext, source: V<Signal>| {
+        let attachment = current_attachment(&ctx)?;
+        runtime::selector(&*runtime(&ctx)?, attachment, source.into_inner().0)
+            .map(|id| V(Selector(id)))
+    })
     .register("dynamic", |f: Func| {
         new_element(ElementData {
             kind: ElementKind::Dynamic(f),
@@ -383,6 +397,12 @@ fn register_functions(world: &mut World) {
         })
     });
 
+    NamespaceBuilder::<Selector>::new(world).register(
+        "is",
+        |ctx: FunctionCallContext, s: V<Selector>, key: ScriptValue| {
+            runtime::is_selected(&*runtime(&ctx)?, s.into_inner().0, &key)
+        },
+    );
     NamespaceBuilder::<Signal>::new(world)
         .register("get", |ctx: FunctionCallContext, s: V<Signal>| {
             read(&*runtime(&ctx)?, &ctx, s.into_inner().0, true)
@@ -413,9 +433,12 @@ fn forget_detached_scripts(
     }
 }
 
+/// The query finding elements whose [`Interaction`] changed, kept between flushes.
+type InteractionQuery =
+    QueryState<(Ref<'static, Interaction>, &'static UiHandlers), Changed<Interaction>>;
+
 /// Queues the handlers of elements whose [`Interaction`] changed.
-fn queue_interactions(world: &mut World, runtime: &Mutex<Runtime>) {
-    let mut query = world.query_filtered::<(Ref<Interaction>, &UiHandlers), Changed<Interaction>>();
+fn queue_interactions(world: &mut World, query: &mut InteractionQuery, runtime: &Mutex<Runtime>) {
     let mut rt = runtime.lock();
     for (interaction, handlers) in query.iter(world) {
         // newly mounted elements start with no interaction
@@ -441,18 +464,29 @@ fn queue_interactions(world: &mut World, runtime: &Mutex<Runtime>) {
 ///
 /// Work is grouped by script so each script's context is entered once per pass. Work made dirty by a pass
 /// (i.e. by handlers or effects setting signals) runs in another pass, up to [`MAX_FLUSH_ITERATIONS`].
-pub fn flush_reactive_ui(world: &mut World) {
+pub fn flush_reactive_ui(world: &mut World, mut interactions: Local<Option<InteractionQuery>>) {
     let Some(runtime) = world.get_resource::<ReactiveUi>().map(|r| r.0.clone()) else {
         return;
     };
-    queue_interactions(world, &runtime);
+    let interactions = interactions.get_or_insert_with(|| world.query_filtered());
+    queue_interactions(world, interactions, &runtime);
+    {
+        let mut rt = runtime.lock();
+        rt.poll_watches(world);
+        if rt.events.is_empty() && rt.dirty.is_empty() && rt.dirty_effects.is_empty() {
+            return;
+        }
+    }
     let cache = WorldGuard::setup_cache(world, CurrentScriptAttachment(None));
     WorldAccessGuard::with_static_guard(world, cache, |guard| {
         let _current = CurrentRuntime::set(runtime.clone());
         let runners = guard.script_callback_runners();
+        let mut poll = false;
         for _ in 0..MAX_FLUSH_ITERATIONS {
-            if !flush_pass(&runtime, &guard, &runners) {
-                return;
+            match flush_pass(&runtime, &guard, &runners, poll) {
+                Pass::Idle => return,
+                // handlers and effects may have changed watched components
+                Pass::Ran { side_effects } => poll = side_effects,
             }
         }
         let rt = runtime.lock();
@@ -464,17 +498,28 @@ pub fn flush_reactive_ui(world: &mut World) {
     });
 }
 
-/// One pass of [`flush_reactive_ui`], returns whether there was work to do.
+/// What a pass of [`flush_reactive_ui`] did.
+enum Pass {
+    Idle,
+    Ran {
+        /// Whether event handlers or effects ran
+        side_effects: bool,
+    },
+}
+
+/// One pass of [`flush_reactive_ui`], `poll` checks the watched components first.
 fn flush_pass(
     runtime: &Arc<Mutex<Runtime>>,
     guard: &WorldGuard,
     runners: &AppScriptCallbackRunners,
-) -> bool {
-    let attachments = {
+    poll: bool,
+) -> Pass {
+    let (attachments, side_effects) = {
         let mut rt = runtime.lock();
-        if let Err(e) = guard.with_world_access(|w| rt.poll_watches(w)) {
+        if poll && let Err(e) = guard.with_world_access(|w| rt.poll_watches(w)) {
             bevy_log::error!("reactive ui could not check watched components: {e:?}");
         }
+        let side_effects = !rt.events.is_empty() || !rt.dirty_effects.is_empty();
         let mut attachments: Vec<ScriptAttachment> = Vec::new();
         let dirty = rt
             .dirty
@@ -492,10 +537,10 @@ fn flush_pass(
                 attachments.push(attachment);
             }
         }
-        attachments
+        (attachments, side_effects)
     };
     if attachments.is_empty() {
-        return false;
+        return Pass::Idle;
     }
     for attachment in attachments {
         let result = runners.run_in_context(guard.clone(), &attachment, &mut |world, language| {
@@ -532,7 +577,7 @@ fn flush_pass(
             );
         }
     }
-    true
+    Pass::Ran { side_effects }
 }
 
 /// Runs the queued handlers, then the dirty nodes, then the dirty effects of one script, inside its context.
@@ -580,22 +625,41 @@ fn run_script_work(cx: &Cx, runners: &AppScriptCallbackRunners) {
         };
         for id in ids {
             type Run = fn(&Cx, NodeId) -> Result<(), InteropError>;
-            let run: Run = {
+            let (run, certain): (Run, bool) = {
                 let mut rt = cx.runtime.lock();
                 rt.dirty.remove(&id);
                 rt.dirty_effects.remove(&id);
                 // a parent may have re-rendered it already in this pass
                 match rt.nodes.get(&id) {
-                    Some(node) if node.dirty => match &node.kind {
-                        NodeKind::Instance(_) => |cx, id| cx.render_instance(id),
-                        NodeKind::Binding { .. } => |cx, id| cx.run_binding(id),
-                        NodeKind::Region { .. } => |cx, id| cx.run_region(id),
-                        NodeKind::Effect { .. } => |cx, id| cx.run_effect(id),
-                        _ => continue,
-                    },
+                    Some(node) if node.dirty || node.check => (
+                        match &node.kind {
+                            NodeKind::Instance(_) => |cx, id| cx.render_instance(id),
+                            NodeKind::Binding { .. } => |cx, id| cx.run_binding(id),
+                            NodeKind::Region { .. } => |cx, id| cx.run_region(id),
+                            NodeKind::Effect { .. } => |cx, id| cx.run_effect(id),
+                            _ => continue,
+                        },
+                        node.dirty,
+                    ),
                     _ => continue,
                 }
             };
+            if !certain {
+                // only a computed it read may have changed: skip it if none did
+                match deps_changed(cx.runtime, &cx.call_context(), id) {
+                    Ok(true) => {}
+                    Ok(false) => {
+                        if let Some(node) = cx.runtime.lock().nodes.get_mut(&id) {
+                            node.check = false;
+                        }
+                        continue;
+                    }
+                    Err(e) => {
+                        report(e);
+                        continue;
+                    }
+                }
+            }
             let result = run(cx, id);
             if let Err(e) = result {
                 report(e);

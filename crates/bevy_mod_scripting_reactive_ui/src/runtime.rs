@@ -50,10 +50,10 @@ pub struct UiRoot {
 
 /// The event handlers of a mounted element.
 #[derive(Component)]
-pub(crate) struct UiHandlers {
-    pub attachment: ScriptAttachment,
-    pub click: Option<Func>,
-    pub hover: Option<Func>,
+pub struct UiHandlers {
+    pub(crate) attachment: ScriptAttachment,
+    pub(crate) click: Option<Func>,
+    pub(crate) hover: Option<Func>,
 }
 
 pub(crate) enum NodeKind {
@@ -85,6 +85,12 @@ pub(crate) enum NodeKind {
         children: Vec<Mounted>,
     },
     Instance(Instance),
+    /// Tells readers whether a key is the one selected by a signal, only waking the readers of the old and new key
+    Selector {
+        source: NodeId,
+        current: Option<String>,
+        by_key: HashMap<String, Vec<NodeId>>,
+    },
 }
 
 pub(crate) struct Instance {
@@ -103,7 +109,10 @@ pub(crate) struct GraphNode {
     pub deps: Vec<NodeId>,
     /// What read this node
     pub subs: Vec<NodeId>,
+    /// Must run again: something it read directly changed
     pub dirty: bool,
+    /// May have to run again: a computed it read (indirectly) may have changed
+    pub check: bool,
 }
 
 pub(crate) struct Def {
@@ -178,6 +187,7 @@ impl Runtime {
                 deps: Vec::new(),
                 subs: Vec::new(),
                 dirty: false,
+                check: false,
             },
         );
         id
@@ -217,47 +227,131 @@ impl Runtime {
         for dep in deps {
             if let Some(dep) = self.nodes.get_mut(&dep) {
                 dep.subs.retain(|s| *s != id);
+                if let NodeKind::Selector { by_key, .. } = &mut dep.kind {
+                    for subs in by_key.values_mut() {
+                        subs.retain(|s| *s != id);
+                    }
+                }
             }
         }
     }
 
-    /// Marks everything which read `id` as dirty, through computeds.
+    /// Records that `observer` asked the selector whether `key` is selected.
+    pub fn link_selector(&mut self, observer: NodeId, selector: NodeId, key: String) {
+        if !self.nodes.contains_key(&observer) {
+            return;
+        }
+        if let Some(GraphNode {
+            kind: NodeKind::Selector { by_key, .. },
+            ..
+        }) = self.nodes.get_mut(&selector)
+        {
+            let subs = by_key.entry(key).or_default();
+            if !subs.contains(&observer) {
+                subs.push(observer);
+            }
+        }
+        if let Some(observer) = self.nodes.get_mut(&observer)
+            && !observer.deps.contains(&selector)
+        {
+            observer.deps.push(selector);
+        }
+    }
+
+    /// If `id` is a selector, moves it to its source's new value and marks the readers of the old and new key.
+    /// Returns whether `id` is a selector.
+    fn update_selector(&mut self, id: NodeId, stack: &mut Vec<NodeId>) -> bool {
+        let Some(GraphNode {
+            kind: NodeKind::Selector { source, .. },
+            ..
+        }) = self.nodes.get(&id)
+        else {
+            return false;
+        };
+        let new_key = match self.nodes.get(source) {
+            Some(GraphNode {
+                kind: NodeKind::Signal { value },
+                ..
+            }) => selector_key(value),
+            _ => None,
+        };
+        let Some(GraphNode {
+            kind: NodeKind::Selector {
+                current, by_key, ..
+            },
+            ..
+        }) = self.nodes.get_mut(&id)
+        else {
+            return true;
+        };
+        if *current == new_key {
+            return true;
+        }
+        let woken = [current.take(), new_key.clone()]
+            .into_iter()
+            .flatten()
+            .flat_map(|key| by_key.get(&key).cloned().unwrap_or_default())
+            .collect::<Vec<_>>();
+        *current = new_key;
+        for reader in woken {
+            self.mark_one(reader, true, stack);
+        }
+        true
+    }
+
+    /// Marks what read `id` as dirty, and what read those through computeds as to be checked:
+    /// computeds are re-run first, and their readers only run if their value changed.
     pub fn mark_subs_dirty(&mut self, id: NodeId) {
-        let mut stack = match self.nodes.get(&id) {
+        let subs = match self.nodes.get(&id) {
             Some(node) => node.subs.clone(),
             None => return,
         };
+        let mut stack = Vec::new();
+        for sub in subs {
+            self.mark_one(sub, true, &mut stack);
+        }
         while let Some(sub) = stack.pop() {
-            self.mark_dirty_one(sub, &mut stack);
+            self.mark_one(sub, false, &mut stack);
         }
     }
 
+    /// Marks the node itself as dirty.
     pub fn mark_dirty(&mut self, id: NodeId) {
         let mut stack = Vec::new();
-        self.mark_dirty_one(id, &mut stack);
+        self.mark_one(id, true, &mut stack);
         while let Some(sub) = stack.pop() {
-            self.mark_dirty_one(sub, &mut stack);
+            self.mark_one(sub, false, &mut stack);
         }
     }
 
-    fn mark_dirty_one(&mut self, id: NodeId, stack: &mut Vec<NodeId>) {
+    /// Marks one node dirty (`certain`) or to be checked, queueing readers of computeds on `stack`.
+    fn mark_one(&mut self, id: NodeId, certain: bool, stack: &mut Vec<NodeId>) {
+        if self.update_selector(id, stack) {
+            return;
+        }
         let Some(node) = self.nodes.get_mut(&id) else {
             return;
         };
-        match &mut node.kind {
-            NodeKind::Computed { value, .. } => {
-                if value.take().is_some() || !node.dirty {
-                    node.dirty = true;
+        let was_flagged = node.dirty || node.check;
+        if certain {
+            node.dirty = true;
+        } else {
+            node.check = true;
+        }
+        match &node.kind {
+            NodeKind::Computed { .. } => {
+                if !was_flagged {
                     stack.extend(node.subs.iter().copied());
                 }
             }
             NodeKind::Effect { .. } => {
-                node.dirty = true;
                 self.dirty_effects.insert(id);
             }
-            NodeKind::Signal { .. } | NodeKind::Watch { .. } => {}
+            NodeKind::Signal { .. } | NodeKind::Watch { .. } => {
+                node.dirty = false;
+                node.check = false;
+            }
             _ => {
-                node.dirty = true;
                 self.dirty.insert(id);
             }
         }
@@ -446,6 +540,149 @@ pub(crate) fn slot_node(
     id
 }
 
+/// The key a selector compares, only plain values can be selected.
+pub(crate) fn selector_key(value: &ScriptValue) -> Option<String> {
+    match value {
+        ScriptValue::String(s) => Some(s.to_string()),
+        ScriptValue::Integer(i) => Some(i.to_string()),
+        ScriptValue::Float(f) => Some(f.to_string()),
+        ScriptValue::Bool(b) => Some(b.to_string()),
+        _ => None,
+    }
+}
+
+/// Creates (or finds, in a component's slots) a selector over a signal.
+pub(crate) fn selector(
+    runtime: &Mutex<Runtime>,
+    attachment: ScriptAttachment,
+    source: NodeId,
+) -> Result<NodeId, InteropError> {
+    let current = match runtime.lock().nodes.get(&source) {
+        Some(GraphNode {
+            kind: NodeKind::Signal { value },
+            ..
+        }) => selector_key(value),
+        _ => return Err(InteropError::str("selectors can only select over a signal")),
+    };
+    let id = slot_node(
+        runtime,
+        attachment,
+        |k| matches!(k, NodeKind::Selector { source: s, .. } if *s == source),
+        move || NodeKind::Selector {
+            source,
+            current,
+            by_key: HashMap::default(),
+        },
+    );
+    runtime.lock().link(id, source);
+    Ok(id)
+}
+
+/// Whether `key` is selected, recording the read for the running observer under that key only.
+pub(crate) fn is_selected(
+    runtime: &Mutex<Runtime>,
+    selector: NodeId,
+    key: &ScriptValue,
+) -> Result<bool, InteropError> {
+    let key = selector_key(key)
+        .ok_or_else(|| InteropError::str("selector keys must be strings, numbers or booleans"))?;
+    let observer = current_frame().and_then(|f| f.observer);
+    let mut rt = runtime.lock();
+    if let Some(observer) = observer {
+        rt.link_selector(observer, selector, key.clone());
+    }
+    match rt.nodes.get(&selector) {
+        Some(GraphNode {
+            kind: NodeKind::Selector { current, .. },
+            ..
+        }) => Ok(current.as_deref() == Some(key.as_str())),
+        _ => Err(InteropError::str("this selector no longer exists")),
+    }
+}
+
+/// Brings a computed up to date, re-running it if it is dirty, or if it is to be checked and a computed it read changed.
+///
+/// Returns whether its value changed.
+pub(crate) fn update_computed(
+    runtime: &Mutex<Runtime>,
+    ctx: &FunctionCallContext,
+    id: NodeId,
+) -> Result<bool, InteropError> {
+    let (dirty, check, f) = match runtime.lock().nodes.get(&id) {
+        Some(GraphNode {
+            kind: NodeKind::Computed { f, value },
+            dirty,
+            check,
+            ..
+        }) => (*dirty || value.is_none(), *check, f.clone()),
+        _ => return Ok(false),
+    };
+    if !dirty {
+        if !check {
+            return Ok(false);
+        }
+        if !deps_changed(runtime, ctx, id)? {
+            if let Some(node) = runtime.lock().nodes.get_mut(&id) {
+                node.check = false;
+            }
+            return Ok(false);
+        }
+    }
+    runtime.lock().clear_deps(id);
+    let new = with_frame(
+        Frame {
+            observer: Some(id),
+            instance: None,
+        },
+        || f.call(vec![], ctx.clone()),
+    )?;
+    let mut rt = runtime.lock();
+    let Some(node) = rt.nodes.get_mut(&id) else {
+        return Ok(false);
+    };
+    node.dirty = false;
+    node.check = false;
+    let NodeKind::Computed { value, .. } = &mut node.kind else {
+        return Ok(false);
+    };
+    let changed = !value
+        .as_ref()
+        .is_some_and(|old| script_values_equal(old, &new));
+    *value = Some(new);
+    if changed {
+        // the readers still to be checked must run, the computed is up to date when they look at it
+        let running = current_frame().and_then(|f| f.observer);
+        for sub in node.subs.clone() {
+            if Some(sub) != running
+                && let Some(sub) = rt.nodes.get_mut(&sub)
+            {
+                sub.dirty = true;
+            }
+        }
+    }
+    Ok(changed)
+}
+
+/// Whether any computed the node read changed, bringing them up to date.
+pub(crate) fn deps_changed(
+    runtime: &Mutex<Runtime>,
+    ctx: &FunctionCallContext,
+    id: NodeId,
+) -> Result<bool, InteropError> {
+    let deps = runtime
+        .lock()
+        .nodes
+        .get(&id)
+        .map(|n| n.deps.clone())
+        .unwrap_or_default();
+    for dep in deps {
+        if update_computed(runtime, ctx, dep)? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
 /// Reads a node, recording the read for the running observer.
 pub(crate) fn read(
     runtime: &Mutex<Runtime>,
@@ -468,29 +705,15 @@ pub(crate) fn read(
         .ok_or_else(|| InteropError::str("this signal no longer exists"))?;
     match &node.kind {
         NodeKind::Signal { value } => Ok(value.clone()),
-        NodeKind::Computed {
-            value: Some(value), ..
-        } => Ok(value.clone()),
-        NodeKind::Computed { f, value: None } => {
-            let f = f.clone();
-            node.dirty = false;
-            rt.clear_deps(id);
+        NodeKind::Computed { .. } => {
             drop(rt);
-            let value = with_frame(
-                Frame {
-                    observer: Some(id),
-                    instance: None,
-                },
-                || f.call(vec![], ctx.clone()),
-            )?;
-            if let Some(GraphNode {
-                kind: NodeKind::Computed { value: slot, .. },
-                ..
-            }) = runtime.lock().nodes.get_mut(&id)
-            {
-                *slot = Some(value.clone());
+            update_computed(runtime, ctx, id)?;
+            match runtime.lock().nodes.get(&id).map(|n| &n.kind) {
+                Some(NodeKind::Computed {
+                    value: Some(value), ..
+                }) => Ok(value.clone()),
+                _ => Ok(ScriptValue::Unit),
             }
-            Ok(value)
         }
         NodeKind::Watch {
             entity,
@@ -545,8 +768,12 @@ pub(crate) struct Cx<'a, 'w> {
 }
 
 impl Cx<'_, '_> {
+    pub fn call_context(&self) -> FunctionCallContext {
+        FunctionCallContext::new(self.language.clone())
+    }
+
     fn call(&self, f: &Func, args: Vec<ScriptValue>) -> Result<ScriptValue, InteropError> {
-        f.call(args, FunctionCallContext::new(self.language.clone()))
+        f.call(args, self.call_context())
     }
 
     fn world_mut<O>(&self, f: impl FnOnce(&mut World) -> O) -> Result<O, InteropError> {
@@ -731,9 +958,11 @@ impl Cx<'_, '_> {
                 Some(GraphNode {
                     kind: NodeKind::Binding { entity, prop, f },
                     dirty,
+                    check,
                     ..
                 }) => {
                     *dirty = false;
+                    *check = false;
                     (*entity, *prop, f.clone())
                 }
                 _ => return Ok(()),
@@ -762,9 +991,11 @@ impl Cx<'_, '_> {
                             children,
                         },
                     dirty,
+                    check,
                     ..
                 }) => {
                     *dirty = false;
+                    *check = false;
                     (*container, f.clone(), std::mem::take(children))
                 }
                 _ => return Ok(()),
@@ -808,9 +1039,11 @@ impl Cx<'_, '_> {
                 Some(GraphNode {
                     kind: NodeKind::Effect { f, cleanup },
                     dirty,
+                    check,
                     ..
                 }) => {
                     *dirty = false;
+                    *check = false;
                     (f.clone(), cleanup.take())
                 }
                 _ => return Ok(()),
@@ -856,6 +1089,7 @@ impl Cx<'_, '_> {
                 return Ok(());
             };
             node.dirty = false;
+            node.check = false;
             let NodeKind::Instance(instance) = &mut node.kind else {
                 return Ok(());
             };
