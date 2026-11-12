@@ -49,7 +49,7 @@ local Slot = ui.define("Slot", function(p)
     local item = ui.watch(p.entity, Item)
     return ui.node({
         name = "slot_" .. p.name,
-        bg = function() return p.selected:get() == p.name and "#ffcc00" or "#333333" end,
+        bg = function() return p.selected:is(p.name) and "#ffcc00" or "#333333" end,
         on_click = function() p.on_select(p.name) end,
     }, {
         ui.text({ text = function() return "x" .. item:get().data.count end }),
@@ -62,6 +62,7 @@ end)
 
 local Inventory = ui.define("Inventory", function(p)
     local selected = ui.signal(nil)
+    local is_selected = ui.selector(selected)
     local visible = ui.computed(function()
         local query = search:get()
         local out = {}
@@ -77,7 +78,7 @@ local Inventory = ui.define("Inventory", function(p)
             local out = {}
             for _, name in ipairs(visible:get()) do
                 out[#out + 1] = ui.el(Slot, {
-                    key = name, name = name, entity = entities[name], selected = selected, on_select = select,
+                    key = name, name = name, entity = entities[name], selected = is_selected, on_select = select,
                 })
             end
             return out
