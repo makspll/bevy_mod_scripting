@@ -310,10 +310,10 @@ impl TableBuilder {
 }
 
 /// The value at an absolute stack index, passed to a protected call without creating a Lua reference for it.
-#[cfg(not(feature = "luau"))]
+#[cfg(any(feature = "lua51", feature = "luajit"))]
 struct StackValue(c_int);
 
-#[cfg(not(feature = "luau"))]
+#[cfg(any(feature = "lua51", feature = "luajit"))]
 impl IntoLua for StackValue {
     fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<Value> {
         // Safety: the index is valid, see `push_into_stack`
@@ -345,28 +345,7 @@ unsafe fn table_from_stack(idx: c_int, lua: &RawLua) -> mlua::Result<ScriptValue
         // an entry may allocate (i.e. a number key turned into a string) and so run a collection.
         // Iterating in a protected call keeps that error from jumping over the Rust frames here.
         #[cfg(not(feature = "luau"))]
-        {
-            use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
-
-            let mut stopped = Ok(Ok(()));
-            mlua::Lua::get_or_init_from_ptr(state).exec_raw::<()>(StackValue(idx), |state| {
-                // the table is the only value on the stack of the protected call
-                ffi::lua_pushnil(state);
-                while ffi::lua_next(state, 1) != 0 {
-                    // errors and panics leave the protected call as values
-                    match catch_unwind(AssertUnwindSafe(|| entry_from_stack(&mut builder, lua))) {
-                        // the value, `lua_next` continues from the key
-                        Ok(Ok(())) => ffi::lua_pop(state, 1),
-                        other => {
-                            stopped = other;
-                            break;
-                        }
-                    }
-                }
-                ffi::lua_settop(state, 0);
-            })?;
-            stopped.unwrap_or_else(|panic| resume_unwind(panic))?;
-        }
+        iterate_protected(idx, &mut builder, lua)?;
         // as `Table::for_each` does on Luau: `lua_rawiter` pushes each key and value, and raises no errors
         #[cfg(feature = "luau")]
         {
@@ -380,6 +359,92 @@ unsafe fn table_from_stack(idx: c_int, lua: &RawLua) -> mlua::Result<ScriptValue
         }
         Ok(builder.finish())
     }
+}
+
+/// What [`iterate_table`] works on, passed through Lua as a pointer.
+#[cfg(not(feature = "luau"))]
+struct TableIteration<'a> {
+    builder: &'a mut TableBuilder,
+    lua: &'a RawLua,
+    /// The error or panic which stopped the iteration, raised once the protected call has returned
+    stopped: std::thread::Result<mlua::Result<()>>,
+}
+
+/// Adds the entries of the table at index 1 to the [`TableIteration`] at index 2. Only `lua_next` raises errors here.
+#[cfg(not(feature = "luau"))]
+unsafe extern "C-unwind" fn iterate_table(state: *mut ffi::lua_State) -> c_int {
+    use std::panic::{AssertUnwindSafe, catch_unwind};
+    // Safety: called by `iterate_protected` only, which passes the table and a live `TableIteration`
+    unsafe {
+        let iteration = ffi::lua_touserdata(state, 2) as *mut TableIteration;
+        ffi::lua_pushnil(state);
+        while ffi::lua_next(state, 1) != 0 {
+            let iteration = &mut *iteration;
+            match catch_unwind(AssertUnwindSafe(|| {
+                entry_from_stack(iteration.builder, iteration.lua)
+            })) {
+                // the value, `lua_next` continues from the key
+                Ok(Ok(())) => ffi::lua_pop(state, 1),
+                stopped => {
+                    iteration.stopped = stopped;
+                    break;
+                }
+            }
+        }
+        0
+    }
+}
+
+/// Adds the entries of the table at the absolute stack index `idx` to the builder, iterating in a protected call.
+///
+/// # Safety
+/// `idx` must be an absolute index of a table on the stack, with room for 3 more values. The stack is left as it was.
+#[cfg(not(feature = "luau"))]
+unsafe fn iterate_protected(
+    idx: c_int,
+    builder: &mut TableBuilder,
+    lua: &RawLua,
+) -> mlua::Result<()> {
+    let state = lua.state();
+    let mut iteration = TableIteration {
+        builder,
+        lua,
+        stopped: Ok(Ok(())),
+    };
+    let iteration_ptr = &mut iteration as *mut TableIteration as *mut std::ffi::c_void;
+    // Safety: forwarded from the caller, `iteration` outlives the call
+    unsafe {
+        // pushing a function allocates on these, which can raise an error too: mlua's protected call handles that
+        #[cfg(any(feature = "lua51", feature = "luajit"))]
+        mlua::Lua::get_or_init_from_ptr(state).exec_raw::<()>(StackValue(idx), |state| {
+            ffi::lua_pushlightuserdata(state, iteration_ptr);
+            iterate_table(state);
+            ffi::lua_settop(state, 0);
+        })?;
+        // a function without upvalues is a plain value here, nothing below allocates
+        #[cfg(not(any(feature = "lua51", feature = "luajit")))]
+        {
+            ffi::lua_pushcfunction(state, iterate_table);
+            ffi::lua_pushvalue(state, idx);
+            ffi::lua_pushlightuserdata(state, iteration_ptr);
+            if ffi::lua_pcall(state, 2, 0, 0) != ffi::LUA_OK {
+                // only strings are read in place
+                let message = if ffi::lua_type(state, -1) == ffi::LUA_TSTRING {
+                    let mut size = 0;
+                    let data = ffi::lua_tolstring(state, -1, &mut size);
+                    let bytes = std::slice::from_raw_parts(data as *const u8, size);
+                    String::from_utf8_lossy(bytes).into_owned()
+                } else {
+                    "error while iterating a table".to_owned()
+                };
+                ffi::lua_pop(state, 1);
+                return Err(mlua::Error::RuntimeError(message));
+            }
+        }
+    }
+    iteration
+        .stopped
+        .unwrap_or_else(|panic| std::panic::resume_unwind(panic))
 }
 
 /// Adds the key at -2 and the value at -1 of the stack to the table being converted.
