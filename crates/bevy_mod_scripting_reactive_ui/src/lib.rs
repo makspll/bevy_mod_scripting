@@ -35,10 +35,8 @@
 //! function on_script_loaded() ui.render("counter", Counter, { start = 0 }) end
 //! ```
 
-// `Interaction` is deprecated for picking's `Hovered` and `Pressed`, it keeps the prototype independent of picking
-#![allow(deprecated)]
-
 mod element;
+mod events;
 mod expr;
 mod runtime;
 mod style;
@@ -47,15 +45,13 @@ use std::collections::VecDeque;
 
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_ecs::{
-    change_detection::{DetectChanges, Ref},
     entity::Entity,
     hierarchy::Children,
     message::MessageReader,
     name::Name,
-    query::{Changed, QueryState},
     reflect::AppTypeRegistry,
     schedule::{IntoScheduleConfigs, SystemSet},
-    system::{Commands, Local, Res},
+    system::{Commands, Res},
     world::World,
 };
 use bevy_mod_scripting_bindings::{
@@ -67,14 +63,14 @@ use bevy_mod_scripting_bindings::{
 use bevy_mod_scripting_core::event::ScriptLifecycleMessage;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_reflect::Reflect;
-use bevy_ui::{BackgroundColor, Interaction, Node, UiSystems, widget::Text};
+use bevy_ui::{BackgroundColor, Node, UiSystems, widget::Text};
 pub use element::{ComponentDef, UiElement};
 use element::{ElementData, ElementKind, Func, elements_from_script, new_element, parse_props};
 pub use expr::UiValue;
 use parking_lot::Mutex;
 use runtime::{
-    CurrentRuntime, Cx, Def, Instance, NodeId, NodeKind, QueuedEvent, Root, Runtime, deps_changed,
-    read, run_rust_binding, runtime, slot_node, take_rust_bindings, write,
+    CurrentRuntime, Cx, Def, Instance, NodeId, NodeKind, Root, Runtime, deps_changed, read,
+    run_rust_binding, runtime, slot_node, take_rust_bindings, write,
 };
 pub use runtime::{ReactiveUi, UiHandlers, UiRoot};
 use std::sync::Arc;
@@ -120,6 +116,7 @@ impl Plugin for ReactiveUiPlugin {
                     .in_set(ReactiveUiSystems)
                     .before(UiSystems::Layout),
             );
+        events::add_observers(app);
         register_functions(app.world_mut());
         expr::register(app.world_mut());
     }
@@ -435,22 +432,18 @@ fn register_functions(world: &mut World) {
     })
     .register(
         "interact",
-        |ctx: FunctionCallContext, entity: V<Entity>, state: String| {
-            let interaction = match state.as_str() {
-                "press" => Interaction::Pressed,
-                "hover" => Interaction::Hovered,
-                "none" => Interaction::None,
-                other => {
-                    return Err(InteropError::string(format!(
-                        "unknown interaction `{other}`, use \"press\", \"hover\" or \"none\""
-                    )));
-                }
+|ctx: FunctionCallContext, entity: V<Entity>, event: String| {
+            // what a pointer event on the element does, for tests and for driving a ui without a pointer
+            let Some((_, event)) = style::UiEvent::ALL.iter().find(|(name, _)| *name == event)
+            else {
+                let names = style::UiEvent::ALL.map(|(name, _)| name).join(", ");
+                return Err(InteropError::string(format!(
+                    "unknown event `{event}`, use one of: {names}"
+                )));
             };
-            ctx.world()?.with_world_mut_access(|w| {
-                if let Ok(mut e) = w.get_entity_mut(*entity) {
-                    e.insert(interaction);
-                }
-            })?;
+            let runtime = runtime(&ctx)?;
+            ctx.world()?
+                .with_world_access(|w| events::simulate(w, &runtime, *entity, *event))?;
             Ok(())
         },
     )
@@ -579,43 +572,14 @@ fn forget_detached_scripts(
     }
 }
 
-/// The query finding elements whose [`Interaction`] changed, kept between flushes.
-type InteractionQuery =
-    QueryState<(Ref<'static, Interaction>, &'static UiHandlers), Changed<Interaction>>;
-
-/// Queues the handlers of elements whose [`Interaction`] changed.
-fn queue_interactions(world: &mut World, query: &mut InteractionQuery, runtime: &Mutex<Runtime>) {
-    let mut rt = runtime.lock();
-    for (interaction, handlers) in query.iter(world) {
-        // newly mounted elements start with no interaction
-        if interaction.is_added() {
-            continue;
-        }
-        let (handler, args) = match *interaction {
-            Interaction::Pressed => (&handlers.click, vec![]),
-            Interaction::Hovered => (&handlers.hover, vec![ScriptValue::Bool(true)]),
-            Interaction::None => (&handlers.hover, vec![ScriptValue::Bool(false)]),
-        };
-        if let Some(handler) = handler {
-            rt.events.push(QueuedEvent {
-                attachment: handlers.attachment.clone(),
-                handler: handler.clone(),
-                args,
-            });
-        }
-    }
-}
-
 /// Runs queued event handlers, re-runs dirty components, bindings and regions, then dirty effects.
 ///
 /// Work is grouped by script so each script's context is entered once per pass. Work made dirty by a pass
 /// (i.e. by handlers or effects setting signals) runs in another pass, up to [`MAX_FLUSH_ITERATIONS`].
-pub fn flush_reactive_ui(world: &mut World, mut interactions: Local<Option<InteractionQuery>>) {
+pub fn flush_reactive_ui(world: &mut World) {
     let Some(runtime) = world.get_resource::<ReactiveUi>().map(|r| r.0.clone()) else {
         return;
     };
-    let interactions = interactions.get_or_insert_with(|| world.query_filtered());
-    queue_interactions(world, interactions, &runtime);
     {
         let mut rt = runtime.lock();
         rt.poll_watches(world);

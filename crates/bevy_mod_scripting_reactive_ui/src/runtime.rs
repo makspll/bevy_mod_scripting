@@ -25,9 +25,10 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
-use bevy_ui::{BackgroundColor, Interaction, widget::Text};
+use bevy_ui::{BackgroundColor, widget::Text};
 
 use crate::element::UiParts;
+use crate::style::UiEvent;
 use parking_lot::Mutex;
 
 use crate::element::{
@@ -56,8 +57,29 @@ pub struct UiRoot {
 #[derive(Component)]
 pub struct UiHandlers {
     pub(crate) attachment: ScriptAttachment,
-    pub(crate) click: Option<Func>,
-    pub(crate) hover: Option<Func>,
+    pub(crate) handlers: Vec<(UiEvent, Func)>,
+}
+
+impl UiHandlers {
+    /// The handler to call for an event, and whether it is a `hover` handler standing in for
+    /// `pointer_enter` or `pointer_leave`.
+    pub(crate) fn handler(&self, event: UiEvent) -> Option<(&Func, bool)> {
+        let find = |wanted| {
+            self.handlers
+                .iter()
+                .find(|(e, _)| *e == wanted)
+                .map(|(_, f)| f)
+        };
+        if let Some(handler) = find(event) {
+            return Some((handler, false));
+        }
+        match event {
+            UiEvent::PointerEnter | UiEvent::PointerLeave => {
+                find(UiEvent::Hover).map(|handler| (handler, true))
+            }
+            _ => None,
+        }
+    }
 }
 
 /// What a bound property is computed by.
@@ -952,9 +974,7 @@ impl Cx<'_, '_> {
                 _ => {}
             }
         }
-        let handlers = self
-            .handlers(props)
-            .map(|handlers| (handlers, Interaction::default()));
+        let handlers = self.handlers(props);
         // `Option`s aren't bundles: one typed spawn per combination of the optional parts
         let base = (
             std::mem::take(&mut parts.node),
@@ -989,21 +1009,16 @@ impl Cx<'_, '_> {
 
     /// The handlers component for the handler props, if there are any.
     fn handlers(&self, props: &[(Prop, PropValue)]) -> Option<UiHandlers> {
-        let mut click = None;
-        let mut hover = None;
-        for (prop, value) in props {
-            if let PropValue::Handler(f) = value {
-                match prop {
-                    Prop::OnClick => click = Some(f.clone()),
-                    Prop::OnHover => hover = Some(f.clone()),
-                    _ => {}
-                }
-            }
-        }
-        (click.is_some() || hover.is_some()).then(|| UiHandlers {
+        let handlers = props
+            .iter()
+            .filter_map(|(prop, value)| match (prop, value) {
+                (Prop::On(event), PropValue::Handler(f)) => Some((*event, f.clone())),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        (!handlers.is_empty()).then(|| UiHandlers {
             attachment: self.attachment.clone(),
-            click,
-            hover,
+            handlers,
         })
     }
 
@@ -1019,7 +1034,7 @@ impl Cx<'_, '_> {
             };
             match handlers {
                 Some(handlers) => {
-                    e.insert((handlers, Interaction::default()));
+                    e.insert(handlers);
                 }
                 None => {
                     e.remove::<UiHandlers>();

@@ -145,8 +145,9 @@ local actions = {
         hp.data = { current = 20, max = 100 }
     end,
     [2] = function()
-        ui.interact(find("slot_Sword"), "press")
-        ui.interact(find("row_Shield"), "press")
+        ui.interact(find("slot_Sword"), "click")
+        -- on the text inside the row, which has no handler: the row's handler gets the event
+        ui.interact(find("row_text_Shield"), "click")
     end,
     [3] = function() State.search:set("sh") end,
     [4] = function()
