@@ -123,6 +123,37 @@ impl Prop {
     }
 }
 
+/// The function called with the given dependencies before its own arguments.
+///
+/// Dependencies are how a function gets values it can't capture: closures of some languages (Rune) can only
+/// capture numbers and strings when they are handed to Rust, not signals or entities.
+pub(crate) fn with_deps(f: Func, deps: Option<ScriptValue>) -> Result<Func, InteropError> {
+    let deps = match deps {
+        None | Some(ScriptValue::Unit) => return Ok(f),
+        Some(ScriptValue::List(deps)) => deps,
+        Some(ScriptValue::Map(map)) if map.is_empty() => return Ok(f),
+        Some(other) => {
+            return Err(InteropError::string(format!(
+                "dependencies must be a list of values, got: {other:?}"
+            )));
+        }
+    };
+    if deps.is_empty() {
+        return Ok(f);
+    }
+    Ok(Func::from(
+        move |context, mut args: std::collections::VecDeque<ScriptValue>| {
+            for dep in deps.iter().rev() {
+                args.push_front(dep.clone());
+            }
+            match f.call(args, context) {
+                Ok(value) => value,
+                Err(error) => ScriptValue::Error(error),
+            }
+        },
+    ))
+}
+
 /// Splits a props map into the key and the known properties, sorted so that diffs walk them in the same order.
 pub(crate) fn parse_props(
     props: Option<ScriptValue>,
@@ -156,6 +187,20 @@ pub(crate) fn parse_props(
         let value = match value {
             ScriptValue::Function(f) if prop.is_handler() => PropValue::Handler(f),
             ScriptValue::Function(f) => PropValue::Bound(f),
+            // a function with its dependencies: `{ f, a, b }` is `f` called with `a` and `b` first
+            ScriptValue::List(mut list)
+                if matches!(list.front(), Some(ScriptValue::Function(_))) =>
+            {
+                let Some(ScriptValue::Function(f)) = list.pop_front() else {
+                    unreachable!("checked by the guard")
+                };
+                let f = with_deps(f, Some(ScriptValue::List(list)))?;
+                if prop.is_handler() {
+                    PropValue::Handler(f)
+                } else {
+                    PropValue::Bound(f)
+                }
+            }
             v if prop.is_handler() => {
                 return Err(InteropError::string(format!(
                     "`{name}` must be a function, got: {v:?}"

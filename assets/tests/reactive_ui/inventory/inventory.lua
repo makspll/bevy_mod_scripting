@@ -29,15 +29,17 @@ local function contains(list, value)
     return false
 end
 
-local function slot(p)
-    local item = ui.watch(p.entity, Item)
+-- rendered with dependencies instead of a props table, see the `element` below
+local function slot(name, entity, selected, on_select)
+    local item = ui.watch(entity, Item)
     return ui.node({
-        name = "slot_" .. p.name,
+        name = "slot_" .. name,
         -- computed in Rust, no script code runs when these change
-        background_color = ui.when(ui.selected(p.selected, p.name), "#ffcc00", "#333333"),
-        on_click = function() p.on_select(p.name) end,
+        background_color = ui.when(ui.selected(selected, name), "#ffcc00", "#333333"),
+        -- a function given what it needs, instead of capturing it
+        on_click = { function(on_select, name) on_select(name) end, on_select, name },
     }, {
-        ui.text({ name = "count_" .. p.name, text = ui.format("x{}", { ui.path(item, "data.count") }) }),
+        ui.text({ name = "count_" .. name, text = ui.format("x{}", { ui.path(item, "data.count") }) }),
     })
 end
 local Slot = ui.component("Slot", slot)
@@ -51,14 +53,15 @@ local Inventory = ui.component("Inventory", function(p)
     local selected = ui.signal(nil)
     local is_selected = ui.selector(selected)
     local clicks = ui.signal(0)
-    local visible = ui.computed(function()
-        local query = State.search:get()
+    -- the signals it reads are its dependencies, captures work as well in Lua (the effect below)
+    local visible = ui.computed(function(search, items)
+        local query = search:get()
         local out = {}
-        for _, name in ipairs(State.items:get()) do
+        for _, name in ipairs(items:get()) do
             if string.find(string.lower(name), query, 1, true) then out[#out + 1] = name end
         end
         return out
-    end)
+    end, { State.search, State.items })
     ui.effect(function()
         local s = selected:get()
         if s ~= nil and not contains(State.items:get(), s) then selected:set(nil) end
@@ -84,10 +87,8 @@ local Inventory = ui.component("Inventory", function(p)
         ui.text({ name = "clicks", text = function() return "clicks: " .. clicks:get() end }),
         -- one child per item, only built for new items
         ui.list(visible, function(name)
-            -- the props stay in the script, `Details` below gets its props through Rust
-            return ui.element(Slot, function()
-                return slot({ name = name, entity = State.entities[name], selected = is_selected, on_select = select })
-            end)
+            -- `slot` is called with these values, `Details` below gets a props table through Rust
+            return ui.element(Slot, slot, { name, State.entities[name], is_selected, select })
         end),
         ui.show(function()
             local s = selected:get()

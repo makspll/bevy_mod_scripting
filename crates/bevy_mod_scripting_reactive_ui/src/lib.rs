@@ -5,15 +5,20 @@
 //! `each(items, function(item) .. end)` is the region for lists: one child per item of the list in a signal,
 //! kept by item (items are the keys), so the function only runs for items which were not in the list before.
 //!
-//! `each_template(items, function(item) .. end)` builds the rows of large uniform lists without running script
-//! code per row: the function runs once, `item` stands for each row's item, and the `node`s and `text`s it
-//! returns are made per row in Rust. Properties are values computed in Rust (`format`, `when`, `selected`,
+//! `list_template(items, function(item) .. end, deps)` builds the rows of large uniform lists without running
+//! script code per row: the function runs once, `item` stands for each row's item, and the `node`s and `text`s
+//! it returns are made per row in Rust. Properties are values computed in Rust (`format`, `when`, `selected`,
 //! `path(watch_item(item, Component), ..)` for items which are entities), functions (handlers and bound
-//! properties) are shared by all rows and get the row's item as their first argument.
+//! properties) are shared by all rows and get the row's item after their dependencies.
 //!
-//! Props given to `element` as a table are converted to Rust and back for the component's function. Where that
-//! matters (many instances), `el(Def, function() return render(props) end, key)` keeps them in the script:
-//! the function is called in place of the component's, which is still what a reload re-renders.
+//! Functions can take dependencies: `computed(f, deps)`, `effect(f, deps)`, `show(f, deps)` and
+//! `list(items, f, deps)` call `f` with the values of the list `deps` before its own arguments. A handler or
+//! bound property is given with its dependencies as a list starting with the function,
+//! `on_click = { f, selected, name }`. This is how a function reaches signals and entities in languages whose
+//! closures can't capture them when handed to Rust (Rune), and it is optional where they can (Lua).
+//!
+//! `element(Def, f, deps, key)` renders a component with `f(deps..)` instead of a props table, which is converted
+//! to Rust and back for every instance.
 //!
 //! Everything is language agnostic: script functions are stored as [`ScriptValue::Function`]s and run
 //! in their script's context with [`AppScriptCallbackRunners::run_in_context`].
@@ -204,10 +209,14 @@ fn register_functions(world: &mut World) {
         |ctx: FunctionCallContext,
          def: V<ComponentDef>,
          props: Option<ScriptValue>,
+         deps: Option<ScriptValue>,
          key: Option<ScriptValue>| {
-            let props = props.unwrap_or(ScriptValue::Unit);
-            // `props` is a table given to the component's function, or a function rendering the component
-            // with props the script keeps (the key is then the third argument)
+            // `props` is a table given to the component's function. Or a function rendering the component,
+            // called with the dependencies: they are passed as they are, not as a table converted both ways
+            let props = match props.unwrap_or(ScriptValue::Unit) {
+                ScriptValue::Function(f) => ScriptValue::Function(element::with_deps(f, deps)?),
+                props => props,
+            };
             let key = match (&key, &props) {
                 (Some(key), _) => Some(element::key_of(key, &ctx.world()?)?),
                 (None, ScriptValue::Map(map)) => map
@@ -277,7 +286,8 @@ fn register_functions(world: &mut World) {
         );
         Ok::<_, InteropError>(V(Signal(id)))
     })
-    .register("computed", |ctx: FunctionCallContext, f: Func| {
+    .register("computed", |ctx: FunctionCallContext, f: Func, deps: Option<ScriptValue>| {
+        let f = element::with_deps(f, deps)?;
         let attachment = current_attachment(&ctx)?;
         let new_f = f.clone();
         let id = slot_node(
@@ -295,7 +305,8 @@ fn register_functions(world: &mut World) {
         );
         Ok::<_, InteropError>(V(Signal(id)))
     })
-    .register("effect", |ctx: FunctionCallContext, f: Func| {
+    .register("effect", |ctx: FunctionCallContext, f: Func, deps: Option<ScriptValue>| {
+        let f = element::with_deps(f, deps)?;
         let attachment = current_attachment(&ctx)?;
         let runtime = runtime(&ctx)?;
         let new_f = f.clone();
@@ -417,7 +428,8 @@ fn register_functions(world: &mut World) {
     })
     .register(
         "list",
-        |ctx: FunctionCallContext, items: V<Signal>, f: Func| {
+        |ctx: FunctionCallContext, items: V<Signal>, f: Func, deps: Option<ScriptValue>| {
+            let f = element::with_deps(f, deps)?;
             Ok::<_, InteropError>(new_element(
                 &*runtime(&ctx)?,
                 ElementData {
@@ -431,7 +443,8 @@ fn register_functions(world: &mut World) {
     )
     .register(
         "list_template",
-        |ctx: FunctionCallContext, items: V<Signal>, f: Func| {
+        |ctx: FunctionCallContext, items: V<Signal>, f: Func, deps: Option<ScriptValue>| {
+            let f = element::with_deps(f, deps)?;
             Ok::<_, InteropError>(new_element(
                 &*runtime(&ctx)?,
                 ElementData {
@@ -443,7 +456,8 @@ fn register_functions(world: &mut World) {
             ))
         },
     )
-    .register("show", |ctx: FunctionCallContext, f: Func| {
+    .register("show", |ctx: FunctionCallContext, f: Func, deps: Option<ScriptValue>| {
+        let f = element::with_deps(f, deps)?;
         Ok::<_, InteropError>(new_element(
             &*runtime(&ctx)?,
             ElementData {

@@ -501,7 +501,7 @@ pub(crate) fn register(world: &mut World) {
                 })?;
                 Ok::<_, InteropError>(value(Expr::Is { selector, key }))
             },
-            "Whether `key` is selected, i.e. `bg = select(is(selected, name), \"#ffcc00\", \"#333333\")`.\n\
+            "Whether `key` is selected, i.e. `background_color = when(selected(selector, name), \"#ffcc00\", \"#333333\")`.\n\
              In a row template the key can be a value of the row, it is read once when the row is built.",
             &["selector", "key"],
         );
