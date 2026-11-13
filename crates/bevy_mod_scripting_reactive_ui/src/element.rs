@@ -59,7 +59,15 @@ pub(crate) enum ElementKind {
     /// With the flag set the function is a row template: it runs once for the whole list, given a value standing
     /// for the item, and each row is made from the element it returned without running script code.
     Each(crate::runtime::NodeId, Func, bool),
+    /// A node providing the value of a context to the components below it, see `provide`
+    Provide(UiContext, ScriptValue),
 }
+
+/// A context made with `create_context`: a value components read with `use_context`, the default
+/// unless an element above them provides another with `provide`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Reflect)]
+#[reflect(opaque, Clone)]
+pub struct UiContext(pub(crate) u32);
 
 impl ElementKind {
     pub fn same_kind(&self, other: &ElementKind) -> bool {
@@ -68,6 +76,7 @@ impl ElementKind {
             | (ElementKind::Text, ElementKind::Text)
             | (ElementKind::Dynamic(_), ElementKind::Dynamic(_))
             | (ElementKind::Each(..), ElementKind::Each(..)) => true,
+            (ElementKind::Provide(a, _), ElementKind::Provide(b, _)) => a == b,
             (ElementKind::Component(a, _), ElementKind::Component(b, _)) => a == b,
             _ => false,
         }

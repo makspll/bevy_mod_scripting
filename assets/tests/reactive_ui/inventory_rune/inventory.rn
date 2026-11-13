@@ -31,7 +31,9 @@ fn slot(name, entity, is_selected, selected, clicks) {
 
 fn details(p) {
     let ui = import_namespace("reactive_ui");
-    ui.text(#{ name: "details", text: `details: ${p.name}` })
+    // read wherever the component is, without going through the props of what is in between
+    let label = ui.use_context(state()["Labels"]).details;
+    ui.text(#{ name: "details", text: `${label}${p.name}` })
 }
 
 fn inventory(p) {
@@ -99,12 +101,15 @@ fn inventory(p) {
             // `slot` is called with these values, `Details` below gets a props table through Rust
             ui.element(state()["Slot"], slot, [name, entities[name], is_selected, selected, clicks])
         }, [is_selected, selected, clicks, s["entities"]]),
-        ui.show(|selected| {
-            match selected.get() {
-                () => (),
-                name => import_namespace("reactive_ui").element(state()["Details"], #{ key: name, name: name }),
-            }
-        }, [selected]),
+        // the region below is mounted later, and still sees what is provided here
+        ui.provide(s["Labels"], #{ details: "selected: " }, [
+            ui.show(|selected| {
+                match selected.get() {
+                    () => (),
+                    name => import_namespace("reactive_ui").element(state()["Details"], #{ key: name, name: name }),
+                }
+            }, [selected]),
+        ]),
         // a row template: runs once, `item` stands for the entity of each row, functions get the row's entity
         ui.list_template(visible_entities, |is_selected, item| {
             let ui = import_namespace("reactive_ui");
@@ -153,6 +158,7 @@ pub fn main() {
         s["entities"] = entities;
         s["items"] = ui.signal(["Sword", "Shield", "Potion"]);
         s["search"] = ui.signal("");
+        s["Labels"] = ui.create_context(#{ details: "details: " });
     }
     // defined again on every load, which renders their instances with the new code
     s["Slot"] = ui.component("Slot", slot);
@@ -234,7 +240,7 @@ pub fn on_test_last() {
             expect("low", "LOW HP");
         }
         2 => {
-            expect("details", "details: Sword");
+            expect("details", "selected: Sword");
             expect("clicks", "clicks: 1");
             let sword = ui.describe(find("slot_Sword"));
             let shield = ui.describe(find("slot_Shield"));
@@ -252,7 +258,7 @@ pub fn on_test_last() {
             assert!(find("row_Sword") == (), "filtered out row still shown");
             assert!(find("slot_Sword") == (), "filtered out slot still shown");
             assert!(find("slot_Shield") != (), "matching slot not shown");
-            expect("details", "details: Sword");
+            expect("details", "selected: Sword");
         }
         4 => {
             expect("count_Shield", "x5");

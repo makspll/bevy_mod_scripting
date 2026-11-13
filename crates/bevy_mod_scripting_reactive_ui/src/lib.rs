@@ -111,6 +111,7 @@ impl Plugin for ReactiveUiPlugin {
             .register_type::<Signal>()
             .register_type::<Selector>()
             .register_type::<UiValue>()
+            .register_type::<element::UiContext>()
             .register_type::<expr::ItemWatch>()
             .add_systems(
                 PostUpdate,
@@ -283,6 +284,7 @@ fn register_functions(world: &mut World) {
                     slots: Vec::new(),
                     rendered: None,
                     parent: container,
+                    contexts: None,
                 }),
                 attachment.clone(),
             );
@@ -450,6 +452,46 @@ fn register_functions(world: &mut World) {
                 }
             })?;
             Ok(())
+        },
+    )
+    .register("create_context", |ctx: FunctionCallContext, default: ScriptValue| {
+        let runtime = runtime(&ctx)?;
+        let mut rt = runtime.lock();
+        rt.contexts.push(default);
+        Ok::<_, InteropError>(V(element::UiContext(rt.contexts.len() as u32 - 1)))
+    })
+    .register(
+        "use_context",
+        |ctx: FunctionCallContext, context: V<element::UiContext>| {
+            // the nearest value provided above the component being rendered, or the default
+            if let Some(value) = runtime::provided(*context) {
+                return Ok(value);
+            }
+            let runtime = runtime(&ctx)?;
+            let default = runtime.lock().contexts.get(context.0.0 as usize).cloned();
+            default.ok_or_else(|| InteropError::str("unknown context"))
+        },
+    )
+    .register(
+        "provide",
+        |ctx: FunctionCallContext,
+         context: V<element::UiContext>,
+         value: ScriptValue,
+         children: Option<ScriptValue>| {
+            let runtime = runtime(&ctx)?;
+            let children = match children {
+                Some(children) => elements_from_script(&children, &runtime)?,
+                None => Vec::new(),
+            };
+            Ok::<_, InteropError>(new_element(
+                &runtime,
+                ElementData {
+                    kind: ElementKind::Provide(*context, value),
+                    key: None,
+                    props: Vec::new(),
+                    children,
+                },
+            ))
         },
     )
     .register("component", define)
