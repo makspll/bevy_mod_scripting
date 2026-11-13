@@ -348,6 +348,17 @@ fn reactive_ui_benchmarks(criterion: &mut Criterion) {
                 &mut group,
             );
         }
+        // the slots as components given dependencies, or built from a row template
+        #[cfg(feature = "rune")]
+        for (variant, template) in [("Components", false), ("Template", true)] {
+            let script = include_str!("../assets/macro_benchmarks/reactive_ui/inventory.rn");
+            run_reactive_ui_benchmark(
+                make_test_rune_plugin,
+                &format!("{name} {variant} Rune"),
+                &format!("const BENCH = \"{bench}\";\nconst TEMPLATE = {template};\n{script}"),
+                &mut group,
+            );
+        }
     }
 }
 
