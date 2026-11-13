@@ -245,9 +245,14 @@ bevy = { workspace = true, features = [
     "bevy_state",
     "x11",
     "bevy_ui",
+    "bevy_ui_render",
+    "bevy_text",
+    "bevy_picking",
+    "ui_picking",
     "default_font",
     "custom_cursor",
 ] }
+bevy_mod_scripting_reactive_ui = { workspace = true }
 bevy_platform = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 rand = { workspace = true, features = ["thread_rng"] }
@@ -314,6 +319,11 @@ debug = true
 [[example]]
 name = "game_of_life"
 path = "examples/game_of_life.rs"
+required-features = ["lua54"]
+
+[[example]]
+name = "reactive_ui"
+path = "examples/reactive_ui.rs"
 required-features = ["lua54"]
 
 [[example]]

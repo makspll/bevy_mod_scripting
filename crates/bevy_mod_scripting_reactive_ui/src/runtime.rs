@@ -1144,7 +1144,8 @@ impl Cx<'_, '_> {
                 })
             }
             ElementKind::Dynamic(f) | ElementKind::Each(_, f, _) => {
-                let entity = self.spawn(&ElementKind::Node, &[], parent)?;
+                // the node holding the region's children, with the properties given for it
+                let entity = self.spawn(&ElementKind::Node, &data.props, parent)?;
                 let each = match &data.kind {
                     ElementKind::Each(source, _, templated) => Some(Each {
                         source: *source,

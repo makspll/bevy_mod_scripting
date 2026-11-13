@@ -27,7 +27,7 @@ function on_script_loaded()
 end
 ```
 
-Coming from another UI framework? [Start here](./coming-from.md).
+Coming from another UI framework? [Start here](./coming-from.md). To see it running, `cargo run --example reactive_ui --features lua54` shows an inventory of 500 items which Rust restocks and the UI edits, with the time each UI update took (`examples/reactive_ui.rs`, `assets/scripts/inventory_ui.lua`).
 
 ## The model in five lines
 

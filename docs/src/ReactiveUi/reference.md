@@ -17,6 +17,12 @@ Everything is a member of the `reactive_ui` namespace: `local ui = import_namesp
 
 Elements are only valid during the update which built them: build them where they are returned, don't store them.
 
+`ui.show`, `ui.list` and `ui.list_template` are nodes holding their children. Their last argument is the properties of that node, which is where the layout of a list goes:
+
+```lua
+ui.list(items, function(item) .. end, nil, { flex_direction = "row", flex_wrap = "wrap", column_gap = 6 })
+```
+
 ## Properties
 
 A property is a plain value, a function (re-run when what it read changes), or a [value computed in Rust](#values-computed-in-rust). `nil` resets it.
