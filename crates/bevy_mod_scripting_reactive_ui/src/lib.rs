@@ -2,6 +2,8 @@
 //!
 //! Components run once (and again when their script reloads). Properties bound to functions re-run when the
 //! signals they read change, and `dynamic` regions re-run to produce changing children.
+//! `each(items, function(item) .. end)` is the region for lists: one child per item of the list in a signal,
+//! kept by item (items are the keys), so the function only runs for items which were not in the list before.
 //!
 //! Everything is language agnostic: script functions are stored as [`ScriptValue::Function`]s and run
 //! in their script's context with [`AppScriptCallbackRunners::run_in_context`].
@@ -396,6 +398,20 @@ fn register_functions(world: &mut World) {
         runtime::selector(&*runtime(&ctx)?, attachment, source.into_inner().0)
             .map(|id| V(Selector(id)))
     })
+    .register(
+        "each",
+        |ctx: FunctionCallContext, items: V<Signal>, f: Func| {
+            Ok::<_, InteropError>(new_element(
+                &*runtime(&ctx)?,
+                ElementData {
+                    kind: ElementKind::Each(items.into_inner().0, f),
+                    key: None,
+                    props: Vec::new(),
+                    children: Vec::new(),
+                },
+            ))
+        },
+    )
     .register("dynamic", |ctx: FunctionCallContext, f: Func| {
         Ok::<_, InteropError>(new_element(
             &*runtime(&ctx)?,

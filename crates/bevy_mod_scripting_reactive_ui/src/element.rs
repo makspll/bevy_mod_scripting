@@ -53,6 +53,9 @@ pub(crate) enum ElementKind {
     Component(ComponentDef, ScriptValue),
     /// A region whose children are produced by a function, re-run when the signals it reads change
     Dynamic(Func),
+    /// A region with one child per item of the list read from a signal, made by calling the function
+    /// with the item. Children are kept by item, the function only runs for new items.
+    Each(crate::runtime::NodeId, Func),
 }
 
 impl ElementKind {
@@ -60,7 +63,8 @@ impl ElementKind {
         match (self, other) {
             (ElementKind::Node, ElementKind::Node)
             | (ElementKind::Text, ElementKind::Text)
-            | (ElementKind::Dynamic(_), ElementKind::Dynamic(_)) => true,
+            | (ElementKind::Dynamic(_), ElementKind::Dynamic(_))
+            | (ElementKind::Each(..), ElementKind::Each(..)) => true,
             (ElementKind::Component(a, _), ElementKind::Component(b, _)) => a == b,
             _ => false,
         }

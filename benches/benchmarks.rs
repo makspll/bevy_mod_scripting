@@ -331,6 +331,7 @@ fn reactive_ui_benchmarks(criterion: &mut Criterion) {
         ("mount", "inventory mount or unmount 200"),
         ("select", "inventory select"),
         ("search", "inventory search"),
+        ("one", "inventory add or remove one"),
         ("count", "inventory item count"),
         ("idle", "idle"),
     ];

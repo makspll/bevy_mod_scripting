@@ -76,14 +76,9 @@ local Inventory = ui.define("Inventory", function(p)
             if h.current < h.max * 0.25 then return ui.text({ key = "low", name = "low", text = "LOW HP" }) end
         end),
         ui.text({ name = "clicks", text = function() return "clicks: " .. clicks:get() end }),
-        ui.dynamic(function()
-            local out = {}
-            for _, name in ipairs(visible:get()) do
-                out[#out + 1] = ui.el(Slot, {
-                    key = name, name = name, entity = State.entities[name], selected = is_selected, on_select = select,
-                })
-            end
-            return out
+        -- one child per item, only built for new items
+        ui.each(visible, function(name)
+            return ui.el(Slot, { name = name, entity = State.entities[name], selected = is_selected, on_select = select })
         end),
         ui.dynamic(function()
             local s = selected:get()
