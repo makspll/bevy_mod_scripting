@@ -135,6 +135,16 @@ impl TableDepth {
     }
 }
 
+/// Moves the values of a table found so far at the keys `1..` into a map, keyed by the keys as strings,
+/// as Lua turns numbers into strings.
+fn slots_into_map(slots: &mut Vec<Option<ScriptValue>>) -> HashMap<String, ScriptValue> {
+    slots
+        .drain(..)
+        .enumerate()
+        .filter_map(|(i, v)| v.map(|v| ((i + 1).to_string(), v)))
+        .collect()
+}
+
 impl Drop for TableDepth {
     fn drop(&mut self) {
         TABLE_DEPTH.with(|depth| depth.set(depth.get() - 1));
@@ -167,38 +177,39 @@ impl FromLua for LuaScriptValue {
                 // key order) or a hash part (iterated in arbitrary order), and `t[i]`/`#t` can't tell
                 // which. Never infer list order from `pairs`, place each value by its key instead.
                 let len = table.raw_len();
-                let entries = table
-                    .pairs::<Value, LuaScriptValue>()
-                    .collect::<Result<Vec<_>, _>>()?;
+                // one pass: values of the keys 1..=len go to their slot, until another key shows the table
+                // isn't a sequence, then everything goes to a map
+                let mut slots: Vec<Option<ScriptValue>> = Vec::new();
+                let mut map: Option<HashMap<String, ScriptValue>> = None;
+                let mut count = 0;
+                table.for_each::<Value, LuaScriptValue>(|k, v| {
+                    count += 1;
+                    let map = match &mut map {
+                        Some(map) => map,
+                        None => match k {
+                            Value::Integer(i) if (1..=len as i64).contains(&i) => {
+                                if slots.is_empty() {
+                                    slots.resize_with(len, || None);
+                                }
+                                slots[i as usize - 1] = Some(v.0);
+                                return Ok(());
+                            }
+                            _ => map.insert(slots_into_map(&mut slots)),
+                        },
+                    };
+                    map.insert(String::from_lua(k, lua)?, v.0);
+                    Ok(())
+                })?;
 
-                if entries.is_empty() {
-                    return Ok(LuaScriptValue::from(ScriptValue::List(Default::default())));
-                }
-
-                // a proper sequence has exactly the keys 1..=len
-                let is_sequence = entries.len() == len
-                    && entries.iter().all(
-                        |(k, _)| matches!(k, Value::Integer(i) if (1..=len as i64).contains(i)),
-                    );
-
-                if is_sequence {
-                    let mut slots: Vec<Option<ScriptValue>> = vec![None; len];
-                    for (k, v) in entries {
-                        if let Value::Integer(i) = k {
-                            slots[i as usize - 1] = Some(v.into());
-                        }
+                return Ok(LuaScriptValue::from(match map {
+                    Some(map) => ScriptValue::Map(map),
+                    // a proper sequence has exactly the keys 1..=len
+                    None if count == len => {
+                        ScriptValue::List(slots.into_iter().flatten().collect())
                     }
-                    let vec = slots.into_iter().flatten().collect::<VecDeque<_>>();
-                    return Ok(LuaScriptValue::from(ScriptValue::List(vec)));
-                } else {
-                    // anything else (string keys, holes, mixed) is treated as a map
-                    let mut map = HashMap::new();
-                    for (k, v) in entries {
-                        let str_: String = String::from_lua(k, lua)?;
-                        map.insert(str_, v.into());
-                    }
-                    return Ok(LuaScriptValue::from(ScriptValue::Map(map)));
-                }
+                    // only integer keys, but with holes
+                    None => ScriptValue::Map(slots_into_map(&mut slots)),
+                }));
             }
             // Value::Thread(thread) => todo!(),
             Value::UserData(ud) => {
