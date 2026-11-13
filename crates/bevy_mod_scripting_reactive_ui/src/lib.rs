@@ -122,10 +122,6 @@ impl Plugin for ReactiveUiPlugin {
     }
 
     fn finish(&self, app: &mut App) {
-        // for the `image` property, where the app loads assets
-        if app.world().contains_resource::<bevy_asset::AssetServer>() {
-            bevy_asset::AssetApp::init_asset::<bevy_image::Image>(app);
-        }
         let registry = app.world().resource::<AppTypeRegistry>().clone();
         bevy_mod_scripting_bindings::set_crate_script_namespaces(
             &mut registry.write(),
