@@ -5,8 +5,9 @@
 //!   the components, only the rows of the items which changed are updated.
 //! - Clicking in the ui changes the same components from the script, which Rust systems see like any change.
 //!
-//! The rows are built from a row template, no script code runs per row. The bar at the top shows how long
-//! the ui took to update, measured around the systems of the reactive ui.
+//! The rows are built from a row template, no script code runs per row. The stock bars and restock flashes
+//! are animated by Rust writing `shown` and `flash`: the rows bind to them, so only the rows which move update.
+//! The header shows how long the ui took to update, measured around the systems of the reactive ui.
 //!
 //! Run with `cargo run --example reactive_ui --features lua54`, the ui is `assets/scripts/inventory_ui.lua`.
 //! Edit the script while it runs: the ui reloads and keeps its state.
@@ -28,6 +29,10 @@ struct Item {
     name: String,
     kind: String,
     count: u32,
+    /// `count`, eased over a few frames, for the stock bars
+    shown: f32,
+    /// 1 when Rust restocks the item, fading to 0
+    flash: f32,
 }
 
 /// What the ui shows about itself, on one entity.
@@ -53,10 +58,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(UiStats::default());
     for i in 0..ITEMS {
         let kind = KINDS[i % KINDS.len()];
+        let count = (i % 7) as u32;
         commands.spawn(Item {
             name: format!("{kind} {}", i / KINDS.len() + 1),
             kind: kind.to_owned(),
-            count: (i % 7) as u32,
+            count,
+            shown: count as f32,
+            flash: 0.0,
         });
     }
     // the script builds the ui when it is loaded
@@ -79,11 +87,30 @@ fn restock(
     let mut restocked = 0;
     for mut item in items.iter_mut().skip(*next % ITEMS).step_by(97).take(5) {
         item.count += 1;
+        item.flash = 1.0;
         restocked += 1;
     }
     *next += 31;
     for mut stats in &mut stats {
         stats.restocked += restocked;
+    }
+}
+
+/// Eases `shown` towards `count` and fades `flash`. Items at rest are not touched, so their rows don't update.
+fn animate(time: Res<Time>, mut items: Query<&mut Item>) {
+    let dt = time.delta_secs();
+    let ease = 1.0 - (-12.0 * dt).exp();
+    for mut item in &mut items {
+        let target = item.count as f32;
+        if item.shown == target && item.flash == 0.0 {
+            continue;
+        }
+        let item = &mut *item;
+        item.shown += (target - item.shown) * ease;
+        if (target - item.shown).abs() < 0.02 {
+            item.shown = target;
+        }
+        item.flash = (item.flash - dt * 2.0).max(0.0);
     }
 }
 
@@ -115,7 +142,7 @@ fn main() {
             TimerMode::Repeating,
         )))
         .add_systems(Startup, setup)
-        .add_systems(Update, restock)
+        .add_systems(Update, (restock, animate).chain())
         .add_systems(
             PostUpdate,
             (

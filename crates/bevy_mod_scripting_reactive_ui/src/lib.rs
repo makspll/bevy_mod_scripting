@@ -62,8 +62,9 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_core::event::ScriptLifecycleMessage;
 use bevy_mod_scripting_script::ScriptAttachment;
+use bevy_picking::Pickable;
 use bevy_reflect::Reflect;
-use bevy_ui::{BackgroundColor, Node, UiSystems, widget::Text};
+use bevy_ui::{BackgroundColor, Node, UiSystems, Val, widget::Text};
 pub use element::{ComponentDef, UiElement};
 use element::{ElementData, ElementKind, Func, elements_from_script, new_element, parse_props};
 pub use expr::UiValue;
@@ -286,7 +287,17 @@ fn register_functions(world: &mut World) {
             };
             let container = ctx
                 .world()?
-                .with_world_mut_access(|w| w.spawn((Node::default(), root)).id())?;
+                .with_world_mut_access(|w| {
+                    // fills the window, so sizes in percent in the script are of the window (percents
+                    // on a root node are of its content, see bevy_ui's implicit viewport node). Clicks
+                    // which hit no element go through
+                    let node = Node {
+                        width: Val::Vw(100.0),
+                        height: Val::Vh(100.0),
+                        ..Default::default()
+                    };
+                    w.spawn((node, Pickable::IGNORE, root)).id()
+                })?;
             let mut rt = runtime.lock();
             let instance = rt.create(
                 NodeKind::Instance(Instance {

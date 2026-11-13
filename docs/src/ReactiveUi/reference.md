@@ -129,7 +129,7 @@ A handler or bound property with dependencies is a list starting with the functi
 | | |
 |---|---|
 | `ui.component(name, f)` | Defines a component. Defining the name again (a reload) swaps the code and re-renders its instances |
-| `ui.render(key, Component, props)` | Shows a component under a new root entity, returned. Calling it again with the key updates it. Call it from `on_script_loaded` |
+| `ui.render(key, Component, props)` | Shows a component under a new root entity filling the window, returned. Calling it again with the key updates it. Call it from `on_script_loaded` |
 | `ui.find(root, name)` | The entity with the `Name` below `root` |
 | `ui.describe(entity)` | What an element shows: its text, colours, layout |
 | `ui.interact(entity, "click")` | What a pointer event on the element would do |

@@ -20,6 +20,7 @@ rune = [
 [dependencies]
 bevy_asset = { workspace = true }
 bevy_ecs = { workspace = true }
+bevy_image = { workspace = true }
 bevy_app = { workspace = true }
 test_utils = { workspace = true }
 bevy_reflect = { workspace = true }
