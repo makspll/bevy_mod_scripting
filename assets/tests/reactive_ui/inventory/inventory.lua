@@ -29,7 +29,7 @@ local function contains(list, value)
     return false
 end
 
-local Slot = ui.define("Slot", function(p)
+local function slot(p)
     local item = ui.watch(p.entity, Item)
     return ui.node({
         name = "slot_" .. p.name,
@@ -39,7 +39,8 @@ local Slot = ui.define("Slot", function(p)
     }, {
         ui.text({ name = "count_" .. p.name, text = ui.format("x{}", { ui.path(item, "data.count") }) }),
     })
-end)
+end
+local Slot = ui.define("Slot", slot)
 
 local Details = ui.define("Details", function(p)
     return ui.text({ name = "details", text = "details: " .. p.name })
@@ -78,7 +79,10 @@ local Inventory = ui.define("Inventory", function(p)
         ui.text({ name = "clicks", text = function() return "clicks: " .. clicks:get() end }),
         -- one child per item, only built for new items
         ui.each(visible, function(name)
-            return ui.el(Slot, { name = name, entity = State.entities[name], selected = is_selected, on_select = select })
+            -- the props stay in the script, `Details` below gets its props through Rust
+            return ui.el(Slot, function()
+                return slot({ name = name, entity = State.entities[name], selected = is_selected, on_select = select })
+            end)
         end),
         ui.dynamic(function()
             local s = selected:get()

@@ -1373,7 +1373,11 @@ impl Cx<'_, '_> {
                 observer: None,
                 instance: Some((id, 0)),
             },
-            || self.call(&render, vec![props]),
+            || match props {
+                // the script kept the props: its function renders the component with them
+                ScriptValue::Function(render_with_props) => self.call(&render_with_props, vec![]),
+                props => self.call(&render, vec![props]),
+            },
         )
         .and_then(|v| element_from_script(&v, self.runtime));
         let element = match result {

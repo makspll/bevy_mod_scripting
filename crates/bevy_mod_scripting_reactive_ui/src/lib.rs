@@ -5,6 +5,10 @@
 //! `each(items, function(item) .. end)` is the region for lists: one child per item of the list in a signal,
 //! kept by item (items are the keys), so the function only runs for items which were not in the list before.
 //!
+//! Props given to `el` as a table are converted to Rust and back for the component's function. Where that
+//! matters (many instances), `el(Def, function() return render(props) end, key)` keeps them in the script:
+//! the function is called in place of the component's, which is still what a reload re-renders.
+//!
 //! Everything is language agnostic: script functions are stored as [`ScriptValue::Function`]s and run
 //! in their script's context with [`AppScriptCallbackRunners::run_in_context`].
 //!
@@ -190,10 +194,16 @@ fn register_functions(world: &mut World) {
     })
     .register(
         "el",
-        |ctx: FunctionCallContext, def: V<ComponentDef>, props: Option<ScriptValue>| {
+        |ctx: FunctionCallContext,
+         def: V<ComponentDef>,
+         props: Option<ScriptValue>,
+         key: Option<ScriptValue>| {
             let props = props.unwrap_or(ScriptValue::Unit);
-            let key = match &props {
-                ScriptValue::Map(map) => map
+            // `props` is a table given to the component's function, or a function rendering the component
+            // with props the script keeps (the key is then the third argument)
+            let key = match (&key, &props) {
+                (Some(key), _) => Some(element::key_of(key, &ctx.world()?)?),
+                (None, ScriptValue::Map(map)) => map
                     .get("key")
                     .map(|k| element::key_of(k, &ctx.world()?))
                     .transpose()?,
