@@ -40,7 +40,7 @@ pub type NodeId = u32;
 #[derive(Resource, Clone, Default)]
 pub struct ReactiveUi(pub(crate) Arc<Mutex<Runtime>>);
 
-/// Marks the entity a tree is mounted under, see `mount`.
+/// Marks the entity a tree is mounted under, see `render`.
 #[derive(Component, Debug)]
 pub struct UiRoot {
     /// The script which mounted the tree
