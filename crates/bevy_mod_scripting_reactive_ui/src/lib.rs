@@ -1,21 +1,21 @@
 //! Prototype of reactive `bevy_ui` trees described by scripts, built on signals.
 //!
 //! Components run once (and again when their script reloads). Properties bound to functions re-run when the
-//! signals they read change, and `dynamic` regions re-run to produce changing children.
+//! signals they read change, and `show` regions re-run to produce changing children.
 //!
 //! Everything is language agnostic: script functions are stored as [`ScriptValue::Function`]s and run
 //! in their script's context with [`AppScriptCallbackRunners::run_in_context`].
 //!
 //! ```lua
 //! local ui = import_namespace("reactive_ui")
-//! local Counter = ui.define("Counter", function(props)
+//! local Counter = ui.component("Counter", function(props)
 //!     local n = ui.signal(props.start)
-//!     return ui.node({ direction = "row" }, {
+//!     return ui.node({ flex_direction = "row" }, {
 //!         ui.node({ name = "dec", on_click = function() n:set(n:get() - 1) end }),
 //!         ui.text({ text = function() return "n=" .. n:get() end }),
 //!     })
 //! end)
-//! function on_script_loaded() ui.mount("counter", Counter, { start = 0 }) end
+//! function on_script_loaded() ui.render("counter", Counter, { start = 0 }) end
 //! ```
 
 // `Interaction` is deprecated for picking's `Hovered` and `Pressed`, it keeps the prototype independent of picking
@@ -71,7 +71,7 @@ pub struct Signal(NodeId);
 
 /// Tells whether a key is the value of a signal, made by `selector`.
 ///
-/// `selector:is(key)` only re-runs its reader when `key` becomes or stops being selected,
+/// `selector:selected(key)` only re-runs its reader when `key` becomes or stops being selected,
 /// so a list of items each checking whether they are selected only re-runs two of them when the selection changes.
 #[derive(Clone, Copy, Debug, Reflect)]
 #[reflect(opaque, Clone)]
@@ -187,7 +187,7 @@ fn register_functions(world: &mut World) {
         }))
     })
     .register(
-        "el",
+        "element",
         |ctx: FunctionCallContext, def: V<ComponentDef>, props: Option<ScriptValue>| {
             let props = props.unwrap_or(ScriptValue::Unit);
             let key = match &props {
@@ -206,7 +206,7 @@ fn register_functions(world: &mut World) {
         },
     )
     .register(
-        "mount",
+        "render",
         |ctx: FunctionCallContext, key: String, def: V<ComponentDef>, props: Option<ScriptValue>| {
             let attachment = current_attachment(&ctx)?;
             let runtime = runtime(&ctx)?;
@@ -361,7 +361,7 @@ fn register_functions(world: &mut World) {
                     map.insert("name".to_owned(), ScriptValue::String(name.as_str().to_owned().into()));
                 }
                 if let Some(bg) = w.get::<BackgroundColor>(entity) {
-                    map.insert("bg".to_owned(), ScriptValue::String(bg.0.to_srgba().to_hex().into()));
+                    map.insert("background_color".to_owned(), ScriptValue::String(bg.0.to_srgba().to_hex().into()));
                 }
                 let children = w.get::<Children>(entity).map_or(0, |c| c.len());
                 map.insert("children".to_owned(), ScriptValue::Integer(children as i64));
@@ -390,13 +390,13 @@ fn register_functions(world: &mut World) {
             Ok(())
         },
     )
-    .register("define", define)
+    .register("component", define)
     .register("selector", |ctx: FunctionCallContext, source: V<Signal>| {
         let attachment = current_attachment(&ctx)?;
         runtime::selector(&*runtime(&ctx)?, attachment, source.into_inner().0)
             .map(|id| V(Selector(id)))
     })
-    .register("dynamic", |ctx: FunctionCallContext, f: Func| {
+    .register("show", |ctx: FunctionCallContext, f: Func| {
         Ok::<_, InteropError>(new_element(
             &*runtime(&ctx)?,
             ElementData {
@@ -409,7 +409,7 @@ fn register_functions(world: &mut World) {
     });
 
     NamespaceBuilder::<Selector>::new(world).register(
-        "is",
+        "selected",
         |ctx: FunctionCallContext, s: V<Selector>, key: ScriptValue| {
             runtime::is_selected(&*runtime(&ctx)?, s.into_inner().0, &key)
         },

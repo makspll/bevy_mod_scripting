@@ -18,12 +18,12 @@ use crate::{
 /// A script function stored on the Rust side.
 pub type Func = DynamicScriptFunction;
 
-/// A component definition, made with `define_signals` / `define_hybrid`, keyed by the defining script and its name.
+/// A component definition, made with `component`, keyed by the defining script and its name.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Reflect)]
 #[reflect(opaque, Clone)]
 pub struct ComponentDef(pub(crate) u32);
 
-/// A description of a piece of UI, made by `node`, `text`, `el` or `dynamic`.
+/// A description of a piece of UI, made by `node`, `text`, `element` or `show`.
 ///
 /// Elements are immutable and cheap to clone, parents share their children.
 #[derive(Clone, Reflect)]
@@ -100,9 +100,9 @@ impl Prop {
             "height" => Prop::Height,
             "padding" => Prop::Padding,
             "gap" => Prop::Gap,
-            "direction" => Prop::Direction,
+            "flex_direction" => Prop::Direction,
             "display" => Prop::Display,
-            "bg" => Prop::Bg,
+            "background_color" => Prop::Bg,
             "text" => Prop::Text,
             "name" => Prop::Name,
             "on_click" => Prop::OnClick,
@@ -334,7 +334,7 @@ pub(crate) fn apply_prop(
                 ScriptValue::Unit => FlexDirection::default(),
                 other => {
                     return Err(InteropError::string(format!(
-                        "direction must be \"row\" or \"column\", got: {other:?}"
+                        "`flex_direction` must be \"row\" or \"column\", got: {other:?}"
                     )));
                 }
             }
@@ -356,7 +356,7 @@ pub(crate) fn apply_prop(
                 }
                 other => {
                     return Err(InteropError::string(format!(
-                        "bg must be a hex colour, got: {other:?}"
+                        "`background_color` must be a hex colour, got: {other:?}"
                     )));
                 }
             };
