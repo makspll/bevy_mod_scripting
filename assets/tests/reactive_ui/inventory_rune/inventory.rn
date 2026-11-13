@@ -72,8 +72,12 @@ fn inventory(p) {
     }, [selected, s["items"]]);
 
     let reloads = s["reloads"];
-    ui.node(#{ flex_direction: "column" }, [
-        ui.text(#{ name: "version", text: `v${reloads}` }),
+    ui.node(#{
+        name: "panel", flex_direction: "column", justify_content: "space_between", max_width: "50%",
+        padding: [4, 8], border: 1, border_color: "#ffffff", border_radius: 3,
+    }, [
+        ui.text(#{ name: "version", text: `v${reloads}`, font_size: 20, color: "#ff0000" }),
+        ui.image(#{ name: "icon", image: "icons/sword.png", width: 16, height: 16 }),
         ui.text(#{ name: "title", text: [|visible| {
             let count = visible.get().len();
             `Inventory (${count})`
@@ -208,6 +212,15 @@ pub fn on_test_last() {
     match step {
         0 => {
             expect("version", "v1");
+            // layout, colours, text style and images are plain values
+            let panel = ui.describe(find("panel"));
+            assert!(panel.layout.contains("justify_content: SpaceBetween"), "{}", panel.layout);
+            assert!(panel.layout.contains("max_width: Percent(50.0)"), "{}", panel.layout);
+            assert!(panel.border_color.to_lowercase() == "#ffffff", "{}", panel.border_color);
+            let version = ui.describe(find("version"));
+            assert!(version.font_size == "Px(20.0)", "{}", version.font_size);
+            assert!(version.color.to_lowercase() == "#ff0000", "{}", version.color);
+            assert!(ui.describe(find("icon")).image, "the image element has no image");
             expect("title", "Inventory (3)");
             expect("hp", "100/100");
             assert!(find("low") == (), "low hp shown at full health");

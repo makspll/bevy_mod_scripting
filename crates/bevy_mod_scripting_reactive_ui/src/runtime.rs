@@ -885,7 +885,7 @@ impl Cx<'_, '_> {
             match (prop, value) {
                 (_, PropValue::Static(value)) => apply_prop(&mut parts, *prop, value)?,
                 // bound later: spawn with the component so setting it doesn't move the entity
-                (Prop::Bg, _) => parts.bg = Some(BackgroundColor::default()),
+                (Prop::BackgroundColor, _) => parts.bg = Some(BackgroundColor::default()),
                 (Prop::Name, _) => parts.name = Some(Name::default()),
                 _ => {}
             }
@@ -894,16 +894,27 @@ impl Cx<'_, '_> {
             .handlers(props)
             .map(|handlers| (handlers, Interaction::default()));
         // `Option`s aren't bundles: one typed spawn per combination of the optional parts
-        let base = (parts.node, ChildOf(parent), parts.bg.unwrap_or_default());
-        self.world_mut(|w| match (parts.text, parts.name, handlers) {
-            (Some(t), Some(n), Some(h)) => w.spawn((base, t, n, h)).id(),
-            (Some(t), Some(n), None) => w.spawn((base, t, n)).id(),
-            (Some(t), None, Some(h)) => w.spawn((base, t, h)).id(),
-            (Some(t), None, None) => w.spawn((base, t)).id(),
-            (None, Some(n), Some(h)) => w.spawn((base, n, h)).id(),
-            (None, Some(n), None) => w.spawn((base, n)).id(),
-            (None, None, Some(h)) => w.spawn((base, h)).id(),
-            (None, None, None) => w.spawn(base).id(),
+        let base = (
+            std::mem::take(&mut parts.node),
+            ChildOf(parent),
+            parts.bg.take().unwrap_or_default(),
+        );
+        self.world_mut(|w| {
+            let mut entity = match (parts.text.take(), parts.name.take(), handlers) {
+                (Some(t), Some(n), Some(h)) => w.spawn((base, t, n, h)),
+                (Some(t), Some(n), None) => w.spawn((base, t, n)),
+                (Some(t), None, Some(h)) => w.spawn((base, t, h)),
+                (Some(t), None, None) => w.spawn((base, t)),
+                (None, Some(n), Some(h)) => w.spawn((base, n, h)),
+                (None, Some(n), None) => w.spawn((base, n)),
+                (None, None, Some(h)) => w.spawn((base, h)),
+                (None, None, None) => w.spawn(base),
+            };
+            // what few elements have (fonts, images, borders..) is inserted after
+            if parts.needs_finish() {
+                parts.finish(&mut entity);
+            }
+            entity.id()
         })
     }
 

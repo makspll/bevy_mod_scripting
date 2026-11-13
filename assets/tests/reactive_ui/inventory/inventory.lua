@@ -76,8 +76,12 @@ local Inventory = ui.component("Inventory", function(p)
         return out
     end)
 
-    return ui.node({ flex_direction = "column" }, {
-        ui.text({ name = "version", text = "v" .. Reloads }),
+    return ui.node({
+        name = "panel", flex_direction = "column", justify_content = "space_between", max_width = "50%",
+        padding = { 4, 8 }, border = 1, border_color = "#ffffff", border_radius = 3,
+    }, {
+        ui.text({ name = "version", text = "v" .. Reloads, font_size = 20, color = "#ff0000" }),
+        ui.image({ name = "icon", image = "icons/sword.png", width = 16, height = 16 }),
         ui.text({ name = "title", text = function() return "Inventory (" .. #visible:get() .. ")" end }),
         ui.text({ name = "hp", text = ui.format("{}/{}", { ui.path(hp, "data.current"), ui.path(hp, "data.max") }) }),
         ui.show(function()
@@ -152,6 +156,15 @@ local actions = {
 local checks = {
     [0] = function()
         expect("version", "v1")
+        -- layout, colours, text style and images are plain values
+        local panel = ui.describe(find("panel"))
+        assert(string.find(panel.layout, "justify_content: SpaceBetween", 1, true), panel.layout)
+        assert(string.find(panel.layout, "max_width: Percent(50.0)", 1, true), panel.layout)
+        assert(string.lower(panel.border_color) == "#ffffff", panel.border_color)
+        local version = ui.describe(find("version"))
+        assert(version.font_size == "Px(20.0)", version.font_size)
+        assert(string.lower(version.color) == "#ff0000", version.color)
+        assert(ui.describe(find("icon")).image, "the image element has no image")
         expect("title", "Inventory (3)")
         expect("hp", "100/100")
         assert(find("low") == nil, "low hp shown at full health")

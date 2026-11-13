@@ -2,11 +2,9 @@
 
 use std::sync::Arc;
 
-use bevy_color::{Color, Srgba};
-use bevy_ecs::{entity::Entity, name::Name, world::EntityWorldMut};
+use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_bindings::{DynamicScriptFunction, InteropError, ScriptValue, WorldGuard};
 use bevy_reflect::Reflect;
-use bevy_ui::{BackgroundColor, Display, FlexDirection, Node, UiRect, Val, widget::Text};
 
 use parking_lot::Mutex;
 
@@ -14,6 +12,8 @@ use crate::{
     expr::{Expr, UiValue},
     runtime::Runtime,
 };
+
+pub(crate) use crate::style::{Prop, UiParts, apply_prop};
 
 /// A script function stored on the Rust side.
 pub type Func = DynamicScriptFunction;
@@ -82,45 +82,6 @@ pub(crate) enum PropValue {
     /// Bound to a value computed in Rust
     Expr(Arc<Expr>),
     Handler(Func),
-}
-
-/// The properties scripts can set, a small curated set taking plain values.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) enum Prop {
-    Width,
-    Height,
-    Padding,
-    Gap,
-    Direction,
-    Display,
-    Bg,
-    Text,
-    Name,
-    OnClick,
-    OnHover,
-}
-
-impl Prop {
-    fn parse(name: &str) -> Option<Prop> {
-        Some(match name {
-            "width" => Prop::Width,
-            "height" => Prop::Height,
-            "padding" => Prop::Padding,
-            "gap" => Prop::Gap,
-            "flex_direction" => Prop::Direction,
-            "display" => Prop::Display,
-            "background_color" => Prop::Bg,
-            "text" => Prop::Text,
-            "name" => Prop::Name,
-            "on_click" => Prop::OnClick,
-            "on_hover" => Prop::OnHover,
-            _ => return None,
-        })
-    }
-
-    fn is_handler(self) -> bool {
-        matches!(self, Prop::OnClick | Prop::OnHover)
-    }
 }
 
 /// The function called with the given dependencies before its own arguments.
@@ -254,171 +215,6 @@ pub(crate) fn script_values_equal(a: &ScriptValue, b: &ScriptValue) -> bool {
         }
         _ => false,
     }
-}
-
-fn as_f32(value: &ScriptValue) -> Option<f32> {
-    match value {
-        ScriptValue::Integer(i) => Some(*i as f32),
-        ScriptValue::Float(f) => Some(*f as f32),
-        _ => None,
-    }
-}
-
-fn as_val(value: &ScriptValue) -> Result<Val, InteropError> {
-    if let Some(px) = as_f32(value) {
-        return Ok(Val::Px(px));
-    }
-    match value {
-        ScriptValue::Unit => Ok(Val::Auto),
-        ScriptValue::String(s) if s == "auto" => Ok(Val::Auto),
-        ScriptValue::String(s) => s
-            .strip_suffix('%')
-            .and_then(|p| p.trim().parse::<f32>().ok())
-            .map(Val::Percent)
-            .ok_or_else(|| {
-                InteropError::string(format!(
-                    "invalid size `{s}`, use a number of pixels, \"50%\" or \"auto\""
-                ))
-            }),
-        other => Err(InteropError::string(format!("invalid size: {other:?}"))),
-    }
-}
-
-fn as_text(value: &ScriptValue) -> String {
-    match value {
-        ScriptValue::String(s) => s.to_string(),
-        ScriptValue::Integer(i) => i.to_string(),
-        ScriptValue::Float(f) => f.to_string(),
-        ScriptValue::Bool(b) => b.to_string(),
-        ScriptValue::Unit => String::new(),
-        other => format!("{other:?}"),
-    }
-}
-
-/// Where properties are written: a mounted entity, or [`UiParts`] before spawning one.
-pub(crate) trait PropTarget {
-    fn node(&mut self) -> Result<&mut Node, InteropError>;
-    fn set_text(&mut self, text: String) -> Result<(), InteropError>;
-    fn set_bg(&mut self, bg: BackgroundColor);
-    fn set_name(&mut self, name: Name);
-}
-
-impl PropTarget for EntityWorldMut<'_> {
-    fn node(&mut self) -> Result<&mut Node, InteropError> {
-        self.get_mut::<Node>()
-            .map(bevy_ecs::world::Mut::into_inner)
-            .ok_or_else(|| InteropError::str("ui entity has no Node"))
-    }
-
-    fn set_text(&mut self, new: String) -> Result<(), InteropError> {
-        let mut text = self
-            .get_mut::<Text>()
-            .ok_or_else(|| InteropError::str("`text` can only be set on text elements"))?;
-        // only mark it changed when it did, text layout is expensive
-        if text.0 != new {
-            text.0 = new;
-        }
-        Ok(())
-    }
-
-    fn set_bg(&mut self, bg: BackgroundColor) {
-        self.insert(bg);
-    }
-
-    fn set_name(&mut self, name: Name) {
-        self.insert(name);
-    }
-}
-
-/// The components of an element before it is spawned, so it is spawned with all of them at once.
-#[derive(Default)]
-pub(crate) struct UiParts {
-    pub node: Node,
-    pub text: Option<Text>,
-    pub bg: Option<BackgroundColor>,
-    pub name: Option<Name>,
-}
-
-impl PropTarget for UiParts {
-    fn node(&mut self) -> Result<&mut Node, InteropError> {
-        Ok(&mut self.node)
-    }
-
-    fn set_text(&mut self, new: String) -> Result<(), InteropError> {
-        match &mut self.text {
-            Some(text) => {
-                text.0 = new;
-                Ok(())
-            }
-            None => Err(InteropError::str("`text` can only be set on text elements")),
-        }
-    }
-
-    fn set_bg(&mut self, bg: BackgroundColor) {
-        self.bg = Some(bg);
-    }
-
-    fn set_name(&mut self, name: Name) {
-        self.name = Some(name);
-    }
-}
-
-/// Writes a property value onto the target, `Unit` resets it.
-pub(crate) fn apply_prop(
-    target: &mut impl PropTarget,
-    prop: Prop,
-    value: &ScriptValue,
-) -> Result<(), InteropError> {
-    match prop {
-        Prop::Width => target.node()?.width = as_val(value)?,
-        Prop::Height => target.node()?.height = as_val(value)?,
-        Prop::Padding => target.node()?.padding = UiRect::all(as_val(value)?),
-        Prop::Gap => {
-            let gap = as_val(value)?;
-            let node = target.node()?;
-            node.row_gap = gap;
-            node.column_gap = gap;
-        }
-        Prop::Direction => {
-            target.node()?.flex_direction = match value {
-                ScriptValue::String(s) if s == "row" => FlexDirection::Row,
-                ScriptValue::String(s) if s == "column" => FlexDirection::Column,
-                ScriptValue::Unit => FlexDirection::default(),
-                other => {
-                    return Err(InteropError::string(format!(
-                        "`flex_direction` must be \"row\" or \"column\", got: {other:?}"
-                    )));
-                }
-            }
-        }
-        Prop::Display => {
-            target.node()?.display = match value {
-                ScriptValue::String(s) if s == "none" => Display::None,
-                ScriptValue::Bool(false) => Display::None,
-                _ => Display::Flex,
-            }
-        }
-        Prop::Bg => {
-            let color = match value {
-                ScriptValue::Unit => Color::NONE,
-                ScriptValue::String(hex) => {
-                    Color::Srgba(Srgba::hex(hex.as_ref()).map_err(|e| {
-                        InteropError::string(format!("invalid colour `{hex}`: {e}"))
-                    })?)
-                }
-                other => {
-                    return Err(InteropError::string(format!(
-                        "`background_color` must be a hex colour, got: {other:?}"
-                    )));
-                }
-            };
-            target.set_bg(BackgroundColor(color));
-        }
-        Prop::Text => target.set_text(as_text(value))?,
-        Prop::Name => target.set_name(Name::new(as_text(value))),
-        Prop::OnClick | Prop::OnHover => {}
-    }
-    Ok(())
 }
 
 /// The elements built during the current flush. Scripts get plain integer handles to them, so building and passing
