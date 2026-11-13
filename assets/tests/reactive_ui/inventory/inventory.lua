@@ -101,7 +101,8 @@ local Inventory = ui.define("Inventory", function(p)
                 name = ui.format("row_{}", { name }),
                 bg = ui.select(ui.is(is_selected, name), "#ffcc00", "#333333"),
                 on_click = function(entity)
-                    State.row_clicked = world.get_component(entity, Item).data.name
+                    local clicked = assert(world.get_component(entity, Item)) --[[@as bms.DynamicComponent]]
+                    State.row_clicked = clicked.data.name
                 end,
             }, {
                 ui.text({ name = ui.format("row_text_{}", { name }), text = ui.format("{} x{}", { name, ui.path(data, "data.count") }) }),
