@@ -483,7 +483,7 @@ impl PropTarget for EntityWorldMut<'_> {
     }
 
     fn set_image(&mut self, path: String) {
-        // the plugin registers images when the app has assets, see `ReactiveUiPlugin::finish`
+        // images come from bevy's `ImagePlugin`, re-initialising them would wipe every loaded image
         let world = self.world();
         if !world.contains_resource::<bevy_asset::Assets<bevy_image::Image>>() {
             bevy_log::warn!("`image = \"{path}\"` ignored: the app has no image assets");
