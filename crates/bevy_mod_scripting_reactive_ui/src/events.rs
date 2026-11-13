@@ -9,6 +9,7 @@ use bevy_ecs::{
     system::{Query, Res},
     world::World,
 };
+use bevy_input::mouse::MouseScrollUnit;
 use bevy_mod_scripting_bindings::ScriptValue;
 use bevy_picking::{
     events::{
@@ -18,6 +19,7 @@ use bevy_picking::{
     pointer::PointerButton,
 };
 use bevy_platform::collections::HashMap;
+use bevy_ui::{Node, OverflowAxis, ScrollPosition};
 use parking_lot::Mutex;
 
 use crate::{
@@ -148,8 +150,36 @@ fn forward<E: Forwarded>(event: &E, elements: &Query<&UiHandlers>, ui: &Reactive
     })
 }
 
+/// How far one line of the mouse wheel scrolls, in pixels.
+const SCROLL_LINE: f32 = 24.0;
+
+/// Scrolls the innermost element under the pointer whose `overflow` is `"scroll"` on the axis of the wheel.
+/// The layout keeps the position within what there is to scroll.
+fn scroll(mut event: On<PointerScroll>, mut nodes: Query<(&Node, &mut ScrollPosition)>) {
+    let Ok((node, mut position)) = nodes.get_mut(event.entity) else {
+        return;
+    };
+    let pixels = match event.unit {
+        MouseScrollUnit::Line => SCROLL_LINE,
+        MouseScrollUnit::Pixel => 1.0,
+    };
+    let mut scrolled = false;
+    if node.overflow.x == OverflowAxis::Scroll && event.x != 0.0 {
+        position.x -= event.x * pixels;
+        scrolled = true;
+    }
+    if node.overflow.y == OverflowAxis::Scroll && event.y != 0.0 {
+        position.y -= event.y * pixels;
+        scrolled = true;
+    }
+    if scrolled {
+        event.propagate(false);
+    }
+}
+
 /// Hands the pointer events of `bevy_picking` to elements.
 pub(crate) fn add_observers(app: &mut App) {
+    app.add_observer(scroll);
     macro_rules! observe {
         ($($event:ty),*) => {
             $(app.add_observer(

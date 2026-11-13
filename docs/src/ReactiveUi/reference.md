@@ -59,6 +59,8 @@ A wrong value is an error naming the property and listing what it accepts.
 | `on_drag` | `{ x, y, button, delta_x, delta_y }` |
 | `on_scroll` | `{ x, y, delta_x, delta_y }` |
 
+An element whose `overflow` is `"scroll"` scrolls with the mouse wheel, without a handler: give it a size and let its children overflow.
+
 These are `bevy_picking`'s pointer events. The innermost element with a handler for an event gets it. Handlers run during the next UI update, where they can set signals and change the world.
 
 ## State

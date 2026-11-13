@@ -105,7 +105,10 @@ local Inventory = ui.component("Inventory", function()
             if name ~= nil then return ui.element(Details, { key = name, entity = by_name[name] }) end
             return ui.text({ text = "click an item", font_size = 18, color = "#777777" })
         end),
-        ui.node({ overflow = "clip", flex_direction = "column" }, { slots(visible, is_selected) }),
+        -- scrolls with the mouse wheel
+        ui.node({ overflow = { y = "scroll" }, flex_direction = "column", flex_grow = 1, min_height = 0 }, {
+            slots(visible, is_selected),
+        }),
     })
 end)
 
