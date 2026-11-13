@@ -19,7 +19,7 @@ use crate::{
     runtime::{GraphNode, NodeId, NodeKind, Runtime, selector_key},
 };
 
-/// A value computed in Rust, made with `path`, `format`, `percent`, `lt`, `mul`, `select` and `is`.
+/// A value computed in Rust, made with `path`, `format`, `percent`, `lt`, `mul`, `when` and `selected`.
 ///
 /// Used as a property, it updates when the signals and components it reads change, without running script code.
 #[derive(Clone, Reflect)]
@@ -309,7 +309,12 @@ pub(crate) fn register(world: &mut World) {
             |source: V<Signal>, path: String| {
                 value(Expr::Path {
                     source: source.into_inner().0,
-                    path: path.split('.').map(str::to_owned).collect(),
+                    // an empty path is the value itself
+                    path: path
+                        .split('.')
+                        .filter(|segment| !segment.is_empty())
+                        .map(str::to_owned)
+                        .collect(),
                 })
             },
             "A field of the value of a signal, computed or watched component, i.e. `path(health, \"data.current\")`.\n\
@@ -348,7 +353,7 @@ pub(crate) fn register(world: &mut World) {
             &["a", "b"],
         )
         .register_documented(
-            "select",
+            "when",
             |condition: ValueArg, if_true: ValueArg, if_false: ValueArg| {
                 value(Expr::Select(
                     Box::new(arg(condition)),
@@ -360,7 +365,7 @@ pub(crate) fn register(world: &mut World) {
             &["condition", "if_true", "if_false"],
         )
         .register_documented(
-            "is",
+            "selected",
             |selector: V<Selector>, key: ScriptValue| {
                 let key = selector_key(&key).ok_or_else(|| {
                     InteropError::str("selector keys must be strings, numbers or booleans")
@@ -370,7 +375,7 @@ pub(crate) fn register(world: &mut World) {
                     key,
                 }))
             },
-            "Whether `key` is selected, i.e. `bg = select(is(selected, name), \"#ffcc00\", \"#333333\")`.",
+            "Whether `key` is selected, i.e. `background_color = when(selected(selector, name), \"#ffcc00\", \"#333333\")`.",
             &["selector", "key"],
         );
 }
