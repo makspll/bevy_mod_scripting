@@ -319,11 +319,11 @@ fn reactive_ui_benchmarks(criterion: &mut Criterion) {
     let variants = [
         (
             "Closures",
-            include_str!("../assets/benchmarks/reactive_ui/closures.lua"),
+            include_str!("../assets/macro_benchmarks/reactive_ui/closures.lua"),
         ),
         (
             "Paths",
-            include_str!("../assets/benchmarks/reactive_ui/paths.lua"),
+            include_str!("../assets/macro_benchmarks/reactive_ui/paths.lua"),
         ),
     ];
     let scenarios = [
