@@ -20,7 +20,7 @@ use crate::{
     runtime::{GraphNode, NodeId, NodeKind, Runtime, selector_key},
 };
 
-/// A value computed in Rust, made with `path`, `format`, `percent`, `lt`, `mul`, `select` and `is`.
+/// A value computed in Rust, made with `path`, `format`, `percent`, `lt`, `mul`, `when` and `selected`.
 ///
 /// Used as a property, it updates when the signals and components it reads change, without running script code.
 #[derive(Clone, Reflect)]
@@ -223,7 +223,7 @@ impl Expr {
             },
             Expr::Item | Expr::ItemPath { .. } | Expr::IsKey { .. } => {
                 return Err(InteropError::str(
-                    "the item of a row can only be used inside the function given to `each_template`",
+                    "the item of a row can only be used inside the function given to `list_template`",
                 ));
             }
         })
@@ -400,7 +400,12 @@ pub(crate) fn register(world: &mut World) {
         .register_documented(
             "path",
             |source: Union<V<Signal>, V<ItemWatch>>, path: String| {
-                let path = path.split('.').map(str::to_owned).collect();
+                // an empty path is the value itself
+                let path = path
+                    .split('.')
+                    .filter(|segment| !segment.is_empty())
+                    .map(str::to_owned)
+                    .collect();
                 value(match source.into_left() {
                     Ok(source) => Expr::Path {
                         source: source.into_inner().0,
@@ -422,7 +427,7 @@ pub(crate) fn register(world: &mut World) {
             |item: V<UiValue>, component: V<ScriptComponentRegistration>| {
                 if !matches!(&*item.0.0, Expr::Item) {
                     return Err(InteropError::str(
-                        "`watch_item` takes the item given to the function of `each_template`",
+                        "`watch_item` takes the item given to the function of `list_template`",
                     ));
                 }
                 Ok(V(ItemWatch {
@@ -430,7 +435,7 @@ pub(crate) fn register(world: &mut World) {
                     type_id: component.type_registration().type_id(),
                 }))
             },
-            "In the function given to `each_template`: the component of each row's item, which must be an entity. \
+            "In the function given to `list_template`: the component of each row's item, which must be an entity. \
              Read its fields with `path`, i.e. `path(watch_item(item, Item), \"data.count\")`.",
             &["item", "component"],
         )
@@ -466,7 +471,7 @@ pub(crate) fn register(world: &mut World) {
             &["a", "b"],
         )
         .register_documented(
-            "select",
+            "when",
             |condition: ValueArg, if_true: ValueArg, if_false: ValueArg| {
                 value(Expr::Select(
                     Box::new(arg(condition)),
@@ -478,7 +483,7 @@ pub(crate) fn register(world: &mut World) {
             &["condition", "if_true", "if_false"],
         )
         .register_documented(
-            "is",
+            "selected",
             |selector: V<Selector>, key: ValueArg| {
                 let selector = selector.into_inner().0;
                 let key = match key.into_left() {

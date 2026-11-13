@@ -1,17 +1,17 @@
 //! Prototype of reactive `bevy_ui` trees described by scripts, built on signals.
 //!
 //! Components run once (and again when their script reloads). Properties bound to functions re-run when the
-//! signals they read change, and `dynamic` regions re-run to produce changing children.
+//! signals they read change, and `show` regions re-run to produce changing children.
 //! `each(items, function(item) .. end)` is the region for lists: one child per item of the list in a signal,
 //! kept by item (items are the keys), so the function only runs for items which were not in the list before.
 //!
 //! `each_template(items, function(item) .. end)` builds the rows of large uniform lists without running script
 //! code per row: the function runs once, `item` stands for each row's item, and the `node`s and `text`s it
-//! returns are made per row in Rust. Properties are values computed in Rust (`format`, `select`, `is`,
+//! returns are made per row in Rust. Properties are values computed in Rust (`format`, `when`, `selected`,
 //! `path(watch_item(item, Component), ..)` for items which are entities), functions (handlers and bound
 //! properties) are shared by all rows and get the row's item as their first argument.
 //!
-//! Props given to `el` as a table are converted to Rust and back for the component's function. Where that
+//! Props given to `element` as a table are converted to Rust and back for the component's function. Where that
 //! matters (many instances), `el(Def, function() return render(props) end, key)` keeps them in the script:
 //! the function is called in place of the component's, which is still what a reload re-renders.
 //!
@@ -20,14 +20,14 @@
 //!
 //! ```lua
 //! local ui = import_namespace("reactive_ui")
-//! local Counter = ui.define("Counter", function(props)
+//! local Counter = ui.component("Counter", function(props)
 //!     local n = ui.signal(props.start)
-//!     return ui.node({ direction = "row" }, {
+//!     return ui.node({ flex_direction = "row" }, {
 //!         ui.node({ name = "dec", on_click = function() n:set(n:get() - 1) end }),
 //!         ui.text({ text = function() return "n=" .. n:get() end }),
 //!     })
 //! end)
-//! function on_script_loaded() ui.mount("counter", Counter, { start = 0 }) end
+//! function on_script_loaded() ui.render("counter", Counter, { start = 0 }) end
 //! ```
 
 // `Interaction` is deprecated for picking's `Hovered` and `Pressed`, it keeps the prototype independent of picking
@@ -83,7 +83,7 @@ pub struct Signal(NodeId);
 
 /// Tells whether a key is the value of a signal, made by `selector`.
 ///
-/// `selector:is(key)` only re-runs its reader when `key` becomes or stops being selected,
+/// `selector:selected(key)` only re-runs its reader when `key` becomes or stops being selected,
 /// so a list of items each checking whether they are selected only re-runs two of them when the selection changes.
 #[derive(Clone, Copy, Debug, Reflect)]
 #[reflect(opaque, Clone)]
@@ -200,7 +200,7 @@ fn register_functions(world: &mut World) {
         }))
     })
     .register(
-        "el",
+        "element",
         |ctx: FunctionCallContext,
          def: V<ComponentDef>,
          props: Option<ScriptValue>,
@@ -225,7 +225,7 @@ fn register_functions(world: &mut World) {
         },
     )
     .register(
-        "mount",
+        "render",
         |ctx: FunctionCallContext, key: String, def: V<ComponentDef>, props: Option<ScriptValue>| {
             let attachment = current_attachment(&ctx)?;
             let runtime = runtime(&ctx)?;
@@ -380,7 +380,7 @@ fn register_functions(world: &mut World) {
                     map.insert("name".to_owned(), ScriptValue::String(name.as_str().to_owned().into()));
                 }
                 if let Some(bg) = w.get::<BackgroundColor>(entity) {
-                    map.insert("bg".to_owned(), ScriptValue::String(bg.0.to_srgba().to_hex().into()));
+                    map.insert("background_color".to_owned(), ScriptValue::String(bg.0.to_srgba().to_hex().into()));
                 }
                 let children = w.get::<Children>(entity).map_or(0, |c| c.len());
                 map.insert("children".to_owned(), ScriptValue::Integer(children as i64));
@@ -409,14 +409,14 @@ fn register_functions(world: &mut World) {
             Ok(())
         },
     )
-    .register("define", define)
+    .register("component", define)
     .register("selector", |ctx: FunctionCallContext, source: V<Signal>| {
         let attachment = current_attachment(&ctx)?;
         runtime::selector(&*runtime(&ctx)?, attachment, source.into_inner().0)
             .map(|id| V(Selector(id)))
     })
     .register(
-        "each",
+        "list",
         |ctx: FunctionCallContext, items: V<Signal>, f: Func| {
             Ok::<_, InteropError>(new_element(
                 &*runtime(&ctx)?,
@@ -430,7 +430,7 @@ fn register_functions(world: &mut World) {
         },
     )
     .register(
-        "each_template",
+        "list_template",
         |ctx: FunctionCallContext, items: V<Signal>, f: Func| {
             Ok::<_, InteropError>(new_element(
                 &*runtime(&ctx)?,
@@ -443,7 +443,7 @@ fn register_functions(world: &mut World) {
             ))
         },
     )
-    .register("dynamic", |ctx: FunctionCallContext, f: Func| {
+    .register("show", |ctx: FunctionCallContext, f: Func| {
         Ok::<_, InteropError>(new_element(
             &*runtime(&ctx)?,
             ElementData {
@@ -456,7 +456,7 @@ fn register_functions(world: &mut World) {
     });
 
     NamespaceBuilder::<Selector>::new(world).register(
-        "is",
+        "selected",
         |ctx: FunctionCallContext, s: V<Selector>, key: ScriptValue| {
             runtime::is_selected(&*runtime(&ctx)?, s.into_inner().0, &key)
         },

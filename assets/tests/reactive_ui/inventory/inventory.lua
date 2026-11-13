@@ -1,4 +1,4 @@
--- signals: components run once, properties are bound to functions, `dynamic` regions produce changing children
+-- signals: components run once, properties are bound to functions, `show` regions produce changing children
 local bms = import_namespace("bms")
 local world = bms.world
 local DynamicComponent = bms.DynamicComponent
@@ -34,19 +34,19 @@ local function slot(p)
     return ui.node({
         name = "slot_" .. p.name,
         -- computed in Rust, no script code runs when these change
-        bg = ui.select(ui.is(p.selected, p.name), "#ffcc00", "#333333"),
+        background_color = ui.when(ui.selected(p.selected, p.name), "#ffcc00", "#333333"),
         on_click = function() p.on_select(p.name) end,
     }, {
         ui.text({ name = "count_" .. p.name, text = ui.format("x{}", { ui.path(item, "data.count") }) }),
     })
 end
-local Slot = ui.define("Slot", slot)
+local Slot = ui.component("Slot", slot)
 
-local Details = ui.define("Details", function(p)
+local Details = ui.component("Details", function(p)
     return ui.text({ name = "details", text = "details: " .. p.name })
 end)
 
-local Inventory = ui.define("Inventory", function(p)
+local Inventory = ui.component("Inventory", function(p)
     local hp = ui.watch(p.player, Health)
     local selected = ui.signal(nil)
     local is_selected = ui.selector(selected)
@@ -73,33 +73,33 @@ local Inventory = ui.define("Inventory", function(p)
         return out
     end)
 
-    return ui.node({ direction = "column" }, {
+    return ui.node({ flex_direction = "column" }, {
         ui.text({ name = "version", text = "v" .. Reloads }),
         ui.text({ name = "title", text = function() return "Inventory (" .. #visible:get() .. ")" end }),
         ui.text({ name = "hp", text = ui.format("{}/{}", { ui.path(hp, "data.current"), ui.path(hp, "data.max") }) }),
-        ui.dynamic(function()
+        ui.show(function()
             local h = hp:get().data
             if h.current < h.max * 0.25 then return ui.text({ key = "low", name = "low", text = "LOW HP" }) end
         end),
         ui.text({ name = "clicks", text = function() return "clicks: " .. clicks:get() end }),
         -- one child per item, only built for new items
-        ui.each(visible, function(name)
+        ui.list(visible, function(name)
             -- the props stay in the script, `Details` below gets its props through Rust
-            return ui.el(Slot, function()
+            return ui.element(Slot, function()
                 return slot({ name = name, entity = State.entities[name], selected = is_selected, on_select = select })
             end)
         end),
-        ui.dynamic(function()
+        ui.show(function()
             local s = selected:get()
-            if s ~= nil then return ui.el(Details, { key = s, name = s }) end
+            if s ~= nil then return ui.element(Details, { key = s, name = s }) end
         end),
         -- a row template: runs once, `item` stands for the entity of each row, functions get the row's entity
-        ui.each_template(visible_entities, function(item)
+        ui.list_template(visible_entities, function(item)
             local data = ui.watch_item(item, Item)
             local name = ui.path(data, "data.name")
             return ui.node({
                 name = ui.format("row_{}", { name }),
-                bg = ui.select(ui.is(is_selected, name), "#ffcc00", "#333333"),
+                background_color = ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
                 on_click = function(entity)
                     local clicked = assert(world.get_component(entity, Item)) --[[@as bms.DynamicComponent]]
                     State.row_clicked = clicked.data.name
@@ -112,7 +112,7 @@ local Inventory = ui.define("Inventory", function(p)
 end)
 
 function on_script_loaded()
-    State.root = ui.mount("inventory", Inventory, { player = State.player })
+    State.root = ui.render("inventory", Inventory, { player = State.player })
 end
 
 -- the test steps, the same for both models
@@ -167,9 +167,9 @@ local checks = {
         expect("details", "details: Sword")
         expect("clicks", "clicks: 1")
         local sword, shield = ui.describe(find("slot_Sword")), ui.describe(find("slot_Shield"))
-        assert(sword.bg ~= shield.bg, "the selected slot is not highlighted")
+        assert(sword.background_color ~= shield.background_color, "the selected slot is not highlighted")
         local sword_row, shield_row = ui.describe(find("row_Sword")), ui.describe(find("row_Shield"))
-        assert(sword_row.bg == sword.bg and shield_row.bg == shield.bg, "the selected row is not highlighted")
+        assert(sword_row.background_color == sword.background_color and shield_row.background_color == shield.background_color, "the selected row is not highlighted")
         assert(State.row_clicked == "Shield", "the row handler did not get its entity")
     end,
     [3] = function()
