@@ -22,7 +22,7 @@ local search = ui.signal("")
 local shown = ui.signal(true)
 local removed = ui.signal(nil)
 
-local HealthBar = ui.define("HealthBar", function(p)
+local HealthBar = ui.component("HealthBar", function(p)
     local hp = ui.watch(p.player, Health)
     local current, max = ui.path(hp, "data.current"), ui.path(hp, "data.max")
     -- the low hp warning is structure, it stays a script region
@@ -30,34 +30,34 @@ local HealthBar = ui.define("HealthBar", function(p)
         local h = hp:get().data
         return h.current < h.max * 0.25
     end)
-    return ui.node({ direction = "column" }, {
+    return ui.node({ flex_direction = "column" }, {
         ui.node({
             width = ui.percent(current, max),
-            bg = ui.select(ui.lt(current, ui.mul(max, 0.25)), "#ff0000", "#00ff00"),
+            background_color = ui.when(ui.lt(current, ui.mul(max, 0.25)), "#ff0000", "#00ff00"),
         }),
         ui.text({ text = ui.format("{} / {}", { current, max }) }),
-        ui.dynamic(function()
+        ui.show(function()
             if low:get() then return ui.text({ key = "low", text = "LOW HP" }) end
         end),
     })
 end)
 
-local Slot = ui.define("Slot", function(p)
+local Slot = ui.component("Slot", function(p)
     local item = ui.watch(p.entity, Item)
     return ui.node({
         name = "slot_" .. p.name,
-        bg = ui.select(ui.is(p.selected, p.name), "#ffcc00", "#333333"),
+        background_color = ui.when(ui.selected(p.selected, p.name), "#ffcc00", "#333333"),
         on_click = function() p.on_select(p.name) end,
     }, {
         ui.text({ text = ui.format("x{}", { ui.path(item, "data.count") }) }),
     })
 end)
 
-local Details = ui.define("Details", function(p)
+local Details = ui.component("Details", function(p)
     return ui.text({ text = "details: " .. p.name })
 end)
 
-local Inventory = ui.define("Inventory", function(p)
+local Inventory = ui.component("Inventory", function(p)
     local selected = ui.signal(nil)
     local is_selected = ui.selector(selected)
     local visible = ui.computed(function()
@@ -69,30 +69,30 @@ local Inventory = ui.define("Inventory", function(p)
         return out
     end)
     local function select(name) selected:set(name) end
-    return ui.node({ direction = "column" }, {
+    return ui.node({ flex_direction = "column" }, {
         ui.text({ text = function() return "Inventory (" .. #visible:get() .. ")" end }),
-        ui.each(visible, function(name)
-            return ui.el(Slot, { name = name, entity = entities[name], selected = is_selected, on_select = select })
+        ui.list(visible, function(name)
+            return ui.element(Slot, { name = name, entity = entities[name], selected = is_selected, on_select = select })
         end),
-        ui.dynamic(function()
+        ui.show(function()
             local s = selected:get()
-            if s ~= nil then return ui.el(Details, { key = s, name = s }) end
+            if s ~= nil then return ui.element(Details, { key = s, name = s }) end
         end),
     })
 end)
 
-local Root = ui.define("Root", function()
-    return ui.dynamic(function()
-        if shown:get() then return ui.el(Inventory, { key = "inventory" }) end
+local Root = ui.component("Root", function()
+    return ui.show(function()
+        if shown:get() then return ui.element(Inventory, { key = "inventory" }) end
     end)
 end)
 
 local root
 function on_script_loaded()
     if BENCH == "health" then
-        root = ui.mount("bench", HealthBar, { player = player })
+        root = ui.render("bench", HealthBar, { player = player })
     else
-        root = ui.mount("bench", Root, {})
+        root = ui.render("bench", Root, {})
     end
 end
 

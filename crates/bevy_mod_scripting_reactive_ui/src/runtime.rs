@@ -43,7 +43,7 @@ pub type NodeId = u32;
 #[derive(Resource, Clone, Default)]
 pub struct ReactiveUi(pub(crate) Arc<Mutex<Runtime>>);
 
-/// Marks the entity a tree is mounted under, see `mount`.
+/// Marks the entity a tree is mounted under, see `render`.
 #[derive(Component, Debug)]
 pub struct UiRoot {
     /// The script which mounted the tree
@@ -96,7 +96,7 @@ pub(crate) enum NodeKind {
         container: Entity,
         f: Func,
         children: Vec<Mounted>,
-        /// Set for regions made by `each`
+        /// Set for regions made by `list`
         each: Option<Each>,
     },
     Instance(Instance),
@@ -108,7 +108,7 @@ pub(crate) enum NodeKind {
     },
 }
 
-/// What an `each` region keeps besides its children.
+/// What an `list` region keeps besides its children.
 pub(crate) struct Each {
     /// The signal holding the list of items
     pub source: NodeId,
@@ -1196,7 +1196,7 @@ impl Cx<'_, '_> {
         Ok(())
     }
 
-    /// Runs an `each` region: children of items still in the list are kept as they are, the function is only
+    /// Runs an `list` region: children of items still in the list are kept as they are, the function is only
     /// called for new items, and the children of items no longer in the list are unmounted.
     fn run_each(
         &self,
@@ -1238,7 +1238,7 @@ impl Cx<'_, '_> {
                 ScriptValue::Map(map) if map.is_empty() => Default::default(),
                 other => {
                     return Err(InteropError::string(format!(
-                        "`each` needs a signal holding a list, got: {other:?}"
+                        "`list` needs a signal holding a list, got: {other:?}"
                     )));
                 }
             };
