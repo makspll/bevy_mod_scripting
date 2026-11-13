@@ -9,9 +9,8 @@
 //! are animated by Rust writing `shown` and `flash`: the rows bind to them, so only the rows which move update.
 //! The header shows how long the ui took to update, measured around the systems of the reactive ui.
 //!
-//! Run with `cargo run --example reactive_ui --features lua54,bevy/file_watcher`, the ui is
-//! `assets/scripts/inventory_ui.lua`. Edit the script while it runs: the ui reloads and keeps its state
-//! (`file_watcher` is what notices the edit).
+//! Run with `cargo run --example reactive_ui --features lua54`, the ui is `assets/scripts/inventory_ui.lua`.
+//! Edit the script while it runs: the ui reloads and keeps its state.
 
 use std::time::{Duration, Instant};
 

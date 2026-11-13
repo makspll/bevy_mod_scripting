@@ -251,6 +251,8 @@ bevy = { workspace = true, features = [
     "ui_picking",
     "default_font",
     "custom_cursor",
+    # hot reloading in the examples
+    "file_watcher",
 ] }
 bevy_mod_scripting_reactive_ui = { workspace = true }
 bevy_platform = { workspace = true }
