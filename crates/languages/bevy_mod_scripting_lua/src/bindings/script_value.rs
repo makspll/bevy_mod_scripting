@@ -301,6 +301,24 @@ impl TableBuilder {
     }
 }
 
+/// The value at an absolute stack index, passed to a protected call without creating a Lua reference for it.
+#[cfg(not(feature = "luau"))]
+struct StackValue(c_int);
+
+#[cfg(not(feature = "luau"))]
+impl IntoLua for StackValue {
+    fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<Value> {
+        // Safety: the index is valid, see `push_into_stack`
+        lua.exec_raw_lua(|lua| unsafe { Value::from_stack(self.0, lua) })
+    }
+
+    unsafe fn push_into_stack(self, lua: &RawLua) -> mlua::Result<()> {
+        // Safety: made with a valid index, the caller guarantees room for the copy
+        unsafe { ffi::lua_pushvalue(lua.state(), self.0) };
+        Ok(())
+    }
+}
+
 /// Converts the table at the absolute stack index `idx`, iterating it with the raw API.
 ///
 /// # Safety
@@ -315,21 +333,33 @@ unsafe fn table_from_stack(idx: c_int, lua: &RawLua) -> mlua::Result<ScriptValue
             return Err(mlua::Error::StackError);
         }
         let mut builder = TableBuilder::new(ffi::lua_rawlen(state, idx) as usize);
-        // raw iteration calls no metamethods, so it can't raise errors past this frame
+        // `lua_next` raises an error if the table changed under it, which a finalizer can do: converting
+        // an entry may allocate (i.e. a number key turned into a string) and so run a collection.
+        // Iterating in a protected call keeps that error from jumping over the Rust frames here.
         #[cfg(not(feature = "luau"))]
         {
-            ffi::lua_pushnil(state);
-            while ffi::lua_next(state, idx) != 0 {
-                if let Err(e) = entry_from_stack(&mut builder, lua) {
-                    // the key and the value
-                    ffi::lua_pop(state, 2);
-                    return Err(e);
+            use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
+
+            let mut stopped = Ok(Ok(()));
+            mlua::Lua::get_or_init_from_ptr(state).exec_raw::<()>(StackValue(idx), |state| {
+                // the table is the only value on the stack of the protected call
+                ffi::lua_pushnil(state);
+                while ffi::lua_next(state, 1) != 0 {
+                    // errors and panics leave the protected call as values
+                    match catch_unwind(AssertUnwindSafe(|| entry_from_stack(&mut builder, lua))) {
+                        // the value, `lua_next` continues from the key
+                        Ok(Ok(())) => ffi::lua_pop(state, 1),
+                        other => {
+                            stopped = other;
+                            break;
+                        }
+                    }
                 }
-                // the value, `lua_next` continues from the key
-                ffi::lua_pop(state, 1);
-            }
+                ffi::lua_settop(state, 0);
+            })?;
+            stopped.unwrap_or_else(|panic| resume_unwind(panic))?;
         }
-        // as `Table::for_each` does on Luau: `lua_rawiter` pushes each key and value
+        // as `Table::for_each` does on Luau: `lua_rawiter` pushes each key and value, and raises no errors
         #[cfg(feature = "luau")]
         {
             let mut index = ffi::lua_rawiter(state, idx, 0);
@@ -560,12 +590,57 @@ mod test {
         }
         assert!(LuaScriptValue::from_lua(ok, &lua).is_ok());
         // the same read off the stack
-        let seen = seen.lock().unwrap();
-        for result in &seen[..2] {
-            let err = result.as_ref().unwrap_err();
-            assert!(err.to_string().contains("is the table cyclic?"), "{err}");
+        {
+            let seen = seen.lock().unwrap();
+            for result in &seen[..2] {
+                let err = result.as_ref().unwrap_err();
+                assert!(err.to_string().contains("is the table cyclic?"), "{err}");
+            }
+            assert!(seen[2].is_ok());
         }
-        assert!(seen[2].is_ok());
+        // a finalizer changing the table while it is converted is an error too, never a jump over the conversion
+        let changed: bool = lua
+            .load(
+                r#"
+                local t = {}
+                for i = 1, 20000 do t[i + 0.5] = i end
+                local armed, changed, stop = false, false, false
+                -- a finalizer which runs again in every collection until it changed the table
+                local function arm()
+                    local function finalizer()
+                        if armed then
+                            armed, changed = false, true
+                            for k in pairs(t) do t[k] = nil end
+                            for i = 1, 60000 do t[i + 100000.5] = i end
+                        elseif not stop then
+                            arm()
+                        end
+                    end
+                    if newproxy then
+                        getmetatable(newproxy(true)).__gc = finalizer
+                    else
+                        setmetatable({}, { __gc = finalizer })
+                    end
+                end
+                arm()
+                -- collect all the time, number keys allocate strings
+                pcall(collectgarbage, "setpause", 1)
+                pcall(collectgarbage, "setstepmul", 1000)
+                armed = true
+                capture(t)
+                armed, stop = false, true
+                return changed
+                "#,
+            )
+            .eval()
+            .unwrap();
+        // Luau has no finalizers
+        assert_eq!(changed, cfg!(not(feature = "luau")));
+        if changed {
+            let seen = seen.lock().unwrap();
+            let err = seen[3].as_ref().unwrap_err();
+            assert!(err.to_string().contains("invalid key to 'next'"), "{err}");
+        }
         // the depth is released after errors as well
         assert_eq!(TABLE_DEPTH.with(Cell::get), 0);
     }
