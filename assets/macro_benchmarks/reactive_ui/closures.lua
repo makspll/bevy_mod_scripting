@@ -46,7 +46,7 @@ local HealthBar = ui.component("HealthBar", function(p)
     })
 end)
 
-local Slot = ui.component("Slot", function(p)
+local function slot(p)
     local item = ui.watch(p.entity, Item)
     return ui.node({
         name = "slot_" .. p.name,
@@ -55,7 +55,8 @@ local Slot = ui.component("Slot", function(p)
     }, {
         ui.text({ text = function() return "x" .. item:get().data.count end }),
     })
-end)
+end
+local Slot = ui.component("Slot", slot)
 
 local Details = ui.component("Details", function(p)
     return ui.text({ text = "details: " .. p.name })
@@ -76,7 +77,10 @@ local Inventory = ui.component("Inventory", function(p)
     return ui.node({ flex_direction = "column" }, {
         ui.text({ text = function() return "Inventory (" .. #visible:get() .. ")" end }),
         ui.list(visible, function(name)
-            return ui.element(Slot, { name = name, entity = entities[name], selected = is_selected, on_select = select })
+            -- the props stay in the script
+            return ui.element(Slot, function()
+                return slot({ name = name, entity = entities[name], selected = is_selected, on_select = select })
+            end)
         end),
         ui.show(function()
             local s = selected:get()
