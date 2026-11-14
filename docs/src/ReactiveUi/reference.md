@@ -59,6 +59,8 @@ A wrong value is an error naming the property and listing what it accepts.
 | `on_drag` | `{ x, y, button, delta_x, delta_y }` |
 | `on_scroll` | `{ x, y, delta_x, delta_y }` |
 
+An element whose `overflow` is `"scroll"` scrolls with the mouse wheel, without a handler: give it a size and let its children overflow.
+
 These are `bevy_picking`'s pointer events. The innermost element with a handler for an event gets it. Handlers run during the next UI update, where they can set signals and change the world.
 
 ## State
@@ -127,7 +129,7 @@ A handler or bound property with dependencies is a list starting with the functi
 | | |
 |---|---|
 | `ui.component(name, f)` | Defines a component. Defining the name again (a reload) swaps the code and re-renders its instances |
-| `ui.render(key, Component, props)` | Shows a component under a new root entity, returned. Calling it again with the key updates it. Call it from `on_script_loaded` |
+| `ui.render(key, Component, props)` | Shows a component under a new root entity filling the window, returned. Calling it again with the key updates it. Call it from `on_script_loaded` |
 | `ui.find(root, name)` | The entity with the `Name` below `root` |
 | `ui.describe(entity)` | What an element shows: its text, colours, layout |
 | `ui.interact(entity, "click")` | What a pointer event on the element would do |

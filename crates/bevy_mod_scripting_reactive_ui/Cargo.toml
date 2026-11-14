@@ -24,6 +24,7 @@ bevy_text = { workspace = true }
 bevy_asset = { workspace = true }
 bevy_image = { workspace = true }
 bevy_picking = { version = "0.20", default-features = false }
+bevy_input = { version = "0.20", default-features = false }
 bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }

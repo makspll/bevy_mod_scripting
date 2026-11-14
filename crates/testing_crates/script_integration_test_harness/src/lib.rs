@@ -58,6 +58,8 @@ pub fn install_test_plugin(app: &mut App, include_test_functions: bool) {
         BMSScriptingInfrastructurePlugin::default(),
         bevy_mod_scripting_reactive_ui::ReactiveUiPlugin,
     ));
+    // the `image` property of the reactive ui, real apps get images from bevy's `ImagePlugin`
+    bevy_asset::AssetApp::init_asset::<bevy_image::Image>(app);
     if include_test_functions {
         register_test_functions(app);
     }
