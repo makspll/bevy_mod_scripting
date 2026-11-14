@@ -98,6 +98,8 @@ pub(crate) enum NodeKind {
         children: Vec<Mounted>,
         /// Set for regions made by `list`
         each: Option<Each>,
+        /// What is provided where the region is mounted
+        contexts: Contexts,
     },
     Instance(Instance),
     /// Tells readers whether a key is the one selected by a signal, only waking the readers of the old and new key
@@ -131,6 +133,8 @@ pub(crate) struct Instance {
     pub slots: Vec<NodeId>,
     pub rendered: Option<Mounted>,
     pub parent: Entity,
+    /// What is provided where the instance is mounted
+    pub contexts: Contexts,
 }
 
 pub(crate) struct GraphNode {
@@ -202,6 +206,8 @@ pub(crate) struct Runtime {
     pub events: Vec<QueuedEvent>,
     pub watches: Vec<NodeId>,
     pub elements: crate::element::ElementArena,
+    /// The default value of each context, by its id
+    pub contexts: Vec<ScriptValue>,
 }
 
 impl Runtime {
@@ -464,6 +470,62 @@ impl Runtime {
         self.def_index.retain(|(a, _), _| a != attachment);
         containers
     }
+}
+
+/// The context values provided above a place in the tree, innermost first.
+pub(crate) type Contexts = Option<Arc<ContextLink>>;
+
+pub(crate) struct ContextLink {
+    context: crate::element::UiContext,
+    value: ScriptValue,
+    above: Contexts,
+}
+
+thread_local! {
+    /// The context values provided above what is being mounted or rendered
+    static CONTEXTS: RefCell<Contexts> = const { RefCell::new(None) };
+}
+
+/// Restores the provided context values when dropped.
+pub(crate) struct ContextsGuard(Contexts);
+
+impl ContextsGuard {
+    /// Makes `contexts` what is provided, i.e. while a component renders.
+    pub fn set(contexts: Contexts) -> Self {
+        Self(CONTEXTS.with(|c| c.replace(contexts)))
+    }
+
+    /// Provides one more value, i.e. while the children of a `provide` are mounted.
+    pub fn provide(context: crate::element::UiContext, value: ScriptValue) -> Self {
+        let above = current_contexts();
+        Self::set(Some(Arc::new(ContextLink {
+            context,
+            value,
+            above,
+        })))
+    }
+}
+
+impl Drop for ContextsGuard {
+    fn drop(&mut self) {
+        CONTEXTS.with(|c| *c.borrow_mut() = self.0.take());
+    }
+}
+
+pub(crate) fn current_contexts() -> Contexts {
+    CONTEXTS.with(|c| c.borrow().clone())
+}
+
+/// The value provided for the context above what is being rendered, if any.
+pub(crate) fn provided(context: crate::element::UiContext) -> Option<ScriptValue> {
+    let mut link = current_contexts();
+    while let Some(current) = link {
+        if current.context == context {
+            return Some(current.value.clone());
+        }
+        link = current.above.clone();
+    }
+    None
 }
 
 /// What the script function currently running is a part of.
@@ -1011,8 +1073,15 @@ impl Cx<'_, '_> {
     pub fn mount(&self, element: &UiElement, parent: Entity) -> Result<Mounted, InteropError> {
         let data = &element.0;
         match &data.kind {
-            ElementKind::Node | ElementKind::Text => {
+            ElementKind::Node | ElementKind::Text | ElementKind::Provide(..) => {
                 let entity = self.spawn(&data.kind, &data.props, parent)?;
+                // provided to what is mounted below
+                let _provided = match &data.kind {
+                    ElementKind::Provide(context, value) => {
+                        Some(ContextsGuard::provide(*context, value.clone()))
+                    }
+                    _ => None,
+                };
                 let mut bindings = Vec::new();
                 for (prop, value) in &data.props {
                     match value {
@@ -1049,6 +1118,7 @@ impl Cx<'_, '_> {
                         slots: Vec::new(),
                         rendered: None,
                         parent,
+                        contexts: current_contexts(),
                     }),
                     self.attachment.clone(),
                 );
@@ -1077,6 +1147,7 @@ impl Cx<'_, '_> {
                         f: f.clone(),
                         children: Vec::new(),
                         each,
+                        contexts: current_contexts(),
                     },
                     self.attachment.clone(),
                 );
@@ -1165,7 +1236,7 @@ impl Cx<'_, '_> {
     }
 
     pub fn run_region(&self, id: NodeId) -> Result<(), InteropError> {
-        let (container, f, old, each) = {
+        let (container, f, old, each, contexts) = {
             let mut rt = self.runtime.lock();
             rt.clear_deps(id);
             match rt.nodes.get_mut(&id) {
@@ -1176,6 +1247,7 @@ impl Cx<'_, '_> {
                             f,
                             children,
                             each,
+                            contexts,
                         },
                     dirty,
                     check,
@@ -1191,11 +1263,19 @@ impl Cx<'_, '_> {
                         template: each.template.clone(),
                         owned: std::mem::take(&mut each.owned),
                     });
-                    (*container, f.clone(), std::mem::take(children), each)
+                    (
+                        *container,
+                        f.clone(),
+                        std::mem::take(children),
+                        each,
+                        contexts.clone(),
+                    )
                 }
                 _ => return Ok(()),
             }
         };
+        // what the region mounts is below what was provided where it is
+        let _contexts = ContextsGuard::set(contexts);
         if let Some(each) = each {
             return self.run_each(id, container, &f, each, old);
         }
@@ -1526,6 +1606,7 @@ impl Cx<'_, '_> {
 
     /// Runs the component's render function and mounts or diffs its output.
     pub fn render_instance(&self, id: NodeId) -> Result<(), InteropError> {
+        let contexts;
         let (render, props, old, parent) = {
             let mut rt = self.runtime.lock();
             let def = match rt.nodes.get(&id) {
@@ -1547,6 +1628,8 @@ impl Cx<'_, '_> {
             let NodeKind::Instance(instance) = &mut node.kind else {
                 return Ok(());
             };
+            // the instance renders and mounts below what was provided where it is
+            contexts = instance.contexts.clone();
             (
                 render,
                 instance.props.clone(),
@@ -1554,6 +1637,7 @@ impl Cx<'_, '_> {
                 instance.parent,
             )
         };
+        let _contexts = ContextsGuard::set(contexts);
         self.runtime.lock().dirty.remove(&id);
         let result = with_frame(
             Frame {
@@ -1691,6 +1775,12 @@ impl Cx<'_, '_> {
                 {
                     self.set_handlers(entity, &new.props)?;
                 }
+                let _provided = match &new.kind {
+                    ElementKind::Provide(context, value) => {
+                        Some(ContextsGuard::provide(*context, value.clone()))
+                    }
+                    _ => None,
+                };
                 let children = self.reconcile(children, &new.children, entity)?;
                 Ok(Mounted::Host {
                     entity,

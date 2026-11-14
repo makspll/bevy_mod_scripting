@@ -44,8 +44,11 @@ local function slot(name, entity, selected, on_select)
 end
 local Slot = ui.component("Slot", slot)
 
+-- read by `Details` wherever it is, without going through the props of what is in between
+Labels = Labels or ui.create_context({ details = "details: " })
+
 local Details = ui.component("Details", function(p)
-    return ui.text({ name = "details", text = "details: " .. p.name })
+    return ui.text({ name = "details", text = ui.use_context(Labels).details .. p.name })
 end)
 
 local Inventory = ui.component("Inventory", function(p)
@@ -94,10 +97,13 @@ local Inventory = ui.component("Inventory", function(p)
             -- `slot` is called with these values, `Details` below gets a props table through Rust
             return ui.element(Slot, slot, { name, State.entities[name], is_selected, select })
         end),
-        ui.show(function()
-            local s = selected:get()
-            if s ~= nil then return ui.element(Details, { key = s, name = s }) end
-        end),
+        -- the region below is mounted later, and still sees what is provided here
+        ui.provide(Labels, { details = "selected: " }, {
+            ui.show(function()
+                local s = selected:get()
+                if s ~= nil then return ui.element(Details, { key = s, name = s }) end
+            end),
+        }),
         -- a row template: runs once, `item` stands for the entity of each row, functions get the row's entity
         ui.list_template(visible_entities, function(item)
             local data = ui.watch_item(item, Item)
@@ -178,7 +184,7 @@ local checks = {
         expect("low", "LOW HP")
     end,
     [2] = function()
-        expect("details", "details: Sword")
+        expect("details", "selected: Sword")
         expect("clicks", "clicks: 1")
         local sword, shield = ui.describe(find("slot_Sword")), ui.describe(find("slot_Shield"))
         assert(sword.background_color ~= shield.background_color, "the selected slot is not highlighted")
@@ -191,7 +197,7 @@ local checks = {
         assert(find("row_Sword") == nil, "filtered out row still shown")
         assert(find("slot_Sword") == nil, "filtered out slot still shown")
         assert(find("slot_Shield") ~= nil, "matching slot not shown")
-        expect("details", "details: Sword")
+        expect("details", "selected: Sword")
     end,
     [4] = function()
         expect("count_Shield", "x5")
