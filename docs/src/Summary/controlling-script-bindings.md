@@ -30,12 +30,12 @@ Registering functions can be done via the `NamespaceBuilder` like below:
     NamespaceBuilder::<ReflectReference>::new(&mut world)
         .register(
             "hello_world",
-            |s: String| {
+            |_self: ReflectReference, s: String| {
                 println!("{s}")
             },
         );
 
-    NamespaceBuilder::<GlobalNamespace>::new_unregistered(&mut world)
+    NamespaceBuilder::in_namespace(&mut world, "my_game")
         .register(
             "hello_world2",
             |s: String| {
@@ -47,11 +47,11 @@ Registering functions can be done via the `NamespaceBuilder` like below:
 This will allow you to call this function within Lua like so:
 
 ```lua
-some_type:hello_world("hi from method!");
-hello_world2("hi from global!");
+some_value:hello_world("hi from method!")
+import_namespace("my_game").hello_world2("hi from my_game!")
 ```
 
-Note the `new_unregistered` call instead of `new`, this is because `GlobalNamespace` is not a `Reflect` type, and the `new` call also automatically registers the type in the reflection registry.
+`new` also registers the type in the type registry. Functions on `ReflectReference` are available on every value, and receive it as their first argument, see [where functions can live](#where-functions-can-live).
 
 ## Macros
 
@@ -120,9 +120,9 @@ You can use this as follows:
     NamespaceBuilder::<ReflectReference>::new(&mut world)
         .register(
             "hello_world",
-            |ctx: FunctionCallContext, s: String| {
+            |ctx: FunctionCallContext, _self: ReflectReference, s: String| {
                 let world = ctx.world()?;
-                let should_use_0_indexing = ctx.convert_to_0_indexed;
+                let should_use_0_indexing = ctx.convert_to_0_indexed();
                 println!("{should_use_0_indexing} {s}");
                 Ok(())
             },
@@ -248,8 +248,7 @@ The type in the `impl` block you apply `script_bindings` to (or the one passed t
 | `MyType` | `MyType` values and the `MyType` type, as imported from its namespace | whatever you declare |
 | `ReflectReference` | every value, after `MyType`'s own functions | the value |
 | `StaticTypeRef` | every type, after `MyType`'s own functions | the type, filled in automatically |
-| `NamespaceMembers` | the namespace given by `namespace = "..."`, i.e. `import_namespace("my_game")` | whatever you declare |
-| `GlobalNamespace` | the builtin globals, i.e. no prefix | whatever you declare |
+| `NamespaceMembers` | the namespace given by `namespace = "..."` (or `NamespaceBuilder::in_namespace`), i.e. `import_namespace("my_game")` | whatever you declare |
 
 When the same name exists in more than one place, the most specific one wins.
 These types are defined by BMS, so `script_bindings` blocks on `ReflectReference`, `StaticTypeRef` or `NamespaceMembers` in your crate need the `remote` attribute.
