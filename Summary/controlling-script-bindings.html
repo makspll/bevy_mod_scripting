@@ -38,7 +38,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ce1ef2e7.js";
+            window.path_to_searchindex_js = "../searchindex-bf4554ac.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-c5255b6a.js"></script>
@@ -251,7 +251,7 @@ pub fn main() {
 pub struct MyThing(usize);
 
 
-#[script_bindings(remote)]
+#[script_bindings]
 impl MyThing {
     // Can now be used directly without V&lt;&gt; wrapper, acts exactly like V&lt;MyThing&gt;
     pub fn test(thing: MyThing) -&gt; MyThing {

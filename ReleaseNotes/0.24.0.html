@@ -38,7 +38,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ce1ef2e7.js";
+            window.path_to_searchindex_js = "../searchindex-bf4554ac.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-c5255b6a.js"></script>
@@ -230,7 +230,7 @@ local world = bms.world
 bms.log_info("hi from " .. tostring(bms.current_entity()))
 </code></pre>
 <p>Exposing your own functions is one attribute, no globals registry:</p>
-<pre><code class="language-rust ignore">#[script_bindings(namespace = "my_game")]
+<pre><code class="language-rust ignore">#[script_bindings(remote, namespace = "my_game")]
 impl NamespaceMembers {
     /// `import_namespace("my_game").spawn_enemy(5)` in scripts
     fn spawn_enemy(ctxt: FunctionCallContext, hp: usize) -&gt; Result&lt;(), InteropError&gt; { .. }
