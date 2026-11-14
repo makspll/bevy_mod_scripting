@@ -41,6 +41,7 @@
 mod element;
 mod expr;
 mod runtime;
+mod style;
 
 use std::collections::VecDeque;
 
@@ -199,6 +200,16 @@ fn register_functions(world: &mut World) {
         let (key, props) = parse_props(Some(props), &ctx.world()?)?;
         Ok::<_, InteropError>(new_element(&*runtime(&ctx)?, ElementData {
             kind: ElementKind::Text,
+            key,
+            props,
+            children: Vec::new(),
+        }))
+    })
+    .register("image", |ctx: FunctionCallContext, props: ScriptValue| {
+        // a node showing the image asset at the path given as its `image`
+        let (key, props) = parse_props(Some(props), &ctx.world()?)?;
+        Ok::<_, InteropError>(new_element(&*runtime(&ctx)?, ElementData {
+            kind: ElementKind::Node,
             key,
             props,
             children: Vec::new(),
@@ -393,6 +404,23 @@ fn register_functions(world: &mut World) {
                 if let Some(bg) = w.get::<BackgroundColor>(entity) {
                     map.insert("background_color".to_owned(), ScriptValue::String(bg.0.to_srgba().to_hex().into()));
                 }
+                // the rest is described as Rust prints it, which is enough to check what was set
+                if let Some(node) = w.get::<Node>(entity) {
+                    map.insert("layout".to_owned(), ScriptValue::String(format!("{node:?}").into()));
+                }
+                if let Some(font) = w.get::<bevy_text::TextFont>(entity) {
+                    map.insert("font_size".to_owned(), ScriptValue::String(format!("{:?}", font.font_size).into()));
+                }
+                if let Some(color) = w.get::<bevy_text::TextColor>(entity) {
+                    map.insert("color".to_owned(), ScriptValue::String(color.0.to_srgba().to_hex().into()));
+                }
+                if let Some(border) = w.get::<bevy_ui::BorderColor>(entity) {
+                    map.insert("border_color".to_owned(), ScriptValue::String(border.top.to_srgba().to_hex().into()));
+                }
+                map.insert(
+                    "image".to_owned(),
+                    ScriptValue::Bool(w.get::<bevy_ui::widget::ImageNode>(entity).is_some()),
+                );
                 let children = w.get::<Children>(entity).map_or(0, |c| c.len());
                 map.insert("children".to_owned(), ScriptValue::Integer(children as i64));
                 ScriptValue::Map(map.into_iter().collect())
