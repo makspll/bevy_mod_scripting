@@ -1,0 +1,261 @@
+// The inventory test of `../inventory/inventory.lua` in Rune.
+// Closures handed to BMS can only capture numbers and strings in Rune, so functions are given the signals
+// and entities they need as dependencies. What the Lua script keeps in globals is in `state()`.
+
+fn contains(list, value) {
+    for v in list {
+        if v == value {
+            return true;
+        }
+    }
+    false
+}
+
+// rendered with dependencies instead of a props table, see the `element` below
+fn slot(name, entity, is_selected, selected, clicks) {
+    let ui = import_namespace("reactive_ui");
+    let item = ui.watch(entity, state()["Item"]);
+    ui.node(#{
+        name: `slot_${name}`,
+        // computed in Rust, no script code runs when these change
+        background_color: ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
+        // a function with its dependencies
+        on_click: [|selected, clicks, name| {
+            selected.set(name);
+            clicks.set(clicks.peek() + 1);
+        }, selected, clicks, name],
+    }, [
+        ui.text(#{ name: `count_${name}`, text: ui.format("x{}", [ui.path(item, "data.count")]) }),
+    ])
+}
+
+fn details(p) {
+    let ui = import_namespace("reactive_ui");
+    ui.text(#{ name: "details", text: `details: ${p.name}` })
+}
+
+fn inventory(p) {
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    let hp = ui.watch(p.player, s["Health"]);
+    let selected = ui.signal(());
+    let is_selected = ui.selector(selected);
+    let clicks = ui.signal(0);
+    let visible = ui.computed(|search, items| {
+        let query = search.get();
+        let out = [];
+        for name in items.get() {
+            if name.to_lowercase().contains(query) {
+                out.push(name);
+            }
+        }
+        // a Rune closure ending in a bare local returns nothing, `return` it
+        return out;
+    }, [s["search"], s["items"]]);
+    let visible_entities = ui.computed(|visible, entities| {
+        let out = [];
+        for name in visible.get() {
+            out.push(entities[name]);
+        }
+        return out;
+    }, [visible, s["entities"]]);
+    ui.effect(|selected, items| {
+        // a string can't be compared with `()` in Rune, match instead
+        match selected.get() {
+            () => {}
+            name => {
+                if !contains(items.get(), name) {
+                    selected.set(());
+                }
+            }
+        }
+    }, [selected, s["items"]]);
+
+    let reloads = s["reloads"];
+    ui.node(#{ flex_direction: "column" }, [
+        ui.text(#{ name: "version", text: `v${reloads}` }),
+        ui.text(#{ name: "title", text: [|visible| {
+            let count = visible.get().len();
+            `Inventory (${count})`
+        }, visible] }),
+        ui.text(#{ name: "hp", text: ui.format("{}/{}", [ui.path(hp, "data.current"), ui.path(hp, "data.max")]) }),
+        ui.show(|hp| {
+            let h = hp.get().data;
+            if h.current * 4 < h.max {
+                import_namespace("reactive_ui").text(#{ key: "low", name: "low", text: "LOW HP" })
+            } else {
+                ()
+            }
+        }, [hp]),
+        // an empty path is the value itself
+        ui.text(#{ name: "clicks", text: ui.format("clicks: {}", [ui.path(clicks, "")]) }),
+        // one child per item, only built for new items
+        ui.list(visible, |is_selected, selected, clicks, entities, name| {
+            let ui = import_namespace("reactive_ui");
+            // `slot` is called with these values, `Details` below gets a props table through Rust
+            ui.element(state()["Slot"], slot, [name, entities[name], is_selected, selected, clicks])
+        }, [is_selected, selected, clicks, s["entities"]]),
+        ui.show(|selected| {
+            match selected.get() {
+                () => (),
+                name => import_namespace("reactive_ui").element(state()["Details"], #{ key: name, name: name }),
+            }
+        }, [selected]),
+        // a row template: runs once, `item` stands for the entity of each row, functions get the row's entity
+        ui.list_template(visible_entities, |is_selected, item| {
+            let ui = import_namespace("reactive_ui");
+            let Item = state()["Item"];
+            let data = ui.watch_item(item, Item);
+            let name = ui.path(data, "data.name");
+            ui.node(#{
+                name: ui.format("row_{}", [name]),
+                background_color: ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
+                on_click: |entity| {
+                    let world = import_namespace("bms").world;
+                    let s = state();
+                    s["row_clicked"] = world.get_component(entity, s["Item"]).data.name;
+                },
+            }, [
+                ui.text(#{ name: ui.format("row_text_{}", [name]), text: ui.format("{} x{}", [name, ui.path(data, "data.count")]) }),
+            ])
+        }, [is_selected]),
+    ])
+}
+
+pub fn main() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    // the state survives reloads
+    if s["reloads"] is i64 {
+        s["reloads"] = s["reloads"] + 1;
+    } else {
+        s["reloads"] = 1;
+        s["step"] = 0;
+        let Health = world.register_new_component("script.reactive_ui", "Health", true);
+        let Item = world.register_new_component("script.reactive_ui", "Item", true);
+        s["Health"] = Health;
+        s["Item"] = Item;
+        let player = world.spawn();
+        world.insert_component(player, Health, bms.DynamicComponent.new(#{ data: #{ current: 100, max: 100 } }));
+        s["player"] = player;
+        let entities = #{};
+        for name in ["Sword", "Shield", "Potion"] {
+            let e = world.spawn();
+            world.insert_component(e, Item, bms.DynamicComponent.new(#{ data: #{ name: name, count: 1 } }));
+            entities[name] = e;
+        }
+        s["entities"] = entities;
+        s["items"] = ui.signal(["Sword", "Shield", "Potion"]);
+        s["search"] = ui.signal("");
+    }
+    // defined again on every load, which renders their instances with the new code
+    s["Slot"] = ui.component("Slot", slot);
+    s["Details"] = ui.component("Details", details);
+    s["Inventory"] = ui.component("Inventory", inventory);
+}
+
+pub fn on_script_loaded() {
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    s["root"] = ui.render("inventory", s["Inventory"], #{ player: s["player"] });
+}
+
+// the test steps
+
+fn find(name) {
+    import_namespace("reactive_ui").find(state()["root"], name)
+}
+
+fn expect(name, expected) {
+    let e = find(name);
+    assert!(e != (), "no element named {}", name);
+    let actual = import_namespace("reactive_ui").describe(e).text;
+    assert!(actual == expected, "{}: expected `{}`, got `{}`", name, expected, actual);
+}
+
+pub fn on_test() {
+    let world = import_namespace("bms").world;
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    match s["step"] {
+        1 => {
+            let hp = world.get_component(s["player"], s["Health"]);
+            hp.data = #{ current: 20, max: 100 };
+        }
+        2 => {
+            ui.interact(find("slot_Sword"), "press");
+            ui.interact(find("row_Shield"), "press");
+        }
+        3 => s["search"].set("sh"),
+        4 => {
+            let shield = world.get_component(s["entities"]["Shield"], s["Item"]);
+            shield.data = #{ name: "Shield", count: 5 };
+        }
+        5 => {
+            world.despawn(s["entities"]["Sword"]);
+            s["items"].set(["Shield", "Potion"]);
+        }
+        _ => {}
+    }
+}
+
+pub fn on_test_last() {
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    let step = s["step"];
+    match step {
+        0 => {
+            expect("version", "v1");
+            expect("title", "Inventory (3)");
+            expect("hp", "100/100");
+            assert!(find("low") == (), "low hp shown at full health");
+            expect("clicks", "clicks: 0");
+            expect("count_Sword", "x1");
+            expect("row_text_Sword", "Sword x1");
+            assert!(find("details") == (), "details shown without a selection");
+        }
+        1 => {
+            expect("hp", "20/100");
+            expect("low", "LOW HP");
+        }
+        2 => {
+            expect("details", "details: Sword");
+            expect("clicks", "clicks: 1");
+            let sword = ui.describe(find("slot_Sword"));
+            let shield = ui.describe(find("slot_Shield"));
+            assert!(sword.background_color != shield.background_color, "the selected slot is not highlighted");
+            let sword_row = ui.describe(find("row_Sword"));
+            let shield_row = ui.describe(find("row_Shield"));
+            assert!(
+                sword_row.background_color == sword.background_color && shield_row.background_color == shield.background_color,
+                "the selected row is not highlighted"
+            );
+            assert!(s["row_clicked"] == "Shield", "the row handler did not get its entity");
+        }
+        3 => {
+            expect("title", "Inventory (1)");
+            assert!(find("row_Sword") == (), "filtered out row still shown");
+            assert!(find("slot_Sword") == (), "filtered out slot still shown");
+            assert!(find("slot_Shield") != (), "matching slot not shown");
+            expect("details", "details: Sword");
+        }
+        4 => {
+            expect("count_Shield", "x5");
+            expect("row_text_Shield", "Shield x5");
+        }
+        5 => assert!(find("details") == (), "selection of a removed item was not cleared"),
+        6 => {
+            expect("version", "v2");
+            expect("title", "Inventory (1)");
+            expect("clicks", "clicks: 1");
+            expect("hp", "20/100");
+            expect("count_Shield", "x5");
+            expect("row_text_Shield", "Shield x5");
+        }
+        _ => {}
+    }
+    s["step"] = step + 1;
+    `step ${step}`
+}

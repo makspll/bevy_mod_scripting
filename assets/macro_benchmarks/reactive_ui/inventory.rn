@@ -1,0 +1,196 @@
+// reactive ui benchmarks in Rune, the ui of paths.lua and template.lua.
+// The harness prepends two constants: `BENCH` selects the scenario, `TEMPLATE` whether the slots are built from
+// a row template or are components. `bench_step` makes the change whose ui update is measured.
+// Closures handed to BMS can't capture signals or entities in Rune: functions get them as dependencies,
+// what the Lua scripts keep in locals of the script is in `state()`.
+
+fn health_bar(p) {
+    let ui = import_namespace("reactive_ui");
+    let hp = ui.watch(p.player, state()["Health"]);
+    let current = ui.path(hp, "data.current");
+    let max = ui.path(hp, "data.max");
+    // the low hp warning is structure, it stays a script region
+    let low = ui.computed(|hp| {
+        let h = hp.get().data;
+        h.current * 4 < h.max
+    }, [hp]);
+    ui.node(#{ flex_direction: "column" }, [
+        ui.node(#{
+            width: ui.percent(current, max),
+            background_color: ui.when(ui.lt(current, ui.mul(max, 0.25)), "#ff0000", "#00ff00"),
+        }),
+        ui.text(#{ text: ui.format("{} / {}", [current, max]) }),
+        ui.show(|low| {
+            if low.get() {
+                import_namespace("reactive_ui").text(#{ key: "low", text: "LOW HP" })
+            } else {
+                ()
+            }
+        }, [low]),
+    ])
+}
+
+// a slot as a component, rendered with dependencies instead of a props table
+fn slot(entity, is_selected, selected) {
+    let ui = import_namespace("reactive_ui");
+    let Item = state()["Item"];
+    let item = ui.watch(entity, Item);
+    let name = import_namespace("bms").world.get_component(entity, Item).data.name;
+    ui.node(#{
+        name: `slot_${name}`,
+        background_color: ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
+        on_click: [|selected, name| selected.set(name), selected, name],
+    }, [
+        ui.text(#{ text: ui.format("x{}", [ui.path(item, "data.count")]) }),
+    ])
+}
+
+fn details(p) {
+    import_namespace("reactive_ui").text(#{ text: `details: ${p.name}` })
+}
+
+fn inventory(p) {
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    let selected = ui.signal(());
+    let is_selected = ui.selector(selected);
+    // the items of the list are the entities
+    let visible = ui.computed(|search, removed| {
+        let s = state();
+        let query = search.get();
+        let without = match removed.get() {
+            () => "",
+            name => name,
+        };
+        let names = s["names"];
+        let entities = s["entities"];
+        let out = [];
+        for i in 0..names.len() {
+            if names[i] != without && names[i].contains(query) {
+                out.push(entities[i]);
+            }
+        }
+        return out;
+    }, [s["search"], s["removed"]]);
+    let slots = if TEMPLATE {
+        // runs once: `item` stands for each row's entity, the handler is shared and gets the row's entity
+        ui.list_template(visible, |is_selected, selected, item| {
+            let ui = import_namespace("reactive_ui");
+            let data = ui.watch_item(item, state()["Item"]);
+            let name = ui.path(data, "data.name");
+            ui.node(#{
+                name: ui.format("slot_{}", [name]),
+                background_color: ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
+                on_click: [|selected, entity| {
+                    let item = import_namespace("bms").world.get_component(entity, state()["Item"]);
+                    selected.set(item.data.name);
+                }, selected],
+            }, [
+                ui.text(#{ text: ui.format("x{}", [ui.path(data, "data.count")]) }),
+            ])
+        }, [is_selected, selected])
+    } else {
+        ui.list(visible, |is_selected, selected, entity| {
+            import_namespace("reactive_ui").element(state()["Slot"], slot, [entity, is_selected, selected])
+        }, [is_selected, selected])
+    };
+    ui.node(#{ flex_direction: "column" }, [
+        ui.text(#{ text: [|visible| {
+            let count = visible.get().len();
+            `Inventory (${count})`
+        }, visible] }),
+        slots,
+        ui.show(|selected| {
+            match selected.get() {
+                () => (),
+                name => import_namespace("reactive_ui").element(state()["Details"], #{ key: name, name: name }),
+            }
+        }, [selected]),
+    ])
+}
+
+fn root(p) {
+    import_namespace("reactive_ui").show(|shown| {
+        if shown.get() {
+            import_namespace("reactive_ui").element(state()["Inventory"], #{ key: "inventory" })
+        } else {
+            ()
+        }
+    }, [state()["shown"]])
+}
+
+pub fn main() {
+    let bms = import_namespace("bms");
+    let world = bms.world;
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    let Health = world.register_new_component("script.bench", "Health", true);
+    let Item = world.register_new_component("script.bench", "Item", true);
+    s["Health"] = Health;
+    s["Item"] = Item;
+    let player = world.spawn();
+    world.insert_component(player, Health, bms.DynamicComponent.new(#{ data: #{ current: 100, max: 100 } }));
+    s["player"] = player;
+    let names = [];
+    let entities = [];
+    for i in 1..=200 {
+        let name = `item ${i}`;
+        let e = world.spawn();
+        world.insert_component(e, Item, bms.DynamicComponent.new(#{ data: #{ name: name, count: 1 } }));
+        names.push(name);
+        entities.push(e);
+    }
+    s["names"] = names;
+    s["entities"] = entities;
+    s["search"] = ui.signal("");
+    s["shown"] = ui.signal(true);
+    s["removed"] = ui.signal(());
+    s["n"] = 0;
+    s["Slot"] = ui.component("Slot", slot);
+    s["Details"] = ui.component("Details", details);
+    s["Inventory"] = ui.component("Inventory", inventory);
+    s["HealthBar"] = ui.component("HealthBar", health_bar);
+    s["Root"] = ui.component("Root", root);
+}
+
+pub fn on_script_loaded() {
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    if BENCH == "health" {
+        s["root"] = ui.render("bench", s["HealthBar"], #{ player: s["player"] });
+    } else {
+        s["root"] = ui.render("bench", s["Root"], #{});
+    }
+}
+
+pub fn bench_step() {
+    let world = import_namespace("bms").world;
+    let ui = import_namespace("reactive_ui");
+    let s = state();
+    let n = s["n"] + 1;
+    s["n"] = n;
+    match BENCH {
+        "health" => {
+            let hp = world.get_component(s["player"], s["Health"]);
+            hp.data = #{ current: 50 + n % 2, max: 100 };
+        }
+        "mount" => s["shown"].set(!s["shown"].peek()),
+        "select" => {
+            let name = s["names"][n % 200];
+            ui.interact(ui.find(s["root"], `slot_${name}`), "press");
+        }
+        "search" => s["search"].set(if n % 2 == 0 { "" } else { "5" }),
+        "one" => {
+            if n % 2 == 1 {
+                s["removed"].set("item 100");
+            } else {
+                s["removed"].set(());
+            }
+        }
+        "count" => {
+            let item = world.get_component(s["entities"][n % 200], s["Item"]);
+            item.data = #{ name: "x", count: n };
+        }
+        _ => {}
+    }
+}
