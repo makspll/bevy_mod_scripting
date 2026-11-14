@@ -92,7 +92,7 @@ The most trivial way to allow your type to be used directly in bindings is to ap
 pub struct MyThing(usize);
 
 
-#[script_bindings(remote)]
+#[script_bindings]
 impl MyThing {
     // Can now be used directly without V<> wrapper, acts exactly like V<MyThing>
     pub fn test(thing: MyThing) -> MyThing {
