@@ -96,6 +96,8 @@ pub(crate) enum NodeKind {
         container: Entity,
         f: Func,
         children: Vec<Mounted>,
+        /// Set for regions made by `list`
+        each: Option<Each>,
     },
     Instance(Instance),
     /// Tells readers whether a key is the one selected by a signal, only waking the readers of the old and new key
@@ -104,6 +106,16 @@ pub(crate) enum NodeKind {
         current: Option<String>,
         by_key: HashMap<String, Vec<NodeId>>,
     },
+}
+
+/// What an `list` region keeps besides its children.
+pub(crate) struct Each {
+    /// The signal holding the list of items
+    pub source: NodeId,
+    /// The key of each child, in order
+    pub keys: Vec<String>,
+    /// The function was replaced (its parent rendered again): kept children are built again and patched
+    pub refresh: bool,
 }
 
 pub(crate) struct Instance {
@@ -1029,13 +1041,22 @@ impl Cx<'_, '_> {
                     key: data.key.clone(),
                 })
             }
-            ElementKind::Dynamic(f) => {
+            ElementKind::Dynamic(f) | ElementKind::Each(_, f) => {
                 let entity = self.spawn(&ElementKind::Node, &[], parent)?;
+                let each = match &data.kind {
+                    ElementKind::Each(source, _) => Some(Each {
+                        source: *source,
+                        keys: Vec::new(),
+                        refresh: false,
+                    }),
+                    _ => None,
+                };
                 let region = self.runtime.lock().create(
                     NodeKind::Region {
                         container: entity,
                         f: f.clone(),
                         children: Vec::new(),
+                        each,
                     },
                     self.attachment.clone(),
                 );
@@ -1124,7 +1145,7 @@ impl Cx<'_, '_> {
     }
 
     pub fn run_region(&self, id: NodeId) -> Result<(), InteropError> {
-        let (container, f, old) = {
+        let (container, f, old, each) = {
             let mut rt = self.runtime.lock();
             rt.clear_deps(id);
             match rt.nodes.get_mut(&id) {
@@ -1134,6 +1155,7 @@ impl Cx<'_, '_> {
                             container,
                             f,
                             children,
+                            each,
                         },
                     dirty,
                     check,
@@ -1141,11 +1163,19 @@ impl Cx<'_, '_> {
                 }) => {
                     *dirty = false;
                     *check = false;
-                    (*container, f.clone(), std::mem::take(children))
+                    let each = each.as_mut().map(|each| Each {
+                        source: each.source,
+                        keys: std::mem::take(&mut each.keys),
+                        refresh: std::mem::take(&mut each.refresh),
+                    });
+                    (*container, f.clone(), std::mem::take(children), each)
                 }
                 _ => return Ok(()),
             }
         };
+        if let Some(each) = each {
+            return self.run_each(id, container, &f, each, old);
+        }
         let result = with_frame(
             Frame {
                 observer: Some(id),
@@ -1164,6 +1194,98 @@ impl Cx<'_, '_> {
         let children = self.reconcile(old, &elements, container)?;
         self.put_region_children(id, children);
         Ok(())
+    }
+
+    /// Runs an `list` region: children of items still in the list are kept as they are, the function is only
+    /// called for new items, and the children of items no longer in the list are unmounted.
+    fn run_each(
+        &self,
+        id: NodeId,
+        container: Entity,
+        f: &Func,
+        each: Each,
+        old_children: Vec<Mounted>,
+    ) -> Result<(), InteropError> {
+        let Each {
+            source,
+            keys: old_keys,
+            refresh,
+        } = each;
+        // what the function reads is not recorded, it builds each child once
+        let build = |item: ScriptValue| {
+            let frame = Frame {
+                observer: None,
+                instance: None,
+            };
+            with_frame(frame, || self.call(f, vec![item]))
+                .and_then(|v| element_from_script(&v, self.runtime))
+                .map(|element| element.unwrap_or_else(crate::element::empty_node))
+        };
+        let mut old: HashMap<String, Mounted> = old_keys.into_iter().zip(old_children).collect();
+        let mut keys = Vec::new();
+        let mut children = Vec::new();
+        let result = (|| {
+            let items = with_frame(
+                Frame {
+                    observer: Some(id),
+                    instance: None,
+                },
+                || read(self.runtime, &self.call_context(), source, true),
+            )?;
+            let items = match items {
+                ScriptValue::List(items) => items,
+                ScriptValue::Unit => Default::default(),
+                ScriptValue::Map(map) if map.is_empty() => Default::default(),
+                other => {
+                    return Err(InteropError::string(format!(
+                        "`list` needs a signal holding a list, got: {other:?}"
+                    )));
+                }
+            };
+            keys.reserve(items.len());
+            children.reserve(items.len());
+            for item in items {
+                let key = crate::element::key_of(&item, &self.world)?;
+                let child = match old.remove(&key) {
+                    Some(child) if refresh => self.patch(child, &build(item)?, container)?,
+                    Some(child) => child,
+                    None => self.mount(&build(item)?, container)?,
+                };
+                keys.push(key);
+                children.push(child);
+            }
+            Ok(())
+        })();
+        if result.is_ok() {
+            for (_, leftover) in old.drain() {
+                self.unmount(leftover, true)?;
+            }
+            let order = children
+                .iter()
+                .filter_map(|m| self.entity_of(m))
+                .collect::<Vec<_>>();
+            self.order_children(container, &order)?;
+        } else {
+            // keep showing the children which were not reached
+            for (key, child) in old.drain() {
+                keys.push(key);
+                children.push(child);
+            }
+        }
+        if let Some(GraphNode {
+            kind:
+                NodeKind::Region {
+                    children: stored,
+                    each: Some(each),
+                    ..
+                },
+            ..
+        }) = self.runtime.lock().nodes.get_mut(&id)
+        {
+            *stored = children;
+            each.keys = keys;
+        }
+        result
     }
 
     fn put_region_children(&self, id: NodeId, new: Vec<Mounted>) {
@@ -1283,7 +1405,19 @@ impl Cx<'_, '_> {
                 .lock()
                 .instance_mut(*instance)
                 .is_some_and(|i| i.def == *def),
-            (Mounted::Dynamic { .. }, ElementKind::Dynamic(_)) => true,
+            (
+                Mounted::Dynamic { region, .. },
+                kind @ (ElementKind::Dynamic(_) | ElementKind::Each(..)),
+            ) => {
+                let is_each = matches!(
+                    self.runtime.lock().nodes.get(region),
+                    Some(GraphNode {
+                        kind: NodeKind::Region { each: Some(_), .. },
+                        ..
+                    })
+                );
+                is_each == matches!(kind, ElementKind::Each(..))
+            }
             _ => false,
         }
     }
@@ -1396,15 +1530,19 @@ impl Cx<'_, '_> {
                 })
             }
             Mounted::Dynamic { region, entity } => {
-                let ElementKind::Dynamic(f) = &element.0.kind else {
+                let (ElementKind::Dynamic(f) | ElementKind::Each(_, f)) = &element.0.kind else {
                     unreachable!("checked by same_kind")
                 };
                 if let Some(GraphNode {
-                    kind: NodeKind::Region { f: old_f, .. },
+                    kind: NodeKind::Region { f: old_f, each, .. },
                     ..
                 }) = self.runtime.lock().nodes.get_mut(&region)
                 {
                     *old_f = f.clone();
+                    if let (Some(each), ElementKind::Each(source, _)) = (each, &element.0.kind) {
+                        each.source = *source;
+                        each.refresh = true;
+                    }
                 }
                 self.run_region(region)?;
                 Ok(Mounted::Dynamic { region, entity })

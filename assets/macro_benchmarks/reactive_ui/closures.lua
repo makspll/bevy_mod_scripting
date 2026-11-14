@@ -20,6 +20,7 @@ for i = 1, 200 do
 end
 local search = ui.signal("")
 local shown = ui.signal(true)
+local removed = ui.signal(nil)
 
 local HealthBar = ui.component("HealthBar", function(p)
     local hp = ui.watch(p.player, Health)
@@ -64,24 +65,18 @@ local Inventory = ui.component("Inventory", function(p)
     local selected = ui.signal(nil)
     local is_selected = ui.selector(selected)
     local visible = ui.computed(function()
-        local query = search:get()
+        local query, without = search:get(), removed:get()
         local out = {}
         for _, name in ipairs(items) do
-            if string.find(name, query, 1, true) then out[#out + 1] = name end
+            if name ~= without and string.find(name, query, 1, true) then out[#out + 1] = name end
         end
         return out
     end)
     local function select(name) selected:set(name) end
     return ui.node({ flex_direction = "column" }, {
         ui.text({ text = function() return "Inventory (" .. #visible:get() .. ")" end }),
-        ui.show(function()
-            local out = {}
-            for _, name in ipairs(visible:get()) do
-                out[#out + 1] = ui.element(Slot, {
-                    key = name, name = name, entity = entities[name], selected = is_selected, on_select = select,
-                })
-            end
-            return out
+        ui.list(visible, function(name)
+            return ui.element(Slot, { name = name, entity = entities[name], selected = is_selected, on_select = select })
         end),
         ui.show(function()
             local s = selected:get()
@@ -116,6 +111,8 @@ function bench_step()
         ui.interact(ui.find(root, "slot_" .. items[n % 200 + 1]), "press")
     elseif BENCH == "search" then
         search:set(n % 2 == 0 and "" or "5")
+    elseif BENCH == "one" then
+        removed:set(n % 2 == 1 and "item 100" or nil)
     elseif BENCH == "count" then
         world.get_component(entities[items[n % 200 + 1]], Item).data = { name = "x", count = n }
     end

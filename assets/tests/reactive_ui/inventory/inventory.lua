@@ -1,4 +1,4 @@
--- signals: components run once, properties are bound to functions, `dynamic` regions produce changing children
+-- signals: components run once, properties are bound to functions, `show` regions produce changing children
 local bms = import_namespace("bms")
 local world = bms.world
 local DynamicComponent = bms.DynamicComponent
@@ -76,14 +76,9 @@ local Inventory = ui.component("Inventory", function(p)
             if h.current < h.max * 0.25 then return ui.text({ key = "low", name = "low", text = "LOW HP" }) end
         end),
         ui.text({ name = "clicks", text = function() return "clicks: " .. clicks:get() end }),
-        ui.show(function()
-            local out = {}
-            for _, name in ipairs(visible:get()) do
-                out[#out + 1] = ui.element(Slot, {
-                    key = name, name = name, entity = State.entities[name], selected = is_selected, on_select = select,
-                })
-            end
-            return out
+        -- one child per item, only built for new items
+        ui.list(visible, function(name)
+            return ui.element(Slot, { name = name, entity = State.entities[name], selected = is_selected, on_select = select })
         end),
         ui.show(function()
             local s = selected:get()
