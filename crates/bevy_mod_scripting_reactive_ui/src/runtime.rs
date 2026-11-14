@@ -10,6 +10,7 @@ use std::{
     sync::Arc,
 };
 
+use bevy_ecs::name::Name;
 use bevy_ecs::{
     change_detection::Tick,
     component::{Component, ComponentId},
@@ -24,7 +25,9 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_platform::collections::HashMap;
-use bevy_ui::{Interaction, Node, widget::Text};
+use bevy_ui::{BackgroundColor, Interaction, widget::Text};
+
+use crate::element::UiParts;
 use parking_lot::Mutex;
 
 use crate::element::{
@@ -180,6 +183,7 @@ pub(crate) struct Runtime {
     pub dirty_effects: BTreeSet<NodeId>,
     pub events: Vec<QueuedEvent>,
     pub watches: Vec<NodeId>,
+    pub elements: crate::element::ElementArena,
 }
 
 impl Runtime {
@@ -848,12 +852,40 @@ impl Cx<'_, '_> {
         Ok(self.world.with_world_mut_access(f)?)
     }
 
-    fn spawn(&self, kind: &ElementKind, parent: Entity) -> Result<Entity, InteropError> {
-        self.world_mut(|w| match kind {
-            ElementKind::Text => w
-                .spawn((Node::default(), Text::default(), ChildOf(parent)))
-                .id(),
-            _ => w.spawn((Node::default(), ChildOf(parent))).id(),
+    /// Spawns an element with its static properties and handlers, as one bundle so it is placed once.
+    fn spawn(
+        &self,
+        kind: &ElementKind,
+        props: &[(Prop, PropValue)],
+        parent: Entity,
+    ) -> Result<Entity, InteropError> {
+        let mut parts = UiParts {
+            text: matches!(kind, ElementKind::Text).then(Text::default),
+            ..Default::default()
+        };
+        for (prop, value) in props {
+            match (prop, value) {
+                (_, PropValue::Static(value)) => apply_prop(&mut parts, *prop, value)?,
+                // bound later: spawn with the component so setting it doesn't move the entity
+                (Prop::Bg, _) => parts.bg = Some(BackgroundColor::default()),
+                (Prop::Name, _) => parts.name = Some(Name::default()),
+                _ => {}
+            }
+        }
+        let handlers = self
+            .handlers(props)
+            .map(|handlers| (handlers, Interaction::default()));
+        // `Option`s aren't bundles: one typed spawn per combination of the optional parts
+        let base = (parts.node, ChildOf(parent), parts.bg.unwrap_or_default());
+        self.world_mut(|w| match (parts.text, parts.name, handlers) {
+            (Some(t), Some(n), Some(h)) => w.spawn((base, t, n, h)).id(),
+            (Some(t), Some(n), None) => w.spawn((base, t, n)).id(),
+            (Some(t), None, Some(h)) => w.spawn((base, t, h)).id(),
+            (Some(t), None, None) => w.spawn((base, t)).id(),
+            (None, Some(n), Some(h)) => w.spawn((base, n, h)).id(),
+            (None, Some(n), None) => w.spawn((base, n)).id(),
+            (None, None, Some(h)) => w.spawn((base, h)).id(),
+            (None, None, None) => w.spawn(base).id(),
         })
     }
 
@@ -864,11 +896,8 @@ impl Cx<'_, '_> {
         })?
     }
 
-    fn set_handlers(
-        &self,
-        entity: Entity,
-        props: &[(Prop, PropValue)],
-    ) -> Result<(), InteropError> {
+    /// The handlers component for the handler props, if there are any.
+    fn handlers(&self, props: &[(Prop, PropValue)]) -> Option<UiHandlers> {
         let mut click = None;
         let mut hover = None;
         for (prop, value) in props {
@@ -880,22 +909,30 @@ impl Cx<'_, '_> {
                 }
             }
         }
-        let attachment = self.attachment.clone();
+        (click.is_some() || hover.is_some()).then(|| UiHandlers {
+            attachment: self.attachment.clone(),
+            click,
+            hover,
+        })
+    }
+
+    fn set_handlers(
+        &self,
+        entity: Entity,
+        props: &[(Prop, PropValue)],
+    ) -> Result<(), InteropError> {
+        let handlers = self.handlers(props);
         self.world_mut(|w| {
             let Ok(mut e) = w.get_entity_mut(entity) else {
                 return;
             };
-            if click.is_none() && hover.is_none() {
-                e.remove::<UiHandlers>();
-            } else {
-                e.insert((
-                    UiHandlers {
-                        attachment,
-                        click,
-                        hover,
-                    },
-                    Interaction::default(),
-                ));
+            match handlers {
+                Some(handlers) => {
+                    e.insert((handlers, Interaction::default()));
+                }
+                None => {
+                    e.remove::<UiHandlers>();
+                }
             }
         })
     }
@@ -946,11 +983,12 @@ impl Cx<'_, '_> {
         let data = &element.0;
         match &data.kind {
             ElementKind::Node | ElementKind::Text => {
-                let entity = self.spawn(&data.kind, parent)?;
+                let entity = self.spawn(&data.kind, &data.props, parent)?;
                 let mut bindings = Vec::new();
                 for (prop, value) in &data.props {
                     match value {
-                        PropValue::Static(v) => self.apply(entity, *prop, v)?,
+                        // spawned with it
+                        PropValue::Static(_) => {}
                         PropValue::Bound(f) => bindings.push((
                             *prop,
                             self.create_binding(entity, *prop, BindingSource::Script(f.clone()))?,
@@ -961,13 +999,6 @@ impl Cx<'_, '_> {
                         )),
                         PropValue::Handler(_) => {}
                     }
-                }
-                if data
-                    .props
-                    .iter()
-                    .any(|(_, v)| matches!(v, PropValue::Handler(_)))
-                {
-                    self.set_handlers(entity, &data.props)?;
                 }
                 let children = data
                     .children
@@ -999,7 +1030,7 @@ impl Cx<'_, '_> {
                 })
             }
             ElementKind::Dynamic(f) => {
-                let entity = self.spawn(&ElementKind::Node, parent)?;
+                let entity = self.spawn(&ElementKind::Node, &[], parent)?;
                 let region = self.runtime.lock().create(
                     NodeKind::Region {
                         container: entity,
@@ -1122,7 +1153,7 @@ impl Cx<'_, '_> {
             },
             || self.call(&f, vec![]),
         )
-        .and_then(|v| elements_from_script(&v, &self.world));
+        .and_then(|v| elements_from_script(&v, self.runtime));
         let elements = match result {
             Ok(elements) => elements,
             Err(e) => {
@@ -1222,7 +1253,7 @@ impl Cx<'_, '_> {
             },
             || self.call(&render, vec![props]),
         )
-        .and_then(|v| element_from_script(&v, &self.world));
+        .and_then(|v| element_from_script(&v, self.runtime));
         let element = match result {
             Ok(Some(element)) => element,
             Ok(None) => crate::element::empty_node(),

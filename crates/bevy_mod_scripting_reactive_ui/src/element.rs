@@ -4,13 +4,16 @@ use std::sync::Arc;
 
 use bevy_color::{Color, Srgba};
 use bevy_ecs::{entity::Entity, name::Name, world::EntityWorldMut};
-use bevy_mod_scripting_bindings::{
-    DynamicScriptFunction, InteropError, ReflectReference, ScriptValue, WorldGuard,
-};
+use bevy_mod_scripting_bindings::{DynamicScriptFunction, InteropError, ScriptValue, WorldGuard};
 use bevy_reflect::Reflect;
 use bevy_ui::{BackgroundColor, Display, FlexDirection, Node, UiRect, Val, widget::Text};
 
-use crate::expr::{Expr, UiValue};
+use parking_lot::Mutex;
+
+use crate::{
+    expr::{Expr, UiValue},
+    runtime::Runtime,
+};
 
 /// A script function stored on the Rust side.
 pub type Func = DynamicScriptFunction;
@@ -240,31 +243,92 @@ fn as_text(value: &ScriptValue) -> String {
     }
 }
 
-/// Writes a property value onto the entity, `Unit` resets it.
+/// Where properties are written: a mounted entity, or [`UiParts`] before spawning one.
+pub(crate) trait PropTarget {
+    fn node(&mut self) -> Result<&mut Node, InteropError>;
+    fn set_text(&mut self, text: String) -> Result<(), InteropError>;
+    fn set_bg(&mut self, bg: BackgroundColor);
+    fn set_name(&mut self, name: Name);
+}
+
+impl PropTarget for EntityWorldMut<'_> {
+    fn node(&mut self) -> Result<&mut Node, InteropError> {
+        self.get_mut::<Node>()
+            .map(bevy_ecs::world::Mut::into_inner)
+            .ok_or_else(|| InteropError::str("ui entity has no Node"))
+    }
+
+    fn set_text(&mut self, new: String) -> Result<(), InteropError> {
+        let mut text = self
+            .get_mut::<Text>()
+            .ok_or_else(|| InteropError::str("`text` can only be set on text elements"))?;
+        // only mark it changed when it did, text layout is expensive
+        if text.0 != new {
+            text.0 = new;
+        }
+        Ok(())
+    }
+
+    fn set_bg(&mut self, bg: BackgroundColor) {
+        self.insert(bg);
+    }
+
+    fn set_name(&mut self, name: Name) {
+        self.insert(name);
+    }
+}
+
+/// The components of an element before it is spawned, so it is spawned with all of them at once.
+#[derive(Default)]
+pub(crate) struct UiParts {
+    pub node: Node,
+    pub text: Option<Text>,
+    pub bg: Option<BackgroundColor>,
+    pub name: Option<Name>,
+}
+
+impl PropTarget for UiParts {
+    fn node(&mut self) -> Result<&mut Node, InteropError> {
+        Ok(&mut self.node)
+    }
+
+    fn set_text(&mut self, new: String) -> Result<(), InteropError> {
+        match &mut self.text {
+            Some(text) => {
+                text.0 = new;
+                Ok(())
+            }
+            None => Err(InteropError::str("`text` can only be set on text elements")),
+        }
+    }
+
+    fn set_bg(&mut self, bg: BackgroundColor) {
+        self.bg = Some(bg);
+    }
+
+    fn set_name(&mut self, name: Name) {
+        self.name = Some(name);
+    }
+}
+
+/// Writes a property value onto the target, `Unit` resets it.
 pub(crate) fn apply_prop(
-    entity: &mut EntityWorldMut,
+    target: &mut impl PropTarget,
     prop: Prop,
     value: &ScriptValue,
 ) -> Result<(), InteropError> {
-    fn node<'a>(
-        entity: &'a mut EntityWorldMut,
-    ) -> Result<bevy_ecs::world::Mut<'a, Node>, InteropError> {
-        entity
-            .get_mut::<Node>()
-            .ok_or_else(|| InteropError::str("ui entity has no Node"))
-    }
     match prop {
-        Prop::Width => node(entity)?.width = as_val(value)?,
-        Prop::Height => node(entity)?.height = as_val(value)?,
-        Prop::Padding => node(entity)?.padding = UiRect::all(as_val(value)?),
+        Prop::Width => target.node()?.width = as_val(value)?,
+        Prop::Height => target.node()?.height = as_val(value)?,
+        Prop::Padding => target.node()?.padding = UiRect::all(as_val(value)?),
         Prop::Gap => {
             let gap = as_val(value)?;
-            let mut node = node(entity)?;
+            let node = target.node()?;
             node.row_gap = gap;
             node.column_gap = gap;
         }
         Prop::Direction => {
-            node(entity)?.flex_direction = match value {
+            target.node()?.flex_direction = match value {
                 ScriptValue::String(s) if s == "row" => FlexDirection::Row,
                 ScriptValue::String(s) if s == "column" => FlexDirection::Column,
                 ScriptValue::Unit => FlexDirection::default(),
@@ -276,7 +340,7 @@ pub(crate) fn apply_prop(
             }
         }
         Prop::Display => {
-            node(entity)?.display = match value {
+            target.node()?.display = match value {
                 ScriptValue::String(s) if s == "none" => Display::None,
                 ScriptValue::Bool(false) => Display::None,
                 _ => Display::Flex,
@@ -296,35 +360,65 @@ pub(crate) fn apply_prop(
                     )));
                 }
             };
-            entity.insert(BackgroundColor(color));
+            target.set_bg(BackgroundColor(color));
         }
-        Prop::Text => match entity.get_mut::<Text>() {
-            Some(mut text) => {
-                let new = as_text(value);
-                if text.0 != new {
-                    text.0 = new;
-                }
-            }
-            None => {
-                return Err(InteropError::str("`text` can only be set on text elements"));
-            }
-        },
-        Prop::Name => {
-            entity.insert(Name::new(as_text(value)));
-        }
+        Prop::Text => target.set_text(as_text(value))?,
+        Prop::Name => target.set_name(Name::new(as_text(value))),
         Prop::OnClick | Prop::OnHover => {}
     }
     Ok(())
 }
 
-/// Reads an element out of a script value.
+/// The elements built during the current flush. Scripts get plain integer handles to them, so building and passing
+/// elements around needs no allocation for scripts, reflection or access claims.
+///
+/// Elements are only built while components and regions run, and what is mounted keeps its own copy,
+/// so the arena is emptied at the start of every flush.
+#[derive(Default)]
+pub(crate) struct ElementArena {
+    items: Vec<UiElement>,
+    generation: u32,
+}
+
+/// Bits of a handle holding the index, the generation is above them. 53 bits in all, so handles stay exact
+/// in languages storing numbers as doubles.
+const INDEX_BITS: u32 = 32;
+const GENERATION_MASK: u32 = (1 << 21) - 1;
+
+impl ElementArena {
+    pub fn push(&mut self, element: UiElement) -> i64 {
+        self.items.push(element);
+        ((self.generation as i64) << INDEX_BITS) | (self.items.len() as i64 - 1)
+    }
+
+    pub fn get(&self, handle: i64) -> Result<UiElement, InteropError> {
+        let generation = (handle >> INDEX_BITS) as u32;
+        let index = (handle & ((1 << INDEX_BITS) - 1)) as usize;
+        if generation != self.generation {
+            return Err(InteropError::str(
+                "this ui element was built in an earlier update, elements are only valid in the update which built them",
+            ));
+        }
+        self.items
+            .get(index)
+            .cloned()
+            .ok_or_else(|| InteropError::string(format!("{handle} is not a ui element")))
+    }
+
+    pub fn reset(&mut self) {
+        self.items.clear();
+        self.generation = (self.generation + 1) & GENERATION_MASK;
+    }
+}
+
+/// Reads an element handle out of a script value.
 pub(crate) fn element_from_script(
     value: &ScriptValue,
-    world: &WorldGuard,
+    runtime: &Mutex<Runtime>,
 ) -> Result<Option<UiElement>, InteropError> {
     match value {
         ScriptValue::Unit => Ok(None),
-        ScriptValue::Reference(r) => r.downcast::<UiElement>(world.clone()).map(Some),
+        ScriptValue::Integer(handle) => runtime.lock().elements.get(*handle).map(Some),
         other => Err(InteropError::string(format!(
             "expected a ui element, got: {other:?}"
         ))),
@@ -334,15 +428,23 @@ pub(crate) fn element_from_script(
 /// Reads the elements returned by a dynamic region or passed as children: one element, a list of them, or nil.
 pub(crate) fn elements_from_script(
     value: &ScriptValue,
-    world: &WorldGuard,
+    runtime: &Mutex<Runtime>,
 ) -> Result<Vec<UiElement>, InteropError> {
     match value {
-        ScriptValue::List(list) => list
-            .iter()
-            .filter_map(|v| element_from_script(v, world).transpose())
-            .collect(),
+        ScriptValue::List(list) => {
+            let rt = runtime.lock();
+            list.iter()
+                .filter_map(|v| match v {
+                    ScriptValue::Unit => None,
+                    ScriptValue::Integer(handle) => Some(rt.elements.get(*handle)),
+                    other => Some(Err(InteropError::string(format!(
+                        "expected a ui element, got: {other:?}"
+                    )))),
+                })
+                .collect()
+        }
         ScriptValue::Map(map) if map.is_empty() => Ok(Vec::new()),
-        v => Ok(element_from_script(v, world)?.into_iter().collect()),
+        v => Ok(element_from_script(v, runtime)?.into_iter().collect()),
     }
 }
 
@@ -356,6 +458,7 @@ pub(crate) fn empty_node() -> UiElement {
     }))
 }
 
-pub(crate) fn new_element(data: ElementData) -> ScriptValue {
-    ScriptValue::Reference(ReflectReference::new_allocated(UiElement(Arc::new(data))))
+/// Puts a new element in the arena, returning its handle for scripts.
+pub(crate) fn new_element(runtime: &Mutex<Runtime>, data: ElementData) -> ScriptValue {
+    ScriptValue::Integer(runtime.lock().elements.push(UiElement(Arc::new(data))))
 }
