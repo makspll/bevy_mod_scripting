@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.24.0...v0.24.1) - 2026-11-14
+
+### Other
+
+- convert Lua tables to script values in one pass ([#717](https://github.com/makspll/bevy_mod_scripting/pull/717))
+
 ## [0.24.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.23.0...v0.24.0) - 2026-11-12
 
 ### Added
