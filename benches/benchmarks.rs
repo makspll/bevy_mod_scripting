@@ -325,6 +325,10 @@ fn reactive_ui_benchmarks(criterion: &mut Criterion) {
             "Paths",
             include_str!("../assets/macro_benchmarks/reactive_ui/paths.lua"),
         ),
+        (
+            "Template",
+            include_str!("../assets/macro_benchmarks/reactive_ui/template.lua"),
+        ),
     ];
     let scenarios = [
         ("health", "health tick"),

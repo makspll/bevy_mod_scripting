@@ -5,6 +5,12 @@
 //! `each(items, function(item) .. end)` is the region for lists: one child per item of the list in a signal,
 //! kept by item (items are the keys), so the function only runs for items which were not in the list before.
 //!
+//! `list_template(items, function(item) .. end, deps)` builds the rows of large uniform lists without running
+//! script code per row: the function runs once, `item` stands for each row's item, and the `node`s and `text`s
+//! it returns are made per row in Rust. Properties are values computed in Rust (`format`, `when`, `selected`,
+//! `path(watch_item(item, Component), ..)` for items which are entities), functions (handlers and bound
+//! properties) are shared by all rows and get the row's item after their dependencies.
+//!
 //! Functions can take dependencies: `computed(f, deps)`, `effect(f, deps)`, `show(f, deps)` and
 //! `list(items, f, deps)` call `f` with the values of the list `deps` before its own arguments. A handler or
 //! bound property is given with its dependencies as a list starting with the function,
@@ -104,6 +110,7 @@ impl Plugin for ReactiveUiPlugin {
             .register_type::<Signal>()
             .register_type::<Selector>()
             .register_type::<UiValue>()
+            .register_type::<expr::ItemWatch>()
             .add_systems(
                 PostUpdate,
                 (forget_detached_scripts, flush_reactive_ui)
@@ -426,7 +433,22 @@ fn register_functions(world: &mut World) {
             Ok::<_, InteropError>(new_element(
                 &*runtime(&ctx)?,
                 ElementData {
-                    kind: ElementKind::Each(items.into_inner().0, f),
+                    kind: ElementKind::Each(items.into_inner().0, f, false),
+                    key: None,
+                    props: Vec::new(),
+                    children: Vec::new(),
+                },
+            ))
+        },
+    )
+    .register(
+        "list_template",
+        |ctx: FunctionCallContext, items: V<Signal>, f: Func, deps: Option<ScriptValue>| {
+            let f = element::with_deps(f, deps)?;
+            Ok::<_, InteropError>(new_element(
+                &*runtime(&ctx)?,
+                ElementData {
+                    kind: ElementKind::Each(items.into_inner().0, f, true),
                     key: None,
                     props: Vec::new(),
                     children: Vec::new(),

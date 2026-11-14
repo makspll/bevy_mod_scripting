@@ -55,7 +55,10 @@ pub(crate) enum ElementKind {
     Dynamic(Func),
     /// A region with one child per item of the list read from a signal, made by calling the function
     /// with the item. Children are kept by item, the function only runs for new items.
-    Each(crate::runtime::NodeId, Func),
+    ///
+    /// With the flag set the function is a row template: it runs once for the whole list, given a value standing
+    /// for the item, and each row is made from the element it returned without running script code.
+    Each(crate::runtime::NodeId, Func, bool),
 }
 
 impl ElementKind {

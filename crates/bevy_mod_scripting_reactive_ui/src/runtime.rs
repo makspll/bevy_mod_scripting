@@ -116,6 +116,12 @@ pub(crate) struct Each {
     pub keys: Vec<String>,
     /// The function was replaced (its parent rendered again): kept children are built again and patched
     pub refresh: bool,
+    /// The function is a row template, see `list_template`
+    pub templated: bool,
+    /// What the row template returned, rows are made from it
+    pub template: Option<UiElement>,
+    /// The nodes made for each child besides what it mounts (the watches of a template's row), in order
+    pub owned: Vec<Vec<NodeId>>,
 }
 
 pub(crate) struct Instance {
@@ -1041,13 +1047,16 @@ impl Cx<'_, '_> {
                     key: data.key.clone(),
                 })
             }
-            ElementKind::Dynamic(f) | ElementKind::Each(_, f) => {
+            ElementKind::Dynamic(f) | ElementKind::Each(_, f, _) => {
                 let entity = self.spawn(&ElementKind::Node, &[], parent)?;
                 let each = match &data.kind {
-                    ElementKind::Each(source, _) => Some(Each {
+                    ElementKind::Each(source, _, templated) => Some(Each {
                         source: *source,
                         keys: Vec::new(),
                         refresh: false,
+                        templated: *templated,
+                        template: None,
+                        owned: Vec::new(),
                     }),
                     _ => None,
                 };
@@ -1167,6 +1176,9 @@ impl Cx<'_, '_> {
                         source: each.source,
                         keys: std::mem::take(&mut each.keys),
                         refresh: std::mem::take(&mut each.refresh),
+                        templated: each.templated,
+                        template: each.template.clone(),
+                        owned: std::mem::take(&mut each.owned),
                     });
                     (*container, f.clone(), std::mem::take(children), each)
                 }
@@ -1196,8 +1208,8 @@ impl Cx<'_, '_> {
         Ok(())
     }
 
-    /// Runs an `list` region: children of items still in the list are kept as they are, the function is only
-    /// called for new items, and the children of items no longer in the list are unmounted.
+    /// Runs an `list` region: children of items still in the list are kept as they are, a child is only
+    /// built for new items, and the children of items no longer in the list are unmounted.
     fn run_each(
         &self,
         id: NodeId,
@@ -1210,8 +1222,11 @@ impl Cx<'_, '_> {
             source,
             keys: old_keys,
             refresh,
+            templated,
+            mut template,
+            owned: old_owned,
         } = each;
-        // what the function reads is not recorded, it builds each child once
+        // what the function reads is not recorded, it builds each child (or the template) once
         let build = |item: ScriptValue| {
             let frame = Frame {
                 observer: None,
@@ -1221,9 +1236,26 @@ impl Cx<'_, '_> {
                 .and_then(|v| element_from_script(&v, self.runtime))
                 .map(|element| element.unwrap_or_else(crate::element::empty_node))
         };
-        let mut old: HashMap<String, Mounted> = old_keys.into_iter().zip(old_children).collect();
+        let remove_nodes = |nodes: Vec<NodeId>| {
+            let mut rt = self.runtime.lock();
+            for node in nodes {
+                rt.remove(node);
+            }
+        };
+        // each child with the nodes made for it (the watches of a template's row)
+        let mut old: HashMap<String, (Mounted, Vec<NodeId>)> = old_keys
+            .into_iter()
+            .zip(
+                old_children.into_iter().zip(
+                    old_owned
+                        .into_iter()
+                        .chain(std::iter::repeat_with(Vec::new)),
+                ),
+            )
+            .collect();
         let mut keys = Vec::new();
         let mut children = Vec::new();
+        let mut owned = Vec::new();
         let result = (|| {
             let items = with_frame(
                 Frame {
@@ -1242,22 +1274,62 @@ impl Cx<'_, '_> {
                     )));
                 }
             };
+            if templated && (template.is_none() || refresh) {
+                template = Some(build(crate::expr::item_placeholder())?);
+            }
             keys.reserve(items.len());
             children.reserve(items.len());
             for item in items {
                 let key = crate::element::key_of(&item, &self.world)?;
-                let child = match old.remove(&key) {
-                    Some(child) if refresh => self.patch(child, &build(item)?, container)?,
-                    Some(child) => child,
-                    None => self.mount(&build(item)?, container)?,
+                let kept = match old.remove(&key) {
+                    Some(kept) if !refresh => {
+                        keys.push(key);
+                        children.push(kept.0);
+                        owned.push(kept.1);
+                        continue;
+                    }
+                    kept => kept,
                 };
-                keys.push(key);
-                children.push(child);
+                let mut nodes = Vec::new();
+                let element = match &template {
+                    Some(template) => self.bind_template(template, &item, &mut nodes),
+                    None => build(item),
+                };
+                let element = match element {
+                    Ok(element) => element,
+                    Err(e) => {
+                        remove_nodes(nodes);
+                        if let Some(kept) = kept {
+                            old.insert(key, kept);
+                        }
+                        return Err(e);
+                    }
+                };
+                let child = match kept {
+                    Some((child, old_nodes)) => {
+                        let child = self.patch(child, &element, container);
+                        remove_nodes(old_nodes);
+                        child
+                    }
+                    None => self.mount(&element, container),
+                };
+                match child {
+                    Ok(child) => {
+                        keys.push(key);
+                        children.push(child);
+                        owned.push(nodes);
+                    }
+                    Err(e) => {
+                        remove_nodes(nodes);
+                        return Err(e);
+                    }
+                }
             }
             Ok(())
         })();
         if result.is_ok() {
-            for (_, leftover) in old.drain() {
+            for (_, (leftover, nodes)) in old.drain() {
+                remove_nodes(nodes);
                 self.unmount(leftover, true)?;
             }
             let order = children
@@ -1267,9 +1339,10 @@ impl Cx<'_, '_> {
             self.order_children(container, &order)?;
         } else {
             // keep showing the children which were not reached
-            for (key, child) in old.drain() {
+            for (key, (child, nodes)) in old.drain() {
                 keys.push(key);
                 children.push(child);
+                owned.push(nodes);
             }
         }
         if let Some(GraphNode {
@@ -1284,8 +1357,111 @@ impl Cx<'_, '_> {
         {
             *stored = children;
             each.keys = keys;
+            each.owned = owned;
+            each.template = template;
         }
         result
+    }
+
+    /// The element of one row of a template: what stands for the row's item is replaced by the item,
+    /// functions get the item as their first argument. `owned` gets the nodes made for the row.
+    fn bind_template(
+        &self,
+        template: &UiElement,
+        item: &ScriptValue,
+        owned: &mut Vec<NodeId>,
+    ) -> Result<UiElement, InteropError> {
+        let data = &template.0;
+        let kind = match data.kind {
+            ElementKind::Node => ElementKind::Node,
+            ElementKind::Text => ElementKind::Text,
+            _ => {
+                return Err(InteropError::str(
+                    "row templates are made of `node` and `text` only: components and regions run script code for every row, use `list` for those",
+                ));
+            }
+        };
+        let mut props = Vec::with_capacity(data.props.len());
+        for (prop, value) in &data.props {
+            let value = match value {
+                PropValue::Static(value) => PropValue::Static(value.clone()),
+                PropValue::Bound(f) => PropValue::Bound(f.curry(item.clone())),
+                PropValue::Handler(f) => PropValue::Handler(f.curry(item.clone())),
+                PropValue::Expr(expr) => {
+                    let bound = expr.bind(
+                        item,
+                        &mut |component, type_id| self.watch_item(item, component, type_id, owned),
+                        &|expr| expr.eval(self.runtime, &self.world),
+                    )?;
+                    let mut sources = Vec::new();
+                    bound.sources(&mut sources);
+                    if sources.is_empty() {
+                        // nothing to update it: spawned with its value
+                        PropValue::Static(bound.eval(self.runtime, &self.world)?)
+                    } else {
+                        PropValue::Expr(Arc::new(bound))
+                    }
+                }
+            };
+            props.push((*prop, value));
+        }
+        let children = data
+            .children
+            .iter()
+            .map(|child| self.bind_template(child, item, owned))
+            .collect::<Result<_, _>>()?;
+        Ok(UiElement(Arc::new(crate::element::ElementData {
+            kind,
+            key: None,
+            props,
+            children,
+        })))
+    }
+
+    /// The node watching a component of a row's item, made once per row and component.
+    fn watch_item(
+        &self,
+        item: &ScriptValue,
+        component: ComponentId,
+        type_id: TypeId,
+        owned: &mut Vec<NodeId>,
+    ) -> Result<NodeId, InteropError> {
+        let entity = match item {
+            ScriptValue::Reference(r) => r.downcast::<Entity>(self.world.clone()).ok(),
+            _ => None,
+        }
+        .ok_or_else(|| {
+            InteropError::string(format!(
+                "`watch_item` needs the items of the list to be entities, got: {item:?}"
+            ))
+        })?;
+        let now = self.world.with_world_access(|w| {
+            w.get_entity(entity)
+                .ok()
+                .and_then(|e| e.get_change_ticks_by_id(component))
+                .map(|ticks| ticks.changed)
+        })?;
+        let mut rt = self.runtime.lock();
+        let existing = owned.iter().copied().find(|id| {
+            matches!(
+                rt.nodes.get(id),
+                Some(GraphNode { kind: NodeKind::Watch { component: c, .. }, .. }) if *c == component
+            )
+        });
+        if let Some(existing) = existing {
+            return Ok(existing);
+        }
+        let id = rt.create(
+            NodeKind::Watch {
+                entity,
+                component,
+                type_id,
+                last_changed: now,
+            },
+            self.attachment.clone(),
+        );
+        owned.push(id);
+        Ok(id)
     }
 
     fn put_region_children(&self, id: NodeId, new: Vec<Mounted>) {
@@ -1534,7 +1710,7 @@ impl Cx<'_, '_> {
                 })
             }
             Mounted::Dynamic { region, entity } => {
-                let (ElementKind::Dynamic(f) | ElementKind::Each(_, f)) = &element.0.kind else {
+                let (ElementKind::Dynamic(f) | ElementKind::Each(_, f, _)) = &element.0.kind else {
                     unreachable!("checked by same_kind")
                 };
                 if let Some(GraphNode {
@@ -1543,8 +1719,11 @@ impl Cx<'_, '_> {
                 }) = self.runtime.lock().nodes.get_mut(&region)
                 {
                     *old_f = f.clone();
-                    if let (Some(each), ElementKind::Each(source, _)) = (each, &element.0.kind) {
+                    if let (Some(each), ElementKind::Each(source, _, templated)) =
+                        (each, &element.0.kind)
+                    {
                         each.source = *source;
+                        each.templated = *templated;
                         each.refresh = true;
                     }
                 }
@@ -1646,10 +1825,16 @@ impl Cx<'_, '_> {
             Mounted::Dynamic { region, entity } => {
                 let node = self.runtime.lock().remove(region);
                 if let Some(GraphNode {
-                    kind: NodeKind::Region { children, .. },
+                    kind: NodeKind::Region { children, each, .. },
                     ..
                 }) = node
                 {
+                    if let Some(each) = each {
+                        let mut rt = self.runtime.lock();
+                        for node in each.owned.into_iter().flatten() {
+                            rt.remove(node);
+                        }
+                    }
                     for child in children {
                         self.unmount(child, false)?;
                     }

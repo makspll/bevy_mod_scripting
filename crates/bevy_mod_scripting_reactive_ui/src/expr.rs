@@ -1,11 +1,12 @@
 //! Values computed in Rust from signals and watched components ([`UiValue`]), so that properties made of them
 //! update without running script code.
 
-use std::sync::Arc;
+use std::{any::TypeId, sync::Arc};
 
-use bevy_ecs::world::World;
+use bevy_ecs::{component::ComponentId, world::World};
 use bevy_mod_scripting_bindings::{
-    InteropError, NamespaceMembers, ReflectReference, ScriptValue, WorldGuard,
+    InteropError, NamespaceMembers, ReflectReference, ScriptComponentRegistration, ScriptValue,
+    WorldGuard,
     function::{
         from::{Union, V},
         namespace::NamespaceBuilder,
@@ -52,6 +53,27 @@ pub(crate) enum Expr {
         selector: NodeId,
         key: String,
     },
+    /// In a row template: the row's item, see [`Expr::bind`]
+    Item,
+    /// In a row template: a field of a component of the row's item, which is an entity
+    ItemPath {
+        component: ComponentId,
+        type_id: TypeId,
+        path: Vec<String>,
+    },
+    /// In a row template: [`Expr::Is`] with a key read from the row once, when it is built
+    IsKey {
+        selector: NodeId,
+        key: Box<Expr>,
+    },
+}
+
+/// A component of the item of each row of a template, made with `watch_item` and read with `path`.
+#[derive(Clone, Copy, Debug, Reflect)]
+#[reflect(opaque, Clone)]
+pub struct ItemWatch {
+    component: ComponentId,
+    type_id: TypeId,
 }
 
 /// What a script passes where a [`UiValue`] is expected: one, or a plain value.
@@ -87,7 +109,28 @@ fn clone_expr(expr: &Expr) -> Expr {
             selector: *selector,
             key: key.clone(),
         },
+        Expr::Item => Expr::Item,
+        Expr::ItemPath {
+            component,
+            type_id,
+            path,
+        } => Expr::ItemPath {
+            component: *component,
+            type_id: *type_id,
+            path: path.clone(),
+        },
+        Expr::IsKey { selector, key } => Expr::IsKey {
+            selector: *selector,
+            key: Box::new(clone_expr(key)),
+        },
     }
+}
+
+/// The value standing for the item of each row, given to the function of a row template.
+pub(crate) fn item_placeholder() -> ScriptValue {
+    ScriptValue::Reference(ReflectReference::new_allocated(UiValue(Arc::new(
+        Expr::Item,
+    ))))
 }
 
 fn value(expr: Expr) -> V<UiValue> {
@@ -98,7 +141,8 @@ impl Expr {
     /// The signals, computeds, watches and selectors (with the key asked about) this reads.
     pub fn sources(&self, out: &mut Vec<(NodeId, Option<String>)>) {
         match self {
-            Expr::Const(_) => {}
+            // what stands for a row's item reads nothing until it is bound to a row
+            Expr::Const(_) | Expr::Item | Expr::ItemPath { .. } | Expr::IsKey { .. } => {}
             Expr::Path { source, .. } => out.push((*source, None)),
             Expr::Is { selector, key } => out.push((*selector, Some(key.clone()))),
             Expr::Format { args, .. } => args.iter().for_each(|a| a.sources(out)),
@@ -177,6 +221,55 @@ impl Expr {
                 }) => ScriptValue::Bool(current.as_deref() == Some(key.as_str())),
                 _ => return Err(InteropError::str("this selector no longer exists")),
             },
+            Expr::Item | Expr::ItemPath { .. } | Expr::IsKey { .. } => {
+                return Err(InteropError::str(
+                    "the item of a row can only be used inside the function given to `list_template`",
+                ));
+            }
+        })
+    }
+
+    /// The value for one row of a template: what stands for the row's item is replaced by the item.
+    ///
+    /// `watch` gives the node watching a component of the item, `eval` evaluates a bound value.
+    pub fn bind(
+        &self,
+        item: &ScriptValue,
+        watch: &mut dyn FnMut(ComponentId, TypeId) -> Result<NodeId, InteropError>,
+        eval: &dyn Fn(&Expr) -> Result<ScriptValue, InteropError>,
+    ) -> Result<Expr, InteropError> {
+        let mut bind = |expr: &Expr| expr.bind(item, watch, eval).map(Box::new);
+        Ok(match self {
+            Expr::Item => Expr::Const(item.clone()),
+            Expr::ItemPath {
+                component,
+                type_id,
+                path,
+            } => Expr::Path {
+                source: watch(*component, *type_id)?,
+                path: path.clone(),
+            },
+            Expr::IsKey { selector, key } => {
+                let key = eval(&*bind(key)?)?;
+                Expr::Is {
+                    selector: *selector,
+                    key: selector_key(&key).ok_or_else(|| {
+                        InteropError::str("selector keys must be strings, numbers or booleans")
+                    })?,
+                }
+            }
+            Expr::Format { pieces, args } => Expr::Format {
+                pieces: pieces.clone(),
+                args: args
+                    .iter()
+                    .map(|a| a.bind(item, watch, eval))
+                    .collect::<Result<_, _>>()?,
+            },
+            Expr::Percent(a, b) => Expr::Percent(bind(a)?, bind(b)?),
+            Expr::Lt(a, b) => Expr::Lt(bind(a)?, bind(b)?),
+            Expr::Mul(a, b) => Expr::Mul(bind(a)?, bind(b)?),
+            Expr::Select(c, a, b) => Expr::Select(bind(c)?, bind(a)?, bind(b)?),
+            Expr::Const(_) | Expr::Path { .. } | Expr::Is { .. } => clone_expr(self),
         })
     }
 }
@@ -306,20 +399,45 @@ pub(crate) fn register(world: &mut World) {
     NamespaceBuilder::<NamespaceMembers>::in_namespace(world, "reactive_ui")
         .register_documented(
             "path",
-            |source: V<Signal>, path: String| {
-                value(Expr::Path {
-                    source: source.into_inner().0,
-                    // an empty path is the value itself
-                    path: path
-                        .split('.')
-                        .filter(|segment| !segment.is_empty())
-                        .map(str::to_owned)
-                        .collect(),
+            |source: Union<V<Signal>, V<ItemWatch>>, path: String| {
+                // an empty path is the value itself
+                let path = path
+                    .split('.')
+                    .filter(|segment| !segment.is_empty())
+                    .map(str::to_owned)
+                    .collect();
+                value(match source.into_left() {
+                    Ok(source) => Expr::Path {
+                        source: source.into_inner().0,
+                        path,
+                    },
+                    Err(watch) => Expr::ItemPath {
+                        component: watch.component,
+                        type_id: watch.type_id,
+                        path,
+                    },
                 })
             },
             "A field of the value of a signal, computed or watched component, i.e. `path(health, \"data.current\")`.\n\
              Struct fields are named, tuple fields and list items are numbered from 0.",
             &["source", "path"],
+        )
+        .register_documented(
+            "watch_item",
+            |item: V<UiValue>, component: V<ScriptComponentRegistration>| {
+                if !matches!(&*item.0.0, Expr::Item) {
+                    return Err(InteropError::str(
+                        "`watch_item` takes the item given to the function of `list_template`",
+                    ));
+                }
+                Ok(V(ItemWatch {
+                    component: component.component_id(),
+                    type_id: component.type_registration().type_id(),
+                }))
+            },
+            "In the function given to `list_template`: the component of each row's item, which must be an entity. \
+             Read its fields with `path`, i.e. `path(watch_item(item, Item), \"data.count\")`.",
+            &["item", "component"],
         )
         .register_documented(
             "format",
@@ -366,16 +484,25 @@ pub(crate) fn register(world: &mut World) {
         )
         .register_documented(
             "selected",
-            |selector: V<Selector>, key: ScriptValue| {
+            |selector: V<Selector>, key: ValueArg| {
+                let selector = selector.into_inner().0;
+                let key = match key.into_left() {
+                    // a value of the row in a template, read when the row is built
+                    Ok(key) => {
+                        return Ok(value(Expr::IsKey {
+                            selector,
+                            key: Box::new(clone_expr(&key.0.0)),
+                        }));
+                    }
+                    Err(key) => key,
+                };
                 let key = selector_key(&key).ok_or_else(|| {
                     InteropError::str("selector keys must be strings, numbers or booleans")
                 })?;
-                Ok::<_, InteropError>(value(Expr::Is {
-                    selector: selector.into_inner().0,
-                    key,
-                }))
+                Ok::<_, InteropError>(value(Expr::Is { selector, key }))
             },
-            "Whether `key` is selected, i.e. `background_color = when(selected(selector, name), \"#ffcc00\", \"#333333\")`.",
+            "Whether `key` is selected, i.e. `background_color = when(selected(selector, name), \"#ffcc00\", \"#333333\")`.\n\
+             In a row template the key can be a value of the row, it is read once when the row is built.",
             &["selector", "key"],
         );
 }

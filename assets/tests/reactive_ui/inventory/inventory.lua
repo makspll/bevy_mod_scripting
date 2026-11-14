@@ -70,6 +70,11 @@ local Inventory = ui.component("Inventory", function(p)
         selected:set(name)
         clicks:set(clicks:peek() + 1)
     end
+    local visible_entities = ui.computed(function()
+        local out = {}
+        for _, name in ipairs(visible:get()) do out[#out + 1] = State.entities[name] end
+        return out
+    end)
 
     return ui.node({ flex_direction = "column" }, {
         ui.text({ name = "version", text = "v" .. Reloads }),
@@ -88,6 +93,21 @@ local Inventory = ui.component("Inventory", function(p)
         ui.show(function()
             local s = selected:get()
             if s ~= nil then return ui.element(Details, { key = s, name = s }) end
+        end),
+        -- a row template: runs once, `item` stands for the entity of each row, functions get the row's entity
+        ui.list_template(visible_entities, function(item)
+            local data = ui.watch_item(item, Item)
+            local name = ui.path(data, "data.name")
+            return ui.node({
+                name = ui.format("row_{}", { name }),
+                background_color = ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
+                on_click = function(entity)
+                    local clicked = assert(world.get_component(entity, Item)) --[[@as bms.DynamicComponent]]
+                    State.row_clicked = clicked.data.name
+                end,
+            }, {
+                ui.text({ name = ui.format("row_text_{}", { name }), text = ui.format("{} x{}", { name, ui.path(data, "data.count") }) }),
+            })
         end),
     })
 end)
@@ -114,7 +134,10 @@ local actions = {
         local hp = assert(world.get_component(State.player, Health)) --[[@as bms.DynamicComponent]]
         hp.data = { current = 20, max = 100 }
     end,
-    [2] = function() ui.interact(find("slot_Sword"), "press") end,
+    [2] = function()
+        ui.interact(find("slot_Sword"), "press")
+        ui.interact(find("row_Shield"), "press")
+    end,
     [3] = function() State.search:set("sh") end,
     [4] = function()
         local shield = assert(world.get_component(State.entities.Shield, Item)) --[[@as bms.DynamicComponent]]
@@ -134,6 +157,7 @@ local checks = {
         assert(find("low") == nil, "low hp shown at full health")
         expect("clicks", "clicks: 0")
         expect("count_Sword", "x1")
+        expect("row_text_Sword", "Sword x1")
         assert(find("details") == nil, "details shown without a selection")
     end,
     [1] = function()
@@ -145,15 +169,20 @@ local checks = {
         expect("clicks", "clicks: 1")
         local sword, shield = ui.describe(find("slot_Sword")), ui.describe(find("slot_Shield"))
         assert(sword.background_color ~= shield.background_color, "the selected slot is not highlighted")
+        local sword_row, shield_row = ui.describe(find("row_Sword")), ui.describe(find("row_Shield"))
+        assert(sword_row.background_color == sword.background_color and shield_row.background_color == shield.background_color, "the selected row is not highlighted")
+        assert(State.row_clicked == "Shield", "the row handler did not get its entity")
     end,
     [3] = function()
         expect("title", "Inventory (1)")
+        assert(find("row_Sword") == nil, "filtered out row still shown")
         assert(find("slot_Sword") == nil, "filtered out slot still shown")
         assert(find("slot_Shield") ~= nil, "matching slot not shown")
         expect("details", "details: Sword")
     end,
     [4] = function()
         expect("count_Shield", "x5")
+        expect("row_text_Shield", "Shield x5")
     end,
     [5] = function()
         assert(find("details") == nil, "selection of a removed item was not cleared")
@@ -164,6 +193,7 @@ local checks = {
         expect("clicks", "clicks: 1")
         expect("hp", "20/100")
         expect("count_Shield", "x5")
+        expect("row_text_Shield", "Shield x5")
     end,
 }
 
