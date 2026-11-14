@@ -39,10 +39,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-abc777da.js";
+            window.path_to_searchindex_js = "searchindex-ce1ef2e7.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-51566f6a.js"></script>
+        <script src="toc-c5255b6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -643,12 +643,12 @@ app.add_plugins(plugin);</code></pre>
 <pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
         .register(
             "hello_world",
-            |s: String| {
+            |_self: ReflectReference, s: String| {
                 println!("{s}")
             },
         );
 
-    NamespaceBuilder::&lt;GlobalNamespace&gt;::new_unregistered(&amp;mut world)
+    NamespaceBuilder::in_namespace(&amp;mut world, "my_game")
         .register(
             "hello_world2",
             |s: String| {
@@ -656,10 +656,10 @@ app.add_plugins(plugin);</code></pre>
             },
         );</code></pre>
 <p>This will allow you to call this function within Lua like so:</p>
-<pre><code class="language-lua">some_type:hello_world("hi from method!");
-hello_world2("hi from global!");
+<pre><code class="language-lua">some_value:hello_world("hi from method!")
+import_namespace("my_game").hello_world2("hi from my_game!")
 </code></pre>
-<p>Note the <code>new_unregistered</code> call instead of <code>new</code>, this is because <code>GlobalNamespace</code> is not a <code>Reflect</code> type, and the <code>new</code> call also automatically registers the type in the reflection registry.</p>
+<p><code>new</code> also registers the type in the type registry. Functions on <code>ReflectReference</code> are available on every value, and receive it as their first argument, see <a href="#where-functions-can-live">where functions can live</a>.</p>
 <h2 id="macros"><a class="header" href="#macros">Macros</a></h2>
 <p>The above is a bit tedious, so instead you can use the <code>script_bindings</code> macro, which applies to impl blocks like so:</p>
 <pre><code class="language-rust ignore">#[script_bindings(name = "test_fn")]
@@ -709,9 +709,9 @@ You can opt-in to receive this argument in your own function definitions by addi
 <pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
         .register(
             "hello_world",
-            |ctx: FunctionCallContext, s: String| {
+            |ctx: FunctionCallContext, _self: ReflectReference, s: String| {
                 let world = ctx.world()?;
-                let should_use_0_indexing = ctx.convert_to_0_indexed;
+                let should_use_0_indexing = ctx.convert_to_0_indexed();
                 println!("{should_use_0_indexing} {s}");
                 Ok(())
             },
@@ -814,8 +814,7 @@ app.register_type::&lt;M&gt;()
 <tr><td><code>MyType</code></td><td><code>MyType</code> values and the <code>MyType</code> type, as imported from its namespace</td><td>whatever you declare</td></tr>
 <tr><td><code>ReflectReference</code></td><td>every value, after <code>MyType</code>’s own functions</td><td>the value</td></tr>
 <tr><td><code>StaticTypeRef</code></td><td>every type, after <code>MyType</code>’s own functions</td><td>the type, filled in automatically</td></tr>
-<tr><td><code>NamespaceMembers</code></td><td>the namespace given by <code>namespace = "..."</code>, i.e. <code>import_namespace("my_game")</code></td><td>whatever you declare</td></tr>
-<tr><td><code>GlobalNamespace</code></td><td>the builtin globals, i.e. no prefix</td><td>whatever you declare</td></tr>
+<tr><td><code>NamespaceMembers</code></td><td>the namespace given by <code>namespace = "..."</code> (or <code>NamespaceBuilder::in_namespace</code>), i.e. <code>import_namespace("my_game")</code></td><td>whatever you declare</td></tr>
 </tbody>
 </table>
 </div>
@@ -2594,7 +2593,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
 <h2 id="instantiations"><a class="header" href="#instantiations">Instantiations</a></h2>
-<p><a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#image">Image</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;</p>
+<p><a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#image">Image</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
 <h2 id="functions-12"><a class="header" href="#functions-12">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2607,10 +2606,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-11" class="lad-function"><a class="header" href="#new-11"><code>new</code></a></h3>
-<p class="lad-note">On <code>ArcMutexValue&lt;ScriptAsset&gt;</code>, <code>ArcMutexValue&lt;Mesh&gt;</code>, <code>ArcMutexValue&lt;ColorMaterial&gt;</code>, <code>ArcMutexValue&lt;ShaderBuffer&gt;</code>, <code>ArcMutexValue&lt;Image&gt;</code>, <code>ArcMutexValue&lt;TextureAtlasLayout&gt;</code>, <code>ArcMutexValue&lt;SpriteMeshMaterial&gt;</code></p>
+<p class="lad-note">On <code>ArcMutexValue&lt;TextureAtlasLayout&gt;</code>, <code>ArcMutexValue&lt;ColorMaterial&gt;</code>, <code>ArcMutexValue&lt;SpriteMeshMaterial&gt;</code>, <code>ArcMutexValue&lt;ShaderBuffer&gt;</code>, <code>ArcMutexValue&lt;ScriptAsset&gt;</code>, <code>ArcMutexValue&lt;Image&gt;</code>, <code>ArcMutexValue&lt;Mesh&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;&gt;) -&gt; <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;&gt;) -&gt; <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -2794,7 +2793,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h2 id="instantiations-2"><a class="header" href="#instantiations-2">Instantiations</a></h2>
-<p><a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#handlea">Handle</a>&lt;()&gt;, <a href="#handlea">Handle</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#animationclip">AnimationClip</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;</p>
+<p><a href="#handlea">Handle</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handlea">Handle</a>&lt;()&gt;, <a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#animationclip">AnimationClip</a>&gt;</p>
 <h2 id="functions-16"><a class="header" href="#functions-16">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2807,10 +2806,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-15" class="lad-function"><a class="header" href="#new-15"><code>new</code></a></h3>
-<p class="lad-note">On <code>Handle&lt;Mesh&gt;</code>, <code>Handle&lt;()&gt;</code>, <code>Handle&lt;Image&gt;</code>, <code>Handle&lt;ScriptAsset&gt;</code>, <code>Handle&lt;ColorMaterial&gt;</code>, <code>Handle&lt;TextureAtlasLayout&gt;</code>, <code>Handle&lt;AnimationClip&gt;</code>, <code>Handle&lt;SpriteMeshMaterial&gt;</code>, <code>Handle&lt;ShaderBuffer&gt;</code></p>
+<p class="lad-note">On <code>Handle&lt;TextureAtlasLayout&gt;</code>, <code>Handle&lt;SpriteMeshMaterial&gt;</code>, <code>Handle&lt;ColorMaterial&gt;</code>, <code>Handle&lt;ScriptAsset&gt;</code>, <code>Handle&lt;()&gt;</code>, <code>Handle&lt;Mesh&gt;</code>, <code>Handle&lt;Image&gt;</code>, <code>Handle&lt;ShaderBuffer&gt;</code>, <code>Handle&lt;AnimationClip&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;&gt;) -&gt; <a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#handlea">Handle</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;&gt;) -&gt; <a href="#handlea">Handle</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -2867,7 +2866,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </table>
 </div>
 <h2 id="instantiations-3"><a class="header" href="#instantiations-3">Instantiations</a></h2>
-<p><a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
+<p><a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
 <h2 id="functions-17"><a class="header" href="#functions-17">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2880,10 +2879,10 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </table>
 </div>
 <h3 id="new-16" class="lad-function"><a class="header" href="#new-16"><code>new</code></a></h3>
-<p class="lad-note">On <code>HandleTemplate&lt;ShaderBuffer&gt;</code>, <code>HandleTemplate&lt;ColorMaterial&gt;</code>, <code>HandleTemplate&lt;Image&gt;</code>, <code>HandleTemplate&lt;ScriptAsset&gt;</code>, <code>HandleTemplate&lt;SpriteMeshMaterial&gt;</code>, <code>HandleTemplate&lt;TextureAtlasLayout&gt;</code>, <code>HandleTemplate&lt;Mesh&gt;</code></p>
+<p class="lad-note">On <code>HandleTemplate&lt;Image&gt;</code>, <code>HandleTemplate&lt;ColorMaterial&gt;</code>, <code>HandleTemplate&lt;ShaderBuffer&gt;</code>, <code>HandleTemplate&lt;TextureAtlasLayout&gt;</code>, <code>HandleTemplate&lt;ScriptAsset&gt;</code>, <code>HandleTemplate&lt;SpriteMeshMaterial&gt;</code>, <code>HandleTemplate&lt;Mesh&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;&gt;) -&gt; <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#image">Image</a>&gt;&gt;) -&gt; <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#image">Image</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -9000,7 +8999,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h2 id="instantiations-7"><a class="header" href="#instantiations-7">Instantiations</a></h2>
-<p><a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;</p>
+<p><a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;</p>
 <h2 id="functions-88"><a class="header" href="#functions-88">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -9013,10 +9012,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-87" class="lad-function"><a class="header" href="#new-87"><code>new</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;&gt;) -&gt; <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;&gt;) -&gt; <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -9044,50 +9043,50 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="get_pressed" class="lad-function"><a class="header" href="#get_pressed"><code>get_pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>get_pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;) -&gt; Vec&lt;<a href="#mousebutton">MouseButton</a>&gt;</p>
+<p><strong>get_pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;) -&gt; Vec&lt;<a href="#keycode">KeyCode</a>&gt;</p>
 </div>
 
 <p>The buttons which are held down.</p>
 <h3 id="just_pressed" class="lad-function"><a class="header" href="#just_pressed"><code>just_pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>just_pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>) -&gt; <a href="#bool">bool</a></p>
+<p><strong>just_pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, button: <a href="#keycode">KeyCode</a>) -&gt; <a href="#bool">bool</a></p>
 </div>
 
 <p>Whether the button was pressed during the last update.</p>
 <h3 id="just_released" class="lad-function"><a class="header" href="#just_released"><code>just_released</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>just_released</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>) -&gt; <a href="#bool">bool</a></p>
+<p><strong>just_released</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, button: <a href="#keycode">KeyCode</a>) -&gt; <a href="#bool">bool</a></p>
 </div>
 
 <p>Whether the button was released during the last update.</p>
 <h3 id="press" class="lad-function"><a class="header" href="#press"><code>press</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>press</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>)</p>
+<p><strong>press</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, button: <a href="#keycode">KeyCode</a>)</p>
 </div>
 
 <p>Holds the button down, as if it was pressed.</p>
 <h3 id="pressed" class="lad-function"><a class="header" href="#pressed"><code>pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>) -&gt; <a href="#bool">bool</a></p>
+<p><strong>pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, button: <a href="#keycode">KeyCode</a>) -&gt; <a href="#bool">bool</a></p>
 </div>
 
 <p>Whether the button is held down.</p>
 <h3 id="release" class="lad-function"><a class="header" href="#release"><code>release</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>release</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>)</p>
+<p><strong>release</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, button: <a href="#keycode">KeyCode</a>)</p>
 </div>
 
 <p>Lets go of the button, as if it was released.</p>
@@ -21250,7 +21249,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);</code></pre>
 </table>
 </div>
 <h2 id="instantiations-8"><a class="header" href="#instantiations-8">Instantiations</a></h2>
-<p><a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;, <a href="#timet">Time</a>&lt;()&gt;, <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;, <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;</p>
+<p><a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;, <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;, <a href="#timet">Time</a>&lt;()&gt;, <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;</p>
 <h2 id="functions-204"><a class="header" href="#functions-204">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -21263,10 +21262,10 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);</code></pre>
 </table>
 </div>
 <h3 id="new-203" class="lad-function"><a class="header" href="#new-203"><code>new</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;&gt;) -&gt; <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;&gt;) -&gt; <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -21305,58 +21304,58 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="delta" class="lad-function"><a class="header" href="#delta"><code>delta</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#duration">Duration</a></p>
+<p><strong>delta</strong>(self: <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;) -&gt; <a href="#duration">Duration</a></p>
 </div>
 
 <p>The time that passed since the previous update.</p>
 <h3 id="delta_secs" class="lad-function"><a class="header" href="#delta_secs"><code>delta_secs</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta_secs</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f32">f32</a></p>
+<p><strong>delta_secs</strong>(self: <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;) -&gt; <a href="#f32">f32</a></p>
 </div>
 
 <p>The time that passed since the previous update, in seconds.</p>
 <h3 id="delta_secs_f64" class="lad-function"><a class="header" href="#delta_secs_f64"><code>delta_secs_f64</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta_secs_f64</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f64">f64</a></p>
+<p><strong>delta_secs_f64</strong>(self: <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;) -&gt; <a href="#f64">f64</a></p>
 </div>
 
 <p>The time that passed since the previous update, in seconds as a double precision number.</p>
 <h3 id="elapsed-2" class="lad-function"><a class="header" href="#elapsed-2"><code>elapsed</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#duration">Duration</a></p>
+<p><strong>elapsed</strong>(self: <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;) -&gt; <a href="#duration">Duration</a></p>
 </div>
 
 <p>The total time that passed since the clock started.</p>
 <h3 id="elapsed_secs-1" class="lad-function"><a class="header" href="#elapsed_secs-1"><code>elapsed_secs</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f32">f32</a></p>
+<p><strong>elapsed_secs</strong>(self: <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;) -&gt; <a href="#f32">f32</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds.</p>
 <h3 id="elapsed_secs_f64" class="lad-function"><a class="header" href="#elapsed_secs_f64"><code>elapsed_secs_f64</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs_f64</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f64">f64</a></p>
+<p><strong>elapsed_secs_f64</strong>(self: <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;) -&gt; <a href="#f64">f64</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds as a double precision number.</p>
 <h3 id="elapsed_secs_wrapped" class="lad-function"><a class="header" href="#elapsed_secs_wrapped"><code>elapsed_secs_wrapped</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs_wrapped</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f32">f32</a></p>
+<p><strong>elapsed_secs_wrapped</strong>(self: <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;) -&gt; <a href="#f32">f32</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds, wrapped to a period so it stays precise for long running apps.</p>

@@ -609,53 +609,53 @@
       "path": "bevy_ecs::world::World",
       "documentation": "The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bevy App.",
       "associated_functions": [
-        "World::spawn",
-        "World::add_observer",
-        "World::asset_path",
-        "World::real_time",
-        "World::get_system_set_by_name",
-        "World::get_type_by_name",
-        "World::remove_component",
-        "World::set_next_state",
-        "World::get_parent",
-        "World::spawn_bundle",
-        "World::get_state",
-        "World::fixed_time",
-        "World::get_asset",
-        "World::get_schedule_by_name",
-        "World::insert_children",
-        "World::register_new_system_set",
-        "World::exit",
-        "World::register_new_component",
-        "World::despawn",
-        "World::time",
-        "World::add_asset",
-        "World::register_new_event",
-        "World::despawn_recursive",
         "World::virtual_time",
-        "World::has_asset",
-        "World::is_loaded",
-        "World::query",
-        "World::get_children",
-        "World::trigger_event",
-        "World::despawn_descendants",
-        "World::load_asset",
-        "World::push_children",
-        "World::find_entity_by_name",
-        "World::load_state",
         "World::get_enum_variant",
-        "World::has_entity",
-        "World::insert_component",
-        "World::get_component",
-        "World::add_default_component",
-        "World::gamepads",
-        "World::has_resource",
-        "World::remove_resource",
+        "World::get_system_set_by_name",
         "World::has_component",
-        "World::insert_bundle",
+        "World::add_asset",
+        "World::time",
+        "World::fixed_time",
         "World::add_system",
+        "World::spawn_bundle",
         "World::write_message",
-        "World::get_resource"
+        "World::register_new_system_set",
+        "World::add_observer",
+        "World::get_asset",
+        "World::add_default_component",
+        "World::has_asset",
+        "World::insert_bundle",
+        "World::gamepads",
+        "World::register_new_component",
+        "World::insert_children",
+        "World::get_parent",
+        "World::real_time",
+        "World::load_asset",
+        "World::find_entity_by_name",
+        "World::asset_path",
+        "World::get_schedule_by_name",
+        "World::has_entity",
+        "World::get_children",
+        "World::despawn_recursive",
+        "World::has_resource",
+        "World::spawn",
+        "World::query",
+        "World::despawn_descendants",
+        "World::remove_resource",
+        "World::register_new_event",
+        "World::set_next_state",
+        "World::load_state",
+        "World::remove_component",
+        "World::get_resource",
+        "World::despawn",
+        "World::get_state",
+        "World::get_component",
+        "World::insert_component",
+        "World::exit",
+        "World::push_children",
+        "World::is_loaded",
+        "World::get_type_by_name",
+        "World::trigger_event"
       ],
       "layout": null,
       "generated": false,
@@ -674,18 +674,18 @@
       "namespace": "animation",
       "documentation": " Animation controls.\n\n Automatically added to any root animations of a scene when it is\n spawned.",
       "associated_functions": [
-        "bevy_animation::AnimationPlayer::all_paused",
-        "bevy_animation::AnimationPlayer::stop_all",
         "bevy_animation::AnimationPlayer::seek_to",
-        "bevy_animation::AnimationPlayer::pause_all",
-        "bevy_animation::AnimationPlayer::is_playing_animation",
-        "bevy_animation::AnimationPlayer::stop",
-        "bevy_animation::AnimationPlayer::play",
-        "bevy_animation::AnimationPlayer::set_repeat_forever",
+        "bevy_animation::AnimationPlayer::stop_all",
         "bevy_animation::AnimationPlayer::set_speed",
-        "bevy_animation::AnimationPlayer::animation_is_finished",
+        "bevy_animation::AnimationPlayer::play",
+        "bevy_animation::AnimationPlayer::pause_all",
+        "bevy_animation::AnimationPlayer::stop",
         "bevy_animation::AnimationPlayer::all_finished",
+        "bevy_animation::AnimationPlayer::all_paused",
+        "bevy_animation::AnimationPlayer::set_repeat_forever",
+        "bevy_animation::AnimationPlayer::is_playing_animation",
         "bevy_animation::AnimationPlayer::resume_all",
+        "bevy_animation::AnimationPlayer::animation_is_finished",
         "bevy_animation::AnimationPlayer::new"
       ],
       "layout": {
@@ -779,13 +779,13 @@
       "namespace": "audio",
       "documentation": " Initial settings to be used when audio starts playing.\n\n If you would like to control the audio while it is playing, query for the\n [`AudioSink`](crate::AudioSink) or [`SpatialAudioSink`](crate::SpatialAudioSink)\n components. Changes to this component will *not* be applied to already-playing audio.",
       "associated_functions": [
-        "bevy_audio::audio::PlaybackSettings::remove",
-        "bevy_audio::audio::PlaybackSettings::with_spatial",
-        "bevy_audio::audio::PlaybackSettings::once",
-        "bevy_audio::audio::PlaybackSettings::with_volume",
-        "bevy_audio::audio::PlaybackSettings::looping",
-        "bevy_audio::audio::PlaybackSettings::with_speed",
         "bevy_audio::audio::PlaybackSettings::despawn",
+        "bevy_audio::audio::PlaybackSettings::with_speed",
+        "bevy_audio::audio::PlaybackSettings::remove",
+        "bevy_audio::audio::PlaybackSettings::with_volume",
+        "bevy_audio::audio::PlaybackSettings::with_spatial",
+        "bevy_audio::audio::PlaybackSettings::looping",
+        "bevy_audio::audio::PlaybackSettings::once",
         "bevy_audio::audio::PlaybackSettings::new"
       ],
       "layout": {
@@ -879,11 +879,11 @@
       "namespace": "camera",
       "documentation": " The defining [`Component`] for camera entities,\n storing information about how and what to render through this camera.\n\n The [`Camera`] component is added to an entity to define the properties of the viewpoint from\n which rendering occurs. It defines the position of the view to render, the projection method\n to transform the 3D objects into a 2D image, as well as the render target into which that image\n is produced.\n\n Note that a [`Camera`] needs a `CameraRenderGraph` to render anything.\n This is typically provided by adding a [`Camera2d`] or [`Camera3d`] component,\n but custom render graphs can also be defined. Inserting a [`Camera`] with no render\n graph will emit an error at runtime.\n\n [`Camera2d`]: crate::Camera2d\n [`Camera3d`]: crate::Camera3d",
       "associated_functions": [
-        "bevy_camera::camera::Camera::viewport_to_world",
         "bevy_camera::camera::Camera::logical_viewport_rect",
-        "bevy_camera::camera::Camera::physical_viewport_size",
         "bevy_camera::camera::Camera::viewport_to_world_2d",
         "bevy_camera::camera::Camera::logical_viewport_size",
+        "bevy_camera::camera::Camera::physical_viewport_size",
+        "bevy_camera::camera::Camera::viewport_to_world",
         "bevy_camera::camera::Camera::world_to_viewport",
         "bevy_camera::camera::Camera::new"
       ],
@@ -976,8 +976,8 @@
       "namespace": "camera",
       "documentation": " Project a 3D space onto a 2D surface using parallel lines, i.e., unlike [`PerspectiveProjection`],\n the size of objects remains the same regardless of their distance to the camera.\n\n The volume contained in the projection is called the *view frustum*. Since the viewport is rectangular\n and projection lines are parallel, the view frustum takes the shape of a cuboid.\n\n Note that the scale of the projection and the apparent size of objects are inversely proportional.\n As the size of the projection increases, the size of objects decreases.\n\n # Examples\n\n Configure the orthographic projection to one world unit per 100 window pixels:\n\n ```\n # use bevy_camera::{OrthographicProjection, Projection, ScalingMode};\n let projection = Projection::Orthographic(OrthographicProjection {\n     scaling_mode: ScalingMode::WindowSize,\n     scale: 0.01,\n     ..OrthographicProjection::default_2d()\n });\n ```",
       "associated_functions": [
-        "bevy_camera::projection::OrthographicProjection::default_3d",
         "bevy_camera::projection::OrthographicProjection::default_2d",
+        "bevy_camera::projection::OrthographicProjection::default_3d",
         "bevy_camera::projection::OrthographicProjection::new"
       ],
       "layout": {
@@ -1150,11 +1150,11 @@
       "documentation": " Defines which rendering layers an entity belongs to.\n\n A camera renders an entity only when their render layers intersect.\n\n The [`Default`] instance of `RenderLayers` contains layer `0`, the first layer. Entities\n without this component also belong to layer `0`.\n\n An empty `RenderLayers` makes the entity invisible.",
       "associated_functions": [
         "bevy_camera::visibility::render_layers::RenderLayers::without",
-        "bevy_camera::visibility::render_layers::RenderLayers::with",
+        "bevy_camera::visibility::render_layers::RenderLayers::none",
         "bevy_camera::visibility::render_layers::RenderLayers::layer",
         "bevy_camera::visibility::render_layers::RenderLayers::intersects",
-        "bevy_camera::visibility::render_layers::RenderLayers::none",
         "bevy_camera::visibility::render_layers::RenderLayers::iter",
+        "bevy_camera::visibility::render_layers::RenderLayers::with",
         "bevy_camera::visibility::render_layers::RenderLayers::new"
       ],
       "layout": {
@@ -1188,33 +1188,33 @@
       "namespace": "color",
       "documentation": " An enumerated type that can represent any of the color types in this crate.\n\n This is useful when you need to store a color in a data structure that can't be generic over\n the color type.\n <div>\n </div>\n\n # Operations\n\n [`Color`] supports all the standard color operations, such as [mixing](Mix),\n [luminance](Luminance) and [hue](Hue) adjustment,\n and [diffing](EuclideanDistance). These operations delegate to the concrete color space contained\n by [`Color`], but will convert to [`Oklch`](Oklcha) for operations which aren't supported in the\n current space. After performing the operation, if a conversion was required, the result will be\n converted back into the original color space.\n\n ```rust\n # use bevy_color::{Hue, Color};\n let red_hsv = Color::hsv(0., 1., 1.);\n let red_srgb = Color::srgb(1., 0., 0.);\n\n // HSV has a definition of hue, so it will be returned.\n red_hsv.hue();\n\n // SRGB doesn't have a native definition for hue.\n // Converts to Oklch and returns that result.\n red_srgb.hue();\n ```\n\n [`Oklch`](Oklcha) has been chosen as the intermediary space in cases where conversion is required\n due to its perceptual uniformity and broad support for Bevy's color operations.\n To avoid the cost of repeated conversion, and ensure consistent results where that is desired,\n first convert this [`Color`] into your desired color space.",
       "associated_functions": [
-        "bevy_color::color::Color::eq",
-        "bevy_color::color::Color::to_srgba",
-        "bevy_color::color::Color::white",
-        "bevy_color::color::Color::hsv",
-        "bevy_color::color::Color::luminance",
-        "bevy_color::color::Color::srgb_u8",
-        "bevy_color::color::Color::hsla",
         "bevy_color::color::Color::linear_rgba",
-        "bevy_color::color::Color::alpha",
-        "bevy_color::color::Color::srgba_u8",
-        "bevy_color::color::Color::lighter",
-        "bevy_color::color::Color::srgb",
-        "bevy_color::color::Color::darker",
-        "bevy_color::color::Color::srgba",
-        "bevy_color::color::Color::none",
         "bevy_color::color::Color::to_linear",
-        "bevy_color::color::Color::black",
-        "bevy_color::color::Color::hex",
-        "bevy_color::color::Color::mix",
-        "bevy_color::color::Color::linear_rgb",
-        "bevy_color::color::Color::with_alpha",
-        "bevy_color::color::Color::set_alpha",
-        "bevy_color::color::Color::hsva",
-        "bevy_color::color::Color::to_hex",
-        "bevy_color::color::Color::hsl",
-        "bevy_color::color::Color::is_fully_transparent",
+        "bevy_color::color::Color::none",
         "bevy_color::color::Color::named",
+        "bevy_color::color::Color::hsva",
+        "bevy_color::color::Color::to_srgba",
+        "bevy_color::color::Color::alpha",
+        "bevy_color::color::Color::luminance",
+        "bevy_color::color::Color::hsl",
+        "bevy_color::color::Color::hsv",
+        "bevy_color::color::Color::set_alpha",
+        "bevy_color::color::Color::srgba_u8",
+        "bevy_color::color::Color::darker",
+        "bevy_color::color::Color::mix",
+        "bevy_color::color::Color::srgb",
+        "bevy_color::color::Color::srgba",
+        "bevy_color::color::Color::srgb_u8",
+        "bevy_color::color::Color::lighter",
+        "bevy_color::color::Color::white",
+        "bevy_color::color::Color::hex",
+        "bevy_color::color::Color::linear_rgb",
+        "bevy_color::color::Color::eq",
+        "bevy_color::color::Color::hsla",
+        "bevy_color::color::Color::to_hex",
+        "bevy_color::color::Color::black",
+        "bevy_color::color::Color::with_alpha",
+        "bevy_color::color::Color::is_fully_transparent",
         "bevy_color::color::Color::new"
       ],
       "layout": [
@@ -1505,8 +1505,8 @@
       "namespace": "color",
       "documentation": " Color in Hue-Whiteness-Blackness (HWB) color space with alpha.\n Further information on this color model can be found on [Wikipedia](https://en.wikipedia.org/wiki/HWB_color_model).\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::hwba::Hwba::to_color",
-        "bevy_color::hwba::Hwba::new"
+        "bevy_color::hwba::Hwba::new",
+        "bevy_color::hwba::Hwba::to_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -1560,8 +1560,8 @@
       "namespace": "color",
       "documentation": " Color in LAB color space, with alpha\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::laba::Laba::to_color",
-        "bevy_color::laba::Laba::new"
+        "bevy_color::laba::Laba::new",
+        "bevy_color::laba::Laba::to_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -1615,8 +1615,8 @@
       "namespace": "color",
       "documentation": " Color in LCH color space, with alpha\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::lcha::Lcha::new",
-        "bevy_color::lcha::Lcha::to_color"
+        "bevy_color::lcha::Lcha::to_color",
+        "bevy_color::lcha::Lcha::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -1670,10 +1670,10 @@
       "namespace": "color",
       "documentation": " Linear RGB color with alpha.\n\n SDR colors are in `[0.0, 1.0]`. Values above `1.0` are HDR intensities.\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::linear_rgba::LinearRgba::rgb",
-        "bevy_color::linear_rgba::LinearRgba::new",
-        "bevy_color::linear_rgba::LinearRgba::mul",
         "bevy_color::linear_rgba::LinearRgba::eq",
+        "bevy_color::linear_rgba::LinearRgba::mul",
+        "bevy_color::linear_rgba::LinearRgba::new",
+        "bevy_color::linear_rgba::LinearRgba::rgb",
         "bevy_color::linear_rgba::LinearRgba::to_color"
       ],
       "layout": {
@@ -1728,8 +1728,8 @@
       "namespace": "color",
       "documentation": " Color in Oklab color space, with alpha\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::oklaba::Oklaba::new",
-        "bevy_color::oklaba::Oklaba::to_color"
+        "bevy_color::oklaba::Oklaba::to_color",
+        "bevy_color::oklaba::Oklaba::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -1783,8 +1783,8 @@
       "namespace": "color",
       "documentation": " Color in Oklch color space, with alpha\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::oklcha::Oklcha::new",
-        "bevy_color::oklcha::Oklcha::to_color"
+        "bevy_color::oklcha::Oklcha::to_color",
+        "bevy_color::oklcha::Oklcha::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -1838,13 +1838,13 @@
       "namespace": "color",
       "documentation": " Non-linear standard RGB with alpha.\n\n SDR colors are in `[0.0, 1.0]`. Values above `1.0` are HDR intensities.\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::srgba::Srgba::with_alpha",
         "bevy_color::srgba::Srgba::hex",
-        "bevy_color::srgba::Srgba::to_hex",
-        "bevy_color::srgba::Srgba::rgb",
-        "bevy_color::srgba::Srgba::eq",
         "bevy_color::srgba::Srgba::new",
-        "bevy_color::srgba::Srgba::to_color"
+        "bevy_color::srgba::Srgba::with_alpha",
+        "bevy_color::srgba::Srgba::to_color",
+        "bevy_color::srgba::Srgba::eq",
+        "bevy_color::srgba::Srgba::to_hex",
+        "bevy_color::srgba::Srgba::rgb"
       ],
       "layout": {
         "kind": "Struct",
@@ -1898,8 +1898,8 @@
       "namespace": "color",
       "documentation": " [CIE 1931](https://en.wikipedia.org/wiki/CIE_1931_color_space) color space, also known as XYZ, with an alpha channel.\n\n The SDR channel bounds below are the D65 white point, `(0.9505, 1.0, 1.0889)`.\n <div>\n </div>",
       "associated_functions": [
-        "bevy_color::xyza::Xyza::to_color",
-        "bevy_color::xyza::Xyza::new"
+        "bevy_color::xyza::Xyza::new",
+        "bevy_color::xyza::Xyza::to_color"
       ],
       "layout": {
         "kind": "Struct",
@@ -2153,11 +2153,11 @@
       "namespace": "ecs",
       "documentation": " Unique identifier for an entity in a [`World`].\n Note that this is just an id, not the entity itself.\n Further, the entity this id refers to may no longer exist in the [`World`].\n For more information about entities, their ids, and how to use them, see the module [docs](crate::entity).\n\n # Aliasing\n\n Once an entity is despawned, it ceases to exist.\n However, its [`Entity`] id is still present, and may still be contained in some data.\n This becomes problematic because it is possible for a later entity to be spawned at the exact same id!\n If this happens, which is rare but very possible, it will be logged.\n\n Aliasing can happen without warning.\n Holding onto a [`Entity`] id corresponding to an entity well after that entity was despawned can cause un-intuitive behavior for both ordering, and comparing in general.\n To prevent these bugs, it is generally best practice to stop holding an [`Entity`] or [`EntityGeneration`] value as soon as you know it has been despawned.\n If you must do otherwise, do not assume the [`Entity`] id corresponds to the same entity it originally did.\n See [`EntityGeneration`]'s docs for more information about aliasing and why it occurs.\n\n # Stability warning\n For all intents and purposes, `Entity` should be treated as an opaque identifier. The internal bit\n representation is liable to change from release to release as are the behaviors or performance\n characteristics of any of its trait implementations (i.e. `Ord`, `Hash`, etc.). This means that changes in\n `Entity`'s representation, though made readable through various functions on the type, are not considered\n breaking changes under [SemVer].\n\n In particular, directly serializing with `Serialize` and `Deserialize` make zero guarantee of long\n term wire format compatibility. Changes in behavior will cause serialized `Entity` values persisted\n to long term storage (i.e. disk, databases, etc.) will fail to deserialize upon being updated.\n\n # Usage\n\n This data type is returned by iterating a `Query` that has `Entity` as part of its query fetch type parameter ([learn more]).\n It can also be obtained by calling [`EntityCommands::id`] or [`EntityWorldMut::id`].\n\n ```\n # use bevy_ecs::prelude::*;\n # #[derive(Component)]\n # struct SomeComponent;\n fn setup(mut commands: Commands) {\n     // Calling `spawn` returns `EntityCommands`.\n     let entity = commands.spawn(SomeComponent).id();\n }\n\n fn exclusive_system(world: &mut World) {\n     // Calling `spawn` returns `EntityWorldMut`.\n     let entity = world.spawn(SomeComponent).id();\n }\n #\n # bevy_ecs::system::assert_is_system(setup);\n # bevy_ecs::system::assert_is_system(exclusive_system);\n ```\n\n It can be used to refer to a specific entity to apply [`EntityCommands`], or to call [`Query::get`] (or similar methods) to access its components.\n\n ```\n # use bevy_ecs::prelude::*;\n #\n # #[derive(Component)]\n # struct Expired;\n #\n fn dispose_expired_food(mut commands: Commands, query: Query<Entity, With<Expired>>) {\n     for food_entity in &query {\n         commands.entity(food_entity).despawn();\n     }\n }\n #\n # bevy_ecs::system::assert_is_system(dispose_expired_food);\n ```\n\n [learn more]: crate::system::Query#entity-id-access\n [`EntityCommands::id`]: crate::system::EntityCommands::id\n [`EntityWorldMut::id`]: crate::world::EntityWorldMut::id\n [`EntityCommands`]: crate::system::EntityCommands\n [`Query::get`]: crate::system::Query::get\n [`World`]: crate::world::World\n [SemVer]: https://semver.org/",
       "associated_functions": [
-        "bevy_ecs::entity::Entity::to_bits",
+        "bevy_ecs::entity::Entity::from_bits",
         "bevy_ecs::entity::Entity::index",
         "bevy_ecs::entity::Entity::generation",
+        "bevy_ecs::entity::Entity::to_bits",
         "bevy_ecs::entity::Entity::eq",
-        "bevy_ecs::entity::Entity::from_bits",
         "bevy_ecs::entity::Entity::new"
       ],
       "layout": null,
@@ -2209,10 +2209,10 @@
       "namespace": "ecs",
       "documentation": " Component used to identify an entity. Stores a hash for faster comparisons.\n\n The hash is eagerly re-computed upon each update to the name.\n\n [`Name`] should not be treated as a globally unique identifier for entities,\n as multiple entities can have the same name.  [`Entity`] should be\n used instead as the default unique identifier.",
       "associated_functions": [
-        "bevy_ecs::name::Name::eq",
         "bevy_ecs::name::Name::set",
-        "bevy_ecs::name::Name::as_str",
-        "bevy_ecs::name::Name::new"
+        "bevy_ecs::name::Name::new",
+        "bevy_ecs::name::Name::eq",
+        "bevy_ecs::name::Name::as_str"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -2244,13 +2244,13 @@
       "documentation": " An image, optimized for usage in rendering.\n\n ## Remote Inspection\n\n To transmit an [`Image`] between two running Bevy apps, e.g. through BRP, use\n`SerializedImage`, which requires the `serialize` feature.\n This type is only meant for short-term transmission between same versions and should not be stored anywhere.",
       "associated_functions": [
         "bevy_image::image::Image::size_f32",
+        "bevy_image::image::Image::width",
         "bevy_image::image::Image::height",
         "bevy_image::image::Image::size",
-        "bevy_image::image::Image::width",
-        "bevy_image::image::Image::get_asset",
         "bevy_image::image::Image::new",
-        "bevy_image::image::Image::add_asset",
-        "bevy_image::image::Image::load"
+        "bevy_image::image::Image::load",
+        "bevy_image::image::Image::get_asset",
+        "bevy_image::image::Image::add_asset"
       ],
       "layout": null,
       "generated": false,
@@ -2272,12 +2272,12 @@
       "namespace": "sprite",
       "documentation": " Stores a map used to lookup the position of a texture in a [`TextureAtlas`].\n This can be used to either use and look up a specific section of a texture, or animate frame-by-frame as a sprite sheet.\n\n Optionally it can store a mapping from sub texture handles to the related area index (see\n [`TextureAtlasBuilder`]).\n\n [Example usage animating sprite.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/sprite_sheet.rs)\n [Example usage animating sprite in response to an event.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/sprite_animation.rs)\n [Example usage loading sprite sheet.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/texture_atlas.rs)\n\n [`TextureAtlasBuilder`]: crate::TextureAtlasBuilder",
       "associated_functions": [
-        "bevy_image::texture_atlas::TextureAtlasLayout::from_grid",
         "bevy_image::texture_atlas::TextureAtlasLayout::len",
-        "bevy_image::texture_atlas::TextureAtlasLayout::get_asset",
+        "bevy_image::texture_atlas::TextureAtlasLayout::from_grid",
         "bevy_image::texture_atlas::TextureAtlasLayout::new",
-        "bevy_image::texture_atlas::TextureAtlasLayout::add_asset",
-        "bevy_image::texture_atlas::TextureAtlasLayout::load"
+        "bevy_image::texture_atlas::TextureAtlasLayout::load",
+        "bevy_image::texture_atlas::TextureAtlasLayout::get_asset",
+        "bevy_image::texture_atlas::TextureAtlasLayout::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -2318,13 +2318,13 @@
       "namespace": "input",
       "documentation": " Stores a connected gamepad's metadata such as the name and its [`GamepadButton`] and [`GamepadAxis`].\n\n An entity with this component is spawned automatically after [`GamepadConnectionEvent`]\n and updated by [`gamepad_event_processing_system`].\n\n See also [`GamepadSettings`] for configuration.\n\n # Examples\n\n ```\n # use bevy_input::gamepad::{Gamepad, GamepadAxis, GamepadButton};\n # use bevy_ecs::system::Query;\n # use bevy_ecs::name::Name;\n #\n fn gamepad_usage_system(gamepads: Query<(&Name, &Gamepad)>) {\n     for (name, gamepad) in &gamepads {\n         println!(\"{name}\");\n\n         if gamepad.just_pressed(GamepadButton::North) {\n             println!(\"{} just pressed North\", name)\n         }\n\n         if let Some(left_stick_x) = gamepad.get(GamepadAxis::LeftStickX)  {\n             println!(\"left stick X: {}\", left_stick_x)\n         }\n     }\n }\n ```",
       "associated_functions": [
-        "bevy_input::gamepad::Gamepad::dpad",
+        "bevy_input::gamepad::Gamepad::left_stick",
         "bevy_input::gamepad::Gamepad::right_stick",
+        "bevy_input::gamepad::Gamepad::pressed",
+        "bevy_input::gamepad::Gamepad::dpad",
+        "bevy_input::gamepad::Gamepad::just_released",
         "bevy_input::gamepad::Gamepad::get",
         "bevy_input::gamepad::Gamepad::just_pressed",
-        "bevy_input::gamepad::Gamepad::just_released",
-        "bevy_input::gamepad::Gamepad::left_stick",
-        "bevy_input::gamepad::Gamepad::pressed",
         "bevy_input::gamepad::Gamepad::new"
       ],
       "layout": {
@@ -2396,13 +2396,13 @@
       "namespace": "input",
       "documentation": " The key code of a [`KeyboardInput`].\n\n ## Usage\n\n It is used as the generic `T` value of an [`ButtonInput`] to create a `Res<ButtonInput<KeyCode>>`.\n\n Code representing the location of a physical key\n This mostly conforms to the [`UI Events Specification's KeyboardEvent.code`] with a few\n exceptions:\n - The keys that the specification calls `MetaLeft` and `MetaRight` are named `SuperLeft` and\n   `SuperRight` here.\n - The key that the specification calls \"Super\" is reported as `Unidentified` here.\n\n [`UI Events Specification's KeyboardEvent.code`]: https://w3c.github.io/uievents-code/#code-value-tables\n\n ## Updating\n\n The resource is updated inside of the [`keyboard_input_system`].",
       "associated_functions": [
-        "bevy_input::keyboard::KeyCode::just_released",
-        "bevy_input::keyboard::KeyCode::get_just_pressed",
         "bevy_input::keyboard::KeyCode::pressed",
-        "bevy_input::keyboard::KeyCode::any_just_pressed",
-        "bevy_input::keyboard::KeyCode::get_pressed",
-        "bevy_input::keyboard::KeyCode::just_pressed",
         "bevy_input::keyboard::KeyCode::any_pressed",
+        "bevy_input::keyboard::KeyCode::get_just_pressed",
+        "bevy_input::keyboard::KeyCode::any_just_pressed",
+        "bevy_input::keyboard::KeyCode::just_released",
+        "bevy_input::keyboard::KeyCode::just_pressed",
+        "bevy_input::keyboard::KeyCode::get_pressed",
         "bevy_input::keyboard::KeyCode::new"
       ],
       "layout": [
@@ -3211,12 +3211,12 @@
       "namespace": "input",
       "documentation": " A button on a mouse device.\n\n ## Usage\n\n It is used as the generic `T` value of an [`ButtonInput`] to create a `bevy`\n resource.\n\n ## Updating\n\n The resource is updated inside of the [`mouse_button_input_system`].",
       "associated_functions": [
-        "bevy_input::mouse::MouseButton::any_pressed",
-        "bevy_input::mouse::MouseButton::just_released",
-        "bevy_input::mouse::MouseButton::get_pressed",
         "bevy_input::mouse::MouseButton::get_just_pressed",
-        "bevy_input::mouse::MouseButton::pressed",
         "bevy_input::mouse::MouseButton::just_pressed",
+        "bevy_input::mouse::MouseButton::pressed",
+        "bevy_input::mouse::MouseButton::any_pressed",
+        "bevy_input::mouse::MouseButton::get_pressed",
+        "bevy_input::mouse::MouseButton::just_released",
         "bevy_input::mouse::MouseButton::any_just_pressed",
         "bevy_input::mouse::MouseButton::new"
       ],
@@ -3271,8 +3271,8 @@
       "namespace": "input",
       "documentation": " Resource representing which entity has input focus, if any. Input events (other than pointer-like inputs) will be\n dispatched to the current focus entity, or to the primary window if no entity has focus.\n\n Changing the input focus is as easy as modifying this resource.\n\n To detect when an entity gains or loses focus, listen for the [`FocusGained`] and [`FocusLost`] events.\n\n # Examples\n\n From within a system:\n\n ```rust\n use bevy_ecs::prelude::*;\n use bevy_input_focus::{FocusCause, InputFocus};\n\n fn clear_focus(mut input_focus: ResMut<InputFocus>) {\n   input_focus.clear();\n }\n ```\n\n With exclusive (or deferred) world access:\n\n ```rust\n use bevy_ecs::prelude::*;\n use bevy_input_focus::{FocusCause, InputFocus};\n\n fn set_focus_from_world(world: &mut World) {\n     let entity = world.spawn_empty().id();\n\n     // Fetch the resource from the world\n     let mut input_focus = world.resource_mut::<InputFocus>();\n     // Then mutate it!\n     input_focus.set(entity, FocusCause::Navigated);\n\n     // Or you can just insert a fresh copy of the resource\n     // which will overwrite the existing one.\n     world.insert_resource(InputFocus::from_entity(entity));\n }\n ```",
       "associated_functions": [
-        "bevy_input_focus::InputFocus::set",
         "bevy_input_focus::InputFocus::clear",
+        "bevy_input_focus::InputFocus::set",
         "bevy_input_focus::InputFocus::get",
         "bevy_input_focus::InputFocus::new"
       ],
@@ -3335,16 +3335,16 @@
       "namespace": "math",
       "documentation": " A normalized vector pointing in a direction in 2D space",
       "associated_functions": [
-        "bevy_math::direction::Dir2::mul",
         "bevy_math::direction::Dir2::neg",
-        "bevy_math::direction::Dir2::x",
-        "bevy_math::direction::Dir2::eq",
+        "bevy_math::direction::Dir2::as_vec2",
         "bevy_math::direction::Dir2::neg_x",
-        "bevy_math::direction::Dir2::slerp",
-        "bevy_math::direction::Dir2::y",
+        "bevy_math::direction::Dir2::x",
         "bevy_math::direction::Dir2::neg_y",
+        "bevy_math::direction::Dir2::eq",
+        "bevy_math::direction::Dir2::mul",
+        "bevy_math::direction::Dir2::slerp",
         "bevy_math::direction::Dir2::new",
-        "bevy_math::direction::Dir2::as_vec2"
+        "bevy_math::direction::Dir2::y"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -3375,18 +3375,18 @@
       "namespace": "math",
       "documentation": " A normalized vector pointing in a direction in 3D space",
       "associated_functions": [
-        "bevy_math::direction::Dir3::mul",
+        "bevy_math::direction::Dir3::neg_x",
         "bevy_math::direction::Dir3::slerp",
-        "bevy_math::direction::Dir3::eq",
-        "bevy_math::direction::Dir3::as_vec3",
-        "bevy_math::direction::Dir3::y",
-        "bevy_math::direction::Dir3::neg",
         "bevy_math::direction::Dir3::x",
-        "bevy_math::direction::Dir3::new",
-        "bevy_math::direction::Dir3::z",
-        "bevy_math::direction::Dir3::neg_y",
         "bevy_math::direction::Dir3::neg_z",
-        "bevy_math::direction::Dir3::neg_x"
+        "bevy_math::direction::Dir3::as_vec3",
+        "bevy_math::direction::Dir3::mul",
+        "bevy_math::direction::Dir3::neg",
+        "bevy_math::direction::Dir3::new",
+        "bevy_math::direction::Dir3::eq",
+        "bevy_math::direction::Dir3::y",
+        "bevy_math::direction::Dir3::z",
+        "bevy_math::direction::Dir3::neg_y"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -3417,21 +3417,21 @@
       "namespace": "math",
       "documentation": " A rectangle defined by two opposite corners.\n\n The rectangle is axis aligned, and defined by its minimum and maximum coordinates,\n stored in `Rect::min` and `Rect::max`, respectively. The minimum/maximum invariant\n must be upheld by the user when directly assigning the fields, otherwise some methods\n produce invalid results. It is generally recommended to use one of the constructor\n methods instead, which will ensure this invariant is met, unless you already have\n the minimum and maximum corners.",
       "associated_functions": [
-        "bevy_math::rects::rect::Rect::from_corners",
-        "bevy_math::rects::rect::Rect::from_center_size",
-        "bevy_math::rects::rect::Rect::union",
         "bevy_math::rects::rect::Rect::eq",
-        "bevy_math::rects::rect::Rect::is_empty",
-        "bevy_math::rects::rect::Rect::size",
-        "bevy_math::rects::rect::Rect::contains",
         "bevy_math::rects::rect::Rect::center",
-        "bevy_math::rects::rect::Rect::width",
+        "bevy_math::rects::rect::Rect::union",
+        "bevy_math::rects::rect::Rect::from_corners",
         "bevy_math::rects::rect::Rect::inflate",
-        "bevy_math::rects::rect::Rect::new",
         "bevy_math::rects::rect::Rect::from_center_half_size",
-        "bevy_math::rects::rect::Rect::intersect",
         "bevy_math::rects::rect::Rect::half_size",
-        "bevy_math::rects::rect::Rect::height"
+        "bevy_math::rects::rect::Rect::new",
+        "bevy_math::rects::rect::Rect::from_center_size",
+        "bevy_math::rects::rect::Rect::size",
+        "bevy_math::rects::rect::Rect::is_empty",
+        "bevy_math::rects::rect::Rect::height",
+        "bevy_math::rects::rect::Rect::intersect",
+        "bevy_math::rects::rect::Rect::width",
+        "bevy_math::rects::rect::Rect::contains"
       ],
       "layout": {
         "kind": "Struct",
@@ -3471,17 +3471,17 @@
       "namespace": "math",
       "documentation": " A 2D rotation.\n\n # Example\n\n ```\n # use approx::assert_relative_eq;\n # use bevy_math::{Rot2, Vec2};\n use std::f32::consts::PI;\n\n // Create rotations from counterclockwise angles in radians or degrees\n let rotation1 = Rot2::radians(PI / 2.0);\n let rotation2 = Rot2::degrees(45.0);\n\n // Get the angle back as radians or degrees\n assert_eq!(rotation1.as_degrees(), 90.0);\n assert_eq!(rotation2.as_radians(), PI / 4.0);\n\n // \"Add\" rotations together using `*`\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));\n\n // Rotate vectors\n #[cfg(feature = \"approx\")]\n assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);\n ```",
       "associated_functions": [
-        "bevy_math::rotation2d::Rot2::nlerp",
-        "bevy_math::rotation2d::Rot2::eq",
-        "bevy_math::rotation2d::Rot2::as_radians",
         "bevy_math::rotation2d::Rot2::radians",
-        "bevy_math::rotation2d::Rot2::turn_fraction",
-        "bevy_math::rotation2d::Rot2::degrees",
-        "bevy_math::rotation2d::Rot2::as_degrees",
-        "bevy_math::rotation2d::Rot2::slerp",
         "bevy_math::rotation2d::Rot2::mul",
-        "bevy_math::rotation2d::Rot2::identity",
+        "bevy_math::rotation2d::Rot2::as_radians",
+        "bevy_math::rotation2d::Rot2::degrees",
         "bevy_math::rotation2d::Rot2::inverse",
+        "bevy_math::rotation2d::Rot2::slerp",
+        "bevy_math::rotation2d::Rot2::identity",
+        "bevy_math::rotation2d::Rot2::nlerp",
+        "bevy_math::rotation2d::Rot2::turn_fraction",
+        "bevy_math::rotation2d::Rot2::as_degrees",
+        "bevy_math::rotation2d::Rot2::eq",
         "bevy_math::rotation2d::Rot2::new"
       ],
       "layout": {
@@ -3524,10 +3524,10 @@
       "associated_functions": [
         "bevy_mesh::mesh::Mesh::count_vertices",
         "bevy_mesh::mesh::Mesh::from_shape",
-        "bevy_mesh::mesh::Mesh::get_asset",
         "bevy_mesh::mesh::Mesh::new",
-        "bevy_mesh::mesh::Mesh::add_asset",
-        "bevy_mesh::mesh::Mesh::load"
+        "bevy_mesh::mesh::Mesh::load",
+        "bevy_mesh::mesh::Mesh::get_asset",
+        "bevy_mesh::mesh::Mesh::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -3621,21 +3621,21 @@
       "namespace": "gizmos",
       "documentation": " Immediate mode debug drawing: lines and shapes drawn this frame.\n\n Every function draws straight away, the shapes are shown for the current frame only.\n Needs the gizmo plugin, without it the functions fail with an error.\n\n ```multi-lang-example,lua,ignore\n local Color = import_namespace(\"color\").Color\n local Gizmos = import_namespace(\"gizmos\").Gizmos\n local Vec3 = import_namespace(\"math\").Vec3\n Gizmos.line(Vec3.zero(), Vec3.new(1, 0, 0), Color.white())\n ```\n\n ```multi-lang-example,rune,ignore\n let Color = import_namespace(\"color\").Color;\n let Gizmos = import_namespace(\"gizmos\").Gizmos;\n let Vec3 = import_namespace(\"math\").Vec3;\n Gizmos.line(Vec3.zero(), Vec3.new(1.0, 0.0, 0.0), Color.white());\n ```",
       "associated_functions": [
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cross",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line_2d",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::axes",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::line",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cuboid",
-        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::ray_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cross",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::axes",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::arrow_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::cuboid",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect_2d",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::linestrip",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::rect",
+        "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::circle_2d",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::sphere",
         "bevy_mod_scripting_bevy_gizmos_bindings::Gizmos::new"
       ],
@@ -3660,9 +3660,9 @@
       "namespace": "bms",
       "documentation": " A reference to a variant of an enum, independent of any value of that enum.\n\n This is what scripts see when accessing `MyEnum.Variant`, it can be compared to\n the result of `value:variant()` and used to construct values of the variant.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::new",
         "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::variant_name",
-        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq"
+        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::eq",
+        "bevy_mod_scripting_bindings::enum_variant::EnumVariantRef::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -3700,9 +3700,9 @@
       "namespace": "bms",
       "documentation": " A reference to a bundle type's reflection registration, i.e. a type with `ReflectBundle` type data.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
+        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::short_name",
         "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::namespace",
-        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::short_name"
+        "bevy_mod_scripting_bindings::query::ScriptBundleRegistration::type_name"
       ],
       "layout": null,
       "generated": false,
@@ -3722,8 +3722,8 @@
       "namespace": "bms",
       "documentation": " A reference to a component type's reflection registration.\n\n In general think of this as a handle to a type.\n\n Not to be confused with script registered dynamic components, although this can point to a script registered component.\n\n Opaque with private fields: world accessors trust that `component_id` belongs to `registration`'s type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::short_name",
+        "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::type_name",
         "bevy_mod_scripting_bindings::query::ScriptComponentRegistration::namespace"
       ],
       "layout": null,
@@ -3744,15 +3744,15 @@
       "namespace": "bms",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::optional_read",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component_read",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::changed",
-        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::optional",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::added",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::changed",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::with",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::build",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::optional_read",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component_read",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::without",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::component",
+        "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::optional",
         "bevy_mod_scripting_bindings::query::ScriptQueryBuilder::new"
       ],
       "layout": null,
@@ -3795,9 +3795,9 @@
       "namespace": "bms",
       "documentation": " A reference to a type which is not a `Resource` or `Component`.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
+        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace",
         "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::short_name",
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::type_name",
-        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::namespace"
+        "bevy_mod_scripting_bindings::query::ScriptTypeRegistration::type_name"
       ],
       "layout": null,
       "generated": false,
@@ -3817,8 +3817,8 @@
       "namespace": "bms",
       "documentation": " A handle to a script registered event type.",
       "associated_functions": [
-        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::short_name",
-        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::namespace"
+        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::namespace",
+        "bevy_mod_scripting_bindings::script_event::ScriptEventRegistration::short_name"
       ],
       "layout": null,
       "generated": false,
@@ -3838,15 +3838,15 @@
       "namespace": "bms",
       "documentation": " A run condition of a script system, evaluated in Rust without calling into the script, see [`ScriptSystemBuilder::run_if`].",
       "associated_functions": [
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::not_",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::or_",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_changed",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::and_",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_added",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::any_with_component",
-        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_exists",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_added",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::on_timer",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::resource_exists",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::and_",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::run_once",
+        "bevy_mod_scripting_core::script_system::ScriptRunCondition::not_",
         "bevy_mod_scripting_core::script_system::ScriptRunCondition::new"
       ],
       "layout": null,
@@ -3868,17 +3868,17 @@
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::exclusive",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::run_if",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_script_system",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before_script_system",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::in_set",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource_read",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before_set",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_set",
-        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_set",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before_set",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::run_if",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::query",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::after_script_system",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::in_set",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource_read",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::resource",
+        "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::before_script_system",
         "bevy_mod_scripting_core::script_system::ScriptSystemBuilder::new"
       ],
       "layout": null,
@@ -3899,10 +3899,10 @@
       "namespace": "bms",
       "documentation": " Describes the designated recipients of a script event",
       "associated_functions": [
-        "bevy_mod_scripting_script::Recipients::all_contexts",
+        "bevy_mod_scripting_script::Recipients::all_scripts",
         "bevy_mod_scripting_script::Recipients::static_script",
         "bevy_mod_scripting_script::Recipients::entity_script",
-        "bevy_mod_scripting_script::Recipients::all_scripts",
+        "bevy_mod_scripting_script::Recipients::all_contexts",
         "bevy_mod_scripting_script::Recipients::new"
       ],
       "layout": [
@@ -4404,8 +4404,8 @@
       "path": "bevy_platform::time::Instant",
       "namespace": "time",
       "associated_functions": [
-        "bevy_platform::time::Instant::duration_since",
         "bevy_platform::time::Instant::elapsed",
+        "bevy_platform::time::Instant::duration_since",
         "bevy_platform::time::Instant::new"
       ],
       "layout": null,
@@ -4613,8 +4613,8 @@
       "namespace": "math",
       "documentation": " A cuboid primitive, which is like a cube, except that the x, y, and z dimensions are not\n required to be the same.",
       "associated_functions": [
-        "bevy_shape::dim3::Cuboid::from_size",
-        "bevy_shape::dim3::Cuboid::new"
+        "bevy_shape::dim3::Cuboid::new",
+        "bevy_shape::dim3::Cuboid::from_size"
       ],
       "layout": {
         "kind": "Struct",
@@ -4799,9 +4799,9 @@
       "namespace": "math",
       "documentation": " An infinite half-line starting at `origin` and going in `direction` in 2D space.",
       "associated_functions": [
-        "bevy_shape::ray::Ray2d::get_point",
+        "bevy_shape::ray::Ray2d::new",
         "bevy_shape::ray::Ray2d::intersect_plane",
-        "bevy_shape::ray::Ray2d::new"
+        "bevy_shape::ray::Ray2d::get_point"
       ],
       "layout": {
         "kind": "Struct",
@@ -4839,8 +4839,8 @@
       "namespace": "math",
       "documentation": " An infinite half-line starting at `origin` and going in `direction` in 3D space.",
       "associated_functions": [
-        "bevy_shape::ray::Ray3d::intersect_plane",
         "bevy_shape::ray::Ray3d::get_point",
+        "bevy_shape::ray::Ray3d::intersect_plane",
         "bevy_shape::ray::Ray3d::new"
       ],
       "layout": {
@@ -4881,14 +4881,14 @@
       "associated_functions": [
         "bevy_sprite::sprite::Anchor::top_right",
         "bevy_sprite::sprite::Anchor::top_center",
-        "bevy_sprite::sprite::Anchor::bottom_center",
-        "bevy_sprite::sprite::Anchor::center_left",
-        "bevy_sprite::sprite::Anchor::as_vec",
-        "bevy_sprite::sprite::Anchor::center",
         "bevy_sprite::sprite::Anchor::center_right",
+        "bevy_sprite::sprite::Anchor::as_vec",
         "bevy_sprite::sprite::Anchor::top_left",
         "bevy_sprite::sprite::Anchor::bottom_right",
         "bevy_sprite::sprite::Anchor::bottom_left",
+        "bevy_sprite::sprite::Anchor::center",
+        "bevy_sprite::sprite::Anchor::center_left",
+        "bevy_sprite::sprite::Anchor::bottom_center",
         "bevy_sprite::sprite::Anchor::new"
       ],
       "layout": {
@@ -4921,10 +4921,10 @@
       "namespace": "sprite",
       "documentation": " Describes a sprite to be rendered to a 2D camera",
       "associated_functions": [
-        "bevy_sprite::sprite::Sprite::from_image",
-        "bevy_sprite::sprite::Sprite::sized",
         "bevy_sprite::sprite::Sprite::from_atlas_image",
+        "bevy_sprite::sprite::Sprite::sized",
         "bevy_sprite::sprite::Sprite::from_color",
+        "bevy_sprite::sprite::Sprite::from_image",
         "bevy_sprite::sprite::Sprite::new"
       ],
       "layout": {
@@ -5026,9 +5026,9 @@
       "namespace": "text",
       "documentation": " The top-level 2D text component.\n\n Adding `Text2d` to an entity will pull in required components for setting up 2d text.\n [Example usage.](https://github.com/bevyengine/bevy/blob/latest/examples/2d/text2d.rs)\n\n The string in this component is the first 'text span' in a hierarchy of text spans that are collected into\n a [`ComputedTextBlock`]. See `TextSpan` for the component used by children of entities with [`Text2d`].\n\n With `Text2d` the `justify` field of [`TextLayout`] only affects the internal alignment of a block of text and not its\n relative position, which is controlled by the [`Anchor`] component.\n This means that for a block of text consisting of only one line that doesn't wrap, the `justify` field will have no effect.\n\n\n ```\n # use bevy_asset::Handle;\n # use bevy_color::Color;\n # use bevy_color::palettes::basic::BLUE;\n # use bevy_ecs::world::World;\n # use bevy_text::{Font, FontSize, Justify, TextLayout, TextFont, TextColor, TextSpan};\n # use bevy_sprite::Text2d;\n #\n # let font_handle: Handle<Font> = Default::default();\n # let mut world = World::default();\n #\n // Basic usage.\n world.spawn(Text2d::new(\"hello world!\"));\n\n // With non-default style.\n world.spawn((\n     Text2d::new(\"hello world!\"),\n     TextFont {\n         font: font_handle.clone().into(),\n         font_size: FontSize::Px(60.0),\n         ..Default::default()\n     },\n     TextColor(BLUE.into()),\n ));\n\n // With text justification.\n world.spawn((\n     Text2d::new(\"hello world\\nand bevy!\"),\n     TextLayout::justify(Justify::Center)\n ));\n\n // With spans\n world.spawn(Text2d::new(\"hello \")).with_children(|parent| {\n     parent.spawn(TextSpan::new(\"world\"));\n     parent.spawn((TextSpan::new(\"!\"), TextColor(BLUE.into())));\n });\n ```\n\n Viewport-based `FontSize` variants for `Text2d` are resolved based on the primary window’s logical size.",
       "associated_functions": [
-        "bevy_sprite::text2d::Text2d::as_str",
         "bevy_sprite::text2d::Text2d::set",
-        "bevy_sprite::text2d::Text2d::new"
+        "bevy_sprite::text2d::Text2d::new",
+        "bevy_sprite::text2d::Text2d::as_str"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -5061,8 +5061,8 @@
       "documentation": " A reflectable schedule.",
       "associated_functions": [
         "bevy_system_reflection::ReflectSchedule::render_dot",
-        "bevy_system_reflection::ReflectSchedule::systems",
-        "bevy_system_reflection::ReflectSchedule::get_system_by_name"
+        "bevy_system_reflection::ReflectSchedule::get_system_by_name",
+        "bevy_system_reflection::ReflectSchedule::systems"
       ],
       "layout": {
         "kind": "Struct",
@@ -5141,8 +5141,8 @@
       "documentation": " `TextFont` determines the style of a text span within a [`ComputedTextBlock`], specifically\n the font face, the font size, the line height, and the antialiasing method.",
       "associated_functions": [
         "bevy_text::text::TextFont::with_font",
-        "bevy_text::text::TextFont::with_font_size",
         "bevy_text::text::TextFont::from_font_size",
+        "bevy_text::text::TextFont::with_font_size",
         "bevy_text::text::TextFont::new"
       ],
       "layout": {
@@ -5259,8 +5259,8 @@
       "namespace": "text",
       "documentation": " A span of text in a tree of spans.\n\n A `TextSpan` is only valid when it exists as a child of a parent that has either `Text` or\n `Text2d`. The parent's `Text` / `Text2d` component contains the base text content. Any children\n with `TextSpan` extend this text by appending their content to the parent's text in sequence to\n form a [`ComputedTextBlock`]. The parent's [`TextLayout`] determines the layout of the block\n but each node has its own [`TextFont`] and [`TextColor`].",
       "associated_functions": [
-        "bevy_text::text::TextSpan::as_str",
         "bevy_text::text::TextSpan::set",
+        "bevy_text::text::TextSpan::as_str",
         "bevy_text::text::TextSpan::new"
       ],
       "layout": {
@@ -5293,15 +5293,15 @@
       "namespace": "time",
       "documentation": " A Stopwatch is a struct that tracks elapsed time when started.\n\n Note that in order to advance the stopwatch [`tick`](Stopwatch::tick) **MUST** be called.\n # Examples\n\n ```\n # use bevy_time::*;\n use std::time::Duration;\n let mut stopwatch = Stopwatch::new();\n assert_eq!(stopwatch.elapsed_secs(), 0.0);\n\n stopwatch.tick(Duration::from_secs_f32(1.0)); // tick one second\n assert_eq!(stopwatch.elapsed_secs(), 1.0);\n\n stopwatch.pause();\n stopwatch.tick(Duration::from_secs_f32(1.0)); // paused stopwatches don't tick\n assert_eq!(stopwatch.elapsed_secs(), 1.0);\n\n stopwatch.reset(); // reset the stopwatch\n assert!(stopwatch.is_paused());\n assert_eq!(stopwatch.elapsed_secs(), 0.0);\n ```",
       "associated_functions": [
-        "bevy_time::stopwatch::Stopwatch::pause",
+        "bevy_time::stopwatch::Stopwatch::new",
+        "bevy_time::stopwatch::Stopwatch::is_paused",
+        "bevy_time::stopwatch::Stopwatch::unpause",
         "bevy_time::stopwatch::Stopwatch::elapsed",
         "bevy_time::stopwatch::Stopwatch::tick",
-        "bevy_time::stopwatch::Stopwatch::unpause",
-        "bevy_time::stopwatch::Stopwatch::is_paused",
-        "bevy_time::stopwatch::Stopwatch::elapsed_secs",
-        "bevy_time::stopwatch::Stopwatch::set_elapsed",
         "bevy_time::stopwatch::Stopwatch::reset",
-        "bevy_time::stopwatch::Stopwatch::new"
+        "bevy_time::stopwatch::Stopwatch::pause",
+        "bevy_time::stopwatch::Stopwatch::elapsed_secs",
+        "bevy_time::stopwatch::Stopwatch::set_elapsed"
       ],
       "layout": {
         "kind": "Struct",
@@ -5341,28 +5341,28 @@
       "namespace": "time",
       "documentation": " Tracks elapsed time. Enters the finished state once `duration` is reached.\n\n Note that in order to advance the timer [`tick`](Timer::tick) **MUST** be called.\n\n # Timer modes\n\n There are two timer modes ([`TimerMode`]):\n\n - Non repeating timers will stop tracking and stay in the finished state until reset.\n - Repeating timers will only be in the finished state on each tick `duration` is reached or\n   exceeded, and can still be reset at any given point.\n\n # Pausing timers\n\n You can pause a timer using [`Timer::pause`]. Paused timers will not have elapsed time increased.\n\n # Elapsing multiple times a frame\n\n Repeating timers might elapse multiple times per frame if the time is advanced by more than the timer duration.\n You can check how many times a timer elapsed each tick with [`Timer::times_finished_this_tick`].\n For non-repeating timers, this will always be 0 or 1.",
       "associated_functions": [
-        "bevy_time::timer::Timer::new",
-        "bevy_time::timer::Timer::paused",
+        "bevy_time::timer::Timer::reset",
+        "bevy_time::timer::Timer::set_duration",
+        "bevy_time::timer::Timer::tick",
+        "bevy_time::timer::Timer::fraction_remaining",
         "bevy_time::timer::Timer::times_finished_this_tick",
         "bevy_time::timer::Timer::elapsed",
-        "bevy_time::timer::Timer::fraction_remaining",
-        "bevy_time::timer::Timer::reset",
-        "bevy_time::timer::Timer::finished",
+        "bevy_time::timer::Timer::new",
+        "bevy_time::timer::Timer::set_mode",
+        "bevy_time::timer::Timer::mode",
+        "bevy_time::timer::Timer::from_seconds",
         "bevy_time::timer::Timer::just_finished",
         "bevy_time::timer::Timer::pause",
-        "bevy_time::timer::Timer::fraction",
-        "bevy_time::timer::Timer::unpause",
-        "bevy_time::timer::Timer::set_mode",
         "bevy_time::timer::Timer::set_elapsed",
-        "bevy_time::timer::Timer::set_duration",
-        "bevy_time::timer::Timer::mode",
-        "bevy_time::timer::Timer::tick",
-        "bevy_time::timer::Timer::remaining_secs",
-        "bevy_time::timer::Timer::elapsed_secs",
-        "bevy_time::timer::Timer::from_seconds",
-        "bevy_time::timer::Timer::duration",
+        "bevy_time::timer::Timer::fraction",
         "bevy_time::timer::Timer::almost_finish",
-        "bevy_time::timer::Timer::remaining"
+        "bevy_time::timer::Timer::unpause",
+        "bevy_time::timer::Timer::remaining_secs",
+        "bevy_time::timer::Timer::finished",
+        "bevy_time::timer::Timer::duration",
+        "bevy_time::timer::Timer::paused",
+        "bevy_time::timer::Timer::remaining",
+        "bevy_time::timer::Timer::elapsed_secs"
       ],
       "layout": {
         "kind": "Struct",
@@ -5423,23 +5423,23 @@
       "namespace": "transform",
       "documentation": " [`GlobalTransform`] is an affine transformation from entity-local coordinates to worldspace coordinates.\n\n You cannot directly mutate [`GlobalTransform`]; instead, you change an entity's transform by manipulating\n its [`Transform`], which indirectly causes Bevy to update its [`GlobalTransform`].\n\n * To get the global transform of an entity, you should get its [`GlobalTransform`].\n * For transform hierarchies to work correctly, you must have both a [`Transform`] and a [`GlobalTransform`].\n   [`GlobalTransform`] is automatically inserted whenever [`Transform`] is inserted.\n\n ## [`Transform`] and [`GlobalTransform`]\n\n [`Transform`] transforms an entity relative to its parent's reference frame, or relative to world space coordinates,\n if it doesn't have a [`ChildOf`](bevy_ecs::hierarchy::ChildOf) component.\n\n [`GlobalTransform`] is managed by Bevy; it is computed by successively applying the [`Transform`] of each ancestor\n entity which has a Transform. This is done automatically by Bevy-internal systems in the [`TransformSystems::Propagate`]\n system set.\n\n This system runs during [`PostUpdate`](bevy_app::PostUpdate). If you\n update the [`Transform`] of an entity in this schedule or after, you will notice a 1 frame lag\n before the [`GlobalTransform`] is updated.\n\n [`TransformSystems::Propagate`]: crate::TransformSystems::Propagate\n\n # Examples\n\n - [`transform`][transform_example]\n\n [transform_example]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs",
       "associated_functions": [
-        "bevy_transform::components::global_transform::GlobalTransform::translation",
         "bevy_transform::components::global_transform::GlobalTransform::identity",
-        "bevy_transform::components::global_transform::GlobalTransform::from_xyz",
-        "bevy_transform::components::global_transform::GlobalTransform::compute_transform",
-        "bevy_transform::components::global_transform::GlobalTransform::right",
-        "bevy_transform::components::global_transform::GlobalTransform::scale",
-        "bevy_transform::components::global_transform::GlobalTransform::back",
-        "bevy_transform::components::global_transform::GlobalTransform::rotation",
-        "bevy_transform::components::global_transform::GlobalTransform::mul",
-        "bevy_transform::components::global_transform::GlobalTransform::forward",
-        "bevy_transform::components::global_transform::GlobalTransform::eq",
-        "bevy_transform::components::global_transform::GlobalTransform::transform_point",
         "bevy_transform::components::global_transform::GlobalTransform::up",
-        "bevy_transform::components::global_transform::GlobalTransform::to_matrix",
-        "bevy_transform::components::global_transform::GlobalTransform::down",
-        "bevy_transform::components::global_transform::GlobalTransform::left",
+        "bevy_transform::components::global_transform::GlobalTransform::transform_point",
         "bevy_transform::components::global_transform::GlobalTransform::reparented_to",
+        "bevy_transform::components::global_transform::GlobalTransform::from_xyz",
+        "bevy_transform::components::global_transform::GlobalTransform::mul",
+        "bevy_transform::components::global_transform::GlobalTransform::eq",
+        "bevy_transform::components::global_transform::GlobalTransform::forward",
+        "bevy_transform::components::global_transform::GlobalTransform::compute_transform",
+        "bevy_transform::components::global_transform::GlobalTransform::rotation",
+        "bevy_transform::components::global_transform::GlobalTransform::to_matrix",
+        "bevy_transform::components::global_transform::GlobalTransform::right",
+        "bevy_transform::components::global_transform::GlobalTransform::down",
+        "bevy_transform::components::global_transform::GlobalTransform::scale",
+        "bevy_transform::components::global_transform::GlobalTransform::left",
+        "bevy_transform::components::global_transform::GlobalTransform::translation",
+        "bevy_transform::components::global_transform::GlobalTransform::back",
         "bevy_transform::components::global_transform::GlobalTransform::new"
       ],
       "layout": {
@@ -5472,45 +5472,45 @@
       "namespace": "transform",
       "documentation": " Describe the position of an entity. If the entity has a parent, the position is relative\n to its parent position.\n\n * To place or move an entity, you should set its [`Transform`].\n * To get the global transform of an entity, you should get its [`GlobalTransform`].\n * To be displayed, an entity must have both a [`Transform`] and a [`GlobalTransform`].\n   [`GlobalTransform`] is automatically inserted whenever [`Transform`] is inserted.\n\n Transforms compose from right to left: if `t1` and `t2` are transforms, then `t1 * t2`\n corresponds to applying `t2` *first*, *then* applying `t1`.\n\n ## [`Transform`] and [`GlobalTransform`]\n\n [`Transform`] is the position of an entity relative to its parent position, or the reference\n frame if it doesn't have a [`ChildOf`](bevy_ecs::hierarchy::ChildOf) component.\n\n [`GlobalTransform`] is the position of an entity relative to the reference frame.\n\n [`GlobalTransform`] is updated from [`Transform`] in the [`TransformSystems::Propagate`]\n system set.\n\n This system runs during [`PostUpdate`](bevy_app::PostUpdate). If you\n update the [`Transform`] of an entity during this set or after, you will notice a 1 frame lag\n before the [`GlobalTransform`] is updated.\n\n [`TransformSystems::Propagate`]: crate::TransformSystems::Propagate\n\n # Examples\n\n - [`transform`][transform_example]\n\n [transform_example]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs",
       "associated_functions": [
-        "bevy_transform::components::transform::Transform::rotate_local",
-        "bevy_transform::components::transform::Transform::from_xyz",
-        "bevy_transform::components::transform::Transform::rotate_z",
-        "bevy_transform::components::transform::Transform::forward",
-        "bevy_transform::components::transform::Transform::back",
-        "bevy_transform::components::transform::Transform::rotate",
-        "bevy_transform::components::transform::Transform::right",
-        "bevy_transform::components::transform::Transform::from_matrix",
-        "bevy_transform::components::transform::Transform::rotate_x",
-        "bevy_transform::components::transform::Transform::rotate_around",
-        "bevy_transform::components::transform::Transform::with_scale",
-        "bevy_transform::components::transform::Transform::mul",
-        "bevy_transform::components::transform::Transform::translate_around",
-        "bevy_transform::components::transform::Transform::rotate_local_y",
-        "bevy_transform::components::transform::Transform::rotate_axis",
-        "bevy_transform::components::transform::Transform::from_scale",
-        "bevy_transform::components::transform::Transform::look_to",
-        "bevy_transform::components::transform::Transform::looking_to",
-        "bevy_transform::components::transform::Transform::local_y",
-        "bevy_transform::components::transform::Transform::looking_at",
-        "bevy_transform::components::transform::Transform::left",
-        "bevy_transform::components::transform::Transform::local_z",
-        "bevy_transform::components::transform::Transform::rotate_y",
         "bevy_transform::components::transform::Transform::look_at",
+        "bevy_transform::components::transform::Transform::from_matrix",
         "bevy_transform::components::transform::Transform::from_translation",
-        "bevy_transform::components::transform::Transform::mul_transform",
-        "bevy_transform::components::transform::Transform::up",
-        "bevy_transform::components::transform::Transform::is_finite",
-        "bevy_transform::components::transform::Transform::local_x",
-        "bevy_transform::components::transform::Transform::from_rotation",
-        "bevy_transform::components::transform::Transform::rotate_local_x",
-        "bevy_transform::components::transform::Transform::with_rotation",
-        "bevy_transform::components::transform::Transform::down",
         "bevy_transform::components::transform::Transform::rotate_local_z",
+        "bevy_transform::components::transform::Transform::local_z",
+        "bevy_transform::components::transform::Transform::from_rotation",
+        "bevy_transform::components::transform::Transform::forward",
+        "bevy_transform::components::transform::Transform::rotate_around",
         "bevy_transform::components::transform::Transform::identity",
-        "bevy_transform::components::transform::Transform::to_matrix",
+        "bevy_transform::components::transform::Transform::rotate_y",
+        "bevy_transform::components::transform::Transform::translate_around",
+        "bevy_transform::components::transform::Transform::is_finite",
+        "bevy_transform::components::transform::Transform::with_scale",
+        "bevy_transform::components::transform::Transform::from_scale",
+        "bevy_transform::components::transform::Transform::rotate_x",
         "bevy_transform::components::transform::Transform::eq",
-        "bevy_transform::components::transform::Transform::with_translation",
+        "bevy_transform::components::transform::Transform::local_y",
+        "bevy_transform::components::transform::Transform::rotate_local_y",
+        "bevy_transform::components::transform::Transform::to_matrix",
+        "bevy_transform::components::transform::Transform::rotate",
+        "bevy_transform::components::transform::Transform::rotate_axis",
+        "bevy_transform::components::transform::Transform::rotate_local",
+        "bevy_transform::components::transform::Transform::with_rotation",
         "bevy_transform::components::transform::Transform::transform_point",
+        "bevy_transform::components::transform::Transform::looking_to",
+        "bevy_transform::components::transform::Transform::look_to",
+        "bevy_transform::components::transform::Transform::from_xyz",
+        "bevy_transform::components::transform::Transform::with_translation",
+        "bevy_transform::components::transform::Transform::right",
+        "bevy_transform::components::transform::Transform::mul",
+        "bevy_transform::components::transform::Transform::rotate_local_x",
+        "bevy_transform::components::transform::Transform::back",
+        "bevy_transform::components::transform::Transform::local_x",
+        "bevy_transform::components::transform::Transform::down",
+        "bevy_transform::components::transform::Transform::up",
+        "bevy_transform::components::transform::Transform::looking_at",
+        "bevy_transform::components::transform::Transform::mul_transform",
+        "bevy_transform::components::transform::Transform::left",
+        "bevy_transform::components::transform::Transform::rotate_z",
         "bevy_transform::components::transform::Transform::new"
       ],
       "layout": {
@@ -5558,14 +5558,14 @@
       "namespace": "ui",
       "documentation": " A type which is commonly used to define margins, paddings and borders.\n\n # Examples\n\n ## Margin\n\n A margin is used to create space around UI elements, outside of any defined borders.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let margin = UiRect::all(Val::Auto); // Centers the UI element\n ```\n\n ## Padding\n\n A padding is used to create space around UI elements, inside of any defined borders.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let padding = UiRect {\n     left: Val::Px(10.0),\n     right: Val::Px(20.0),\n     top: Val::Px(30.0),\n     bottom: Val::Px(40.0),\n };\n ```\n\n ## Borders\n\n A border is used to define the width of the border of a UI element.\n\n ```\n # use bevy_ui::{UiRect, Val};\n #\n let border = UiRect {\n     left: Val::Px(10.0),\n     right: Val::Px(20.0),\n     top: Val::Px(30.0),\n     bottom: Val::Px(40.0),\n };\n ```",
       "associated_functions": [
-        "bevy_ui::geometry::UiRect::horizontal",
-        "bevy_ui::geometry::UiRect::zero",
-        "bevy_ui::geometry::UiRect::vertical",
-        "bevy_ui::geometry::UiRect::axes",
+        "bevy_ui::geometry::UiRect::new",
         "bevy_ui::geometry::UiRect::percent",
         "bevy_ui::geometry::UiRect::all",
-        "bevy_ui::geometry::UiRect::new",
-        "bevy_ui::geometry::UiRect::px"
+        "bevy_ui::geometry::UiRect::horizontal",
+        "bevy_ui::geometry::UiRect::px",
+        "bevy_ui::geometry::UiRect::vertical",
+        "bevy_ui::geometry::UiRect::axes",
+        "bevy_ui::geometry::UiRect::zero"
       ],
       "layout": {
         "kind": "Struct",
@@ -5619,12 +5619,12 @@
       "namespace": "ui",
       "documentation": " Represents the possible value types for layout properties.\n\n This enum allows specifying values for various [`Node`](crate::Node) properties in different units,\n such as logical pixels, percentages, or automatically determined values.\n\n `Val` also implements [`core::str::FromStr`] to allow parsing values from strings in the format `#.#px`. Whitespaces between the value and unit is allowed. The following units are supported:\n * `px`: logical pixels\n * `%`: percentage\n * `vw`: percentage of the viewport width\n * `vh`: percentage of the viewport height\n * `vmin`: percentage of the viewport's smaller dimension\n * `vmax`: percentage of the viewport's larger dimension\n\n Additionally, `auto` will be parsed as [`Val::Auto`].",
       "associated_functions": [
-        "bevy_ui::geometry::Val::vmin",
-        "bevy_ui::geometry::Val::auto",
         "bevy_ui::geometry::Val::vw",
+        "bevy_ui::geometry::Val::auto",
+        "bevy_ui::geometry::Val::vmax",
+        "bevy_ui::geometry::Val::vmin",
         "bevy_ui::geometry::Val::vh",
         "bevy_ui::geometry::Val::percent",
-        "bevy_ui::geometry::Val::vmax",
         "bevy_ui::geometry::Val::px",
         "bevy_ui::geometry::Val::new"
       ],
@@ -5805,11 +5805,11 @@
       "namespace": "ui",
       "documentation": " Used to add rounded corners to a UI node. You can set a UI node to have uniformly\n rounded corners, elliptical corners, or specify a different radius for each corner. If a given\n radius exceeds half the length of the node's height or width, the radius will be calculated\n as half the height or width.\n\n Percentage horizontal and vertical values are based on the node's width and height, respectively.\n\n # Example\n ```rust\n # use bevy_ecs::prelude::*;\n # use bevy_ui::prelude::*;\n # use bevy_color::palettes::basic::{BLUE};\n fn setup_ui(mut commands: Commands) {\n     commands.spawn((\n         Node {\n             width: Val::Px(100.),\n             height: Val::Px(100.),\n             border: UiRect::all(Val::Px(2.)),\n             border_radius: BorderRadius {\n                 // rounded corners, x and y radii equal\n                 top_left: CornerRadius::circular(px(10.)),\n                 top_right: percent(20.).into(),\n                 // elliptical corner\n                 bottom_right: CornerRadius::new(px(30.), px(20.)),\n                 bottom_left: CornerRadius { x: px(10.), y: px(40.) },\n             },\n             ..Default::default()\n         },\n         BackgroundColor(BLUE.into()),\n     ));\n }\n ```\n\n <https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius>",
       "associated_functions": [
-        "bevy_ui::ui_node::BorderRadius::zero",
+        "bevy_ui::ui_node::BorderRadius::px",
+        "bevy_ui::ui_node::BorderRadius::percent",
         "bevy_ui::ui_node::BorderRadius::all",
         "bevy_ui::ui_node::BorderRadius::max",
-        "bevy_ui::ui_node::BorderRadius::percent",
-        "bevy_ui::ui_node::BorderRadius::px",
+        "bevy_ui::ui_node::BorderRadius::zero",
         "bevy_ui::ui_node::BorderRadius::new"
       ],
       "layout": {
@@ -5864,9 +5864,9 @@
       "namespace": "ui",
       "documentation": " Provides the computed size and layout properties of a UI [`Node`].\n\n All of the fields are automatically calculated by [`ui_layout_system`](`super::layout::ui_layout_system`)\n during `PostUpdate` in the [`UiSystems::Layout`](super::UiSystems) set.\n\n The fields are measured in physical pixels.\n You can multiply by the `inverse_scale_factor` field to convert back to logical pixels.\n\n Fields in this struct are public but should only rarely be directly modified.\n For example, in a scrollbar you may want to derive the handle's size from the proportion of\n scrollable content in-view. You can directly modify `ComputedNode` after layout to set the\n handle size without a frame delay.",
       "associated_functions": [
+        "bevy_ui::ui_node::ComputedNode::inverse_scale_factor",
         "bevy_ui::ui_node::ComputedNode::size",
         "bevy_ui::ui_node::ComputedNode::is_empty",
-        "bevy_ui::ui_node::ComputedNode::inverse_scale_factor",
         "bevy_ui::ui_node::ComputedNode::content_size",
         "bevy_ui::ui_node::ComputedNode::new"
       ],
@@ -5984,12 +5984,12 @@
       "namespace": "ui",
       "documentation": " Whether to show or hide overflowing items",
       "associated_functions": [
+        "bevy_ui::ui_node::Overflow::visible",
+        "bevy_ui::ui_node::Overflow::clip_x",
         "bevy_ui::ui_node::Overflow::scroll",
         "bevy_ui::ui_node::Overflow::clip",
-        "bevy_ui::ui_node::Overflow::visible",
         "bevy_ui::ui_node::Overflow::clip_y",
         "bevy_ui::ui_node::Overflow::hidden",
-        "bevy_ui::ui_node::Overflow::clip_x",
         "bevy_ui::ui_node::Overflow::new"
       ],
       "layout": {
@@ -6030,8 +6030,8 @@
       "namespace": "ui",
       "documentation": " A UI Node that renders an image.",
       "associated_functions": [
-        "bevy_ui::widget::image::ImageNode::new",
-        "bevy_ui::widget::image::ImageNode::with_color"
+        "bevy_ui::widget::image::ImageNode::with_color",
+        "bevy_ui::widget::image::ImageNode::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -6123,9 +6123,9 @@
       "namespace": "text",
       "documentation": " The top-level UI text component.\n\n Adding [`Text`] to an entity will pull in required components for setting up a UI text node.\n\n The string in this component is the first 'text span' in a hierarchy of text spans that are collected into\n a [`ComputedTextBlock`]. See [`TextSpan`](bevy_text::TextSpan) for the component used by children of entities with [`Text`].\n\n\n ```\n # use bevy_asset::Handle;\n # use bevy_color::Color;\n # use bevy_color::palettes::basic::BLUE;\n # use bevy_ecs::world::World;\n # use bevy_text::{Font, FontSize, Justify, TextLayout, TextFont, TextColor, TextSpan};\n # use bevy_ui::prelude::Text;\n #\n # let font_handle: Handle<Font> = Default::default();\n # let mut world = World::default();\n #\n // Basic usage.\n world.spawn(Text::new(\"hello world!\"));\n\n // With non-default style.\n world.spawn((\n     Text::new(\"hello world!\"),\n     TextFont {\n         font: font_handle.clone().into(),\n         font_size: FontSize::Px(60.0),\n         ..Default::default()\n     },\n     TextColor(BLUE.into()),\n ));\n\n // With text justification.\n world.spawn((\n     Text::new(\"hello world\\nand bevy!\"),\n     TextLayout::justify(Justify::Center)\n ));\n\n // With spans\n world.spawn(Text::new(\"hello \")).with_children(|parent| {\n     parent.spawn(TextSpan::new(\"world\"));\n     parent.spawn((TextSpan::new(\"!\"), TextColor(BLUE.into())));\n });\n ```",
       "associated_functions": [
-        "bevy_ui::widget::text::Text::as_str",
+        "bevy_ui::widget::text::Text::set",
         "bevy_ui::widget::text::Text::new",
-        "bevy_ui::widget::text::Text::set"
+        "bevy_ui::widget::text::Text::as_str"
       ],
       "layout": {
         "kind": "TupleStruct",
@@ -6157,16 +6157,16 @@
       "namespace": "window",
       "documentation": " The defining [`Component`] for window entities,\n storing information about how it should appear and behave.\n\n Each window corresponds to an entity, and is uniquely identified by the value of their [`Entity`].\n When the [`Window`] component is added to an entity, a new window will be opened.\n When it is removed or the entity is despawned, the window will close.\n\n The primary window entity (and the corresponding window) is spawned by default\n by [`WindowPlugin`](crate::WindowPlugin) and is marked with the [`PrimaryWindow`] component.\n\n This component is synchronized with `winit` through `bevy_winit`:\n it will reflect the current state of the window and can be modified to change this state.\n\n # Example\n\n Because this component is synchronized with `winit`, it can be used to perform\n OS-integrated windowing operations. For example, here's a simple system\n to change the window mode:\n\n ```\n # use bevy_ecs::query::With;\n # use bevy_ecs::system::Query;\n # use bevy_window::{WindowMode, PrimaryWindow, Window, MonitorSelection, VideoModeSelection};\n fn change_window_mode(mut windows: Query<&mut Window, With<PrimaryWindow>>) {\n     // Query returns one window typically.\n     for mut window in windows.iter_mut() {\n         window.mode =\n             WindowMode::Fullscreen(MonitorSelection::Current, VideoModeSelection::Current);\n     }\n }\n ```",
       "associated_functions": [
-        "bevy_window::window::Window::cursor_position",
-        "bevy_window::window::Window::set_cursor_position",
-        "bevy_window::window::Window::physical_width",
-        "bevy_window::window::Window::primary",
-        "bevy_window::window::Window::scale_factor",
-        "bevy_window::window::Window::physical_height",
         "bevy_window::window::Window::height",
-        "bevy_window::window::Window::size",
+        "bevy_window::window::Window::scale_factor",
+        "bevy_window::window::Window::physical_width",
         "bevy_window::window::Window::primary_entity",
+        "bevy_window::window::Window::cursor_position",
+        "bevy_window::window::Window::primary",
         "bevy_window::window::Window::width",
+        "bevy_window::window::Window::physical_height",
+        "bevy_window::window::Window::set_cursor_position",
+        "bevy_window::window::Window::size",
         "bevy_window::window::Window::new"
       ],
       "layout": {
@@ -6484,11 +6484,11 @@
       "namespace": "window",
       "documentation": " Controls the size of a [`Window`]\n\n ## Physical, logical and requested sizes\n\n There are three sizes associated with a window:\n - the physical size,\n   which represents the actual height and width in physical pixels\n   the window occupies on the monitor,\n - the logical size,\n   which represents the size that should be used to scale elements\n   inside the window, measured in logical pixels,\n - the requested size,\n   measured in logical pixels, which is the value submitted\n   to the API when creating the window, or requesting that it be resized.\n\n ## Scale factor\n\n The reason logical size and physical size are separated and can be different\n is to account for the cases where:\n - several monitors have different pixel densities,\n - the user has set up a pixel density preference in its operating system,\n - the Bevy `App` has specified a specific scale factor between both.\n\n The factor between physical size and logical size can be retrieved with\n [`WindowResolution::scale_factor`].\n\n For the first two cases, a scale factor is set automatically by the operating\n system through the window backend. You can get it with\n [`WindowResolution::base_scale_factor`].\n\n For the third case, you can override this automatic scale factor with\n [`WindowResolution::set_scale_factor_override`].\n\n ## Requested and obtained sizes\n\n The logical size should be equal to the requested size after creating/resizing,\n when possible.\n The reason the requested size and logical size might be different\n is because the corresponding physical size might exceed limits (either the\n size limits of the monitor, or limits defined in [`WindowResizeConstraints`]).\n\n Note: The requested size is not kept in memory, for example requesting a size\n too big for the screen, making the logical size different from the requested size,\n and then setting a scale factor that makes the previous requested size within\n the limits of the screen will not get back that previous requested size.",
       "associated_functions": [
-        "bevy_window::window::WindowResolution::width",
-        "bevy_window::window::WindowResolution::new",
         "bevy_window::window::WindowResolution::scale_factor",
-        "bevy_window::window::WindowResolution::set",
-        "bevy_window::window::WindowResolution::height"
+        "bevy_window::window::WindowResolution::new",
+        "bevy_window::window::WindowResolution::width",
+        "bevy_window::window::WindowResolution::height",
+        "bevy_window::window::WindowResolution::set"
       ],
       "layout": {
         "kind": "Struct",
@@ -6543,21 +6543,21 @@
       "path": "core::time::Duration",
       "namespace": "time",
       "associated_functions": [
-        "core::time::Duration::as_secs_f64",
-        "core::time::Duration::add",
-        "core::time::Duration::mul",
-        "core::time::Duration::sub",
-        "core::time::Duration::lt",
-        "core::time::Duration::as_secs",
-        "core::time::Duration::from_nanos",
-        "core::time::Duration::zero",
         "core::time::Duration::from_millis",
-        "core::time::Duration::is_zero",
-        "core::time::Duration::as_millis",
-        "core::time::Duration::div",
-        "core::time::Duration::from_micros",
+        "core::time::Duration::sub",
+        "core::time::Duration::as_secs",
         "core::time::Duration::eq",
         "core::time::Duration::from_secs",
+        "core::time::Duration::from_nanos",
+        "core::time::Duration::as_secs_f64",
+        "core::time::Duration::lt",
+        "core::time::Duration::div",
+        "core::time::Duration::mul",
+        "core::time::Duration::add",
+        "core::time::Duration::from_micros",
+        "core::time::Duration::as_millis",
+        "core::time::Duration::zero",
+        "core::time::Duration::is_zero",
         "core::time::Duration::new"
       ],
       "layout": null,
@@ -6618,8 +6618,8 @@
       "path": "glam::DVec3",
       "namespace": "math",
       "associated_functions": [
-        "glam::DVec3::new",
-        "glam::DVec3::as_vec3"
+        "glam::DVec3::as_vec3",
+        "glam::DVec3::new"
       ],
       "layout": {
         "kind": "Struct",
@@ -6665,29 +6665,29 @@
       "path": "glam::IVec2",
       "namespace": "math",
       "associated_functions": [
+        "glam::IVec2::dot",
         "glam::IVec2::max_element",
-        "glam::IVec2::length_squared",
+        "glam::IVec2::abs",
         "glam::IVec2::neg",
+        "glam::IVec2::length_squared",
+        "glam::IVec2::eq",
         "glam::IVec2::rem",
-        "glam::IVec2::div",
-        "glam::IVec2::sub",
-        "glam::IVec2::new",
-        "glam::IVec2::clamp",
         "glam::IVec2::min_element",
+        "glam::IVec2::as_vec2",
+        "glam::IVec2::one",
         "glam::IVec2::mul",
         "glam::IVec2::min",
-        "glam::IVec2::eq",
-        "glam::IVec2::unit_x",
-        "glam::IVec2::max",
-        "glam::IVec2::as_vec2",
-        "glam::IVec2::dot",
-        "glam::IVec2::unit_y",
-        "glam::IVec2::add",
         "glam::IVec2::splat",
-        "glam::IVec2::zero",
-        "glam::IVec2::one",
-        "glam::IVec2::abs",
-        "glam::IVec2::to_array"
+        "glam::IVec2::clamp",
+        "glam::IVec2::add",
+        "glam::IVec2::sub",
+        "glam::IVec2::to_array",
+        "glam::IVec2::div",
+        "glam::IVec2::unit_y",
+        "glam::IVec2::max",
+        "glam::IVec2::new",
+        "glam::IVec2::unit_x",
+        "glam::IVec2::zero"
       ],
       "layout": {
         "kind": "Struct",
@@ -6726,30 +6726,30 @@
       "path": "glam::IVec3",
       "namespace": "math",
       "associated_functions": [
-        "glam::IVec3::zero",
-        "glam::IVec3::eq",
-        "glam::IVec3::mul",
-        "glam::IVec3::unit_z",
-        "glam::IVec3::max_element",
-        "glam::IVec3::abs",
-        "glam::IVec3::clamp",
-        "glam::IVec3::min",
-        "glam::IVec3::as_vec3",
-        "glam::IVec3::new",
-        "glam::IVec3::unit_x",
-        "glam::IVec3::rem",
-        "glam::IVec3::unit_y",
-        "glam::IVec3::neg",
-        "glam::IVec3::length_squared",
-        "glam::IVec3::one",
         "glam::IVec3::splat",
-        "glam::IVec3::div",
-        "glam::IVec3::sub",
+        "glam::IVec3::to_array",
+        "glam::IVec3::as_vec3",
+        "glam::IVec3::length_squared",
         "glam::IVec3::add",
-        "glam::IVec3::min_element",
-        "glam::IVec3::dot",
         "glam::IVec3::max",
-        "glam::IVec3::to_array"
+        "glam::IVec3::max_element",
+        "glam::IVec3::rem",
+        "glam::IVec3::new",
+        "glam::IVec3::unit_z",
+        "glam::IVec3::min_element",
+        "glam::IVec3::abs",
+        "glam::IVec3::unit_y",
+        "glam::IVec3::zero",
+        "glam::IVec3::one",
+        "glam::IVec3::min",
+        "glam::IVec3::sub",
+        "glam::IVec3::mul",
+        "glam::IVec3::div",
+        "glam::IVec3::neg",
+        "glam::IVec3::dot",
+        "glam::IVec3::eq",
+        "glam::IVec3::unit_x",
+        "glam::IVec3::clamp"
       ],
       "layout": {
         "kind": "Struct",
@@ -6795,25 +6795,25 @@
       "path": "glam::Mat3",
       "namespace": "math",
       "associated_functions": [
-        "glam::Mat3::div",
-        "glam::Mat3::row",
-        "glam::Mat3::transpose",
-        "glam::Mat3::mul_vec3",
         "glam::Mat3::transform_point2",
-        "glam::Mat3::transform_vector2",
-        "glam::Mat3::from_rotation_x",
-        "glam::Mat3::determinant",
-        "glam::Mat3::from_rotation_y",
-        "glam::Mat3::from_diagonal",
-        "glam::Mat3::identity",
-        "glam::Mat3::eq",
-        "glam::Mat3::from_cols",
-        "glam::Mat3::add",
-        "glam::Mat3::sub",
-        "glam::Mat3::from_quat",
         "glam::Mat3::from_rotation_z",
-        "glam::Mat3::inverse",
+        "glam::Mat3::eq",
+        "glam::Mat3::sub",
+        "glam::Mat3::row",
         "glam::Mat3::col",
+        "glam::Mat3::from_quat",
+        "glam::Mat3::mul_vec3",
+        "glam::Mat3::inverse",
+        "glam::Mat3::from_diagonal",
+        "glam::Mat3::transform_vector2",
+        "glam::Mat3::determinant",
+        "glam::Mat3::div",
+        "glam::Mat3::from_rotation_y",
+        "glam::Mat3::add",
+        "glam::Mat3::identity",
+        "glam::Mat3::transpose",
+        "glam::Mat3::from_cols",
+        "glam::Mat3::from_rotation_x",
         "glam::Mat3::mul",
         "glam::Mat3::new"
       ],
@@ -6861,26 +6861,26 @@
       "path": "glam::Mat4",
       "namespace": "math",
       "associated_functions": [
-        "glam::Mat4::add",
-        "glam::Mat4::eq",
-        "glam::Mat4::transpose",
-        "glam::Mat4::inverse",
-        "glam::Mat4::identity",
-        "glam::Mat4::sub",
-        "glam::Mat4::transform_point3",
-        "glam::Mat4::from_translation",
-        "glam::Mat4::from_cols",
-        "glam::Mat4::from_scale_rotation_translation",
-        "glam::Mat4::from_scale",
-        "glam::Mat4::mul",
-        "glam::Mat4::project_point3",
-        "glam::Mat4::from_rotation_translation",
         "glam::Mat4::row",
-        "glam::Mat4::div",
-        "glam::Mat4::col",
-        "glam::Mat4::determinant",
+        "glam::Mat4::transpose",
+        "glam::Mat4::transform_point3",
         "glam::Mat4::transform_vector3",
+        "glam::Mat4::col",
+        "glam::Mat4::add",
+        "glam::Mat4::sub",
         "glam::Mat4::from_quat",
+        "glam::Mat4::determinant",
+        "glam::Mat4::from_rotation_translation",
+        "glam::Mat4::from_scale_rotation_translation",
+        "glam::Mat4::from_translation",
+        "glam::Mat4::from_scale",
+        "glam::Mat4::project_point3",
+        "glam::Mat4::eq",
+        "glam::Mat4::mul",
+        "glam::Mat4::div",
+        "glam::Mat4::identity",
+        "glam::Mat4::inverse",
+        "glam::Mat4::from_cols",
         "glam::Mat4::new"
       ],
       "layout": {
@@ -6934,31 +6934,31 @@
       "path": "glam::Quat",
       "namespace": "math",
       "associated_functions": [
-        "glam::Quat::inverse",
+        "glam::Quat::xyz",
+        "glam::Quat::is_normalized",
+        "glam::Quat::axis",
+        "glam::Quat::slerp",
+        "glam::Quat::to_euler",
+        "glam::Quat::identity",
         "glam::Quat::from_rotation_z",
+        "glam::Quat::normalize",
+        "glam::Quat::conjugate",
+        "glam::Quat::from_axis_angle",
+        "glam::Quat::angle",
+        "glam::Quat::length",
+        "glam::Quat::eq",
+        "glam::Quat::dot",
         "glam::Quat::from_rotation_y",
         "glam::Quat::angle_between",
-        "glam::Quat::normalize",
         "glam::Quat::mul",
-        "glam::Quat::dot",
-        "glam::Quat::from_euler",
-        "glam::Quat::angle",
-        "glam::Quat::lerp",
-        "glam::Quat::is_normalized",
-        "glam::Quat::from_mat3",
-        "glam::Quat::conjugate",
-        "glam::Quat::to_euler",
-        "glam::Quat::axis",
-        "glam::Quat::neg",
-        "glam::Quat::mul_vec3",
-        "glam::Quat::identity",
-        "glam::Quat::length",
-        "glam::Quat::slerp",
-        "glam::Quat::from_rotation_arc",
-        "glam::Quat::from_axis_angle",
         "glam::Quat::from_rotation_x",
-        "glam::Quat::eq",
-        "glam::Quat::xyz",
+        "glam::Quat::from_rotation_arc",
+        "glam::Quat::from_mat3",
+        "glam::Quat::lerp",
+        "glam::Quat::neg",
+        "glam::Quat::inverse",
+        "glam::Quat::from_euler",
+        "glam::Quat::mul_vec3",
         "glam::Quat::new"
       ],
       "layout": {
@@ -7012,27 +7012,27 @@
       "path": "glam::UVec2",
       "namespace": "math",
       "associated_functions": [
-        "glam::UVec2::rem",
-        "glam::UVec2::to_array",
-        "glam::UVec2::unit_y",
-        "glam::UVec2::min_element",
-        "glam::UVec2::add",
-        "glam::UVec2::clamp",
-        "glam::UVec2::new",
-        "glam::UVec2::zero",
-        "glam::UVec2::eq",
-        "glam::UVec2::length_squared",
         "glam::UVec2::sub",
-        "glam::UVec2::min",
+        "glam::UVec2::clamp",
+        "glam::UVec2::min_element",
+        "glam::UVec2::new",
         "glam::UVec2::unit_x",
-        "glam::UVec2::max",
-        "glam::UVec2::one",
+        "glam::UVec2::eq",
+        "glam::UVec2::to_array",
         "glam::UVec2::mul",
-        "glam::UVec2::div",
-        "glam::UVec2::as_vec2",
-        "glam::UVec2::dot",
+        "glam::UVec2::max",
+        "glam::UVec2::unit_y",
+        "glam::UVec2::min",
         "glam::UVec2::splat",
-        "glam::UVec2::max_element"
+        "glam::UVec2::zero",
+        "glam::UVec2::one",
+        "glam::UVec2::add",
+        "glam::UVec2::as_vec2",
+        "glam::UVec2::length_squared",
+        "glam::UVec2::max_element",
+        "glam::UVec2::rem",
+        "glam::UVec2::div",
+        "glam::UVec2::dot"
       ],
       "layout": {
         "kind": "Struct",
@@ -7071,28 +7071,28 @@
       "path": "glam::UVec3",
       "namespace": "math",
       "associated_functions": [
-        "glam::UVec3::as_vec3",
-        "glam::UVec3::unit_x",
-        "glam::UVec3::length_squared",
-        "glam::UVec3::zero",
-        "glam::UVec3::rem",
-        "glam::UVec3::max_element",
-        "glam::UVec3::unit_z",
-        "glam::UVec3::sub",
-        "glam::UVec3::dot",
         "glam::UVec3::mul",
-        "glam::UVec3::new",
         "glam::UVec3::min",
-        "glam::UVec3::max",
         "glam::UVec3::clamp",
         "glam::UVec3::unit_y",
-        "glam::UVec3::min_element",
-        "glam::UVec3::div",
+        "glam::UVec3::add",
         "glam::UVec3::one",
         "glam::UVec3::splat",
-        "glam::UVec3::add",
         "glam::UVec3::eq",
-        "glam::UVec3::to_array"
+        "glam::UVec3::div",
+        "glam::UVec3::unit_z",
+        "glam::UVec3::as_vec3",
+        "glam::UVec3::unit_x",
+        "glam::UVec3::new",
+        "glam::UVec3::sub",
+        "glam::UVec3::length_squared",
+        "glam::UVec3::dot",
+        "glam::UVec3::zero",
+        "glam::UVec3::max",
+        "glam::UVec3::max_element",
+        "glam::UVec3::to_array",
+        "glam::UVec3::rem",
+        "glam::UVec3::min_element"
       ],
       "layout": {
         "kind": "Struct",
@@ -7138,58 +7138,58 @@
       "path": "glam::Vec2",
       "namespace": "math",
       "associated_functions": [
-        "glam::Vec2::neg",
-        "glam::Vec2::rem",
-        "glam::Vec2::from_angle",
-        "glam::Vec2::project_onto",
-        "glam::Vec2::max",
-        "glam::Vec2::clamp",
-        "glam::Vec2::reflect",
-        "glam::Vec2::distance_squared",
-        "glam::Vec2::mul",
+        "glam::Vec2::new",
         "glam::Vec2::to_angle",
-        "glam::Vec2::max_element",
-        "glam::Vec2::length_squared",
-        "glam::Vec2::ceil",
-        "glam::Vec2::add",
-        "glam::Vec2::fract",
         "glam::Vec2::reject_from",
         "glam::Vec2::normalize",
-        "glam::Vec2::perp",
+        "glam::Vec2::as_uvec2",
+        "glam::Vec2::abs",
+        "glam::Vec2::as_dvec2",
+        "glam::Vec2::splat",
+        "glam::Vec2::clamp",
+        "glam::Vec2::unit_x",
+        "glam::Vec2::rsub",
+        "glam::Vec2::distance_squared",
+        "glam::Vec2::clamp_length_max",
+        "glam::Vec2::try_normalize",
+        "glam::Vec2::rotate",
+        "glam::Vec2::max",
+        "glam::Vec2::unit_y",
+        "glam::Vec2::rdiv",
+        "glam::Vec2::sub",
+        "glam::Vec2::div",
+        "glam::Vec2::neg",
+        "glam::Vec2::min_element",
+        "glam::Vec2::floor",
+        "glam::Vec2::from_angle",
+        "glam::Vec2::distance",
+        "glam::Vec2::length_squared",
+        "glam::Vec2::perp_dot",
+        "glam::Vec2::max_element",
+        "glam::Vec2::eq",
+        "glam::Vec2::min",
+        "glam::Vec2::lerp",
+        "glam::Vec2::clamp_length",
         "glam::Vec2::one",
+        "glam::Vec2::signum",
+        "glam::Vec2::add",
         "glam::Vec2::round",
+        "glam::Vec2::fract",
+        "glam::Vec2::ceil",
+        "glam::Vec2::rem",
+        "glam::Vec2::project_onto",
+        "glam::Vec2::reflect",
+        "glam::Vec2::normalize_or_zero",
+        "glam::Vec2::angle_to",
         "glam::Vec2::move_towards",
         "glam::Vec2::as_ivec2",
-        "glam::Vec2::rotate",
-        "glam::Vec2::clamp_length",
-        "glam::Vec2::as_uvec2",
-        "glam::Vec2::floor",
-        "glam::Vec2::distance",
-        "glam::Vec2::div",
-        "glam::Vec2::eq",
-        "glam::Vec2::unit_x",
-        "glam::Vec2::as_dvec2",
-        "glam::Vec2::clamp_length_max",
         "glam::Vec2::length",
-        "glam::Vec2::splat",
-        "glam::Vec2::min_element",
-        "glam::Vec2::lerp",
+        "glam::Vec2::perp",
+        "glam::Vec2::mul",
         "glam::Vec2::zero",
-        "glam::Vec2::normalize_or_zero",
-        "glam::Vec2::perp_dot",
-        "glam::Vec2::abs",
-        "glam::Vec2::sub",
-        "glam::Vec2::signum",
-        "glam::Vec2::try_normalize",
         "glam::Vec2::to_array",
-        "glam::Vec2::dot",
         "glam::Vec2::extend",
-        "glam::Vec2::new",
-        "glam::Vec2::unit_y",
-        "glam::Vec2::min",
-        "glam::Vec2::rdiv",
-        "glam::Vec2::rsub",
-        "glam::Vec2::angle_to"
+        "glam::Vec2::dot"
       ],
       "layout": {
         "kind": "Struct",
@@ -7228,58 +7228,58 @@
       "path": "glam::Vec3",
       "namespace": "math",
       "associated_functions": [
-        "glam::Vec3::clamp",
-        "glam::Vec3::distance",
-        "glam::Vec3::fract",
-        "glam::Vec3::to_array",
-        "glam::Vec3::max",
-        "glam::Vec3::min",
-        "glam::Vec3::unit_z",
-        "glam::Vec3::neg",
-        "glam::Vec3::angle_between",
-        "glam::Vec3::truncate",
         "glam::Vec3::rem",
-        "glam::Vec3::lerp",
-        "glam::Vec3::reject_from",
-        "glam::Vec3::add",
-        "glam::Vec3::distance_squared",
-        "glam::Vec3::rdiv",
-        "glam::Vec3::normalize_or_zero",
+        "glam::Vec3::rsub",
         "glam::Vec3::as_uvec3",
-        "glam::Vec3::floor",
-        "glam::Vec3::zero",
-        "glam::Vec3::splat",
         "glam::Vec3::signum",
-        "glam::Vec3::clamp_length",
-        "glam::Vec3::mul",
-        "glam::Vec3::clamp_length_max",
-        "glam::Vec3::max_element",
-        "glam::Vec3::round",
-        "glam::Vec3::new",
-        "glam::Vec3::unit_x",
-        "glam::Vec3::any_orthogonal_vector",
-        "glam::Vec3::abs",
-        "glam::Vec3::ceil",
-        "glam::Vec3::as_ivec3",
         "glam::Vec3::cross",
-        "glam::Vec3::eq",
+        "glam::Vec3::neg",
+        "glam::Vec3::lerp",
+        "glam::Vec3::truncate",
+        "glam::Vec3::distance",
+        "glam::Vec3::splat",
+        "glam::Vec3::new",
+        "glam::Vec3::div",
+        "glam::Vec3::reflect",
+        "glam::Vec3::unit_y",
+        "glam::Vec3::reject_from",
+        "glam::Vec3::min_element",
+        "glam::Vec3::mul",
+        "glam::Vec3::move_towards",
+        "glam::Vec3::unit_x",
+        "glam::Vec3::to_vec3a",
+        "glam::Vec3::round",
+        "glam::Vec3::distance_squared",
+        "glam::Vec3::as_dvec3",
+        "glam::Vec3::clamp_length_max",
+        "glam::Vec3::dot",
         "glam::Vec3::length_squared",
+        "glam::Vec3::extend",
+        "glam::Vec3::as_ivec3",
+        "glam::Vec3::unit_z",
+        "glam::Vec3::rdiv",
+        "glam::Vec3::try_normalize",
+        "glam::Vec3::eq",
+        "glam::Vec3::fract",
+        "glam::Vec3::project_onto",
+        "glam::Vec3::floor",
+        "glam::Vec3::max",
+        "glam::Vec3::clamp",
+        "glam::Vec3::abs",
+        "glam::Vec3::angle_between",
+        "glam::Vec3::any_orthogonal_vector",
+        "glam::Vec3::ceil",
+        "glam::Vec3::length",
+        "glam::Vec3::one",
+        "glam::Vec3::normalize_or_zero",
+        "glam::Vec3::zero",
         "glam::Vec3::sub",
         "glam::Vec3::normalize",
-        "glam::Vec3::rsub",
-        "glam::Vec3::move_towards",
-        "glam::Vec3::min_element",
-        "glam::Vec3::project_onto",
-        "glam::Vec3::div",
-        "glam::Vec3::to_vec3a",
-        "glam::Vec3::one",
-        "glam::Vec3::dot",
-        "glam::Vec3::as_dvec3",
-        "glam::Vec3::reflect",
-        "glam::Vec3::extend",
-        "glam::Vec3::try_normalize",
-        "glam::Vec3::length",
-        "glam::Vec3::unit_y"
+        "glam::Vec3::max_element",
+        "glam::Vec3::clamp_length",
+        "glam::Vec3::to_array",
+        "glam::Vec3::min",
+        "glam::Vec3::add"
       ],
       "layout": {
         "kind": "Struct",
@@ -7372,47 +7372,47 @@
       "path": "glam::Vec4",
       "namespace": "math",
       "associated_functions": [
-        "glam::Vec4::add",
-        "glam::Vec4::signum",
-        "glam::Vec4::truncate",
-        "glam::Vec4::distance",
         "glam::Vec4::one",
-        "glam::Vec4::clamp_length",
-        "glam::Vec4::reject_from",
-        "glam::Vec4::reflect",
-        "glam::Vec4::clamp_length_max",
-        "glam::Vec4::distance_squared",
-        "glam::Vec4::sub",
-        "glam::Vec4::div",
-        "glam::Vec4::neg",
-        "glam::Vec4::ceil",
-        "glam::Vec4::min_element",
-        "glam::Vec4::mul",
-        "glam::Vec4::splat",
-        "glam::Vec4::to_array",
-        "glam::Vec4::rsub",
-        "glam::Vec4::new",
-        "glam::Vec4::normalize_or_zero",
         "glam::Vec4::clamp",
-        "glam::Vec4::max",
-        "glam::Vec4::abs",
-        "glam::Vec4::min",
-        "glam::Vec4::fract",
-        "glam::Vec4::length",
-        "glam::Vec4::project_onto",
-        "glam::Vec4::length_squared",
-        "glam::Vec4::eq",
-        "glam::Vec4::normalize",
-        "glam::Vec4::rdiv",
-        "glam::Vec4::dot",
-        "glam::Vec4::lerp",
+        "glam::Vec4::splat",
+        "glam::Vec4::reflect",
+        "glam::Vec4::add",
         "glam::Vec4::move_towards",
-        "glam::Vec4::zero",
-        "glam::Vec4::max_element",
-        "glam::Vec4::floor",
-        "glam::Vec4::round",
         "glam::Vec4::try_normalize",
-        "glam::Vec4::rem"
+        "glam::Vec4::project_onto",
+        "glam::Vec4::rdiv",
+        "glam::Vec4::neg",
+        "glam::Vec4::new",
+        "glam::Vec4::distance",
+        "glam::Vec4::normalize_or_zero",
+        "glam::Vec4::floor",
+        "glam::Vec4::min",
+        "glam::Vec4::abs",
+        "glam::Vec4::round",
+        "glam::Vec4::clamp_length_max",
+        "glam::Vec4::max",
+        "glam::Vec4::sub",
+        "glam::Vec4::signum",
+        "glam::Vec4::reject_from",
+        "glam::Vec4::lerp",
+        "glam::Vec4::ceil",
+        "glam::Vec4::truncate",
+        "glam::Vec4::eq",
+        "glam::Vec4::rem",
+        "glam::Vec4::div",
+        "glam::Vec4::distance_squared",
+        "glam::Vec4::fract",
+        "glam::Vec4::normalize",
+        "glam::Vec4::zero",
+        "glam::Vec4::mul",
+        "glam::Vec4::rsub",
+        "glam::Vec4::length",
+        "glam::Vec4::to_array",
+        "glam::Vec4::length_squared",
+        "glam::Vec4::dot",
+        "glam::Vec4::min_element",
+        "glam::Vec4::clamp_length",
+        "glam::Vec4::max_element"
       ],
       "layout": {
         "kind": "Struct",
@@ -7690,21 +7690,21 @@
       "path": "ReflectReference",
       "documentation": "A reference to a reflectable type",
       "associated_functions": [
-        "ReflectReference::push",
-        "ReflectReference::variant_name",
-        "ReflectReference::eq",
-        "ReflectReference::functions",
+        "ReflectReference::clone",
         "ReflectReference::iter",
-        "ReflectReference::len",
+        "ReflectReference::eq",
+        "ReflectReference::variant",
+        "ReflectReference::variant_name",
+        "ReflectReference::functions",
+        "ReflectReference::clear",
+        "ReflectReference::display",
         "ReflectReference::map_get",
         "ReflectReference::debug",
-        "ReflectReference::clear",
-        "ReflectReference::variant",
+        "ReflectReference::push",
         "ReflectReference::pop",
+        "ReflectReference::len",
         "ReflectReference::insert",
-        "ReflectReference::display",
         "ReflectReference::remove",
-        "ReflectReference::clone",
         "ReflectReference::new"
       ],
       "layout": null,
@@ -7739,10 +7739,10 @@
       "path": "StaticTypeRef",
       "documentation": "A type itself, used to reach its static members, i.e. `Vec3` in `Vec3.new{}`. Functions on it are shared by all types",
       "associated_functions": [
-        "StaticTypeRef::get_asset",
         "StaticTypeRef::new",
-        "StaticTypeRef::add_asset",
-        "StaticTypeRef::load"
+        "StaticTypeRef::load",
+        "StaticTypeRef::get_asset",
+        "StaticTypeRef::add_asset"
       ],
       "layout": null,
       "generated": false,
@@ -7971,10 +7971,10 @@
       "namespace": "animation",
       "documentation": " A list of [`VariableCurve`]s and the [`AnimationTargetId`]s to which they\n apply.\n\n Because animation clips refer to targets by UUID, they can target any\n entity with that ID.",
       "associated_functions": [
-        "bevy_animation::AnimationClip::get_asset",
         "bevy_animation::AnimationClip::new",
-        "bevy_animation::AnimationClip::add_asset",
-        "bevy_animation::AnimationClip::load"
+        "bevy_animation::AnimationClip::load",
+        "bevy_animation::AnimationClip::get_asset",
+        "bevy_animation::AnimationClip::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -10268,10 +10268,10 @@
       "namespace": "bms",
       "documentation": " Represents a script loaded into memory as an asset",
       "associated_functions": [
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::get_asset",
         "bevy_mod_scripting_asset::script_asset::ScriptAsset::new",
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::add_asset",
-        "bevy_mod_scripting_asset::script_asset::ScriptAsset::load"
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::load",
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::get_asset",
+        "bevy_mod_scripting_asset::script_asset::ScriptAsset::add_asset"
       ],
       "layout": null,
       "generated": false,
@@ -10627,10 +10627,10 @@
       "namespace": "render",
       "documentation": " A storage buffer that is prepared as a [`RenderAsset`] and uploaded to the GPU.\n\n This buffer primarily exists in order to be embedded into a material that\n implements the [`bevy_render_macros::AsBindGroup`] trait. Compared to\n embedding a raw [`Buffer`], [`ShaderBuffer`] has the advantage that the\n buffer can be resized without regenerating the materials that embed it.",
       "associated_functions": [
-        "bevy_render::storage::ShaderBuffer::get_asset",
         "bevy_render::storage::ShaderBuffer::new",
-        "bevy_render::storage::ShaderBuffer::add_asset",
-        "bevy_render::storage::ShaderBuffer::load"
+        "bevy_render::storage::ShaderBuffer::load",
+        "bevy_render::storage::ShaderBuffer::get_asset",
+        "bevy_render::storage::ShaderBuffer::add_asset"
       ],
       "layout": null,
       "generated": false,
@@ -11218,10 +11218,10 @@
       "namespace": "sprite",
       "documentation": " A [2d material](Material2d) that renders [2d meshes](crate::Mesh2d) with a texture tinted by a uniform color",
       "associated_functions": [
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::get_asset",
         "bevy_sprite_render::mesh2d::color_material::ColorMaterial::new",
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::add_asset",
-        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::load"
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::load",
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::get_asset",
+        "bevy_sprite_render::mesh2d::color_material::ColorMaterial::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -11328,10 +11328,10 @@
       "path": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial",
       "namespace": "sprite",
       "associated_functions": [
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::get_asset",
         "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::new",
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::add_asset",
-        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::load"
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::load",
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::get_asset",
+        "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial::add_asset"
       ],
       "layout": {
         "kind": "Struct",
@@ -15370,7 +15370,7 @@
       "namespace": "bevy_platform",
       "generics": [
         {
-          "type_id": "TypeId(0x948238dede8b5ae50d24942138ff6aed)",
+          "type_id": "TypeId(0xcaf1d1f7647b64d560916abc02b237c5)",
           "name": "T"
         }
       ],
@@ -15577,7 +15577,7 @@
       "namespace": "petgraph",
       "generics": [
         {
-          "type_id": "TypeId(0xe40a2dc4f630ff71fab97263b8cd7b41)",
+          "type_id": "TypeId(0xf24e4165747bd06b0db05a12b92dd1ff)",
           "name": "N"
         },
         {
@@ -15985,28 +15985,11 @@
         {
           "args": [
             {
-              "val": "bevy_mod_scripting_asset::script_asset::ScriptAsset"
+              "val": "bevy_image::texture_atlas::TextureAtlasLayout"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::ArcMutexValue<bevy_mod_scripting_asset::script_asset::ScriptAsset>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_mesh::mesh::Mesh"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::ArcMutexValue<bevy_mesh::mesh::Mesh>::new"
+            "bevy_asset::handle::ArcMutexValue<bevy_image::texture_atlas::TextureAtlasLayout>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16036,11 +16019,45 @@
         {
           "args": [
             {
+              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::ArcMutexValue<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
               "val": "bevy_render::storage::ShaderBuffer"
             }
           ],
           "associated_functions": [
             "bevy_asset::handle::ArcMutexValue<bevy_render::storage::ShaderBuffer>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
+              "val": "bevy_mod_scripting_asset::script_asset::ScriptAsset"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::ArcMutexValue<bevy_mod_scripting_asset::script_asset::ScriptAsset>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16070,28 +16087,11 @@
         {
           "args": [
             {
-              "val": "bevy_image::texture_atlas::TextureAtlasLayout"
+              "val": "bevy_mesh::mesh::Mesh"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::ArcMutexValue<bevy_image::texture_atlas::TextureAtlasLayout>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::ArcMutexValue<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
+            "bevy_asset::handle::ArcMutexValue<bevy_mesh::mesh::Mesh>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16141,11 +16141,11 @@
         {
           "args": [
             {
-              "val": "bevy_mesh::mesh::Mesh"
+              "val": "bevy_image::texture_atlas::TextureAtlasLayout"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_mesh::mesh::Mesh>::new"
+            "bevy_asset::handle::Handle<bevy_image::texture_atlas::TextureAtlasLayout>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16158,11 +16158,11 @@
         {
           "args": [
             {
-              "tuple": []
+              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<()>::new"
+            "bevy_asset::handle::Handle<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16175,11 +16175,11 @@
         {
           "args": [
             {
-              "val": "bevy_image::image::Image"
+              "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_image::image::Image>::new"
+            "bevy_asset::handle::Handle<bevy_sprite_render::mesh2d::color_material::ColorMaterial>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16210,11 +16210,11 @@
         {
           "args": [
             {
-              "val": "bevy_sprite_render::mesh2d::color_material::ColorMaterial"
+              "tuple": []
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_sprite_render::mesh2d::color_material::ColorMaterial>::new"
+            "bevy_asset::handle::Handle<()>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16227,11 +16227,11 @@
         {
           "args": [
             {
-              "val": "bevy_image::texture_atlas::TextureAtlasLayout"
+              "val": "bevy_mesh::mesh::Mesh"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_image::texture_atlas::TextureAtlasLayout>::new"
+            "bevy_asset::handle::Handle<bevy_mesh::mesh::Mesh>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16244,28 +16244,11 @@
         {
           "args": [
             {
-              "val": "bevy_animation::AnimationClip"
+              "val": "bevy_image::image::Image"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_animation::AnimationClip>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::Handle<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
+            "bevy_asset::handle::Handle<bevy_image::image::Image>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16283,6 +16266,23 @@
           ],
           "associated_functions": [
             "bevy_asset::handle::Handle<bevy_render::storage::ShaderBuffer>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
+              "val": "bevy_animation::AnimationClip"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::Handle<bevy_animation::AnimationClip>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16360,11 +16360,11 @@
         {
           "args": [
             {
-              "val": "bevy_render::storage::ShaderBuffer"
+              "val": "bevy_image::image::Image"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::HandleTemplate<bevy_render::storage::ShaderBuffer>::new"
+            "bevy_asset::handle::HandleTemplate<bevy_image::image::Image>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16394,11 +16394,28 @@
         {
           "args": [
             {
-              "val": "bevy_image::image::Image"
+              "val": "bevy_render::storage::ShaderBuffer"
             }
           ],
           "associated_functions": [
-            "bevy_asset::handle::HandleTemplate<bevy_image::image::Image>::new"
+            "bevy_asset::handle::HandleTemplate<bevy_render::storage::ShaderBuffer>::new"
+          ],
+          "metadata": {
+            "is_component": false,
+            "is_resource": false,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
+          }
+        },
+        {
+          "args": [
+            {
+              "val": "bevy_image::texture_atlas::TextureAtlasLayout"
+            }
+          ],
+          "associated_functions": [
+            "bevy_asset::handle::HandleTemplate<bevy_image::texture_atlas::TextureAtlasLayout>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16433,23 +16450,6 @@
           ],
           "associated_functions": [
             "bevy_asset::handle::HandleTemplate<bevy_sprite_render::sprite_mesh::sprite_mesh_material::SpriteMeshMaterial>::new"
-          ],
-          "metadata": {
-            "is_component": false,
-            "is_resource": false,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptTypeRegistration"
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_image::texture_atlas::TextureAtlasLayout"
-            }
-          ],
-          "associated_functions": [
-            "bevy_asset::handle::HandleTemplate<bevy_image::texture_atlas::TextureAtlasLayout>::new"
           ],
           "metadata": {
             "is_component": false,
@@ -16636,17 +16636,17 @@
         {
           "args": [
             {
-              "val": "bevy_input::mouse::MouseButton"
+              "val": "bevy_input::keyboard::KeyCode"
             }
           ],
           "associated_functions": [
-            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::just_pressed",
-            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::release",
-            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::press",
-            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::get_pressed",
-            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::just_released",
-            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::pressed",
-            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::new"
+            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::get_pressed",
+            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::press",
+            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::just_pressed",
+            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::release",
+            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::just_released",
+            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::pressed",
+            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::new"
           ],
           "metadata": {
             "is_component": true,
@@ -16660,17 +16660,17 @@
         {
           "args": [
             {
-              "val": "bevy_input::keyboard::KeyCode"
+              "val": "bevy_input::mouse::MouseButton"
             }
           ],
           "associated_functions": [
-            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::get_pressed",
-            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::just_pressed",
-            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::just_released",
-            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::press",
-            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::pressed",
-            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::release",
-            "bevy_input::button_input::ButtonInput<bevy_input::keyboard::KeyCode>::new"
+            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::pressed",
+            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::press",
+            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::release",
+            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::get_pressed",
+            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::just_pressed",
+            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::just_released",
+            "bevy_input::button_input::ButtonInput<bevy_input::mouse::MouseButton>::new"
           ],
           "metadata": {
             "is_component": true,
@@ -16689,11 +16689,11 @@
           ],
           "associated_functions": [
             "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::pressed",
-            "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::release",
             "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::just_released",
-            "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::just_pressed",
-            "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::get_pressed",
             "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::press",
+            "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::get_pressed",
+            "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::release",
+            "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::just_pressed",
             "bevy_input::button_input::ButtonInput<bevy_input::gamepad::GamepadButton>::new"
           ],
           "metadata": {
@@ -16837,24 +16837,49 @@
         {
           "args": [
             {
+              "val": "bevy_time::real::Real"
+            }
+          ],
+          "associated_functions": [
+            "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs_f64",
+            "bevy_time::time::Time<bevy_time::real::Real>::elapsed",
+            "bevy_time::time::Time<bevy_time::real::Real>::delta_secs_f64",
+            "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs_wrapped",
+            "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs",
+            "bevy_time::time::Time<bevy_time::real::Real>::delta_secs",
+            "bevy_time::time::Time<bevy_time::real::Real>::delta",
+            "bevy_time::time::Time<bevy_time::real::Real>::new"
+          ],
+          "metadata": {
+            "is_component": true,
+            "is_resource": true,
+            "is_reflect": true,
+            "mapped_to_primitive_kind": null,
+            "registration": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration",
+            "default": {}
+          }
+        },
+        {
+          "args": [
+            {
               "val": "bevy_time::virt::Virtual"
             }
           ],
           "associated_functions": [
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::is_paused",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::unpause",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::delta_secs_f64",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs_wrapped",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs_f64",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::pause",
             "bevy_time::time::Time<bevy_time::virt::Virtual>::set_relative_speed",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::delta",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::relative_speed",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::max_delta",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed",
-            "bevy_time::time::Time<bevy_time::virt::Virtual>::set_max_delta",
             "bevy_time::time::Time<bevy_time::virt::Virtual>::delta_secs",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::relative_speed",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::pause",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::is_paused",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::delta_secs_f64",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::unpause",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::delta",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs_f64",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs_wrapped",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::set_max_delta",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::elapsed_secs",
+            "bevy_time::time::Time<bevy_time::virt::Virtual>::max_delta",
             "bevy_time::time::Time<bevy_time::virt::Virtual>::new"
           ],
           "metadata": {
@@ -16873,13 +16898,13 @@
             }
           ],
           "associated_functions": [
-            "bevy_time::time::Time<()>::elapsed_secs_wrapped",
-            "bevy_time::time::Time<()>::elapsed_secs",
-            "bevy_time::time::Time<()>::delta_secs",
-            "bevy_time::time::Time<()>::delta",
-            "bevy_time::time::Time<()>::delta_secs_f64",
             "bevy_time::time::Time<()>::elapsed_secs_f64",
             "bevy_time::time::Time<()>::elapsed",
+            "bevy_time::time::Time<()>::delta_secs",
+            "bevy_time::time::Time<()>::delta",
+            "bevy_time::time::Time<()>::elapsed_secs",
+            "bevy_time::time::Time<()>::delta_secs_f64",
+            "bevy_time::time::Time<()>::elapsed_secs_wrapped",
             "bevy_time::time::Time<()>::new"
           ],
           "metadata": {
@@ -16898,42 +16923,17 @@
             }
           ],
           "associated_functions": [
-            "bevy_time::time::Time<bevy_time::fixed::Fixed>::set_timestep_seconds",
-            "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta_secs_f64",
-            "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed_secs_wrapped",
-            "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta_secs",
-            "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta",
-            "bevy_time::time::Time<bevy_time::fixed::Fixed>::timestep",
             "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed_secs",
+            "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed_secs_wrapped",
+            "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed",
+            "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta",
+            "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta_secs_f64",
             "bevy_time::time::Time<bevy_time::fixed::Fixed>::overstep_fraction",
             "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed_secs_f64",
-            "bevy_time::time::Time<bevy_time::fixed::Fixed>::elapsed",
+            "bevy_time::time::Time<bevy_time::fixed::Fixed>::timestep",
+            "bevy_time::time::Time<bevy_time::fixed::Fixed>::delta_secs",
+            "bevy_time::time::Time<bevy_time::fixed::Fixed>::set_timestep_seconds",
             "bevy_time::time::Time<bevy_time::fixed::Fixed>::new"
-          ],
-          "metadata": {
-            "is_component": true,
-            "is_resource": true,
-            "is_reflect": true,
-            "mapped_to_primitive_kind": null,
-            "registration": "bevy_mod_scripting_bindings::query::ScriptResourceRegistration",
-            "default": {}
-          }
-        },
-        {
-          "args": [
-            {
-              "val": "bevy_time::real::Real"
-            }
-          ],
-          "associated_functions": [
-            "bevy_time::time::Time<bevy_time::real::Real>::delta",
-            "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs_wrapped",
-            "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs",
-            "bevy_time::time::Time<bevy_time::real::Real>::delta_secs_f64",
-            "bevy_time::time::Time<bevy_time::real::Real>::delta_secs",
-            "bevy_time::time::Time<bevy_time::real::Real>::elapsed",
-            "bevy_time::time::Time<bevy_time::real::Real>::elapsed_secs_f64",
-            "bevy_time::time::Time<bevy_time::real::Real>::new"
           ],
           "metadata": {
             "is_component": true,

@@ -38,10 +38,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-abc777da.js";
+            window.path_to_searchindex_js = "../../searchindex-ce1ef2e7.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-51566f6a.js"></script>
+        <script src="../../toc-c5255b6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -211,7 +211,7 @@
 </table>
 </div>
 <h2 id="instantiations"><a class="header" href="#instantiations">Instantiations</a></h2>
-<p><a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;, <a href="./timet.html">Time</a>&lt;()&gt;, <a href="./timet.html">Time</a>&lt;<a href="./fixed.html">Fixed</a>&gt;, <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;</p>
+<p><a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;, <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;, <a href="./timet.html">Time</a>&lt;()&gt;, <a href="./timet.html">Time</a>&lt;<a href="./fixed.html">Fixed</a>&gt;</p>
 <h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -224,10 +224,10 @@
 </table>
 </div>
 <h3 id="new" class="lad-function"><a class="header" href="#new"><code>new</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;&gt;) -&gt; <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;&gt;) -&gt; <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -266,58 +266,58 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="delta" class="lad-function"><a class="header" href="#delta"><code>delta</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;) -&gt; <a href="./duration.html">Duration</a></p>
+<p><strong>delta</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;) -&gt; <a href="./duration.html">Duration</a></p>
 </div>
 
 <p>The time that passed since the previous update.</p>
 <h3 id="delta_secs" class="lad-function"><a class="header" href="#delta_secs"><code>delta_secs</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta_secs</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;) -&gt; <a href="./f32.html">f32</a></p>
+<p><strong>delta_secs</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;) -&gt; <a href="./f32.html">f32</a></p>
 </div>
 
 <p>The time that passed since the previous update, in seconds.</p>
 <h3 id="delta_secs_f64" class="lad-function"><a class="header" href="#delta_secs_f64"><code>delta_secs_f64</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta_secs_f64</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;) -&gt; <a href="./f64.html">f64</a></p>
+<p><strong>delta_secs_f64</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;) -&gt; <a href="./f64.html">f64</a></p>
 </div>
 
 <p>The time that passed since the previous update, in seconds as a double precision number.</p>
 <h3 id="elapsed" class="lad-function"><a class="header" href="#elapsed"><code>elapsed</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;) -&gt; <a href="./duration.html">Duration</a></p>
+<p><strong>elapsed</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;) -&gt; <a href="./duration.html">Duration</a></p>
 </div>
 
 <p>The total time that passed since the clock started.</p>
 <h3 id="elapsed_secs" class="lad-function"><a class="header" href="#elapsed_secs"><code>elapsed_secs</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;) -&gt; <a href="./f32.html">f32</a></p>
+<p><strong>elapsed_secs</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;) -&gt; <a href="./f32.html">f32</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds.</p>
 <h3 id="elapsed_secs_f64" class="lad-function"><a class="header" href="#elapsed_secs_f64"><code>elapsed_secs_f64</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs_f64</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;) -&gt; <a href="./f64.html">f64</a></p>
+<p><strong>elapsed_secs_f64</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;) -&gt; <a href="./f64.html">f64</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds as a double precision number.</p>
 <h3 id="elapsed_secs_wrapped" class="lad-function"><a class="header" href="#elapsed_secs_wrapped"><code>elapsed_secs_wrapped</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs_wrapped</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./virtual.html">Virtual</a>&gt;) -&gt; <a href="./f32.html">f32</a></p>
+<p><strong>elapsed_secs_wrapped</strong>(self: <a href="./timet.html">Time</a>&lt;<a href="./real.html">Real</a>&gt;) -&gt; <a href="./f32.html">f32</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds, wrapped to a period so it stays precise for long running apps.</p>

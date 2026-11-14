@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-abc777da.js";
+            window.path_to_searchindex_js = "../searchindex-ce1ef2e7.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-51566f6a.js"></script>
+        <script src="../toc-c5255b6a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -204,12 +204,12 @@
 <pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
         .register(
             "hello_world",
-            |s: String| {
+            |_self: ReflectReference, s: String| {
                 println!("{s}")
             },
         );
 
-    NamespaceBuilder::&lt;GlobalNamespace&gt;::new_unregistered(&amp;mut world)
+    NamespaceBuilder::in_namespace(&amp;mut world, "my_game")
         .register(
             "hello_world2",
             |s: String| {
@@ -217,10 +217,10 @@
             },
         );</code></pre>
 <p>This will allow you to call this function within Lua like so:</p>
-<pre><code class="language-lua">some_type:hello_world("hi from method!");
-hello_world2("hi from global!");
+<pre><code class="language-lua">some_value:hello_world("hi from method!")
+import_namespace("my_game").hello_world2("hi from my_game!")
 </code></pre>
-<p>Note the <code>new_unregistered</code> call instead of <code>new</code>, this is because <code>GlobalNamespace</code> is not a <code>Reflect</code> type, and the <code>new</code> call also automatically registers the type in the reflection registry.</p>
+<p><code>new</code> also registers the type in the type registry. Functions on <code>ReflectReference</code> are available on every value, and receive it as their first argument, see <a href="#where-functions-can-live">where functions can live</a>.</p>
 <h2 id="macros"><a class="header" href="#macros">Macros</a></h2>
 <p>The above is a bit tedious, so instead you can use the <code>script_bindings</code> macro, which applies to impl blocks like so:</p>
 <pre><code class="language-rust ignore">#[script_bindings(name = "test_fn")]
@@ -270,9 +270,9 @@ You can opt-in to receive this argument in your own function definitions by addi
 <pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
         .register(
             "hello_world",
-            |ctx: FunctionCallContext, s: String| {
+            |ctx: FunctionCallContext, _self: ReflectReference, s: String| {
                 let world = ctx.world()?;
-                let should_use_0_indexing = ctx.convert_to_0_indexed;
+                let should_use_0_indexing = ctx.convert_to_0_indexed();
                 println!("{should_use_0_indexing} {s}");
                 Ok(())
             },
@@ -375,8 +375,7 @@ app.register_type::&lt;M&gt;()
 <tr><td><code>MyType</code></td><td><code>MyType</code> values and the <code>MyType</code> type, as imported from its namespace</td><td>whatever you declare</td></tr>
 <tr><td><code>ReflectReference</code></td><td>every value, after <code>MyType</code>’s own functions</td><td>the value</td></tr>
 <tr><td><code>StaticTypeRef</code></td><td>every type, after <code>MyType</code>’s own functions</td><td>the type, filled in automatically</td></tr>
-<tr><td><code>NamespaceMembers</code></td><td>the namespace given by <code>namespace = "..."</code>, i.e. <code>import_namespace("my_game")</code></td><td>whatever you declare</td></tr>
-<tr><td><code>GlobalNamespace</code></td><td>the builtin globals, i.e. no prefix</td><td>whatever you declare</td></tr>
+<tr><td><code>NamespaceMembers</code></td><td>the namespace given by <code>namespace = "..."</code> (or <code>NamespaceBuilder::in_namespace</code>), i.e. <code>import_namespace("my_game")</code></td><td>whatever you declare</td></tr>
 </tbody>
 </table>
 </div>
