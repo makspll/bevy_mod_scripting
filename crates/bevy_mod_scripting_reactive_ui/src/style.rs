@@ -35,8 +35,35 @@ pub(crate) enum Prop {
     Color,
     Image,
     Name,
-    OnClick,
-    OnHover,
+    /// The handler of an event
+    On(UiEvent),
+}
+
+/// The events elements can handle, from `bevy_picking`'s pointer events.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum UiEvent {
+    Click,
+    Press,
+    Release,
+    PointerEnter,
+    PointerLeave,
+    /// Both of the above, the handler is given whether the pointer is over the element
+    Hover,
+    Drag,
+    Scroll,
+}
+
+impl UiEvent {
+    pub(crate) const ALL: [(&'static str, UiEvent); 8] = [
+        ("click", UiEvent::Click),
+        ("press", UiEvent::Press),
+        ("release", UiEvent::Release),
+        ("pointer_enter", UiEvent::PointerEnter),
+        ("pointer_leave", UiEvent::PointerLeave),
+        ("hover", UiEvent::Hover),
+        ("drag", UiEvent::Drag),
+        ("scroll", UiEvent::Scroll),
+    ];
 }
 
 /// A layout property: a field of [`Node`] and how it is set from a script value, `Unit` resets it.
@@ -114,19 +141,23 @@ static PROPS: LazyLock<HashMap<&'static str, Prop>> = LazyLock::new(|| {
         ("color", Prop::Color),
         ("image", Prop::Image),
         ("name", Prop::Name),
-        ("on_click", Prop::OnClick),
-        ("on_hover", Prop::OnHover),
     ]);
     props
 });
 
 impl Prop {
     pub fn parse(name: &str) -> Option<Prop> {
+        if let Some(event) = name.strip_prefix("on_") {
+            return UiEvent::ALL
+                .iter()
+                .find(|(event_name, _)| *event_name == event)
+                .map(|(_, event)| Prop::On(*event));
+        }
         PROPS.get(name).copied()
     }
 
     pub fn is_handler(self) -> bool {
-        matches!(self, Prop::OnClick | Prop::OnHover)
+        matches!(self, Prop::On(_))
     }
 }
 
@@ -588,7 +619,7 @@ pub(crate) fn apply_prop(
             target.set_image(path.to_string());
         }
         Prop::Name => target.set_name(Name::new(as_text(value))),
-        Prop::OnClick | Prop::OnHover => {}
+        Prop::On(_) => {}
     }
     Ok(())
 }

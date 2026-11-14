@@ -20,7 +20,7 @@ fn slot(name, entity, is_selected, selected, clicks) {
         // computed in Rust, no script code runs when these change
         background_color: ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
         // a function with its dependencies
-        on_click: [|selected, clicks, name| {
+        on_click: [|selected, clicks, name, _event| {
             selected.set(name);
             clicks.set(clicks.peek() + 1);
         }, selected, clicks, name],
@@ -119,7 +119,7 @@ fn inventory(p) {
             ui.node(#{
                 name: ui.format("row_{}", [name]),
                 background_color: ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
-                on_click: |entity| {
+                on_click: |entity, _event| {
                     let world = import_namespace("bms").world;
                     let s = state();
                     s["row_clicked"] = world.get_component(entity, s["Item"]).data.name;
@@ -195,8 +195,8 @@ pub fn on_test() {
             hp.data = #{ current: 20, max: 100 };
         }
         2 => {
-            ui.interact(find("slot_Sword"), "press");
-            ui.interact(find("row_Shield"), "press");
+            ui.interact(find("slot_Sword"), "click");
+            ui.interact(find("row_Shield"), "click");
         }
         3 => s["search"].set("sh"),
         4 => {

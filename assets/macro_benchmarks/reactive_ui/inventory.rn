@@ -39,7 +39,7 @@ fn slot(entity, is_selected, selected) {
     ui.node(#{
         name: `slot_${name}`,
         background_color: ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
-        on_click: [|selected, name| selected.set(name), selected, name],
+        on_click: [|selected, name, _event| selected.set(name), selected, name],
     }, [
         ui.text(#{ text: ui.format("x{}", [ui.path(item, "data.count")]) }),
     ])
@@ -81,7 +81,7 @@ fn inventory(p) {
             ui.node(#{
                 name: ui.format("slot_{}", [name]),
                 background_color: ui.when(ui.selected(is_selected, name), "#ffcc00", "#333333"),
-                on_click: [|selected, entity| {
+                on_click: [|selected, entity, _event| {
                     let item = import_namespace("bms").world.get_component(entity, state()["Item"]);
                     selected.set(item.data.name);
                 }, selected],
@@ -177,7 +177,7 @@ pub fn bench_step() {
         "mount" => s["shown"].set(!s["shown"].peek()),
         "select" => {
             let name = s["names"][n % 200];
-            ui.interact(ui.find(s["root"], `slot_${name}`), "press");
+            ui.interact(ui.find(s["root"], `slot_${name}`), "click");
         }
         "search" => s["search"].set(if n % 2 == 0 { "" } else { "5" }),
         "one" => {

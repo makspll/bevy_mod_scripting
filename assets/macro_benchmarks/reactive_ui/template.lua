@@ -102,7 +102,7 @@ function bench_step()
     elseif BENCH == "mount" then
         shown:set(not shown:peek())
     elseif BENCH == "select" then
-        ui.interact(ui.find(root, "slot_" .. items[n % 200 + 1]), "press")
+        ui.interact(ui.find(root, "slot_" .. items[n % 200 + 1]), "click")
     elseif BENCH == "search" then
         search:set(n % 2 == 0 and "" or "5")
     elseif BENCH == "one" then
