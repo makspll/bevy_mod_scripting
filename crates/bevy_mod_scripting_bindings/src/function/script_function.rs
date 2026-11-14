@@ -14,7 +14,7 @@ use bevy_mod_scripting_world::{ThreadWorldContainer, WorldGuard};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{Reflect, TypeInfo};
 use parking_lot::{Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
-use std::any::TypeId;
+use std::any::{Any, TypeId};
 use std::borrow::Cow;
 use std::collections::VecDeque;
 use std::hash::Hash;
@@ -144,6 +144,9 @@ pub struct DynamicScriptFunction {
     func: Arc<
         dyn Fn(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
     >,
+    /// The script's own function this one calls, see [`DynamicScriptFunction::with_script_function`]
+    #[debug_with_type_info(skip)]
+    script_function: Option<Arc<dyn Any + Send + Sync>>,
 }
 
 #[derive(Reflect, Clone, DebugWithTypeInfo)]
@@ -254,12 +257,26 @@ impl DynamicScriptFunction {
         bound
     }
 
+    /// Records the script's own function (i.e. a Lua function) this function calls.
+    ///
+    /// The language can then hand that function back to the script as it is, instead of wrapping this one.
+    pub fn with_script_function(mut self, function: Arc<dyn Any + Send + Sync>) -> Self {
+        self.script_function = Some(function);
+        self
+    }
+
+    /// The script's own function this function calls, if it was made from one of type `T`.
+    pub fn script_function<T: Any>(&self) -> Option<&T> {
+        self.script_function.as_deref()?.downcast_ref()
+    }
+
     /// Fixes the first argument of the function, i.e. a receiver or a type.
     ///
     /// The returned function is called with the remaining arguments. Its info is unchanged.
     pub fn curry(&self, first: ScriptValue) -> Self {
         let inner = self.func.clone();
         DynamicScriptFunction {
+            script_function: None,
             info: self.info.clone(),
             func: Arc::new(move |context, mut args| {
                 args.push_front(first.clone());
@@ -337,6 +354,7 @@ where
                 .with_name(std::any::type_name::<F>())
                 .into(),
             func: Arc::new(fn_),
+            script_function: None,
         }
     }
 }
