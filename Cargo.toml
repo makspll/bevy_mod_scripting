@@ -289,9 +289,17 @@ exclude = ["crates/macro_tests", "xtask"]
 debug = 1
 opt-level = 1
 
+# LuaJIT reads the full rax after calling a C function returning `int`, whose upper half the ABI leaves undefined.
+# At opt-level 1, mlua's userdata `__gc` (generic, so compiled in this crate) leaves garbage there and LuaJIT segfaults.
+[profile.dev.package.bevy_mod_scripting_lua]
+opt-level = 3
+
 [profile.dev-debug]
 inherits = "dev"
 debug = true
+opt-level = 0
+
+[profile.dev-debug.package.bevy_mod_scripting_lua]
 opt-level = 0
 
 [profile.dev.package."*"]
