@@ -171,6 +171,24 @@ fn define(
     Ok(V(id))
 }
 
+/// A region element, `props` are the properties of the node holding its children.
+fn region(
+    ctx: &FunctionCallContext,
+    kind: ElementKind,
+    props: Option<ScriptValue>,
+) -> Result<ScriptValue, InteropError> {
+    let (_, props) = parse_props(props, &ctx.world()?)?;
+    Ok(new_element(
+        &*runtime(ctx)?,
+        ElementData {
+            kind,
+            key: None,
+            props,
+            children: Vec::new(),
+        },
+    ))
+}
+
 fn register_functions(world: &mut World) {
     let mut ui = NamespaceBuilder::<NamespaceMembers>::in_namespace(world, "reactive_ui");
     ui.register(
@@ -489,48 +507,35 @@ fn register_functions(world: &mut World) {
         runtime::selector(&*runtime(&ctx)?, attachment, source.into_inner().0)
             .map(|id| V(Selector(id)))
     })
+    // the last argument of the regions are the properties of the node holding their children, i.e. its layout
     .register(
         "list",
-        |ctx: FunctionCallContext, items: V<Signal>, f: Func, deps: Option<ScriptValue>| {
-            let f = element::with_deps(f, deps)?;
-            Ok::<_, InteropError>(new_element(
-                &*runtime(&ctx)?,
-                ElementData {
-                    kind: ElementKind::Each(items.into_inner().0, f, false),
-                    key: None,
-                    props: Vec::new(),
-                    children: Vec::new(),
-                },
-            ))
+        |ctx: FunctionCallContext,
+         items: V<Signal>,
+         f: Func,
+         deps: Option<ScriptValue>,
+         props: Option<ScriptValue>| {
+            let kind = ElementKind::Each(items.into_inner().0, element::with_deps(f, deps)?, false);
+            region(&ctx, kind, props)
         },
     )
     .register(
         "list_template",
-        |ctx: FunctionCallContext, items: V<Signal>, f: Func, deps: Option<ScriptValue>| {
-            let f = element::with_deps(f, deps)?;
-            Ok::<_, InteropError>(new_element(
-                &*runtime(&ctx)?,
-                ElementData {
-                    kind: ElementKind::Each(items.into_inner().0, f, true),
-                    key: None,
-                    props: Vec::new(),
-                    children: Vec::new(),
-                },
-            ))
+        |ctx: FunctionCallContext,
+         items: V<Signal>,
+         f: Func,
+         deps: Option<ScriptValue>,
+         props: Option<ScriptValue>| {
+            let kind = ElementKind::Each(items.into_inner().0, element::with_deps(f, deps)?, true);
+            region(&ctx, kind, props)
         },
     )
-    .register("show", |ctx: FunctionCallContext, f: Func, deps: Option<ScriptValue>| {
-        let f = element::with_deps(f, deps)?;
-        Ok::<_, InteropError>(new_element(
-            &*runtime(&ctx)?,
-            ElementData {
-                kind: ElementKind::Dynamic(f),
-                key: None,
-                props: Vec::new(),
-                children: Vec::new(),
-            },
-        ))
-    });
+    .register(
+        "show",
+        |ctx: FunctionCallContext, f: Func, deps: Option<ScriptValue>, props: Option<ScriptValue>| {
+            region(&ctx, ElementKind::Dynamic(element::with_deps(f, deps)?), props)
+        },
+    );
 
     NamespaceBuilder::<Selector>::new(world).register(
         "selected",
