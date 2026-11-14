@@ -19,7 +19,7 @@ use script_integration_test_harness::{
     make_test_lua_plugin, perform_benchmark_with_generator, run_lua_benchmark,
     run_plugin_callback_command_benchmark, run_plugin_callback_event_benchmark,
     run_plugin_script_load_benchmark, run_plugin_script_system_benchmark,
-    test_functions::rand::Rng,
+    run_reactive_ui_benchmark, test_functions::rand::Rng,
 };
 #[cfg(feature = "rune")]
 use script_integration_test_harness::{make_test_rune_plugin, run_rune_benchmark};
@@ -313,6 +313,39 @@ fn callback_benchmarks(criterion: &mut Criterion) {
     run_plugin_callback_command_benchmark(make_test_rune_plugin, "command Rune", rune, &mut group);
 }
 
+fn reactive_ui_benchmarks(criterion: &mut Criterion) {
+    let mut group = criterion.benchmark_group("reactive_ui");
+    // the same ui with properties bound to script closures, or to paths evaluated in Rust where possible
+    let variants = [
+        (
+            "Closures",
+            include_str!("../assets/macro_benchmarks/reactive_ui/closures.lua"),
+        ),
+        (
+            "Paths",
+            include_str!("../assets/macro_benchmarks/reactive_ui/paths.lua"),
+        ),
+    ];
+    let scenarios = [
+        ("health", "health tick"),
+        ("mount", "inventory mount or unmount 200"),
+        ("select", "inventory select"),
+        ("search", "inventory search"),
+        ("count", "inventory item count"),
+        ("idle", "idle"),
+    ];
+    for (bench, name) in scenarios {
+        for (variant, script) in variants {
+            run_reactive_ui_benchmark(
+                make_test_lua_plugin,
+                &format!("{name} {variant} Lua"),
+                &format!("BENCH = \"{bench}\"\n{script}"),
+                &mut group,
+            );
+        }
+    }
+}
+
 /// benchmarks running a script system querying the components of many entities, measures building and passing the payload
 fn script_system_benchmarks(criterion: &mut Criterion) {
     let mut group = criterion.benchmark_group("script_systems");
@@ -364,6 +397,7 @@ pub fn benches() {
         script_load_benchmarks(&mut criterion);
         callback_benchmarks(&mut criterion);
         script_system_benchmarks(&mut criterion);
+        reactive_ui_benchmarks(&mut criterion);
     });
 }
 criterion_main!(benches);
