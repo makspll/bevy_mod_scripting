@@ -90,6 +90,21 @@ local UnitType = {}
 
 
 
+---@class (exact) ladfile_builder.OptionsStruct.Fields
+--- The fields of `OptionsStruct`, keyed by name. Optional fields can be left out.
+---@field  name string
+---@field  callback? (fun(arg1: integer): boolean) | nil
+---@field  amount? ladfile_builder.AmountEnum | nil
+---@field  [any] 'never'
+
+
+
+
+--- How much, by name or exactly
+---@alias ladfile_builder.AmountEnum "First" | "SecondVariant" | integer
+
+
+
 ---@class namespace.ladfile_builder
 --- The `ladfile_builder` namespace, as returned by `import_namespace("ladfile_builder")`.
 ---@field  EnumType ladfile_builder.EnumType
