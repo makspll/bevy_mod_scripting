@@ -8,7 +8,7 @@ use bevy_camera::{
 };
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{Rect, UVec2, Vec2, Vec3};
-use bevy_mod_scripting_bindings::function::from::{M, R, V};
+use bevy_mod_scripting_bindings::conversions::from::{M, R, V};
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_shape::Ray3d;
 use bevy_transform::components::GlobalTransform;

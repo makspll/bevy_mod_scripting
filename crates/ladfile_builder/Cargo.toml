@@ -33,6 +33,7 @@ regex = { workspace = true, features = ["std", "unicode-perl"] }
 [dev-dependencies]
 pretty_assertions = { workspace = true }
 bevy_asset = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
 
 [lints]
 workspace = true

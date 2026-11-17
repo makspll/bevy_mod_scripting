@@ -4,10 +4,9 @@
 
 use crate::{
     ReflectReference,
+    conversions::{from::FromScript, from_ref::FromScriptErased},
     error::InteropError,
-    function::{
-        bound::BoundFields, from::FromScript, from_ref::FromScriptErased, namespace::FunctionScope,
-    },
+    function::{bound::BoundFields, namespace::FunctionScope},
     reflection_extensions::PartialReflectExt,
     script_value::ScriptValue,
 };

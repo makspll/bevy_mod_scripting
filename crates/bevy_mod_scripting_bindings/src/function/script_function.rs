@@ -1,7 +1,8 @@
 //! Implementations of the [`ScriptFunction`] and [`ScriptFunctionMut`] traits for functions with up to 13 arguments.
 
 use super::MagicFunctions;
-use super::{from::FromScript, into::IntoScript, namespace::FunctionScope};
+use super::namespace::FunctionScope;
+use crate::conversions::{from::FromScript, into::IntoScript};
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::function::arg_meta::ArgMeta;
 use crate::{ScriptValue, error::InteropError};
@@ -849,7 +850,7 @@ mod test {
         #[derive(Component, Reflect)]
         struct Comp;
 
-        let fn_ = |_a: crate::function::from::M<Comp>| 0usize;
+        let fn_ = |_a: crate::conversions::from::M<Comp>| 0usize;
         let script_function = fn_.into_dynamic_script_function();
 
         with_local_world(|| {
