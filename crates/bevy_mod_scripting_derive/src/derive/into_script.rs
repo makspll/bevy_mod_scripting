@@ -46,7 +46,7 @@ pub fn into_script(input: TokenStream) -> TokenStream {
     quote! {
         impl #impl_generics #bms_bindings_path::IntoScript for #ident #type_generics #where_clause {
             fn into_script(self, world: #bms_bindings_path::WorldGuard) -> Result<#bms_bindings_path::ScriptValue, #bms_bindings_path::InteropError> {
-                #bms_bindings_path::function::into::IntoScript::into_script(
+                #bms_bindings_path::conversions::into::IntoScript::into_script(
                     #bms_bindings_path::V(self),
                     world,
                 )

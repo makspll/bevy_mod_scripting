@@ -16,9 +16,9 @@ use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, NamespaceMembers, ReflectReference, ScriptComponentRegistration,
     ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue, WorldExtensions,
+    conversions::from::{R, V},
     error::InteropError,
     function::{
-        from::{R, V},
         namespace::NamespaceBuilder,
         script_function::{DynamicScriptFunctionMut, FunctionCallContext},
     },

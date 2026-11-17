@@ -4,9 +4,9 @@ use std::{
 };
 
 use ladfile::{
-    LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstance, LadInstantiation,
-    LadNamedType, LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout, LadVariant,
-    LadVisitable,
+    LadDataShape, LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstance,
+    LadInstantiation, LadNamedType, LadType, LadTypeDefinition, LadTypeId, LadTypeKind,
+    LadTypeLayout, LadVariant, LadVisitable,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
@@ -91,7 +91,7 @@ pub(crate) enum SectionData<'a> {
     FunctionSummary,
     TypeDetail {
         lad_type_id: &'a LadTypeId,
-        lad_type: &'a LadTypeDefinition,
+        lad_type: &'a LadType,
     },
     /// A generic type, which is documented once for all its instantiations
     GenericTypeDetail {
@@ -317,7 +317,7 @@ impl<'a> Section<'a> {
             .ladfile
             .types
             .iter()
-            .map(|(_, lad_type)| lad_type.namespace.as_str())
+            .map(|(_, lad_type)| lad_type.namespace())
             .chain(
                 self.ladfile
                     .generic_types
@@ -339,6 +339,7 @@ impl<'a> Section<'a> {
     /// Whether the namespace has no types, functions or values, so no page
     fn namespace_is_empty(&self, namespace: &str) -> bool {
         self.types_in_namespace(namespace).is_empty()
+            && self.data_types_in_namespace(namespace).is_empty()
             && self
                 .ladfile
                 .namespaces
@@ -348,11 +349,11 @@ impl<'a> Section<'a> {
                 })
     }
 
-    /// The ids of the types in the namespace which have a page of their own, generic types last
+    /// The ids of the types in the namespace which have a page of their own, generic types last. Data types aren't
+    /// imported from the namespace, see [`Self::data_types_in_namespace`]
     fn types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
         self.ladfile
-            .types
-            .iter()
+            .reference_types()
             .filter(|(_, lad_type)| lad_type.namespace == namespace)
             .map(|(id, _)| id)
             .chain(
@@ -362,6 +363,16 @@ impl<'a> Section<'a> {
                     .filter(|(_, generic_type)| generic_type.namespace == namespace)
                     .map(|(id, _)| id),
             )
+            .collect()
+    }
+
+    /// The ids of the data types documented in the namespace, which scripts pass as maps of their fields, see
+    /// [`ladfile::LadType::Data`]
+    fn data_types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
+        self.ladfile
+            .data_types()
+            .filter(|(_, data_type)| data_type.namespace == namespace)
+            .map(|(id, _)| id)
             .collect()
     }
 
@@ -415,7 +426,7 @@ impl<'a> Section<'a> {
                     .ladfile
                     .types
                     .iter()
-                    .filter(|(_, lad_type)| lad_type.namespace == namespace)
+                    .filter(|(_, lad_type)| lad_type.namespace() == namespace)
                     .map(|(lad_type_id, lad_type)| {
                         Section::new(
                             self.parent_path.clone(),
@@ -523,6 +534,7 @@ impl<'a> Section<'a> {
                 let lad_namespace = self.ladfile.namespaces.get(namespace);
                 let contents = [
                     count(self.types_in_namespace(namespace).len(), "type"),
+                    count(self.data_types_in_namespace(namespace).len(), "data type"),
                     count(self.namespace_functions(namespace).len(), "function"),
                     count(lad_namespace.map_or(0, |n| n.values.len()), "value"),
                 ]
@@ -573,8 +585,17 @@ impl<'a> Section<'a> {
                 }),
             },
             SectionItem::TypesSummary {
+                heading: "Types",
+                description: None,
                 types: self.types_in_namespace(namespace),
                 // the pages of the types are next to this one
+                types_directory: ".".to_owned(),
+                ladfile: self.ladfile,
+            },
+            SectionItem::TypesSummary {
+                heading: "Data types",
+                description: Some(DATA_TYPE_DESCRIPTION),
+                types: self.data_types_in_namespace(namespace),
                 types_directory: ".".to_owned(),
                 ladfile: self.ladfile,
             },
@@ -628,8 +649,58 @@ impl<'a> Section<'a> {
     fn type_detail_items(
         &self,
         lad_type_id: &LadTypeId,
-        lad_type: &'a LadTypeDefinition,
+        lad_type: &'a LadType,
     ) -> Vec<SectionItem<'a>> {
+        let lad_type = match lad_type {
+            LadType::Reference(lad_type) => lad_type,
+            // only ever a map of its fields, or one of its union's values
+            LadType::Data(data_type) => {
+                let shape = match &data_type.shape {
+                    LadDataShape::Fields(fields) => SectionItem::Layout {
+                        layout: Cow::Owned(LadTypeLayout::MonoVariant(LadVariant::Struct {
+                            name: data_type.identifier.clone().into(),
+                            fields: fields.clone(),
+                        })),
+                        ladfile: self.ladfile,
+                        types_directory: PathBuf::from("./"),
+                    },
+                    LadDataShape::Union(kinds) => {
+                        let kinds = kinds
+                            .iter()
+                            .map(|kind| print_linked_type(self.ladfile, kind, "."))
+                            .collect::<Vec<_>>();
+                        SectionItem::Markdown {
+                            markdown: Box::new(move |builder| {
+                                builder.heading(2, "One of");
+                                builder.table(|builder| {
+                                    builder.headers(vec!["Type"]);
+                                    for kind in &kinds {
+                                        builder.row(markdown_vec![Markdown::Raw(kind.clone())]);
+                                    }
+                                });
+                            }),
+                        }
+                    }
+                };
+                return vec![
+                    SectionItem::Badges {
+                        badges: vec!["Data"],
+                    },
+                    SectionItem::Markdown {
+                        markdown: Box::new(|builder| {
+                            builder.raw(DATA_TYPE_DESCRIPTION);
+                            builder.append("\n\n");
+                        }),
+                    },
+                    SectionItem::Description {
+                        documentation: data_type.documentation.as_deref(),
+                        ladfile: self.ladfile,
+                        types_directory: ".".to_owned(),
+                    },
+                    shape,
+                ];
+            }
+        };
         let metadata = &lad_type.metadata;
         let badges = [
             (metadata.is_component, "Component"),
@@ -648,7 +719,7 @@ impl<'a> Section<'a> {
                 types_directory: ".".to_owned(),
             },
             SectionItem::Layout {
-                layout: &lad_type.layout,
+                layout: Cow::Borrowed(&lad_type.layout),
                 ladfile: self.ladfile,
                 types_directory: PathBuf::from("./"),
             },
@@ -677,7 +748,7 @@ impl<'a> Section<'a> {
                 types_directory: ".".to_owned(),
             },
             SectionItem::Layout {
-                layout: &generic_type.layout,
+                layout: Cow::Borrowed(&generic_type.layout),
                 ladfile: self.ladfile,
                 types_directory: PathBuf::from("./"),
             },
@@ -721,7 +792,8 @@ pub enum SectionItem<'a> {
     /// What kind of type the page is about, i.e. a component
     Badges { badges: Vec<&'static str> },
     Layout {
-        layout: &'a LadTypeLayout,
+        /// Owned for data types, whose fields aren't a layout
+        layout: Cow<'a, LadTypeLayout>,
         ladfile: &'a LadFile,
         types_directory: PathBuf,
     },
@@ -747,6 +819,10 @@ pub enum SectionItem<'a> {
         by_instantiation: bool,
     },
     TypesSummary {
+        /// The heading of the table, i.e. `Types`
+        heading: &'static str,
+        /// What the types listed are, under the heading
+        description: Option<&'static str>,
         types: Vec<&'a LadTypeId>,
         types_directory: String,
         ladfile: &'a ladfile::LadFile,
@@ -827,10 +903,19 @@ impl IntoMarkdown for SectionItem<'_> {
                 builder,
             ),
             SectionItem::TypesSummary {
+                heading,
+                description,
                 types,
                 types_directory,
                 ladfile,
-            } => types_summary_markdown(types, types_directory, ladfile, builder),
+            } => types_summary_markdown(
+                heading,
+                *description,
+                types,
+                types_directory,
+                ladfile,
+                builder,
+            ),
             SectionItem::InstancesSummary {
                 instances,
                 ladfile,
@@ -1230,8 +1315,13 @@ fn signature(function: &LadFunction, ladfile: &LadFile, types_directory: &str) -
     )
 }
 
+/// What a data type is, on its page and above the list of them, see [`ladfile::LadType::Data`]
+const DATA_TYPE_DESCRIPTION: &str = "Data types are plain data, copied to and from functions as a table of their fields or as one of several values: scripts can't import them or hold a reference to one.";
+
 /// A table of types as a quick reference, sorted by name, linking to the type pages
 fn types_summary_markdown(
+    heading: &'static str,
+    description: Option<&'static str>,
     types: &[&LadTypeId],
     types_directory: &str,
     ladfile: &LadFile,
@@ -1240,7 +1330,11 @@ fn types_summary_markdown(
     if types.is_empty() {
         return;
     }
-    builder.heading(2, "Types");
+    builder.heading(2, heading);
+    if let Some(description) = description {
+        builder.raw(description);
+        builder.append("\n\n");
+    }
 
     let mut rows = types
         .iter()
@@ -1340,12 +1434,13 @@ mod test {
             "{titles:?}"
         );
 
-        // and the pages of the namespaces list the same
+        // and the pages of the namespaces list the same, in their types and data types
         let listed = namespace_pages(&ladfile)
             .iter()
-            .map(|namespace| match namespace.section_items().as_slice() {
-                [_, SectionItem::TypesSummary { types, .. }, ..] => types.len(),
-                items => panic!("expected a types summary, got {items:?}"),
+            .flat_map(|namespace| namespace.section_items())
+            .map(|item| match item {
+                SectionItem::TypesSummary { types, .. } => types.len(),
+                _ => 0,
             })
             .sum::<usize>();
         assert_eq!(listed, titles.len());
@@ -1381,12 +1476,12 @@ mod test {
         // as is the case for containers, which are not types of their own
         let generic_struct =
             LadTypeId::new_string_id("ladfile_builder::test::GenericStructType<usize>".into());
-        let mut definition = ladfile.types[&generic_struct].clone();
+        let mut definition = ladfile.get_reference_type(&generic_struct).unwrap().clone();
         definition.generics[0].type_id =
             LadTypeId::new_string_id("alloc::vec::Vec<alloc::string::String>".into());
         ladfile.types.insert(
             LadTypeId::new_string_id("with_unknown_argument".into()),
-            definition,
+            definition.into(),
         );
 
         let pages = type_pages(&ladfile);
@@ -1463,11 +1558,12 @@ mod test {
         let mut ladfile = setup_ladfile();
         // types can have the name of a namespace, i.e. `Time` and `time`
         let plain = LadTypeId::new_string_id("ladfile_builder::test::PlainStructType".into());
-        let mut definition = ladfile.types[&plain].clone();
+        let mut definition = ladfile.get_reference_type(&plain).unwrap().clone();
         definition.identifier = "ladfile_builder".into();
-        ladfile
-            .types
-            .insert(LadTypeId::new_string_id("same_name".into()), definition);
+        ladfile.types.insert(
+            LadTypeId::new_string_id("same_name".into()),
+            definition.into(),
+        );
 
         let chapter = Section::new(PathBuf::from("lad"), &ladfile, SectionData::TypeSummary)
             .into_chapter(None, SectionNumber::new(vec![1]));
