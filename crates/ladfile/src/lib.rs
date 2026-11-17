@@ -46,8 +46,8 @@ pub struct LadFile {
     #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
     pub namespaces: IndexMap<Cow<'static, str>, LadNamespace>,
 
-    /// The types defined in the LAD file.
-    pub types: IndexMap<LadTypeId, LadTypeDefinition>,
+    /// The types defined in the LAD file, by how scripts get their values, see [`LadType`].
+    pub types: IndexMap<LadTypeId, LadType>,
 
     /// The generic types which types in the LAD file are instantiations of, i.e. `Handle` for `Handle<Image>`.
     ///
@@ -90,6 +90,35 @@ impl LadFile {
             .find(|instantiation| instantiation.args == args)
     }
 
+    /// The type scripts hold references to with the given id, if it is one, see [`LadType::Reference`].
+    pub fn get_reference_type(&self, type_id: &LadTypeId) -> Option<&LadTypeDefinition> {
+        self.types.get(type_id).and_then(LadType::as_reference)
+    }
+
+    /// The same as [`Self::get_reference_type`], mutably.
+    pub fn get_reference_type_mut(
+        &mut self,
+        type_id: &LadTypeId,
+    ) -> Option<&mut LadTypeDefinition> {
+        self.types
+            .get_mut(type_id)
+            .and_then(LadType::as_reference_mut)
+    }
+
+    /// The types scripts hold references to, see [`LadType::Reference`].
+    pub fn reference_types(&self) -> impl Iterator<Item = (&LadTypeId, &LadTypeDefinition)> {
+        self.types
+            .iter()
+            .filter_map(|(id, lad_type)| Some((id, lad_type.as_reference()?)))
+    }
+
+    /// The types passed by value, see [`LadType::Value`].
+    pub fn value_types(&self) -> impl Iterator<Item = (&LadTypeId, &LadValueType)> {
+        self.types
+            .iter()
+            .filter_map(|(id, lad_type)| Some((id, lad_type.as_value()?)))
+    }
+
     /// Retrieves the best type identifier suitable for a type id.
     pub fn get_type_identifier(
         &self,
@@ -98,7 +127,7 @@ impl LadFile {
     ) -> Cow<'static, str> {
         self.types
             .get(type_id)
-            .map(|t| t.identifier.clone().into())
+            .map(|t| t.identifier().to_owned().into())
             .unwrap_or_else(|| {
                 if let Some(replacement) = raw_type_id_replacement {
                     replacement.into()
@@ -110,15 +139,13 @@ impl LadFile {
 
     /// Retrieves true if the type id corresponds to a primitive type.
     pub fn primitive_kind(&self, type_id: &LadTypeId) -> Option<&ReflectionPrimitiveKind> {
-        self.types
-            .get(type_id)
+        self.get_reference_type(type_id)
             .and_then(|t| t.metadata.mapped_to_primitive_kind.as_ref())
     }
 
     /// Retrieves the generics of a type id if it is a generic type.
     pub fn get_type_generics(&self, type_id: &LadTypeId) -> Option<&[LadGeneric]> {
-        self.types
-            .get(type_id)
+        self.get_reference_type(type_id)
             .and_then(|t| (!t.generics.is_empty()).then_some(t.generics.as_slice()))
     }
 
@@ -126,7 +153,7 @@ impl LadFile {
     pub fn get_type_documentation(&self, type_id: &LadTypeId) -> Option<&str> {
         self.types
             .get(type_id)
-            .and_then(|t| t.documentation.as_deref())
+            .and_then(LadType::documentation)
             .or_else(|| {
                 self.generic_types
                     .get(type_id)
@@ -135,9 +162,9 @@ impl LadFile {
     }
 
     /// Retrieves the metadata section for the given lad type id.
-    /// Primitives don't contain metadata
+    /// Primitives and value types don't contain metadata
     pub fn get_type_metadata(&self, type_id: &LadTypeId) -> Option<&LadTypeMetadata> {
-        self.types.get(type_id).map(|t| &t.metadata)
+        self.get_reference_type(type_id).map(|t| &t.metadata)
     }
 
     /// The builtins, the functions every script sees as globals, i.e. `import_namespace`.
@@ -791,6 +818,116 @@ impl LadTypeId {
     }
 }
 
+/// A type of a LAD file, by how scripts get its values.
+///
+/// Serialized as the definition itself: a value type has `fields`, a type scripts hold references to doesn't.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+pub enum LadType {
+    /// Passed to and from scripts by value, as a map of its fields, i.e. a `#[derive(ScriptStruct)]`.
+    ///
+    /// Scripts never hold a value of it nor import it: they pass and get maps of its fields, which functions
+    /// refer to as [`LadTypeKind::Fields`]. Backends describe it by its fields alone, not as a type of its own.
+    Value(LadValueType),
+    /// Scripts hold references to its values and import it from its namespace, i.e. a reflected type.
+    Reference(Box<LadTypeDefinition>),
+}
+
+impl From<LadTypeDefinition> for LadType {
+    fn from(definition: LadTypeDefinition) -> Self {
+        LadType::Reference(Box::new(definition))
+    }
+}
+
+impl From<LadValueType> for LadType {
+    fn from(value_type: LadValueType) -> Self {
+        LadType::Value(value_type)
+    }
+}
+
+impl LadType {
+    /// The definition of a type scripts hold references to, see [`LadType::Reference`].
+    pub fn as_reference(&self) -> Option<&LadTypeDefinition> {
+        match self {
+            LadType::Reference(definition) => Some(definition),
+            LadType::Value(_) => None,
+        }
+    }
+
+    /// The same as [`Self::as_reference`], mutably.
+    pub fn as_reference_mut(&mut self) -> Option<&mut LadTypeDefinition> {
+        match self {
+            LadType::Reference(definition) => Some(definition),
+            LadType::Value(_) => None,
+        }
+    }
+
+    /// The definition of a type passed by value, see [`LadType::Value`].
+    pub fn as_value(&self) -> Option<&LadValueType> {
+        match self {
+            LadType::Value(value_type) => Some(value_type),
+            LadType::Reference(_) => None,
+        }
+    }
+
+    /// The name of the type, i.e. `Vec3`.
+    pub fn identifier(&self) -> &str {
+        match self {
+            LadType::Reference(definition) => &definition.identifier,
+            LadType::Value(value_type) => &value_type.identifier,
+        }
+    }
+
+    /// The full path of the type.
+    pub fn path(&self) -> &str {
+        match self {
+            LadType::Reference(definition) => &definition.path,
+            LadType::Value(value_type) => &value_type.path,
+        }
+    }
+
+    /// The script namespace the type is documented in.
+    pub fn namespace(&self) -> &str {
+        match self {
+            LadType::Reference(definition) => &definition.namespace,
+            LadType::Value(value_type) => &value_type.namespace,
+        }
+    }
+
+    /// The documentation of the type.
+    pub fn documentation(&self) -> Option<&str> {
+        match self {
+            LadType::Reference(definition) => definition.documentation.as_deref(),
+            LadType::Value(value_type) => value_type.documentation.as_deref(),
+        }
+    }
+}
+
+/// A type passed to and from scripts by value, as a map of its fields, see [`LadType::Value`].
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LadValueType {
+    /// The name of the type, i.e. `SpawnOptions`.
+    pub identifier: String,
+
+    /// The source crate of the type
+    #[serde(rename = "crate", skip_serializing_if = "Option::is_none", default)]
+    pub crate_: Option<String>,
+
+    /// The full path of the type
+    pub path: String,
+
+    /// The script namespace the type is documented in. It can't be imported from it.
+    #[serde(skip_serializing_if = "String::is_empty", default)]
+    pub namespace: String,
+
+    /// The documentation describing the type.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub documentation: Option<String>,
+
+    /// The fields of the map, in order. A field with `has_default` can be left out.
+    pub fields: Vec<LadNamedField>,
+}
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A type definition used in a LAD file.
 pub struct LadTypeDefinition {
@@ -862,14 +999,6 @@ pub struct LadTypeMetadata {
     /// True if the type actually implements reflect, some types can be
     /// added as namespaces without actually implementing the Reflect trait
     pub is_reflect: bool,
-
-    /// True if the type is only ever passed by value, as a map of its fields, i.e. a `#[derive(ScriptStruct)]`.
-    ///
-    /// Scripts never hold a value of a value type, nor import the type: they pass and get maps of its fields
-    /// ([`LadTypeKind::Fields`]). Backends describe it by its fields alone, not as a type of its own, i.e. the Lua
-    /// declarations have a `X.Fields` class but no `X` class, and it is in no namespace's types.
-    #[serde(skip_serializing_if = "is_false", default)]
-    pub is_value_type: bool,
 
     /// Set to a primitive kind if this type is mapped to a primitive
     pub mapped_to_primitive_kind: Option<ReflectionPrimitiveKind>,

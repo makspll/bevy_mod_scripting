@@ -4,9 +4,11 @@ use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use generics::{
     erase_generics, generic_type_modules, instantiation_class_name, mentions_generic, names_generic,
 };
+use std::borrow::Cow;
+
 use indexmap::{IndexMap, IndexSet};
 use ladfile::{
-    ArgumentVisitor, LadFile, LadFunction, LadNamedType, LadTypeId, LadTypeKind,
+    ArgumentVisitor, LadFile, LadFunction, LadNamedType, LadType, LadTypeId, LadTypeKind,
     ReflectionPrimitiveKind,
 };
 
@@ -50,8 +52,10 @@ pub fn convert_ladfile_to_lua_declaration_files(
 
 /// The name of the class of a type: qualified by its namespace, i.e. `math.Vec3`, like `import_namespace("math").Vec3` in scripts.
 pub fn lua_class_name(ladfile: &LadFile, type_id: &LadTypeId) -> String {
-    if let Some(lad_type) = ladfile.types.get(type_id) {
+    if let Some(lad_type) = ladfile.get_reference_type(type_id) {
         qualified(&lad_type.namespace, &lua_type_name(lad_type))
+    } else if let Some(value_type) = ladfile.types.get(type_id).and_then(LadType::as_value) {
+        qualified(&value_type.namespace, &value_type.identifier)
     } else if let Some(generic_type) = ladfile.generic_types.get(type_id) {
         qualified(&generic_type.namespace, &generic_type.identifier)
     } else {
@@ -101,9 +105,9 @@ fn qualified(namespace: &str, name: &str) -> String {
 fn type_lua_classes(
     ladfile: &ladfile::LadFile,
 ) -> IndexMap<LadTypeId, (LuaClass, Vec<ClassField>, Vec<FunctionSignature>)> {
+    // value types are only ever maps of their fields, see `fields_modules`
     ladfile
-        .types
-        .iter()
+        .reference_types()
         .map(|(type_id, lad_type)| {
             (
                 type_id.clone(),
@@ -116,13 +120,9 @@ fn type_lua_classes(
 fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     let mut modules = vec![];
     for (type_id, (mut lua_class, variant_fields, functions)) in type_lua_classes(ladfile) {
-        let Some(lad_type) = ladfile.types.get(&type_id) else {
+        let Some(lad_type) = ladfile.get_reference_type(&type_id) else {
             continue;
         };
-        // only ever maps of their fields, see `fields_modules`
-        if lad_type.metadata.is_value_type {
-            continue;
-        }
         let module =
             |class: LuaClass, functions: Vec<FunctionSignature>, type_only: bool| LuaModule {
                 name: lua_type_name(lad_type),
@@ -214,8 +214,15 @@ fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
             .chain([&function.return_type])
             .map(|arg| &arg.kind)
     });
-    // fields can be tables of the fields of other types too, i.e. a struct passed by value holding another
-    let fields = ladfile.types.values().flat_map(|t| t.layout.field_kinds());
+    // fields can be tables of the fields of other types too, i.e. a value type holding another
+    let fields = ladfile
+        .reference_types()
+        .flat_map(|(_, t)| t.layout.field_kinds())
+        .chain(
+            ladfile
+                .value_types()
+                .flat_map(|(_, v)| v.fields.iter().map(|f| &f.type_)),
+        );
     for kind in signatures.chain(fields) {
         fields_references.visit(kind);
     }
@@ -229,8 +236,8 @@ fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
             continue;
         }
         match lad_fields(ladfile, &type_id, variant) {
-            Some(lad_variant) if lad_variant_has_fields(lad_variant) => {
-                match fields_module(ladfile, &type_id, variant, lad_variant) {
+            Some(lad_variant) if lad_variant_has_fields(&lad_variant) => {
+                match fields_module(ladfile, &type_id, variant, &lad_variant) {
                     Ok(module) => modules.push(module),
                     Err(e) => {
                         log::warn!("Error generating the fields of {type_id}: {e}. Ignoring.")
@@ -420,9 +427,8 @@ fn registration_class(ladfile: &LadFile, lad_type: &ladfile::LadTypeDefinition) 
 /// the type they register: `bms.ScriptComponentRegistration<transform.Transform>`.
 fn is_registration_type(ladfile: &LadFile, type_id: &LadTypeId) -> bool {
     ladfile
-        .types
-        .values()
-        .any(|lad_type| lad_type.metadata.registration.as_ref() == Some(type_id))
+        .reference_types()
+        .any(|(_, lad_type)| lad_type.metadata.registration.as_ref() == Some(type_id))
 }
 
 /// The registration a generic function takes a type as, i.e. `bms.ScriptComponentRegistration<A>`, from the
@@ -449,9 +455,8 @@ fn registration_of(ladfile: &LadFile, erased: &LadTypeKind, param: &str) -> Opti
 /// Only returns: LuaLS doesn't match typed registrations against params with an argument, i.e. `X.Type` against `A | B<ReflectReference>`.
 fn widen_registrations(ladfile: &LadFile, ty: LuaType) -> LuaType {
     let registrations: IndexSet<String> = ladfile
-        .types
-        .values()
-        .filter_map(|lad_type| lad_type.metadata.registration.as_ref())
+        .reference_types()
+        .filter_map(|(_, lad_type)| lad_type.metadata.registration.as_ref())
         .map(|type_id| lua_class_name(ladfile, type_id))
         .collect();
     fn widen(ty: LuaType, registrations: &IndexSet<String>) -> LuaType {
@@ -478,8 +483,7 @@ fn widen_registrations(ladfile: &LadFile, ty: LuaType) -> LuaType {
 fn type_table_type(ladfile: &LadFile, type_id: &LadTypeId) -> LuaType {
     let name = lua_class_name(ladfile, type_id);
     match ladfile
-        .types
-        .get(type_id)
+        .get_reference_type(type_id)
         .and_then(|lad_type| registration_class(ladfile, lad_type))
     {
         Some(_) => LuaType::Alias(format!("{name}.Type")),
@@ -682,8 +686,7 @@ pub fn lad_function_to_lua_function(
     {
         let (params, returns) = signature(&erased)?;
         let overloads = ladfile
-            .types
-            .iter()
+            .reference_types()
             .filter(|(type_id, lad_type)| {
                 lad_type.metadata.is_reflect && ladfile.get_type_generics(type_id).is_none()
             })
@@ -886,7 +889,8 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
         };
         Ok(if is_enum_payload(ladfile, type_id, variant) {
             LuaType::Primitive(LuaPrimitiveType::Table)
-        } else if lad_fields(ladfile, type_id, variant).is_some_and(lad_variant_has_fields) {
+        } else if lad_fields(ladfile, type_id, variant).is_some_and(|v| lad_variant_has_fields(&v))
+        {
             LuaType::Alias(fields_class_name(ladfile, type_id, variant)?)
         } else {
             // i.e. unit structs and variants, or opaque types which can only be built from their default
@@ -947,8 +951,7 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
 /// The class scripts see for enum variants, which variant classes extend: the class of `EnumVariantRef`, i.e. `bms.EnumVariantRef`.
 fn enum_variant_class(ladfile: &LadFile) -> String {
     ladfile
-        .types
-        .iter()
+        .reference_types()
         .find(|(_, lad_type)| lad_type.identifier == "EnumVariantRef")
         .map(|(type_id, _)| lua_class_name(ladfile, type_id))
         .unwrap_or_else(|| "EnumVariantRef".to_owned())
@@ -1117,6 +1120,17 @@ fn fields_module(
         .get(type_id)
         .ok_or_else(|| anyhow::anyhow!("Type not found: {type_id}"))?;
     let type_name = ladfile.get_type_identifier(type_id, None);
+    // the fields of a value type's map are optional when they can be left out, a constructor's when it has a default
+    let (optional, note): (Box<dyn Fn(bool) -> bool>, _) = match lad_type {
+        LadType::Reference(definition) => (
+            Box::new(|has_default| definition.field_has_default(variant, has_default)),
+            "Optional fields are filled in from defaults.",
+        ),
+        LadType::Value(_) => (
+            Box::new(|has_default| has_default),
+            "Optional fields can be left out.",
+        ),
+    };
 
     let field = |name: String, ty: &LadTypeKind, has_default: bool| ClassField {
         name,
@@ -1125,7 +1139,7 @@ fn fields_module(
             LuaType::Any
         }),
         scope: crate::lua_declaration_file::FieldScope::Public,
-        optional: lad_type.field_has_default(variant, has_default),
+        optional: optional(has_default),
         description: None,
     };
 
@@ -1156,20 +1170,13 @@ fn fields_module(
     Ok(LuaModule {
         name: class_name.clone(),
         table: class_name.clone(),
-        namespace: lad_type.namespace.clone(),
+        namespace: lad_type.namespace().to_owned(),
         class: Some(LuaClass {
             name: class_name,
             parents: vec![],
             fields,
             generics: vec![],
-            documentation: Some(format!(
-                "The fields of {subject}, {documentation}. {}",
-                // value types aren't built from a default, their missing fields are
-                match lad_type.metadata.is_value_type {
-                    false => "Optional fields are filled in from defaults.",
-                    true => "Optional fields can be left out.",
-                }
-            )),
+            documentation: Some(format!("The fields of {subject}, {documentation}. {note}")),
             exact: true,
             operators: vec![],
         }),
@@ -1309,19 +1316,29 @@ fn namespace_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
         .collect()
 }
 
-/// The fields a constructor of the type takes, or of the variant for enums.
+/// The fields a constructor of the type takes, or of the variant for enums, or the fields of a value type's map.
 ///
 /// `None` if the fields cannot be described, i.e. for opaque types, or enums without a variant given.
 fn lad_fields<'a>(
     ladfile: &'a LadFile,
     type_id: &LadTypeId,
     variant: Option<&str>,
-) -> Option<&'a ladfile::LadVariant> {
-    match (&ladfile.types.get(type_id)?.layout, variant) {
-        (ladfile::LadTypeLayout::MonoVariant(v), None) => Some(v),
-        (ladfile::LadTypeLayout::Enum(variants), Some(variant)) => {
-            variants.iter().find(|v| lad_variant_name(v) == variant)
+) -> Option<Cow<'a, ladfile::LadVariant>> {
+    let lad_type = match ladfile.types.get(type_id)? {
+        LadType::Reference(lad_type) => lad_type,
+        LadType::Value(value_type) => {
+            return Some(Cow::Owned(ladfile::LadVariant::Struct {
+                name: value_type.identifier.clone().into(),
+                fields: value_type.fields.clone(),
+            }));
         }
+    };
+    match (&lad_type.layout, variant) {
+        (ladfile::LadTypeLayout::MonoVariant(v), None) => Some(Cow::Borrowed(v)),
+        (ladfile::LadTypeLayout::Enum(variants), Some(variant)) => variants
+            .iter()
+            .find(|v| lad_variant_name(v) == variant)
+            .map(Cow::Borrowed),
         _ => None,
     }
 }
@@ -1333,8 +1350,7 @@ fn lad_fields<'a>(
 fn is_enum_payload(ladfile: &LadFile, type_id: &LadTypeId, variant: Option<&str>) -> bool {
     variant.is_none()
         && ladfile
-            .types
-            .get(type_id)
+            .get_reference_type(type_id)
             .is_some_and(|t| matches!(t.layout, ladfile::LadTypeLayout::Enum(_)))
 }
 
@@ -1396,8 +1412,7 @@ mod test {
     ) {
         let id = LadFunctionId::new_string_id(format!("{namespace:?}::new"));
         if let LadFunctionNamespace::Type(LadNamedType::Id(type_id)) = &namespace {
-            file.types
-                .get_mut(type_id)
+            file.get_reference_type_mut(type_id)
                 .unwrap()
                 .associated_functions
                 .push(id.clone());
@@ -1428,7 +1443,7 @@ mod test {
     fn type_id(file: &LadFile, identifier: &str) -> LadTypeId {
         file.types
             .iter()
-            .find(|(_, t)| t.identifier == identifier)
+            .find(|(_, t)| t.identifier() == identifier)
             .map(|(id, _)| id.clone())
             .unwrap()
     }
@@ -1469,12 +1484,15 @@ mod test {
 
         // the generic variant constructor, documented as it is at runtime
         let variant_ref = LadTypeId::new_string_id("EnumVariantRef".into());
-        let mut definition = file.types[&type_id(&file, "UnitType")].clone();
+        let mut definition = file
+            .get_reference_type(&type_id(&file, "UnitType"))
+            .unwrap()
+            .clone();
         definition.identifier = "EnumVariantRef".into();
         definition.path = "EnumVariantRef".into();
         definition.layout = LadTypeLayout::Opaque;
         definition.associated_functions = vec![];
-        file.types.insert(variant_ref.clone(), definition);
+        file.types.insert(variant_ref.clone(), definition.into());
         add_function(
             &mut file,
             LadFunctionNamespace::Type(variant_ref.clone().into()),
@@ -1543,12 +1561,8 @@ mod test {
         let id = type_id(file, identifier);
         let mut defaults = defaults.iter().copied();
         let mut set = |has_default: &mut bool| *has_default = defaults.next().unwrap();
-        let variants = match &mut file.types[&id].layout {
-            LadTypeLayout::MonoVariant(variant) => std::slice::from_mut(variant),
-            LadTypeLayout::Enum(variants) => variants.as_mut_slice(),
-            LadTypeLayout::Opaque => &mut [],
-        };
-        for variant in variants {
+        let layout = &mut file.get_reference_type_mut(&id).unwrap().layout;
+        for variant in layout.variants_mut() {
             match variant {
                 ladfile::LadVariant::Struct { fields, .. } => {
                     fields.iter_mut().for_each(|f| set(&mut f.has_default))
@@ -1588,7 +1602,10 @@ mod test {
 
         // the type's default can
         let plain = type_id(&file, "PlainStructType");
-        file.types[&plain].metadata.default = Some(LadDefault { variant: None });
+        file.get_reference_type_mut(&plain)
+            .unwrap()
+            .metadata
+            .default = Some(LadDefault { variant: None });
         let rendered = render(&file);
         let fields = block(
             &rendered,
@@ -1616,7 +1633,7 @@ mod test {
             ),
         ] {
             let ladfile::LadTypeLayout::MonoVariant(ladfile::LadVariant::Struct { fields, .. }) =
-                &mut file.types[&plain].layout
+                &mut file.get_reference_type_mut(&plain).unwrap().layout
             else {
                 panic!("PlainStructType is a struct");
             };
@@ -1638,7 +1655,7 @@ mod test {
     fn import_returns_the_types_of_the_namespace() {
         let mut file = ladfile::parse_lad_file(ladfile::EXAMPLE_LADFILE).unwrap();
         let unit = type_id(&file, "UnitType");
-        file.types[&unit].namespace = "other_crate".into();
+        file.get_reference_type_mut(&unit).unwrap().namespace = "other_crate".into();
         file.namespaces["ladfile_builder"]
             .types
             .shift_remove("UnitType");
@@ -1696,13 +1713,16 @@ mod test {
         let registration = LadTypeId::new_string_id(
             "bevy_mod_scripting_bindings::query::ScriptTypeRegistration".into(),
         );
-        let mut definition = file.types[&unit].clone();
+        let mut definition = file.get_reference_type(&unit).unwrap().clone();
         definition.identifier = "ScriptTypeRegistration".into();
         definition.path = registration.to_string();
         definition.namespace = "bms".into();
-        file.types.insert(registration.clone(), definition);
+        file.types.insert(registration.clone(), definition.into());
         let plain = type_id(&file, "PlainStructType");
-        file.types[&plain].metadata.registration = Some(registration.clone());
+        file.get_reference_type_mut(&plain)
+            .unwrap()
+            .metadata
+            .registration = Some(registration.clone());
         let a = LadNamedType::Param { param: "A".into() };
         let type_of = |erased: LadTypeKind| LadTypeKind::Type {
             of: a.clone(),
@@ -1779,7 +1799,7 @@ mod test {
         );
 
         let lookup = block(&rendered, "---@param type_name string");
-        let path = &file.types[&type_id(&file, "PlainStructType")].path;
+        let path = file.types[&type_id(&file, "PlainStructType")].path();
         for line in [
             format!(
                 "---@overload fun(type_name: \"{path}\"): ladfile_builder.PlainStructType.Type\n"
@@ -1796,7 +1816,7 @@ mod test {
     fn variant_constructors_are_bound_to_each_variant() {
         let mut file = file_with_constructors();
         let enum_type = type_id(&file, "EnumType");
-        let definition = &mut file.types[&enum_type];
+        let definition = file.get_reference_type_mut(&enum_type).unwrap();
         // the enum's default only provides the fields of its own variant
         definition.metadata.default = Some(LadDefault {
             variant: Some("Struct".into()),
@@ -2046,8 +2066,7 @@ mod test {
                 generics: vec!["A".into()],
             },
         );
-        file.types
-            .get_mut(&plain)
+        file.get_reference_type_mut(&plain)
             .unwrap()
             .associated_functions
             .push(get);
@@ -2055,14 +2074,14 @@ mod test {
         generic_type.instantiations.push(ladfile::LadInstantiation {
             args: vec![LadTypeKind::Val(plain.clone().into())],
             associated_functions: vec![only.clone()],
-            metadata: file.types[&plain].metadata.clone(),
+            metadata: file.types[&plain].as_reference().unwrap().metadata.clone(),
         });
         // i.e. `Time<()>`
         let unit = LadTypeKind::Tuple(vec![]);
         generic_type.instantiations.push(ladfile::LadInstantiation {
             args: vec![unit.clone()],
             associated_functions: vec![only],
-            metadata: file.types[&plain].metadata.clone(),
+            metadata: file.types[&plain].as_reference().unwrap().metadata.clone(),
         });
         let rendered = render(&file);
 

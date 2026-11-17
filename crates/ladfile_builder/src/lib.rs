@@ -128,7 +128,7 @@ impl<'t> LadFileBuilder<'t> {
         if let Some(type_id) = primitive_type_id(&primitive) {
             self.type_id_mapping.insert(type_id, lad_type_id.clone());
         }
-        self.file.types.insert(
+        self.insert_type(
             lad_type_id,
             LadTypeDefinition {
                 identifier: type_ident.clone(),
@@ -147,7 +147,6 @@ impl<'t> LadFileBuilder<'t> {
                     is_bundle: false,
                     is_asset: false,
                     is_reflect: false,
-                    is_value_type: false,
                     mapped_to_primitive_kind: Some(primitive),
                     registration: None,
                     default: None,
@@ -158,10 +157,15 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
+    /// Adds a type to the file, replacing any with the same id.
+    fn insert_type(&mut self, type_id: LadTypeId, lad_type: impl Into<LadType>) {
+        self.file.types.insert(type_id, lad_type.into());
+    }
+
     /// Mark a type as generated.
     pub fn mark_generated(&mut self, type_id: TypeId) -> &mut Self {
         let type_id = self.lad_id_from_type_id(type_id);
-        if let Some(t) = self.file.types.get_mut(&type_id) {
+        if let Some(t) = self.file.get_reference_type_mut(&type_id) {
             t.generated = true;
         }
         self
@@ -170,7 +174,7 @@ impl<'t> LadFileBuilder<'t> {
     /// Set the insignificance value of a type.
     pub fn set_insignificance(&mut self, type_id: TypeId, importance: usize) -> &mut Self {
         let type_id = self.lad_id_from_type_id(type_id);
-        if let Some(t) = self.file.types.get_mut(&type_id) {
+        if let Some(t) = self.file.get_reference_type_mut(&type_id) {
             t.insignificance = importance;
         }
         self
@@ -199,7 +203,7 @@ impl<'t> LadFileBuilder<'t> {
             .unwrap_or_else(|| path.clone());
 
         let lad_type_id = self.lad_id_from_type_id(std::any::TypeId::of::<T>());
-        self.file.types.insert(
+        self.insert_type(
             lad_type_id,
             LadTypeDefinition {
                 identifier,
@@ -219,7 +223,6 @@ impl<'t> LadFileBuilder<'t> {
                     is_bundle: false,
                     is_asset: false,
                     is_reflect: false,
-                    is_value_type: false,
                     mapped_to_primitive_kind: primitive_kind_of(std::any::TypeId::of::<T>()),
                     registration: None,
                     default: None,
@@ -230,8 +233,8 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
-    /// The id of a struct passed by value (see `#[derive(ScriptStruct)]`), adding its definition and the types of its
-    /// fields to the file. It isn't reflected, its fields are described by how they are passed.
+    /// The id of a struct passed by value (see `#[derive(ScriptStruct)]`), adding it and the types of its fields to
+    /// the file as a [`LadType::Value`]. It isn't reflected, its fields are described by how they are passed.
     fn add_script_struct(&mut self, info: &'static ScriptStructInfo) -> LadTypeId {
         let type_id = (info.type_id)();
         let lad_type_id = LadTypeId::new_string_id(info.path.into());
@@ -240,7 +243,7 @@ impl<'t> LadFileBuilder<'t> {
             return lad_type_id;
         }
         let crate_ = info.path.split("::").next().map(str::to_owned);
-        let definition = LadTypeDefinition {
+        let mut value_type = LadValueType {
             identifier: info.identifier.to_owned(),
             namespace: info
                 .namespace
@@ -249,43 +252,22 @@ impl<'t> LadFileBuilder<'t> {
                 .unwrap_or_default(),
             crate_,
             path: info.path.to_owned(),
-            generics: vec![],
             documentation: info.docs.map(|docs| docs.trim().to_owned()),
-            associated_functions: vec![],
-            // filled in below, the fields may refer to the struct itself
-            layout: LadTypeLayout::Opaque,
-            generated: false,
-            insignificance: default_importance(),
-            metadata: LadTypeMetadata {
-                is_component: false,
-                is_resource: false,
-                is_bundle: false,
-                is_asset: false,
-                is_reflect: false,
-                is_value_type: true,
-                mapped_to_primitive_kind: None,
-                registration: None,
-                default: None,
-                misc: Default::default(),
-            },
+            fields: vec![],
         };
-        self.file.types.insert(lad_type_id.clone(), definition);
-        let fields = info
+        // added before its fields, which may refer to the struct itself
+        self.insert_type(lad_type_id.clone(), value_type.clone());
+        value_type.fields = info
             .fields
             .iter()
             .map(|field| LadNamedField {
                 name: field.name.to_owned(),
                 type_: self.lad_kind(&(field.type_info)(), true),
-                // fields with a default can be left out, as for a constructor
+                // fields with a default can be left out
                 has_default: (field.default)().is_some(),
             })
             .collect();
-        if let Some(definition) = self.file.types.get_mut(&lad_type_id) {
-            definition.layout = LadTypeLayout::MonoVariant(LadVariant::Struct {
-                name: info.identifier.into(),
-                fields,
-            });
-        }
+        self.insert_type(lad_type_id.clone(), value_type);
         lad_type_id
     }
 
@@ -324,7 +306,7 @@ impl<'t> LadFileBuilder<'t> {
             1 => namespaces.into_iter().next().unwrap_or(crate_name),
             _ => crate_name,
         };
-        self.file.types.insert(
+        self.insert_type(
             lad_type_id.clone(),
             LadTypeDefinition {
                 identifier,
@@ -345,7 +327,6 @@ impl<'t> LadFileBuilder<'t> {
                     is_bundle: false,
                     is_asset: false,
                     is_reflect: false,
-                    is_value_type: false,
                     mapped_to_primitive_kind: None,
                     registration: None,
                     default: None,
@@ -429,7 +410,6 @@ impl<'t> LadFileBuilder<'t> {
             is_bundle,
             is_asset,
             is_reflect,
-            is_value_type: false,
             mapped_to_primitive_kind: primitive_kind_of(type_info.type_id()),
             // resources are components too, so they are checked first
             registration: Some(self.lad_id_from_type_id(if is_resource {
@@ -475,7 +455,7 @@ impl<'t> LadFileBuilder<'t> {
             insignificance,
             metadata,
         };
-        self.file.types.insert(type_id, lad_type);
+        self.insert_type(type_id, lad_type);
         self
     }
 
@@ -848,6 +828,7 @@ impl<'t> LadFileBuilder<'t> {
         for metadata in file
             .types
             .values_mut()
+            .filter_map(LadType::as_reference_mut)
             .map(|t| &mut t.metadata)
             .chain(instantiations)
         {
@@ -864,7 +845,11 @@ impl<'t> LadFileBuilder<'t> {
         for (function_id, function) in file.functions.iter() {
             match &function.namespace {
                 LadFunctionNamespace::Type(LadNamedType::Id(type_id)) => {
-                    if let Some(t) = file.types.get_mut(type_id) {
+                    if let Some(t) = file
+                        .types
+                        .get_mut(type_id)
+                        .and_then(LadType::as_reference_mut)
+                    {
                         t.associated_functions.push(function_id.clone());
                     } else if self.is_container(type_id) {
                         // i.e. `Option<Vec3>::new`, containers are described by what they contain rather than as types
@@ -904,7 +889,7 @@ impl<'t> LadFileBuilder<'t> {
         }
 
         // the types scripts import from each namespace, by the name `import_namespace` gives them
-        let mut types_by_id: Vec<_> = file.types.iter().collect();
+        let mut types_by_id: Vec<_> = file.reference_types().collect();
         types_by_id.sort_by_key(|(id, _)| *id);
         let mut namespace_types = Vec::new();
         for (type_id, lad_type) in types_by_id {
@@ -933,26 +918,36 @@ impl<'t> LadFileBuilder<'t> {
         }
 
         if self.sorted {
+            // value types have no functions, and are neither generated nor more or less important than others
+            let insignificance = |t: &LadType| {
+                t.as_reference()
+                    .map_or(default_importance(), |t| t.insignificance)
+            };
+            let has_functions = |t: &LadType| {
+                t.as_reference()
+                    .is_some_and(|t| !t.associated_functions.is_empty())
+            };
+            let generated = |t: &LadType| t.as_reference().is_some_and(|t| t.generated);
             file.types.sort_by(|ak, av, bk, bv| {
                 let complexity_a: usize = av
-                    .path
+                    .path()
                     .char_indices()
                     .filter_map(|(_, c)| (c == '<' || c == ',').then_some(1))
                     .sum();
                 let complexity_b = bv
-                    .path
+                    .path()
                     .char_indices()
                     .filter_map(|(_, c)| (c == '<' || c == ',').then_some(1))
                     .sum();
 
-                let has_functions_a = !av.associated_functions.is_empty();
-                let has_functions_b = !bv.associated_functions.is_empty();
+                let has_functions_a = has_functions(av);
+                let has_functions_b = has_functions(bv);
 
                 let ordered_by_name = ak.cmp(bk);
                 let ordered_by_generics_complexity = complexity_a.cmp(&complexity_b);
-                let ordered_by_generated = av.generated.cmp(&bv.generated);
+                let ordered_by_generated = generated(av).cmp(&generated(bv));
                 let ordered_by_having_functions = has_functions_b.cmp(&has_functions_a);
-                let ordered_by_significance = av.insignificance.cmp(&bv.insignificance);
+                let ordered_by_significance = insignificance(av).cmp(&insignificance(bv));
 
                 ordered_by_significance
                     .then(ordered_by_having_functions)
@@ -1900,7 +1895,9 @@ mod test {
             "{:?}",
             handle.instantiations
         );
-        let opaque = &lad_file.types[&not_reflected];
+        let opaque = lad_file
+            .get_reference_type(&not_reflected)
+            .expect("the type is in the file");
         assert_eq!(opaque.identifier, "NotReflected");
         assert!(!opaque.metadata.is_reflect);
         assert!(
@@ -1955,10 +1952,10 @@ mod test {
             .build();
         let kinds = |identifier: &str| {
             let metadata = &lad_file
-                .types
-                .values()
-                .find(|t| t.identifier == identifier)
+                .reference_types()
+                .find(|(_, t)| t.identifier == identifier)
                 .expect("the type is added")
+                .1
                 .metadata;
             (
                 metadata.is_component,
@@ -2086,10 +2083,9 @@ mod test {
         let lad_file = builder.build();
 
         let layout = lad_file
-            .types
-            .values()
-            .find(|ty| ty.identifier == "AllFieldKinds")
-            .map(|ty| ty.layout.clone())
+            .reference_types()
+            .find(|(_, ty)| ty.identifier == "AllFieldKinds")
+            .map(|(_, ty)| ty.layout.clone())
             .expect("the type is added");
         let LadTypeLayout::MonoVariant(LadVariant::Struct { fields, .. }) = layout else {
             panic!("expected a struct, got {layout:?}");
@@ -2201,31 +2197,25 @@ mod test {
         let mut builder = LadFileBuilder::new_empty(&registry);
         builder.add_through_type_info(&PassedStruct::through_type_info());
         let file = builder.build();
-        let definition = file
-            .types
-            .get(&LadTypeId::new_string_id(
-                "ladfile_builder::test::PassedStruct".into(),
-            ))
-            .expect("the struct is a type of the file");
+        let Some(LadType::Value(definition)) = file.types.get(&LadTypeId::new_string_id(
+            "ladfile_builder::test::PassedStruct".into(),
+        )) else {
+            panic!("the struct is a value type of the file");
+        };
         assert_eq!(
             (
                 definition.identifier.as_str(),
                 definition.namespace.as_str(),
                 definition.documentation.as_deref(),
-                definition.metadata.is_reflect,
             ),
             (
                 "PassedStruct",
                 "test",
                 Some("Passed by value, as a map of its fields"),
-                false
             )
         );
-        let LadTypeLayout::MonoVariant(LadVariant::Struct { fields, .. }) = &definition.layout
-        else {
-            panic!("expected a struct, got {:?}", definition.layout);
-        };
-        let fields: Vec<_> = fields
+        let fields: Vec<_> = definition
+            .fields
             .iter()
             .map(|f| (f.name.as_str(), &f.type_, f.has_default))
             .collect();
@@ -2523,8 +2513,8 @@ mod test {
         // instantiations match by path and number of parameters, and are recorded on the generic type rather than being types
         assert_eq!(file.generic_types.len(), 1);
         let (generic_id, generic_type) = file.generic_types.iter().next().unwrap();
-        assert!(file.types.values().all(|t| t.identifier != "OneParam"));
-        assert!(file.types.values().any(|t| t.identifier == "TwoParams"));
+        assert!(file.types.values().all(|t| t.identifier() != "OneParam"));
+        assert!(file.types.values().any(|t| t.identifier() == "TwoParams"));
         let f32_kind = LadTypeKind::Primitive(ReflectionPrimitiveKind::F32);
         let [instantiation] = generic_type.instantiations.as_slice() else {
             panic!(

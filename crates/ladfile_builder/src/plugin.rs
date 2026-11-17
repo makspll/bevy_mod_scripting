@@ -421,7 +421,10 @@ mod test {
         type_name: &str,
         function: &str,
     ) -> Option<&'a ladfile::LadFunction> {
-        let (type_id, _) = file.types.iter().find(|(_, t)| t.identifier == type_name)?;
+        let (type_id, _) = file
+            .types
+            .iter()
+            .find(|(_, t)| t.identifier() == type_name)?;
         file.functions.values().find(|f| {
             f.identifier == function
                 && matches!(&f.namespace, ladfile::LadFunctionNamespace::Type(named) if named.type_id() == Some(type_id))
@@ -431,7 +434,7 @@ mod test {
     fn type_id(file: &LadFile, type_name: &str) -> ladfile::LadTypeId {
         file.types
             .iter()
-            .find(|(_, t)| t.identifier == type_name)
+            .find(|(_, t)| t.identifier() == type_name)
             .map(|(id, _)| id.clone())
             .unwrap()
     }
@@ -462,9 +465,9 @@ mod test {
 
         // and types are listed in their namespace, by the name scripts import them with
         let test_struct = type_id(&file, "TestStruct");
-        let type_namespace = &file.types[&test_struct].namespace;
+        let type_namespace = file.types[&test_struct].namespace();
         assert_eq!(
-            file.namespaces[type_namespace.as_str()].types["TestStruct"],
+            file.namespaces[type_namespace].types["TestStruct"],
             test_struct
         );
     }
@@ -541,7 +544,8 @@ mod test {
         }
 
         // variants are not types, so their functions are not associated with the enum
-        assert!(file.types[&enum_id].associated_functions.iter().all(|id| {
+        let enum_definition = file.get_reference_type(&enum_id).expect("the enum");
+        assert!(enum_definition.associated_functions.iter().all(|id| {
             !matches!(
                 file.functions[id].namespace,
                 LadFunctionNamespace::Variant { .. }
@@ -576,7 +580,10 @@ mod test {
     #[test]
     fn defaults_are_recorded() {
         let file = generate("new");
-        let definition = |name: &str| &file.types[&type_id(&file, name)];
+        let definition = |name: &str| {
+            file.get_reference_type(&type_id(&file, name))
+                .expect("the type")
+        };
 
         // enums record which variant their default is in
         assert_eq!(
@@ -651,7 +658,7 @@ mod test {
 
         // the marker is registered, but not a type of its own
         assert_eq!(file.generic_types.len(), 1, "{:?}", file.generic_types);
-        assert!(file.types.values().all(|ty| ty.identifier != "A"));
+        assert!(file.types.values().all(|ty| ty.identifier() != "A"));
         let (generic_id, generic_type) = file.generic_types.iter().next().unwrap();
         assert_eq!(generic_type.identifier, "Handle");
         assert_eq!(generic_type.namespace, "asset");
@@ -661,7 +668,7 @@ mod test {
         assert!(generic_type.documentation.is_some());
 
         // the instantiation is recorded on it rather than being a type, with its argument and functions
-        assert!(file.types.values().all(|ty| ty.identifier != "Handle"));
+        assert!(file.types.values().all(|ty| ty.identifier() != "Handle"));
         let asset = LadTypeKind::Val(type_id(&file, "TestAsset").into());
         let [instantiation] = generic_type.instantiations.as_slice() else {
             panic!("{:?}", generic_type.instantiations);
@@ -722,9 +729,9 @@ mod test {
             .filter(|ty| {
                 ["Vec<", "Option<", "HashMap<", "HashSet<", "(", "["]
                     .iter()
-                    .any(|c| ty.path.contains(c))
+                    .any(|c| ty.path().contains(c))
             })
-            .map(|ty| ty.path.as_str())
+            .map(|ty| ty.path())
             .collect::<Vec<_>>();
         assert!(containers.is_empty(), "{containers:?}");
         type_id(&file, "TestStruct");
@@ -736,7 +743,9 @@ mod test {
         app.register_type::<UndeclaredGeneric<usize>>();
         let file = generate_from(app);
 
-        let instantiation = &file.types[&type_id(&file, "UndeclaredGeneric")];
+        let instantiation = file
+            .get_reference_type(&type_id(&file, "UndeclaredGeneric"))
+            .expect("the instantiation is a type");
         assert_eq!(instantiation.generics.len(), 1);
         assert!(file.generic_types.is_empty());
     }

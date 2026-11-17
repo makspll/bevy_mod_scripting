@@ -105,11 +105,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         let type_identifier = self
             .ladfile
             .get_type_identifier(type_id, self.raw_type_id_replacement);
-        let primitive = self
-            .ladfile
-            .types
-            .get(type_id)
-            .and_then(|lad_type| lad_type.metadata.mapped_to_primitive_kind.as_ref());
+        let primitive = self.ladfile.primitive_kind(type_id);
         let type_identifier = match (primitive, type_identifier.is_empty()) {
             // types standing for primitives are named like them, i.e. `f32`
             (Some(primitive), _) => primitive_name(primitive),
