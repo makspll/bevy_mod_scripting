@@ -82,7 +82,7 @@ pub fn script_struct(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 /// ```rust,ignore
 /// #[derive(ScriptUnion)]
 /// enum Size {
-///     Named(ByName<SizeKeyword>),         // "auto"
+///     Named(ByName<SizeKeyword>),         // "Auto"
 ///     Pixels(f64),                        // 50
 ///     Text(String),                       // "50%"
 ///     Bound(FunctionOf<fn() -> f64>),     // function() return 50 end
@@ -95,7 +95,7 @@ pub fn script_struct(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 ///   are tried (see `FromScript::could_convert`), so a number never builds an error for the text variants. Put the
 ///   more specific of two types taking the same kind of value first, i.e. names before text.
 /// - **Returning** a value returns the value of its variant.
-/// - **Documented** as one union of the variants' types, `"auto" | number | string | fun(): number` in Lua.
+/// - **Documented** as one union of the variants' types, `"Auto" | number | string | fun(): number` in Lua.
 ///
 /// Implements `FromScript`, `IntoScript`, `TypedThrough`, `ArgMeta` and `GetTypeDependencies`. Not for generic types.
 /// `#[script_union(bms_bindings_path = "..")]` changes the path of the bindings crate.

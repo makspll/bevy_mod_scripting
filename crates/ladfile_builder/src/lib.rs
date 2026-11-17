@@ -2347,8 +2347,8 @@ mod test {
                 "name",
                 bevy_mod_scripting_bindings::ByName::<NamedVariants>::through_type_info(),
                 Kind::Union(vec![
-                    Kind::Literal("unit".into()),
-                    Kind::Literal("other_unit".into()),
+                    Kind::Literal("Unit".into()),
+                    Kind::Literal("OtherUnit".into()),
                 ]),
             ),
             (

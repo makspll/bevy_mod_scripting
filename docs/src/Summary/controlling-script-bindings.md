@@ -164,7 +164,7 @@ struct SpawnOptions {
 
 #[derive(ScriptUnion)]
 enum Speed {
-    Named(ByName<Pace>),     // "slow" | "fast", for `enum Pace { Slow, Fast }`
+    Named(ByName<Pace>),     // "Slow" | "Fast", for `enum Pace { Slow, Fast }`
     Exact(f32),              // 2.5
 }
 
@@ -175,14 +175,14 @@ impl NamespaceMembers {
 ```
 
 ```lua
-game.spawn({ name = "goblin", speed = "fast", on_death = function(entity) end })   -- `entity` is an ecs.Entity
+game.spawn({ name = "goblin", speed = "Fast", on_death = function(entity) end })   -- `entity` is an ecs.Entity
 game.spawn({ name = "goblin", sped = 2 })      -- flagged by the language server, an error at runtime
 ```
 
 | | scripts pass | documented as |
 |---|---|---|
 | `FunctionOf<fn(A, B) -> R>` | a function, which is a `DynamicScriptFunction` in Rust | `fun(arg1: A, arg2: B): R` |
-| `ByName<E>` | a unit variant of the reflected enum `E` by its name in snake case, or a reference to an `E` | `"slow" \| "fast"` |
+| `ByName<E>` | a unit variant of the reflected enum `E` by its name as in Rust, or a reference to an `E` | `"Slow" \| "Fast"` |
 | `#[derive(ScriptUnion)]` enum | the value of any variant, each holding one value: the first variant whose type converts it | the union of the variants' types |
 | `#[derive(ScriptStruct)]` struct | a map of its fields: a table in Lua, an object in Rune | the class of its fields |
 

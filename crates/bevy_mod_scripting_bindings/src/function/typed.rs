@@ -110,10 +110,9 @@ impl<F: GetFunctionTypeDependencies<F>> GetTypeDependencies for FunctionOf<F> {
     }
 }
 
-/// A unit variant of the reflected enum `E`, passed by its name in snake case, i.e. `"flex_start"` for `JustifyContent::FlexStart`.
+/// A unit variant of the reflected enum `E`, passed by its name as in Rust, i.e. `"FlexStart"` for `JustifyContent::FlexStart`.
 ///
-/// It is documented as the names, i.e. `"row" | "column"` in Lua, and converts from a name or from a reference to a value of `E`.
-/// Names are the variant names with an `_` before each upper case letter but the first, all in lower case.
+/// It is documented as the names, i.e. `"Row" | "Column"` in Lua, and converts from a name or from a reference to a value of `E`.
 /// Variants with fields can't be named.
 pub struct ByName<E>(pub E);
 
@@ -141,34 +140,6 @@ fn unit_variants(type_info: &'static TypeInfo) -> impl Iterator<Item = &'static 
     })
 }
 
-/// The name a variant is passed by, see [`ByName`].
-pub fn snake_case(name: &str) -> String {
-    let mut out = String::with_capacity(name.len() + 4);
-    for (i, c) in name.chars().enumerate() {
-        if c.is_uppercase() && i > 0 {
-            out.push('_');
-        }
-        out.extend(c.to_lowercase());
-    }
-    out
-}
-
-/// Whether `snake` is the [`snake_case`] of `name`, without allocating.
-fn is_snake_case_of(name: &str, snake: &str) -> bool {
-    let mut snake = snake.chars();
-    for (i, c) in name.chars().enumerate() {
-        if c.is_uppercase() && i > 0 && snake.next() != Some('_') {
-            return false;
-        }
-        for lower in c.to_lowercase() {
-            if snake.next() != Some(lower) {
-                return false;
-            }
-        }
-    }
-    snake.next().is_none()
-}
-
 impl<E: Enum + FromReflect + Typed> FromScript for ByName<E> {
     type This<'w> = Self;
 
@@ -180,11 +151,10 @@ impl<E: Enum + FromReflect + Typed> FromScript for ByName<E> {
             }
             value => return Err(InteropError::value_mismatch(TypeId::of::<E>(), value)),
         };
-        let variant =
-            unit_variants(E::type_info()).find(|variant| is_snake_case_of(variant, &name));
+        let variant = unit_variants(E::type_info()).find(|variant| *variant == name);
         let Some(variant) = variant else {
             let names = unit_variants(E::type_info())
-                .map(|variant| format!("\"{}\"", snake_case(variant)))
+                .map(|variant| format!("\"{variant}\""))
                 .collect::<Vec<_>>()
                 .join(", ");
             return Err(InteropError::string(format!(
@@ -209,9 +179,7 @@ impl<E: Enum + FromReflect + Typed> FromScript for ByName<E> {
 
 impl<E: Enum> IntoScript for ByName<E> {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        Ok(ScriptValue::String(
-            snake_case(self.0.variant_name()).into(),
-        ))
+        Ok(ScriptValue::String(self.0.variant_name().to_owned().into()))
     }
 }
 
@@ -228,7 +196,7 @@ impl<E: GetTypeRegistration> GetTypeDependencies for ByName<E> {
 impl<E: Typed> TypedThrough for ByName<E> {
     fn through_type_info() -> ThroughTypeInfo {
         let mut names = unit_variants(E::type_info())
-            .map(|variant| ThroughTypeInfo::Literal(snake_case(variant)))
+            .map(|variant| ThroughTypeInfo::Literal(variant.to_owned()))
             .collect::<Vec<_>>();
         match names.len() {
             1 => names.remove(0),
@@ -385,15 +353,17 @@ mod test {
             // the first type which converts it, names before text
             assert!(matches!(size(ScriptValue::Integer(5)), Size::Pixels(5.0)));
             assert!(matches!(
-                size(text("row")),
+                size(text("Row")),
                 Size::Named(ByName(Direction::Row))
             ));
             assert!(matches!(
-                size(text("column_reverse")),
+                size(text("ColumnReverse")),
                 Size::Named(ByName(Direction::ColumnReverse))
             ));
+            // names are exact, anything else is text
+            assert!(matches!(size(text("row")), Size::Text(t) if t == "row"));
             // variants with fields can't be named, the name is text then
-            assert!(matches!(size(text("custom")), Size::Text(t) if t == "custom"));
+            assert!(matches!(size(text("Custom")), Size::Text(t) if t == "Custom"));
             assert!(Size::from_script(ScriptValue::Unit, scope).is_err());
 
             let error = |entries: &[(&str, ScriptValue)]| {
@@ -414,16 +384,18 @@ mod test {
             assert!(
                 ByName::<Direction>::from_script(text("rows"), scope)
                     .err()
-                    .is_some_and(|e| e.to_string().contains("\"row\", \"column_reverse\""))
+                    .is_some_and(|e| e.to_string().contains("\"Row\", \"ColumnReverse\""))
             );
 
             // nil fields are left out
-            let back = options(&[("name", text("a")), ("size", text("row"))])
+            let back = options(&[("name", text("a")), ("size", text("ColumnReverse"))])
                 .and_then(|o| o.into_script(guard.clone()));
             let Ok(ScriptValue::Map(map)) = back else {
                 panic!("not a table")
             };
-            assert!(matches!(map.get("size"), Some(ScriptValue::String(s)) if s == "row"));
+            assert!(
+                matches!(map.get("size"), Some(ScriptValue::String(s)) if s == "ColumnReverse")
+            );
             assert!(map.contains_key("name") && !map.contains_key("on_done"));
         });
 
@@ -461,7 +433,7 @@ mod test {
             ThroughTypeInfo::Literal(b),
             ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::F64),
             ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::String),
-        ] if a == "row" && b == "column_reverse"));
+        ] if a == "Row" && b == "ColumnReverse"));
         let ThroughTypeInfo::Option(on_done) = (fields[2].type_info)() else {
             panic!()
         };
@@ -476,21 +448,5 @@ mod test {
             *returns,
             ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::Bool)
         ));
-    }
-
-    #[test]
-    fn names_are_snake_case() {
-        for (name, snake) in [
-            ("Row", "row"),
-            ("FlexStart", "flex_start"),
-            ("SpaceBetween", "space_between"),
-            ("Px2", "px2"),
-        ] {
-            assert_eq!(snake_case(name), snake);
-            assert!(is_snake_case_of(name, snake), "{name} {snake}");
-        }
-        assert!(!is_snake_case_of("FlexStart", "flexstart"));
-        assert!(!is_snake_case_of("FlexStart", "flex_start_"));
-        assert!(!is_snake_case_of("Row", "ro"));
     }
 }

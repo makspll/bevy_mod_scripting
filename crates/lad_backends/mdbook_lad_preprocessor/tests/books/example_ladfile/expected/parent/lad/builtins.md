@@ -23,7 +23,7 @@ The only globals of scripts. Everything else is imported from a namespace, see t
 
 <div class="lad-signature">
 
-**typed\_arguments**\<A\>(options: Fields\<[OptionsStruct](./types/optionsstruct.md)\>, name: "first" \| "second_variant", value: A) -> [OpaqueGenericType](./types/opaquegenerictypet.md)\<A\>
+**typed\_arguments**\<A\>(options: Fields\<[OptionsStruct](./types/optionsstruct.md)\>, name: "First" \| "SecondVariant", value: A) -> [OpaqueGenericType](./types/opaquegenerictypet.md)\<A\>
 
 </div>
 

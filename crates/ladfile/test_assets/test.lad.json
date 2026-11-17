@@ -756,10 +756,10 @@
           "kind": {
             "union": [
               {
-                "literal": "first"
+                "literal": "First"
               },
               {
-                "literal": "second_variant"
+                "literal": "SecondVariant"
               }
             ]
           },
