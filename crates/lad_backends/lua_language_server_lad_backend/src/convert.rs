@@ -209,11 +209,17 @@ fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
 fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     // the tables of fields constructors take, which get a class each
     let mut fields_references = FieldsReferences::default();
-    for function in ladfile.functions.values() {
-        fields_references.visit_function(function);
-    }
-    for lad_type in ladfile.types.values() {
-        fields_references.visit_layout(&lad_type.layout);
+    let signatures = ladfile.functions.values().flat_map(|function| {
+        function
+            .arguments
+            .iter()
+            .chain([&function.return_type])
+            .map(|arg| &arg.kind)
+    });
+    // fields can be tables of the fields of other types too, i.e. a struct passed by value holding another
+    let fields = ladfile.types.values().flat_map(|t| t.layout.field_kinds());
+    for kind in signatures.chain(fields) {
+        fields_references.visit(kind);
     }
     let fields_references = fields_references.0;
 
@@ -983,13 +989,14 @@ fn fields_class_name(
     })
 }
 
-/// Collects the types, and variants, whose fields are referenced in function signatures.
+/// Collects the types, and variants, whose fields are referenced in function signatures or fields.
 #[derive(Default)]
 struct FieldsReferences(IndexSet<(LadTypeId, Option<String>)>);
 
 impl FieldsReferences {
-    fn visit_function(&mut self, function: &LadFunction) {
-        let mut collect = |kind: &LadTypeKind| {
+    /// Records the fields referenced anywhere in the kind.
+    fn visit(&mut self, kind: &LadTypeKind) {
+        kind.for_each(&mut |kind| {
             if let LadTypeKind::Fields {
                 of: LadNamedType::Id(type_id),
                 variant,
@@ -998,37 +1005,7 @@ impl FieldsReferences {
                 self.0
                     .insert((type_id.clone(), variant.as_deref().map(str::to_owned)));
             }
-        };
-        for arg in &function.arguments {
-            arg.kind.for_each(&mut collect);
-        }
-        function.return_type.kind.for_each(&mut collect);
-    }
-
-    /// Structs passed by value can hold others, i.e. a field which is a table of the fields of another struct
-    fn visit_layout(&mut self, layout: &ladfile::LadTypeLayout) {
-        let mut collect = |kind: &LadTypeKind| {
-            if let LadTypeKind::Fields {
-                of: LadNamedType::Id(type_id),
-                variant,
-            } = kind
-            {
-                self.0
-                    .insert((type_id.clone(), variant.as_deref().map(str::to_owned)));
-            }
-        };
-        layout.for_each_variant(
-            |variant, _| match variant {
-                ladfile::LadVariant::Struct { fields, .. } => {
-                    fields.iter().for_each(|f| f.type_.for_each(&mut collect))
-                }
-                ladfile::LadVariant::TupleStruct { fields, .. } => {
-                    fields.iter().for_each(|f| f.type_.for_each(&mut collect))
-                }
-                ladfile::LadVariant::Unit { .. } => {}
-            },
-            (),
-        );
+        });
     }
 }
 

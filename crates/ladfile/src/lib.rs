@@ -917,22 +917,34 @@ pub enum LadTypeLayout {
 }
 
 impl LadTypeLayout {
+    /// The variants of the layout, in order, none if it is opaque.
+    pub fn variants(&self) -> &[LadVariant] {
+        match self {
+            LadTypeLayout::Opaque => &[],
+            LadTypeLayout::MonoVariant(variant) => std::slice::from_ref(variant),
+            LadTypeLayout::Enum(variants) => variants,
+        }
+    }
+
+    /// The same as [`Self::variants`], mutably.
+    pub fn variants_mut(&mut self) -> &mut [LadVariant] {
+        match self {
+            LadTypeLayout::Opaque => &mut [],
+            LadTypeLayout::MonoVariant(variant) => std::slice::from_mut(variant),
+            LadTypeLayout::Enum(variants) => variants,
+        }
+    }
+
+    /// The kinds of the fields of every variant, in order.
+    pub fn field_kinds(&self) -> impl Iterator<Item = &LadTypeKind> {
+        self.variants().iter().flat_map(LadVariant::field_kinds)
+    }
+
     /// Replaces the generic parameter with the given name in the types of all fields with the given argument, see [`LadGenericType::layout`].
     pub fn replace_param(&mut self, name: &str, arg: &LadTypeKind) {
-        let variants = match self {
-            LadTypeLayout::Opaque => return,
-            LadTypeLayout::MonoVariant(variant) => std::slice::from_mut(variant),
-            LadTypeLayout::Enum(variants) => variants.as_mut_slice(),
-        };
-        for variant in variants {
-            match variant {
-                LadVariant::TupleStruct { fields, .. } => fields
-                    .iter_mut()
-                    .for_each(|field| field.type_.replace_param(name, arg)),
-                LadVariant::Struct { fields, .. } => fields
-                    .iter_mut()
-                    .for_each(|field| field.type_.replace_param(name, arg)),
-                LadVariant::Unit { .. } => {}
+        for variant in self.variants_mut() {
+            for kind in variant.field_kinds_mut() {
+                kind.replace_param(name, arg);
             }
         }
     }
@@ -958,6 +970,28 @@ impl LadTypeLayout {
                 }
                 None
             }
+        }
+    }
+}
+
+impl LadVariant {
+    /// The kinds of the fields of the variant, in order, none for a unit variant.
+    pub fn field_kinds(&self) -> Vec<&LadTypeKind> {
+        match self {
+            LadVariant::TupleStruct { fields, .. } => fields.iter().map(|f| &f.type_).collect(),
+            LadVariant::Struct { fields, .. } => fields.iter().map(|f| &f.type_).collect(),
+            LadVariant::Unit { .. } => vec![],
+        }
+    }
+
+    /// The same as [`Self::field_kinds`], mutably.
+    pub fn field_kinds_mut(&mut self) -> Vec<&mut LadTypeKind> {
+        match self {
+            LadVariant::TupleStruct { fields, .. } => {
+                fields.iter_mut().map(|f| &mut f.type_).collect()
+            }
+            LadVariant::Struct { fields, .. } => fields.iter_mut().map(|f| &mut f.type_).collect(),
+            LadVariant::Unit { .. } => vec![],
         }
     }
 }
