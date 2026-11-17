@@ -73,36 +73,58 @@ pub fn script_union(input: TokenStream) -> TokenStream {
 
     let bms = &args.shared_args.bms_bindings_path;
     let ident = &derive_input.ident;
-    let indices = 0..variants.len();
+    let last = variants.len() - 1;
+
+    // the enum is a name for `Union<T1, Union<T2, T3>>`, which converts and documents it
+    let last_type = types[last];
+    let repr = types[..last].iter().rev().fold(
+        quote! { #last_type },
+        |inner, ty| quote! { #bms::Union<#ty, #inner> },
+    );
+    // `Union<T1, Union<T2, T3>>` to the variant holding its value
+    let from_repr = (0..last).rev().fold(
+        {
+            let variant = variants[last];
+            quote! { Self::#variant(rest) }
+        },
+        |inner, i| {
+            let variant = variants[i];
+            quote! {
+                match rest.into_left() {
+                    Ok(value) => Self::#variant(value),
+                    Err(rest) => #inner,
+                }
+            }
+        },
+    );
+    // the variant to `Union<T1, Union<T2, T3>>`, the left of as many rights as variants before it
+    let into_repr = variants.iter().enumerate().map(|(i, variant)| {
+        let innermost = match i == last {
+            true => quote! { value },
+            false => quote! { #bms::Union::new_left(value) },
+        };
+        let wrapped = (0..i).fold(
+            innermost,
+            |inner, _| quote! { #bms::Union::new_right(#inner) },
+        );
+        quote! { Self::#variant(value) => #wrapped }
+    });
 
     quote! {
         #[automatically_derived]
         impl #bms::FromScript for #ident {
             type This<'w> = Self;
 
-            /// The first variant whose type converts the value, only trying the types which could.
             fn from_script(
                 value: #bms::ScriptValue,
                 scope: &#bms::CallScope<'_>,
             ) -> Result<Self, #bms::InteropError> {
-                let could = [#( <#types as #bms::FromScript>::could_convert(&value) ),*];
-                // the value is only copied for types tried before the last one which could convert it
-                let last = could.iter().rposition(|could| *could);
-                #(
-                    if could[#indices] {
-                        if last == Some(#indices) {
-                            return <#types as #bms::FromScript>::from_script(value, scope).map(Self::#variants);
-                        }
-                        if let Ok(converted) = <#types as #bms::FromScript>::from_script(value.clone(), scope) {
-                            return Ok(Self::#variants(converted));
-                        }
-                    }
-                )*
-                Err(#bms::InteropError::value_mismatch(::std::any::TypeId::of::<Self>(), value))
+                let rest = <#repr as #bms::FromScript>::from_script(value, scope)?;
+                Ok(#from_repr)
             }
 
             fn could_convert(value: &#bms::ScriptValue) -> bool {
-                #( <#types as #bms::FromScript>::could_convert(value) )||*
+                <#repr as #bms::FromScript>::could_convert(value)
             }
         }
 
@@ -112,16 +134,15 @@ pub fn script_union(input: TokenStream) -> TokenStream {
                 self,
                 world: #bms::WorldGuard,
             ) -> Result<#bms::ScriptValue, #bms::InteropError> {
-                match self {
-                    #( Self::#variants(value) => #bms::IntoScript::into_script(value, world), )*
-                }
+                let repr: #repr = match self { #( #into_repr, )* };
+                #bms::IntoScript::into_script(repr, world)
             }
         }
 
         #[automatically_derived]
         impl #bms::TypedThrough for #ident {
             fn through_type_info() -> #bms::ThroughTypeInfo {
-                #bms::ThroughTypeInfo::Union(vec![#( <#types as #bms::TypedThrough>::through_type_info() ),*])
+                <#repr as #bms::TypedThrough>::through_type_info()
             }
         }
 

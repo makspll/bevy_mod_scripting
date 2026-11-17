@@ -61,9 +61,10 @@ pub fn script_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// - **A copy, not a reference.** The map is converted into the struct when it is passed, and the struct into a new
 ///   map when it is returned. Changing either side afterwards doesn't change the other, unlike a reflected value,
 ///   which scripts hold a reference to. Use a reflected type for data scripts keep and change.
-/// - **Strict.** Unknown fields, missing required fields and fields of the wrong type are errors naming the field.
-///   Fields whose type is written `Option<..>` are optional. An empty list is accepted as an empty map, as Lua can't
-///   tell them apart.
+/// - **Fields are arguments.** Each converts like a function argument of its type, and a missing one is its type's
+///   `ArgMeta::default_value`, so `Option<T>` fields can be left out. Unknown fields, missing fields without a default
+///   and fields of the wrong type are errors naming the field. The conversion is `StructFields` and `StructMap`, the
+///   derive only lists the fields.
 /// - **Returned** structs leave out the fields which are `nil`.
 /// - **Documented** as the class of its fields (`game.SpawnOptions.Fields` in Lua), like the payload of a
 ///   constructor, in its `namespace`: the crate defining it unless given.
@@ -88,11 +89,13 @@ pub fn script_struct(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 /// }
 /// ```
 ///
+/// The enum is a name for `Union<Named, Union<Pixels, Union<Text, Bound>>>`, which converts and documents it:
+///
 /// - **Converting** gives the first variant whose type converts the value. Only the types which could convert it
 ///   are tried (see `FromScript::could_convert`), so a number never builds an error for the text variants. Put the
 ///   more specific of two types taking the same kind of value first, i.e. names before text.
 /// - **Returning** a value returns the value of its variant.
-/// - **Documented** as the union of the variants' types, `SizeKeyword | number | string | fun(): number` in Lua.
+/// - **Documented** as one union of the variants' types, `"auto" | number | string | fun(): number` in Lua.
 ///
 /// Implements `FromScript`, `IntoScript`, `TypedThrough`, `ArgMeta` and `GetTypeDependencies`. Not for generic types.
 /// `#[script_union(bms_bindings_path = "..")]` changes the path of the bindings crate.

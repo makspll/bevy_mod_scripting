@@ -118,8 +118,8 @@ pub struct ScriptStructField {
     pub name: &'static str,
     /// How the value of the field is passed
     pub type_info: fn() -> ThroughTypeInfo,
-    /// Whether the field can be left out, i.e. it is an `Option`
-    pub optional: bool,
+    /// What the field is when it is left out, none if it can't be, see [`crate::ArgMeta::default_value`]
+    pub default: fn() -> Option<ScriptValue>,
 }
 
 impl std::fmt::Debug for ScriptStructInfo {
@@ -382,8 +382,16 @@ pub trait TypedThrough {
 }
 
 impl<T1: TypedThrough, T2: TypedThrough> TypedThrough for Union<T1, T2> {
+    /// Nested unions are one union, `Union<A, Union<B, C>>` is `A | B | C`.
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::Union(vec![T1::through_type_info(), T2::through_type_info()])
+        let mut types = Vec::new();
+        for info in [T1::through_type_info(), T2::through_type_info()] {
+            match info {
+                ThroughTypeInfo::Union(inner) => types.extend(inner),
+                info => types.push(info),
+            }
+        }
+        ThroughTypeInfo::Union(types)
     }
 }
 

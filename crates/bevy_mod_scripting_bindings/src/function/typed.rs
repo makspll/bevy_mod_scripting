@@ -237,6 +237,89 @@ impl<E: Typed> TypedThrough for ByName<E> {
     }
 }
 
+/// The fields of a struct passed by value, taken from the map scripts pass one by one, see `#[derive(ScriptStruct)]`.
+///
+/// A field converts like an argument of a function: [`FromScript`] converts it, and a missing field is its
+/// [`ArgMeta::default_value`], so `Option<T>` fields can be left out and others can't.
+pub struct StructFields {
+    of: &'static str,
+    fields: bevy_platform::collections::HashMap<String, ScriptValue>,
+}
+
+impl StructFields {
+    /// The fields in the given map, of the struct named `of`. An empty list is an empty map, as Lua can't tell them apart.
+    pub fn new(of: &'static str, value: ScriptValue) -> Result<Self, InteropError> {
+        let fields = match value {
+            ScriptValue::Map(fields) => fields,
+            ScriptValue::List(list) if list.is_empty() => Default::default(),
+            value => return Err(InteropError::value_mismatch(TypeId::of::<Self>(), value)),
+        };
+        Ok(StructFields { of, fields })
+    }
+
+    /// Whether the value could be the fields of a struct, see [`FromScript::could_convert`].
+    pub fn could_convert(value: &ScriptValue) -> bool {
+        match value {
+            ScriptValue::Map(_) => true,
+            ScriptValue::List(list) => list.is_empty(),
+            _ => false,
+        }
+    }
+
+    /// Converts the field with the given name, or its default if it is missing.
+    pub fn take<'s, T: FromScript + ArgMeta>(
+        &mut self,
+        name: &str,
+        scope: &'s CallScope<'_>,
+    ) -> Result<T::This<'s>, InteropError> {
+        let value = match self.fields.remove(name) {
+            Some(value) => value,
+            None => T::default_value().ok_or_else(|| {
+                InteropError::string(format!("missing field `{name}` of `{}`", self.of))
+            })?,
+        };
+        T::from_script(value, scope)
+            .map_err(|e| InteropError::string(format!("field `{name}` of `{}`: {e}", self.of)))
+    }
+
+    /// Fails if fields other than the ones taken were given, naming the ones the struct has.
+    pub fn finish(self, names: &[&str]) -> Result<(), InteropError> {
+        match self.fields.keys().next() {
+            Some(unknown) => Err(InteropError::string(format!(
+                "unknown field `{unknown}` of `{}`, the fields are: {}",
+                self.of,
+                names.join(", ")
+            ))),
+            None => Ok(()),
+        }
+    }
+}
+
+/// The map of fields a struct passed by value is returned as, see `#[derive(ScriptStruct)]`.
+#[derive(Default)]
+pub struct StructMap(Vec<(String, ScriptValue)>);
+
+impl StructMap {
+    /// Adds a field, unless it converts to `nil`, which is what a missing field is.
+    pub fn push<T: IntoScript>(
+        &mut self,
+        name: &str,
+        value: T,
+        world: WorldGuard,
+    ) -> Result<(), InteropError> {
+        match value.into_script(world)? {
+            ScriptValue::Unit => {}
+            value => self.0.push((name.to_owned(), value)),
+        }
+        Ok(())
+    }
+
+    /// The map.
+    pub fn into_value(self) -> ScriptValue {
+        ScriptValue::Map(self.0.into_iter().collect())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -358,10 +441,11 @@ mod test {
             (*identifier, *namespace, *docs),
             ("Options", Some("test"), Some("The options of a test"))
         );
+        // optional by their type: `Option<T>` defaults to `nil`
         assert_eq!(
             fields
                 .iter()
-                .map(|f| (f.name, f.optional))
+                .map(|f| (f.name, (f.default)().is_some()))
                 .collect::<Vec<_>>(),
             [("name", false), ("size", true), ("on_done", true)]
         );
@@ -371,11 +455,13 @@ mod test {
         let ThroughTypeInfo::Union(size) = *size else {
             panic!()
         };
+        // one union, the names included
         assert!(matches!(&size[..], [
-            ThroughTypeInfo::Union(names),
+            ThroughTypeInfo::Literal(a),
+            ThroughTypeInfo::Literal(b),
             ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::F64),
             ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::String),
-        ] if matches!(&names[..], [ThroughTypeInfo::Literal(a), ThroughTypeInfo::Literal(b)] if a == "row" && b == "column_reverse")));
+        ] if a == "row" && b == "column_reverse"));
         let ThroughTypeInfo::Option(on_done) = (fields[2].type_info)() else {
             panic!()
         };

@@ -273,8 +273,8 @@ impl<'t> LadFileBuilder<'t> {
             .map(|field| LadNamedField {
                 name: field.name.to_owned(),
                 type_: self.lad_kind(&(field.type_info)(), true),
-                // optional fields are left out of the map, which is what a default does for a constructor
-                has_default: field.optional,
+                // fields with a default can be left out, as for a constructor
+                has_default: (field.default)().is_some(),
             })
             .collect();
         if let Some(definition) = self.file.types.get_mut(&lad_type_id) {

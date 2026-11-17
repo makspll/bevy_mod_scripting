@@ -31,12 +31,6 @@ impl Args {
     }
 }
 
-/// Whether the type is written `Option<..>`, which makes the field optional.
-fn is_option(ty: &syn::Type) -> bool {
-    matches!(ty, syn::Type::Path(path) if path.qself.is_none()
-        && path.path.segments.last().is_some_and(|segment| segment.ident == "Option"))
-}
-
 pub fn script_struct(input: TokenStream) -> TokenStream {
     let derive_input = match syn::parse2::<DeriveInput>(input) {
         Ok(derive_input) => derive_input,
@@ -78,29 +72,6 @@ pub fn script_struct(input: TokenStream) -> TokenStream {
         .map(|ident| ident.map(|i| i.to_string()).unwrap_or_default())
         .collect::<Vec<_>>();
     let types = fields.iter().map(|field| &field.ty).collect::<Vec<_>>();
-    let optional = types.iter().map(|ty| is_option(ty)).collect::<Vec<_>>();
-    let all_names = names.join(", ");
-    let vars = field_idents
-        .iter()
-        .map(|ident| {
-            quote::format_ident!("field_{}", ident.map(|i| i.to_string()).unwrap_or_default())
-        })
-        .collect::<Vec<_>>();
-    let unwrapped = vars
-        .iter()
-        .zip(&optional)
-        .zip(&names)
-        .map(|((var, optional), name)| {
-            if *optional {
-                quote! { #var.flatten() }
-            } else {
-                quote! {
-                    #var.ok_or_else(|| #bms::InteropError::string(format!(
-                        "missing field `{}` of `{}`", #name, stringify!(#ident)
-                    )))?
-                }
-            }
-        });
     let namespace = match &args.namespace {
         Some(namespace) => quote! { Some(#namespace) },
         None => quote! { None },
@@ -119,49 +90,14 @@ pub fn script_struct(input: TokenStream) -> TokenStream {
                 value: #bms::ScriptValue,
                 scope: &#bms::CallScope<'_>,
             ) -> Result<Self, #bms::InteropError> {
-                let map = match value {
-                    #bms::ScriptValue::Map(map) => map,
-                    // an empty table can't tell it isn't a list
-                    #bms::ScriptValue::List(list) if list.is_empty() => Default::default(),
-                    value => {
-                        return Err(#bms::InteropError::value_mismatch(
-                            ::std::any::TypeId::of::<Self>(),
-                            value,
-                        ));
-                    }
-                };
-                #( let mut #vars: Option<#types> = None; )*
-                for (key, value) in map {
-                    match key.as_str() {
-                        #(
-                            #names => {
-                                #vars = Some(
-                                    <#types as #bms::FromScript>::from_script(value, scope).map_err(|e| {
-                                        #bms::InteropError::string(format!(
-                                            "field `{}` of `{}`: {e}", #names, stringify!(#ident)
-                                        ))
-                                    })?,
-                                );
-                            }
-                        )*
-                        other => {
-                            return Err(#bms::InteropError::string(format!(
-                                "unknown field `{other}` of `{}`, the fields are: {}",
-                                stringify!(#ident),
-                                #all_names
-                            )));
-                        }
-                    }
-                }
-                Ok(Self { #( #field_idents: #unwrapped ),* })
+                let mut fields = #bms::StructFields::new(stringify!(#ident), value)?;
+                let value = Self { #( #field_idents: fields.take::<#types>(#names, scope)?, )* };
+                fields.finish(&[#( #names ),*])?;
+                Ok(value)
             }
 
             fn could_convert(value: &#bms::ScriptValue) -> bool {
-                match value {
-                    #bms::ScriptValue::Map(_) => true,
-                    #bms::ScriptValue::List(list) => list.is_empty(),
-                    _ => false,
-                }
+                #bms::StructFields::could_convert(value)
             }
         }
 
@@ -171,15 +107,9 @@ pub fn script_struct(input: TokenStream) -> TokenStream {
                 self,
                 world: #bms::WorldGuard,
             ) -> Result<#bms::ScriptValue, #bms::InteropError> {
-                let mut entries = Vec::new();
-                #(
-                    let value = #bms::IntoScript::into_script(self.#field_idents, world.clone())?;
-                    // left out like a missing optional field
-                    if !matches!(value, #bms::ScriptValue::Unit) {
-                        entries.push((#names.to_owned(), value));
-                    }
-                )*
-                Ok(#bms::ScriptValue::Map(entries.into_iter().collect()))
+                let mut map = #bms::StructMap::default();
+                #( map.push(#names, self.#field_idents, world.clone())?; )*
+                Ok(map.into_value())
             }
         }
 
@@ -196,7 +126,7 @@ pub fn script_struct(input: TokenStream) -> TokenStream {
                         #bms::ScriptStructField {
                             name: #names,
                             type_info: <#types as #bms::TypedThrough>::through_type_info,
-                            optional: #optional,
+                            default: <#types as #bms::ArgMeta>::default_value,
                         }
                     ),*],
                 };
