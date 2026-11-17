@@ -6,9 +6,9 @@ use bevy_app::{App, Plugin};
 use bevy_mod_scripting_bindings::{
     EnumVariantRef, InteropError, StaticTypeRef,
     construct::construct_reference,
+    conversions::from::V,
     function::{
         bound::{BoundFields, BoundValue},
-        from::V,
         namespace::NamespaceBuilder,
         script_function::FunctionCallContext,
     },
