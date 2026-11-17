@@ -119,8 +119,8 @@ impl StructMap {
 mod test {
     use super::*;
     use crate::{
-        ByName, CurrentScriptAttachment, FunctionOf, ScriptDataInfo, ThroughTypeInfo, TypedThrough,
-        WorldExtensions,
+        ByName, CurrentScriptAttachment, FunctionOf, GetTypeDependencies, ScriptDataInfo,
+        ScriptDataShape, ThroughTypeInfo, TypedThrough, WorldExtensions,
     };
     use bevy_ecs::world::World;
     use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
@@ -135,12 +135,21 @@ mod test {
         Custom(f32),
     }
 
+    /// A size
     #[derive(ScriptData)]
-    #[script_data(bms_bindings_path = "crate")]
+    #[script_data(bms_bindings_path = "crate", namespace = "test")]
     enum Size {
         Named(ByName<Direction>),
         Pixels(f64),
         Text(String),
+    }
+
+    /// Holds itself
+    #[derive(ScriptData)]
+    #[script_data(bms_bindings_path = "crate")]
+    enum Tree {
+        Leaf(f64),
+        Branch(Vec<Tree>),
     }
 
     /// The options of a test
@@ -227,7 +236,28 @@ mod test {
                 matches!(map.get("size"), Some(ScriptValue::String(s)) if s == "ColumnReverse")
             );
             assert!(map.contains_key("name") && !map.contains_key("on_done"));
+
+            // a type holding itself converts, describes itself and registers its dependencies without recursing
+            let tree = ScriptValue::List(
+                [ScriptValue::Float(1.0), ScriptValue::List([ScriptValue::Float(2.0)].into())].into(),
+            );
+            let Ok(Tree::Branch(children)) = Tree::from_script(tree, scope) else {
+                panic!("not a branch")
+            };
+            assert!(matches!(&children[..], [Tree::Leaf(1.0), Tree::Branch(inner)] if matches!(&inner[..], [Tree::Leaf(2.0)])));
         });
+        let ThroughTypeInfo::Data(ScriptDataInfo {
+            shape: ScriptDataShape::Union(variants),
+            ..
+        }) = Tree::through_type_info()
+        else {
+            panic!("not a named union")
+        };
+        let ThroughTypeInfo::Vec(branch) = variants[1]() else {
+            panic!("not a list")
+        };
+        assert!(matches!(*branch, ThroughTypeInfo::Data(info) if info.identifier == "Tree"));
+        Tree::register_type_dependencies(&mut crate::__derive::TypeRegistry::default());
 
         let ThroughTypeInfo::Data(info) = Options::through_type_info() else {
             panic!("not a table")
@@ -236,9 +266,12 @@ mod test {
             identifier,
             namespace,
             docs,
-            fields,
+            shape: ScriptDataShape::Fields(fields),
             ..
-        } = info;
+        } = info
+        else {
+            panic!("not a struct")
+        };
         assert_eq!(
             (*identifier, *namespace, *docs),
             ("Options", Some("test"), Some("The options of a test"))
@@ -251,19 +284,26 @@ mod test {
                 .collect::<Vec<_>>(),
             [("name", false), ("size", true), ("on_done", true)]
         );
+        // an enum is a named data type, a union of its variants' types
         let ThroughTypeInfo::Option(size) = (fields[1].type_info)() else {
             panic!()
         };
-        let ThroughTypeInfo::Union(size) = *size else {
-            panic!()
+        let ThroughTypeInfo::Data(ScriptDataInfo {
+            identifier: "Size",
+            namespace: Some("test"),
+            docs: Some("A size"),
+            shape: ScriptDataShape::Union(variants),
+            ..
+        }) = *size
+        else {
+            panic!("not a named union: {size:?}")
         };
-        // one union, the names included
-        assert!(matches!(&size[..], [
-            ThroughTypeInfo::Literal(a),
-            ThroughTypeInfo::Literal(b),
+        let variants = variants.iter().map(|variant| variant()).collect::<Vec<_>>();
+        assert!(matches!(&variants[..], [
+            ThroughTypeInfo::Union(names),
             ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::F64),
             ThroughTypeInfo::Primitive(ReflectionPrimitiveKind::String),
-        ] if a == "Row" && b == "ColumnReverse"));
+        ] if matches!(&names[..], [ThroughTypeInfo::Literal(a), ThroughTypeInfo::Literal(b)] if a == "Row" && b == "ColumnReverse")));
         let ThroughTypeInfo::Option(on_done) = (fields[2].type_info)() else {
             panic!()
         };

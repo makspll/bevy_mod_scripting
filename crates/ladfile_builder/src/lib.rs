@@ -13,7 +13,8 @@ use bevy_mod_scripting_bindings::{
         TypedThrough,
         info::FunctionInfo,
         typed_through::{
-            BoundPlaceholder, ScriptDataInfo, ThroughTypeInfo, primitive_kind_of, primitive_type_id,
+            BoundPlaceholder, ScriptDataInfo, ScriptDataShape, ThroughTypeInfo, primitive_kind_of,
+            primitive_type_id,
         },
     },
     function::{
@@ -232,8 +233,8 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
-    /// The id of a data struct (see `#[derive(ScriptData)]`), adding it and the types of its fields to the file as a
-    /// [`LadType::Data`]. It isn't reflected, its fields are described by how they are passed.
+    /// The id of a data type (see `#[derive(ScriptData)]`), adding it and the types it is made of to the file as a
+    /// [`LadType::Data`]. It isn't reflected, its parts are described by how they are passed.
     fn add_script_data(&mut self, info: &'static ScriptDataInfo) -> LadTypeId {
         let type_id = (info.type_id)();
         let lad_type_id = LadTypeId::new_string_id(info.path.into());
@@ -252,20 +253,34 @@ impl<'t> LadFileBuilder<'t> {
             crate_,
             path: info.path.to_owned(),
             documentation: info.docs.map(|docs| docs.trim().to_owned()),
-            fields: vec![],
+            shape: LadDataShape::Fields(vec![]),
         };
-        // added before its fields, which may refer to the struct itself
+        // added before its parts, which may refer to the type itself
         self.insert_type(lad_type_id.clone(), data_type.clone());
-        data_type.fields = info
-            .fields
-            .iter()
-            .map(|field| LadNamedField {
-                name: field.name.to_owned(),
-                type_: self.lad_kind(&(field.type_info)(), true),
-                // fields with a default can be left out
-                has_default: (field.default)().is_some(),
-            })
-            .collect();
+        data_type.shape = match &info.shape {
+            ScriptDataShape::Fields(fields) => LadDataShape::Fields(
+                fields
+                    .iter()
+                    .map(|field| LadNamedField {
+                        name: field.name.to_owned(),
+                        type_: self.lad_kind(&(field.type_info)(), true),
+                        // fields with a default can be left out
+                        has_default: (field.default)().is_some(),
+                    })
+                    .collect(),
+            ),
+            // one union, the variants which are unions themselves (i.e. names) included
+            ScriptDataShape::Union(variants) => {
+                let mut kinds = Vec::with_capacity(variants.len());
+                for variant in variants.iter() {
+                    match self.lad_kind(&variant(), true) {
+                        LadTypeKind::Union(inner) => kinds.extend(inner),
+                        kind => kinds.push(kind),
+                    }
+                }
+                LadDataShape::Union(kinds)
+            }
+        };
         self.insert_type(lad_type_id.clone(), data_type);
         lad_type_id
     }
@@ -1342,12 +1357,16 @@ impl<'t> LadFileBuilder<'t> {
                 returns: nested(self, returns),
             },
             ThroughTypeInfo::Literal(value) => LadTypeKind::Literal(Cow::Owned(value.clone())),
-            // passed as a map of its fields, like the payload of a constructor. It is always added, as unlike
-            // reflected types, it isn't in the type registry the types of the file usually come from
-            ThroughTypeInfo::Data(info) => LadTypeKind::Fields {
-                of: LadNamedType::Id(self.add_script_data(info)),
-                variant: None,
-            },
+            // always added, as unlike reflected types it isn't in the type registry the types of the file usually
+            // come from. A struct is passed as a map of its fields, like the payload of a constructor, an enum as a
+            // value of the union it names
+            ThroughTypeInfo::Data(info) => {
+                let of = LadNamedType::Id(self.add_script_data(info));
+                match info.shape {
+                    ScriptDataShape::Fields(_) => LadTypeKind::Fields { of, variant: None },
+                    ScriptDataShape::Union(_) => LadTypeKind::Val(of),
+                }
+            }
             // functions are bound before they are added, any placeholders left are documented as what they are at runtime
             ThroughTypeInfo::Bound(BoundPlaceholder::Value) => {
                 LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference)
@@ -1715,6 +1734,19 @@ mod test {
         struct OptionsStruct {
             name: String,
             callback: Option<bevy_mod_scripting_bindings::FunctionOf<fn(usize) -> bool>>,
+            amount: Option<AmountEnum>,
+        }
+
+        /// How much, by name or exactly
+        #[derive(bevy_mod_scripting_derive::ScriptData)]
+        #[script_data(
+            bms_bindings_path = "bevy_mod_scripting_bindings",
+            namespace = "ladfile_builder"
+        )]
+        #[allow(dead_code)]
+        enum AmountEnum {
+            Named(bevy_mod_scripting_bindings::ByName<NamedEnum>),
+            Exact(usize),
         }
 
         #[derive(Reflect)]
@@ -2190,6 +2222,17 @@ mod test {
     struct PassedStruct {
         required: f32,
         optional: Option<String>,
+        amount: Option<PassedAmount>,
+    }
+
+    /// An amount, which holds itself
+    #[derive(bevy_mod_scripting_derive::ScriptData)]
+    #[script_data(bms_bindings_path = "bevy_mod_scripting_bindings", namespace = "test")]
+    #[allow(dead_code)]
+    enum PassedAmount {
+        Named(bevy_mod_scripting_bindings::ByName<NamedVariants>),
+        Exact(f32),
+        Many(Vec<PassedAmount>),
     }
 
     #[test]
@@ -2198,6 +2241,33 @@ mod test {
         let mut builder = LadFileBuilder::new_empty(&registry);
         builder.add_through_type_info(&PassedStruct::through_type_info());
         let file = builder.build();
+
+        // an enum is a named union of its variants' types, which can hold itself, and values of it are of that type
+        use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
+        let amount = LadTypeId::new_string_id("ladfile_builder::test::PassedAmount".into());
+        let Some(LadType::Data(LadDataType {
+            identifier,
+            documentation,
+            shape: LadDataShape::Union(kinds),
+            ..
+        })) = file.types.get(&amount)
+        else {
+            panic!("the enum is a data union of the file");
+        };
+        assert_eq!(
+            (identifier.as_str(), documentation.as_deref()),
+            ("PassedAmount", Some("An amount, which holds itself"))
+        );
+        assert_eq!(
+            kinds,
+            &[
+                LadTypeKind::Literal("Unit".into()),
+                LadTypeKind::Literal("OtherUnit".into()),
+                LadTypeKind::Primitive(Primitive::F32),
+                LadTypeKind::Vec(Box::new(LadTypeKind::Val(amount.clone().into()))),
+            ]
+        );
+
         let Some(LadType::Data(definition)) = file.types.get(&LadTypeId::new_string_id(
             "ladfile_builder::test::PassedStruct".into(),
         )) else {
@@ -2215,12 +2285,13 @@ mod test {
                 Some("Passed by value, as a map of its fields"),
             )
         );
-        let fields: Vec<_> = definition
-            .fields
+        let LadDataShape::Fields(fields) = &definition.shape else {
+            panic!("the struct is a map of its fields");
+        };
+        let fields: Vec<_> = fields
             .iter()
             .map(|f| (f.name.as_str(), &f.type_, f.has_default))
             .collect();
-        use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
         assert_eq!(
             fields,
             [
@@ -2228,6 +2299,11 @@ mod test {
                 (
                     "optional",
                     &LadTypeKind::Option(Box::new(LadTypeKind::Primitive(Primitive::String))),
+                    true
+                ),
+                (
+                    "amount",
+                    &LadTypeKind::Option(Box::new(LadTypeKind::Val(amount.into()))),
                     true
                 ),
             ]

@@ -86,8 +86,9 @@ pub fn script_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// - **A name** for `Union<Named, Union<Exact, Bound>>`, which converts and documents it: a value converts to the
 ///   first variant whose type converts it, only trying the types which could (see `FromScript::could_convert`), so
 ///   put the more specific of two types taking the same kind of value first, i.e. names before text.
-/// - **Documented** as the union of its variants' types, `"Slow" | "Fast" | number | fun(): number` in Lua. It isn't
-///   a type of its own, so it takes no `namespace`.
+/// - **Documented** as a data type of the LAD file in its `namespace`, the union of its variants' types: an alias in
+///   Lua (`---@alias game.Speed "Slow" | "Fast" | number | fun(): number`), a data type page in the book. Variants
+///   are described lazily, so an enum may hold itself (`Many(Vec<Speed>)`).
 ///
 /// Implements `FromScript`, `IntoScript`, `TypedThrough`, `ArgMeta` and `GetTypeDependencies`. Not for generic types.
 /// `#[script_data(bms_bindings_path = "..")]` changes the path of the bindings crate.

@@ -381,8 +381,8 @@ impl LadFileBuilder<'_> {
             named_generic_types_in_layout(layout, &mut named);
         }
         for (_, data_type) in file.data_types() {
-            for field in &data_type.fields {
-                named_generic_types(&field.type_, &mut named);
+            for kind in data_type.kinds() {
+                named_generic_types(kind, &mut named);
             }
         }
         while let Some(id) = named.pop() {

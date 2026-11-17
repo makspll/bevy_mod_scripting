@@ -30,6 +30,7 @@ pub fn convert_ladfile_to_lua_declaration_files(
     modules.extend(class_modules(ladfile));
     modules.extend(generic_type_modules(ladfile));
     modules.extend(fields_modules(ladfile));
+    modules.extend(data_union_modules(ladfile));
 
     // `import_namespace` needs the namespace classes, so they are built before the globals
     let namespaces = namespace_modules(ladfile);
@@ -218,11 +219,7 @@ fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     let fields = ladfile
         .reference_types()
         .flat_map(|(_, t)| t.layout.field_kinds())
-        .chain(
-            ladfile
-                .data_types()
-                .flat_map(|(_, v)| v.fields.iter().map(|f| &f.type_)),
-        );
+        .chain(ladfile.data_types().flat_map(|(_, d)| d.kinds()));
     for kind in signatures.chain(fields) {
         fields_references.visit(kind);
     }
@@ -251,6 +248,40 @@ fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
         modules.push(no_fields_module());
     }
     modules
+}
+
+/// An alias for each data union, i.e. `---@alias game.Speed "Slow" | "Fast" | number`, which values of it are
+/// documented as, see [`ladfile::LadDataShape::Union`].
+fn data_union_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
+    ladfile
+        .data_types()
+        .filter_map(|(type_id, data_type)| {
+            let ladfile::LadDataShape::Union(kinds) = &data_type.shape else {
+                return None;
+            };
+            let name = lua_class_name(ladfile, type_id);
+            let definition =
+                match lad_instance_to_lua_type(ladfile, &LadTypeKind::Union(kinds.clone())) {
+                    Ok(definition) => definition,
+                    Err(e) => {
+                        log::warn!("Error generating the alias of {type_id}: {e}. Ignoring.");
+                        return None;
+                    }
+                };
+            Some(LuaModule {
+                name: name.clone(),
+                table: name.replace('.', "_"),
+                namespace: data_type.namespace.clone(),
+                aliases: vec![TypeInstance {
+                    name,
+                    definition,
+                    description: data_type.documentation.clone(),
+                }],
+                type_only: true,
+                ..Default::default()
+            })
+        })
+        .collect()
 }
 
 /// The `globals` module: the builtin functions, the only globals.
@@ -1316,9 +1347,9 @@ fn namespace_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
         .collect()
 }
 
-/// The fields a constructor of the type takes, or of the variant for enums, or the fields of a data type's map.
+/// The fields a constructor of the type takes, or of the variant for enums, or the fields of a data struct's map.
 ///
-/// `None` if the fields cannot be described, i.e. for opaque types, or enums without a variant given.
+/// `None` if the fields cannot be described, i.e. for opaque types, enums without a variant given, or data unions.
 fn lad_fields<'a>(
     ladfile: &'a LadFile,
     type_id: &LadTypeId,
@@ -1327,9 +1358,12 @@ fn lad_fields<'a>(
     let lad_type = match ladfile.types.get(type_id)? {
         LadType::Reference(lad_type) => lad_type,
         LadType::Data(data_type) => {
+            let ladfile::LadDataShape::Fields(fields) = &data_type.shape else {
+                return None;
+            };
             return Some(Cow::Owned(ladfile::LadVariant::Struct {
                 name: data_type.identifier.clone().into(),
-                fields: data_type.fields.clone(),
+                fields: fields.clone(),
             }));
         }
     };

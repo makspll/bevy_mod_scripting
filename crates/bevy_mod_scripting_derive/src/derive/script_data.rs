@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{DeriveInput, spanned::Spanned};
 
-use crate::derive::SharedArgs;
+use crate::derive::{SharedArgs, parse_docstring};
 
 mod data_enum;
 mod data_struct;
@@ -13,7 +13,7 @@ mod data_struct;
 #[derive(Default)]
 struct Args {
     shared_args: SharedArgs,
-    /// The script namespace a struct is documented in
+    /// The script namespace the type is documented in
     namespace: Option<syn::LitStr>,
 }
 
@@ -35,6 +35,37 @@ impl Args {
             }
         }
         Ok(args)
+    }
+}
+
+/// The `TypedThrough` of a data type: a named, documented [`ScriptDataInfo`] whose parts, given by `shape`, are
+/// described lazily, so a type holding itself is described without recursing.
+fn typed_through(derive_input: &DeriveInput, args: &Args, shape: TokenStream) -> TokenStream {
+    let bms = &args.shared_args.bms_bindings_path;
+    let ident = &derive_input.ident;
+    let namespace = match &args.namespace {
+        Some(namespace) => quote! { Some(#namespace) },
+        None => quote! { None },
+    };
+    let docs = match parse_docstring(derive_input.attrs.iter()) {
+        Some(docs) => quote! { Some(#docs) },
+        None => quote! { None },
+    };
+    quote! {
+        #[automatically_derived]
+        impl #bms::TypedThrough for #ident {
+            fn through_type_info() -> #bms::ThroughTypeInfo {
+                static INFO: #bms::ScriptDataInfo = #bms::ScriptDataInfo {
+                    type_id: || ::std::any::TypeId::of::<#ident>(),
+                    path: concat!(module_path!(), "::", stringify!(#ident)),
+                    identifier: stringify!(#ident),
+                    namespace: #namespace,
+                    docs: #docs,
+                    shape: #shape,
+                };
+                #bms::ThroughTypeInfo::Data(&INFO)
+            }
+        }
     }
 }
 
@@ -60,14 +91,7 @@ pub fn script_data(input: TokenStream) -> TokenStream {
             fields: syn::Fields::Named(fields),
             ..
         }) => Ok(data_struct::expand(&derive_input, &fields.named, &args)),
-        syn::Data::Enum(data) => match &args.namespace {
-            // an enum is documented as the union of its variants' types, it isn't a type of its own
-            Some(namespace) => Err(syn::Error::new(
-                namespace.span(),
-                "`namespace` only applies to structs, an enum is documented as the types of its variants",
-            )),
-            None => data_enum::expand(&derive_input, data, &args),
-        },
+        syn::Data::Enum(data) => data_enum::expand(&derive_input, data, &args),
         _ => Err(syn::Error::new(
             derive_input.ident.span(),
             "ScriptData is derived for structs with named fields, or enums whose variants hold one value each",

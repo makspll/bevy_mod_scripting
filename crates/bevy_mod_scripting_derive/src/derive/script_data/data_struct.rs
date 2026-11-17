@@ -4,8 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{DeriveInput, Field, punctuated::Punctuated, token::Comma};
 
-use super::Args;
-use crate::derive::parse_docstring;
+use super::{Args, typed_through};
 
 /// The conversions and documentation of the struct, through `StructFields` / `StructMap`.
 pub(super) fn expand(
@@ -24,14 +23,19 @@ pub(super) fn expand(
         .map(|ident| ident.map(|i| i.to_string()).unwrap_or_default())
         .collect::<Vec<_>>();
     let types = fields.iter().map(|field| &field.ty).collect::<Vec<_>>();
-    let namespace = match &args.namespace {
-        Some(namespace) => quote! { Some(#namespace) },
-        None => quote! { None },
-    };
-    let docs = match parse_docstring(derive_input.attrs.iter()) {
-        Some(docs) => quote! { Some(#docs) },
-        None => quote! { None },
-    };
+    let typed_through = typed_through(
+        derive_input,
+        args,
+        quote! {
+            #bms::ScriptDataShape::Fields(&[#(
+                #bms::ScriptDataField {
+                    name: #names,
+                    type_info: <#types as #bms::TypedThrough>::through_type_info,
+                    default: <#types as #bms::ArgMeta>::default_value,
+                }
+            ),*])
+        },
+    );
 
     quote! {
         #[automatically_derived]
@@ -65,26 +69,7 @@ pub(super) fn expand(
             }
         }
 
-        #[automatically_derived]
-        impl #bms::TypedThrough for #ident {
-            fn through_type_info() -> #bms::ThroughTypeInfo {
-                static INFO: #bms::ScriptDataInfo = #bms::ScriptDataInfo {
-                    type_id: || ::std::any::TypeId::of::<#ident>(),
-                    path: concat!(module_path!(), "::", stringify!(#ident)),
-                    identifier: stringify!(#ident),
-                    namespace: #namespace,
-                    docs: #docs,
-                    fields: &[#(
-                        #bms::ScriptDataField {
-                            name: #names,
-                            type_info: <#types as #bms::TypedThrough>::through_type_info,
-                            default: <#types as #bms::ArgMeta>::default_value,
-                        }
-                    ),*],
-                };
-                #bms::ThroughTypeInfo::Data(&INFO)
-            }
-        }
+        #typed_through
 
         #[automatically_derived]
         impl #bms::ArgMeta for #ident {}
@@ -95,7 +80,9 @@ pub(super) fn expand(
             type Underlying = #bms::ScriptValue;
 
             fn register_type_dependencies(registry: &mut #bms::__derive::TypeRegistry) {
-                #( <#types as #bms::GetTypeDependencies>::register_type_dependencies(registry); )*
+                #bms::__derive::register_data_dependencies(::std::any::TypeId::of::<Self>(), || {
+                    #( <#types as #bms::GetTypeDependencies>::register_type_dependencies(registry); )*
+                });
             }
         }
     }

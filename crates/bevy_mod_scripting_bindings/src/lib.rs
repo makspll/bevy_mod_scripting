@@ -62,4 +62,25 @@ pub mod __derive {
     pub trait ReflectedTypesCannotDeriveScriptData {}
 
     impl<T: bevy_reflect::PartialReflect + ?Sized> ReflectedTypesCannotDeriveScriptData for T {}
+
+    std::thread_local! {
+        /// The data types whose dependencies are being registered on this thread, see [`register_data_dependencies`]
+        static REGISTERING: std::cell::RefCell<Vec<std::any::TypeId>> = const { std::cell::RefCell::new(Vec::new()) };
+    }
+
+    /// Registers the dependencies of the data type `type_id` with `register`, unless they are being registered
+    /// already further up, so a data type holding itself, i.e. a tree, doesn't recurse forever.
+    pub fn register_data_dependencies(type_id: std::any::TypeId, register: impl FnOnce()) {
+        let first = REGISTERING.with_borrow_mut(|registering| {
+            let first = !registering.contains(&type_id);
+            if first {
+                registering.push(type_id);
+            }
+            first
+        });
+        if first {
+            register();
+            REGISTERING.with_borrow_mut(|registering| registering.retain(|id| *id != type_id));
+        }
+    }
 }

@@ -824,10 +824,10 @@ impl LadTypeId {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum LadType {
-    /// Plain data, copied to and from scripts as a map of its fields, i.e. a struct deriving `ScriptData`.
+    /// Plain data, copied to and from scripts, i.e. a type deriving `ScriptData`: a map of its fields (a struct) or
+    /// any of several kinds of values (an enum), see [`LadDataShape`].
     ///
-    /// Scripts never hold a reference to it nor import it: they pass and get maps of its fields, which functions
-    /// refer to as [`LadTypeKind::Fields`]. Backends describe it by its fields alone, not as a type of its own.
+    /// Scripts never hold a reference to it nor import it, so it has no functions, registration or metadata.
     Data(LadDataType),
     /// Scripts hold references to its values and import it from its namespace, i.e. a reflected type.
     Reference(Box<LadTypeDefinition>),
@@ -903,7 +903,7 @@ impl LadType {
     }
 }
 
-/// Plain data, copied to and from scripts as a map of its fields, see [`LadType::Data`].
+/// Plain data, copied to and from scripts, see [`LadType::Data`].
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LadDataType {
     /// The name of the type, i.e. `SpawnOptions`.
@@ -924,8 +924,33 @@ pub struct LadDataType {
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub documentation: Option<String>,
 
-    /// The fields of the map, in order. A field with `has_default` can be left out.
-    pub fields: Vec<LadNamedField>,
+    /// What the type is made of, serialized as its `fields` or its `union`.
+    #[serde(flatten)]
+    pub shape: LadDataShape,
+}
+
+impl LadDataType {
+    /// The kinds the type is made of: the types of its fields, or the members of its union.
+    pub fn kinds(&self) -> Vec<&LadTypeKind> {
+        match &self.shape {
+            LadDataShape::Fields(fields) => fields.iter().map(|f| &f.type_).collect(),
+            LadDataShape::Union(kinds) => kinds.iter().collect(),
+        }
+    }
+}
+
+/// What a [`LadDataType`] is made of.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum LadDataShape {
+    /// A map of these fields, in order, i.e. a struct. A field with `has_default` can be left out.
+    ///
+    /// Functions refer to it as a [`LadTypeKind::Fields`] of the type.
+    Fields(Vec<LadNamedField>),
+    /// Any value of these kinds, i.e. an enum whose variants hold one value each.
+    ///
+    /// Functions refer to it as a [`LadTypeKind::Val`] of the type, which stands for the union.
+    Union(Vec<LadTypeKind>),
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]

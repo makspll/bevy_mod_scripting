@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{DataEnum, DeriveInput, spanned::Spanned};
 
-use super::Args;
+use super::{Args, typed_through};
 
 /// The conversions and documentation of the enum, a name for a nested `Union` of its variants' types.
 pub(super) fn expand(
@@ -39,7 +39,14 @@ pub(super) fn expand(
     let ident = &derive_input.ident;
     let last = variants.len() - 1;
 
-    // the enum is a name for `Union<T1, Union<T2, T3>>`, which converts and documents it
+    // the enum converts as `Union<T1, Union<T2, T3>>`, and is documented as a named union of its variants' types
+    let typed_through = typed_through(
+        derive_input,
+        args,
+        quote! {
+            #bms::ScriptDataShape::Union(&[#( <#types as #bms::TypedThrough>::through_type_info ),*])
+        },
+    );
     let last_type = types[last];
     let repr = types[..last].iter().rev().fold(
         quote! { #last_type },
@@ -103,12 +110,7 @@ pub(super) fn expand(
             }
         }
 
-        #[automatically_derived]
-        impl #bms::TypedThrough for #ident {
-            fn through_type_info() -> #bms::ThroughTypeInfo {
-                <#repr as #bms::TypedThrough>::through_type_info()
-            }
-        }
+        #typed_through
 
         #[automatically_derived]
         impl #bms::ArgMeta for #ident {}
@@ -119,7 +121,9 @@ pub(super) fn expand(
             type Underlying = #bms::ScriptValue;
 
             fn register_type_dependencies(registry: &mut #bms::__derive::TypeRegistry) {
-                #( <#types as #bms::GetTypeDependencies>::register_type_dependencies(registry); )*
+                #bms::__derive::register_data_dependencies(::std::any::TypeId::of::<Self>(), || {
+                    #( <#types as #bms::GetTypeDependencies>::register_type_dependencies(registry); )*
+                });
             }
         }
     })

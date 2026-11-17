@@ -4,9 +4,9 @@ use std::{
 };
 
 use ladfile::{
-    LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstance, LadInstantiation,
-    LadNamedType, LadType, LadTypeDefinition, LadTypeId, LadTypeKind, LadTypeLayout, LadVariant,
-    LadVisitable,
+    LadDataShape, LadFile, LadFunction, LadFunctionNamespace, LadGenericType, LadInstance,
+    LadInstantiation, LadNamedType, LadType, LadTypeDefinition, LadTypeId, LadTypeKind,
+    LadTypeLayout, LadVariant, LadVisitable,
 };
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
@@ -653,8 +653,35 @@ impl<'a> Section<'a> {
     ) -> Vec<SectionItem<'a>> {
         let lad_type = match lad_type {
             LadType::Reference(lad_type) => lad_type,
-            // only ever a map of its fields
+            // only ever a map of its fields, or one of its union's values
             LadType::Data(data_type) => {
+                let shape = match &data_type.shape {
+                    LadDataShape::Fields(fields) => SectionItem::Layout {
+                        layout: Cow::Owned(LadTypeLayout::MonoVariant(LadVariant::Struct {
+                            name: data_type.identifier.clone().into(),
+                            fields: fields.clone(),
+                        })),
+                        ladfile: self.ladfile,
+                        types_directory: PathBuf::from("./"),
+                    },
+                    LadDataShape::Union(kinds) => {
+                        let kinds = kinds
+                            .iter()
+                            .map(|kind| print_linked_type(self.ladfile, kind, "."))
+                            .collect::<Vec<_>>();
+                        SectionItem::Markdown {
+                            markdown: Box::new(move |builder| {
+                                builder.heading(2, "One of");
+                                builder.table(|builder| {
+                                    builder.headers(vec!["Type"]);
+                                    for kind in &kinds {
+                                        builder.row(markdown_vec![Markdown::Raw(kind.clone())]);
+                                    }
+                                });
+                            }),
+                        }
+                    }
+                };
                 return vec![
                     SectionItem::Badges {
                         badges: vec!["Data"],
@@ -670,14 +697,7 @@ impl<'a> Section<'a> {
                         ladfile: self.ladfile,
                         types_directory: ".".to_owned(),
                     },
-                    SectionItem::Layout {
-                        layout: Cow::Owned(LadTypeLayout::MonoVariant(LadVariant::Struct {
-                            name: data_type.identifier.clone().into(),
-                            fields: data_type.fields.clone(),
-                        })),
-                        ladfile: self.ladfile,
-                        types_directory: PathBuf::from("./"),
-                    },
+                    shape,
                 ];
             }
         };
@@ -1296,7 +1316,7 @@ fn signature(function: &LadFunction, ladfile: &LadFile, types_directory: &str) -
 }
 
 /// What a data type is, on its page and above the list of them, see [`ladfile::LadType::Data`]
-const DATA_TYPE_DESCRIPTION: &str = "Data types are plain data, copied to and from functions as a table of their fields: scripts can't import them or hold a reference to one.";
+const DATA_TYPE_DESCRIPTION: &str = "Data types are plain data, copied to and from functions as a table of their fields or as one of several values: scripts can't import them or hold a reference to one.";
 
 /// A table of types as a quick reference, sorted by name, linking to the type pages
 fn types_summary_markdown(

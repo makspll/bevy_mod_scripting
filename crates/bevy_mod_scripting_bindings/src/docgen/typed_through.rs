@@ -82,7 +82,7 @@ pub enum ThroughTypeInfo {
     },
     /// One exact string, see [`crate::conversions::by_name::ByName`]
     Literal(String),
-    /// A data struct, copied to and from scripts as a map of its fields, see [`ScriptDataInfo`]
+    /// Plain data, copied to and from scripts: a struct as a map of its fields, an enum as the value of a variant, see [`ScriptDataInfo`]
     Data(&'static ScriptDataInfo),
     /// A type itself rather than a value of it, i.e. the component type `get_component` takes, see [`crate::function::generics::TypeOf`]
     TypeOf {
@@ -93,13 +93,12 @@ pub enum ThroughTypeInfo {
     },
 }
 
-/// Describes a data struct, copied to and from scripts as a map of its fields, made by `#[derive(ScriptData)]` on a
-/// struct (an enum is documented as the union of its variants' types instead).
+/// Describes plain data, copied to and from scripts, made by `#[derive(ScriptData)]`.
 ///
-/// The struct isn't reflected: its fields are described by the [`TypedThrough`] of their types, and it is documented
-/// as the class of its fields, like the payload of a constructor.
+/// It isn't reflected: its parts are described by the [`TypedThrough`] of their types, lazily, so a type which holds
+/// itself (i.e. a tree) is described without recursing. It is documented as a data type of its own.
 pub struct ScriptDataInfo {
-    /// The struct
+    /// The type
     pub type_id: fn() -> TypeId,
     /// The full path of the type, i.e. `my_crate::options::Options`
     pub path: &'static str,
@@ -109,8 +108,16 @@ pub struct ScriptDataInfo {
     pub namespace: Option<&'static str>,
     /// The documentation of the type
     pub docs: Option<&'static str>,
-    /// The fields, in order of declaration
-    pub fields: &'static [ScriptDataField],
+    /// What the type is made of
+    pub shape: ScriptDataShape,
+}
+
+/// What a [`ScriptDataInfo`] is made of.
+pub enum ScriptDataShape {
+    /// A struct, a map of these fields, in order of declaration
+    Fields(&'static [ScriptDataField]),
+    /// An enum, the value of any of these types: one per variant, in order of declaration
+    Union(&'static [fn() -> ThroughTypeInfo]),
 }
 
 /// A field of a [`ScriptDataInfo`].
