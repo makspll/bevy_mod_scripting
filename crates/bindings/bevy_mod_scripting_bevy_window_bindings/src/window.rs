@@ -5,11 +5,8 @@ use bevy_ecs::{entity::Entity, reflect::AppTypeRegistry, world::World};
 use bevy_math::Vec2;
 use bevy_mod_scripting_bindings::{
     InteropError, ReflectReference, ScriptQueryBuilder, WorldExtensions, WorldGuard,
-    function::{
-        from::{M, R, V},
-        generics::ValueOf,
-        script_function::FunctionCallContext,
-    },
+    conversions::from::{M, R, V},
+    function::{generics::ValueOf, script_function::FunctionCallContext},
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_window::{PrimaryWindow, Window};

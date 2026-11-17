@@ -28,7 +28,7 @@ impl DocLinks {
         };
         for (id, lad_type) in ladfile.types.iter() {
             insert(
-                &lad_type.identifier,
+                lad_type.identifier(),
                 linkify_filename(type_page_title(ladfile, id)) + ".md",
             );
         }

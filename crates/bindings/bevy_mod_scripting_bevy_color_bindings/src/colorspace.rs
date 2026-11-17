@@ -3,7 +3,7 @@
 // `script_bindings` expects these in scope
 use bevy_color::{Color, Hsla, Hsva, Hwba, Laba, Lcha, Oklaba, Oklcha, Xyza};
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
-use bevy_mod_scripting_bindings::function::from::{R, V};
+use bevy_mod_scripting_bindings::conversions::from::{R, V};
 use bevy_mod_scripting_derive::script_bindings;
 
 /// Adds a `to_color` function to each color space type, each in its own binding block.

@@ -62,3 +62,5 @@
     - [0.23.0](./ReleaseNotes/0.23.0.md)
     - [0.23-to-0.24](./ReleaseNotes/0.23-to-0.24.md)
     - [0.24.0](./ReleaseNotes/0.24.0.md)
+    - [0.24-to-0.25](./ReleaseNotes/0.24-to-0.25.md)
+    - [0.25.0](./ReleaseNotes/0.25.0.md)

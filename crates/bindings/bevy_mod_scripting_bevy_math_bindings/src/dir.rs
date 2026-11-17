@@ -3,7 +3,7 @@
 // `script_bindings` expects these in scope
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{Dir2, Dir3, Vec2, Vec3};
-use bevy_mod_scripting_bindings::function::from::{R, V};
+use bevy_mod_scripting_bindings::conversions::from::{R, V};
 use bevy_mod_scripting_derive::script_bindings;
 
 #[script_bindings(

@@ -374,12 +374,16 @@ impl LadFileBuilder<'_> {
             }
         }
         for layout in file
-            .types
-            .values()
-            .map(|t| &t.layout)
+            .reference_types()
+            .map(|(_, t)| &t.layout)
             .chain(file.generic_types.values().map(|t| &t.layout))
         {
             named_generic_types_in_layout(layout, &mut named);
+        }
+        for (_, data_type) in file.data_types() {
+            for kind in data_type.kinds() {
+                named_generic_types(kind, &mut named);
+            }
         }
         while let Some(id) = named.pop() {
             if file.generic_types.contains_key(&id) {

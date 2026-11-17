@@ -2,11 +2,8 @@
 
 pub mod arg_meta;
 pub mod bound;
-pub mod from;
-pub mod from_ref;
+pub mod function_of;
 pub mod generics;
-pub mod into;
-pub mod into_ref;
 pub mod magic_functions;
 pub mod namespace;
 pub mod script_function;
@@ -14,11 +11,8 @@ pub mod type_dependencies;
 
 pub use arg_meta::*;
 pub use bound::*;
-pub use from::*;
-pub use from_ref::*;
+pub use function_of::*;
 pub use generics::*;
-pub use into::*;
-pub use into_ref::*;
 pub use magic_functions::*;
 pub use namespace::*;
 pub use script_function::*;
@@ -33,10 +27,8 @@ mod test {
     use bevy_reflect::{FromReflect, GetTypeRegistration, Reflect, Typed};
 
     use crate::{
-        function::{
-            from::{R, Union, V},
-            script_function::AppScriptFunctionRegistry,
-        },
+        conversions::from::{R, Union, V},
+        function::script_function::AppScriptFunctionRegistry,
         script_value::ScriptValue,
     };
     use bevy_ecs::prelude::AppTypeRegistry;

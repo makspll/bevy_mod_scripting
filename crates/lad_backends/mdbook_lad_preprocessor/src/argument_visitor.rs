@@ -105,11 +105,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         let type_identifier = self
             .ladfile
             .get_type_identifier(type_id, self.raw_type_id_replacement);
-        let primitive = self
-            .ladfile
-            .types
-            .get(type_id)
-            .and_then(|lad_type| lad_type.metadata.mapped_to_primitive_kind.as_ref());
+        let primitive = self.ladfile.primitive_kind(type_id);
         let type_identifier = match (primitive, type_identifier.is_empty()) {
             // types standing for primitives are named like them, i.e. `f32`
             (Some(primitive), _) => primitive_name(primitive),
@@ -203,11 +199,35 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
 
     fn visit_union(&mut self, inner: &[ladfile::LadTypeKind]) {
         for (idx, arg) in inner.iter().enumerate() {
+            // `fn() -> A | B` would read as returning the union
+            let function = matches!(arg, ladfile::LadTypeKind::Function { .. });
+            if function {
+                self.buffer.text("(");
+            }
             self.visit(arg);
+            if function {
+                self.buffer.text(")");
+            }
             if idx < inner.len() - 1 {
                 self.buffer.text(" | ");
             }
         }
+    }
+
+    fn visit_function(&mut self, params: &[ladfile::LadTypeKind], returns: &ladfile::LadTypeKind) {
+        self.buffer.text("fn(");
+        for (idx, param) in params.iter().enumerate() {
+            if idx > 0 {
+                self.buffer.text(", ");
+            }
+            self.visit(param);
+        }
+        self.buffer.text(") -> ");
+        self.visit(returns);
+    }
+
+    fn visit_literal(&mut self, value: &str) {
+        self.buffer.text(format!("{value:?}"));
     }
 
     fn visit_array(&mut self, inner: &ladfile::LadTypeKind, size: usize) {
