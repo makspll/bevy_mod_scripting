@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-bf4554ac.js";
+            window.path_to_searchindex_js = "../searchindex-f6000159.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-c5255b6a.js"></script>
+        <script src="../toc-67472866.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -289,7 +289,49 @@ You can opt-in to receive this argument in your own function definitions by addi
                 }
             },
         );</code></pre>
-<p>You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see <a href="#generics">Generics</a>.</p>
+<p>You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see <a href="#generics">Generics</a>. To accept callbacks, names or tables of options, see <a href="#typed-arguments">Typed arguments</a>.</p>
+<h2 id="typed-arguments"><a class="header" href="#typed-arguments">Typed arguments</a></h2>
+<p>These wrappers and derives keep the exact type of arguments which aren’t reflected values, in the book and the Lua language server files:</p>
+<pre><code class="language-rust ignore">/// Spawns an enemy
+#[derive(ScriptData)]
+#[script_data(namespace = "game")]
+struct SpawnOptions {
+    name: String,
+    speed: Option&lt;Speed&gt;,                                   // optional
+    on_death: Option&lt;FunctionOf&lt;fn(V&lt;Entity&gt;) -&gt; ()&gt;&gt;,
+}
+
+#[derive(ScriptData)]
+#[script_data(namespace = "game")]
+enum Speed {
+    Named(ByName&lt;Pace&gt;),     // "Slow" | "Fast", for `enum Pace { Slow, Fast }`
+    Exact(f32),              // 2.5
+}
+
+#[script_bindings(remote, namespace = "game")]
+impl NamespaceMembers {
+    fn spawn(ctxt: FunctionCallContext, options: SpawnOptions) -&gt; Result&lt;V&lt;Entity&gt;, InteropError&gt; { .. }
+}</code></pre>
+<pre><code class="language-lua">game.spawn({ name = "goblin", speed = "Fast", on_death = function(entity) end })   -- `entity` is an ecs.Entity
+game.spawn({ name = "goblin", sped = 2 })      -- flagged by the language server, an error at runtime
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>scripts pass</th><th>documented as</th></tr>
+</thead>
+<tbody>
+<tr><td><code>FunctionOf&lt;fn(A, B) -&gt; R&gt;</code></td><td>a function, which is a <code>DynamicScriptFunction</code> in Rust</td><td><code>fun(arg1: A, arg2: B): R</code></td></tr>
+<tr><td><code>ByName&lt;E&gt;</code></td><td>a unit variant of the reflected enum <code>E</code> by its name as in Rust, or a reference to an <code>E</code></td><td><code>"Slow" | "Fast"</code></td></tr>
+<tr><td><code>#[derive(ScriptData)]</code> struct</td><td>a map of its fields: a table in Lua, an object in Rune</td><td>the class of its fields, a data type in the book</td></tr>
+<tr><td><code>#[derive(ScriptData)]</code> enum</td><td>the value of any variant, each holding one value: the first variant whose type converts it</td><td>an alias of the union of the variants’ types (<code>game.Speed</code>), a data type in the book</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>ScriptData</code> is plain data, <strong>copied</strong> across: a struct is read from the map when passed and written to a new map when returned, so changing one doesn’t change the other. Use it for what crosses once (options, properties, events, results). Use a reflected type for what scripts hold a handle to, or Rust keeps as state. A type is one or the other: deriving both <code>Reflect</code> and <code>ScriptData</code> doesn’t compile.</p>
+<p>Each field converts like a function argument of its type. A missing field takes its type’s default, so <code>Option&lt;T&gt;</code> fields can be left out. Unknown fields, missing fields without a default and mistyped fields are errors naming the field.</p>
+<p>An enum’s variants are tried in order, so put the more specific of two types taking the same kind of value first, i.e. <code>ByName</code> before <code>String</code>.</p>
+<p>Unions only try the types which could convert a value, as told by <code>FromScript::could_convert</code>. When implementing <code>FromScript</code> by hand, override it to rule out the kinds of values your type never converts.</p>
 <h2 id="generics"><a class="header" href="#generics">Generics</a></h2>
 <p>Reflection only knows concrete types (<code>Handle&lt;Image&gt;</code>, <code>Time&lt;Virtual&gt;</code>), so generic signatures and types use <strong>markers</strong> standing for their parameters: <code>A</code>, <code>B</code> and <code>C</code>, from <code>bevy_mod_scripting::bindings::function::generics</code>. Markers only change the documentation and the Lua language server files, the values are references at runtime.</p>
 <blockquote class="blockquote-tag blockquote-tag-note">
@@ -299,7 +341,7 @@ You can opt-in to receive this argument in your own function definitions by addi
 <h3 id="generic-functions"><a class="header" href="#generic-functions">Generic functions</a></h3>
 <p>Two wrappers carry the markers in signatures:</p>
 <ul>
-<li><code>ValueOf&lt;T&gt;</code>: a <code>ReflectReference</code>, documented as a <code>T</code>.</li>
+<li><code>ValueOf&lt;T, R&gt;</code>: a value converted as <code>R</code>, a <code>ReflectReference</code> unless given, documented as a <code>T</code>.</li>
 <li><code>TypeOf&lt;R, A&gt;</code>: a type argument passed as <code>R</code>, i.e. a registration, documented as the parameter <code>A</code>.</li>
 </ul>
 <p>Using the same marker ties them together, so <code>get_component</code> returns a value of the type it is given:</p>
@@ -315,6 +357,9 @@ local transform = bms.world.get_component(assert(bms.current_entity()), Transfor
 print(transform)
 </code></pre>
 <p>A marker can also stand inside a type, i.e. <code>ValueOf&lt;Handle&lt;A&gt;&gt;</code> accepts the handle of any asset type, see <a href="../ScriptingReference/references.html#references-in-rust">References</a>.</p>
+<p>For values which aren’t references, give the conversion: <code>ValueOf&lt;A, ScriptValue&gt;</code> takes any value, typed as whatever the script passed:</p>
+<pre><code class="language-rust ignore">// with `MyBox` declared as a generic type (see below): `boxed(5)` is a `MyBox&lt;integer&gt;`
+fn boxed(initial: ValueOf&lt;A, ScriptValue&gt;) -&gt; V&lt;MyBox&lt;A&gt;&gt; { .. }</code></pre>
 <h3 id="generic-types"><a class="header" href="#generic-types">Generic types</a></h3>
 <p>Instantiations of a generic type would be documented as unrelated types. Declare the generic type from your plugin, instantiated with markers, with its namespace, parameter names and docs:</p>
 <pre><code class="language-rust ignore">use bevy_mod_scripting::bindings::function::generics::{A, GenericTypesAppExt};
