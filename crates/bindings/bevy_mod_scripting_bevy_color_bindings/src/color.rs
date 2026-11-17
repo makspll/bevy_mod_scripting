@@ -8,7 +8,7 @@ use bevy_color::{
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_mod_scripting_bindings::{
     InteropError,
-    function::from::{M, R, V},
+    conversions::from::{M, R, V},
 };
 use bevy_mod_scripting_derive::script_bindings;
 

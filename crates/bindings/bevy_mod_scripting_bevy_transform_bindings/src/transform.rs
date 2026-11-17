@@ -5,7 +5,7 @@ use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{Dir3, Mat4, Quat, Vec3};
 use bevy_mod_scripting_bindings::{
     InteropError,
-    function::from::{M, R, Union, V},
+    conversions::from::{M, R, Union, V},
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_transform::components::Transform;

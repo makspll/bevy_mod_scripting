@@ -18,8 +18,8 @@ use crate::{
     AppScriptTypeCatalogue, DynamicComponent, DynamicComponentInfo, SCRIPT_NAMESPACE_PREFIX,
     ScriptEvent, ScriptEventRegistration, ScriptNamedSet, ScriptQueryBuilder, ScriptQueryResult,
     ScriptSystemSetRegistry,
+    conversions::{from::V, from_ref::FromScriptErased, into::IntoScript},
     error::InteropError,
-    function::{from::V, from_ref::FromScriptErased, into::IntoScript},
     script_path, validate_script_namespace_and_name,
 };
 use ::{
@@ -555,7 +555,7 @@ impl<'w> WorldExtensions for WorldAccessGuard<'w> {
         let type_id = registration.type_registration().type_id();
         // allow enum variants, i.e. `Visibility.Hidden`, in place of values
         let value =
-            crate::function::from::variant_as_value_of(&value, self, type_id).unwrap_or(value);
+            crate::conversions::from::variant_as_value_of(&value, self, type_id).unwrap_or(value);
         let instance = <Box<dyn PartialReflect>>::from_script_erased(
             type_id,
             ScriptValue::Reference(value),
@@ -1883,7 +1883,7 @@ pub(crate) fn default_instance(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::function::from::R;
+    use crate::conversions::from::R;
     use bevy_reflect::Reflect;
     use std::sync::Arc;
     use test_utils::test_data::{

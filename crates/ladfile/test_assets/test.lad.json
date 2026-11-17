@@ -525,6 +525,24 @@
         "mapped_to_primitive_kind": "usize"
       }
     },
+    "ladfile_builder::test::AmountEnum": {
+      "identifier": "AmountEnum",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::AmountEnum",
+      "namespace": "ladfile_builder",
+      "documentation": "How much, by name or exactly",
+      "union": [
+        {
+          "literal": "First"
+        },
+        {
+          "literal": "SecondVariant"
+        },
+        {
+          "primitive": "usize"
+        }
+      ]
+    },
     "ladfile_builder::test::EnumType": {
       "identifier": "EnumType",
       "crate": "ladfile_builder",
@@ -575,6 +593,48 @@
         "is_reflect": true,
         "mapped_to_primitive_kind": null
       }
+    },
+    "ladfile_builder::test::OptionsStruct": {
+      "identifier": "OptionsStruct",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::OptionsStruct",
+      "namespace": "ladfile_builder",
+      "documentation": "The options of a function, passed by value",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "primitive": "string"
+          }
+        },
+        {
+          "name": "callback",
+          "type": {
+            "option": {
+              "function": {
+                "params": [
+                  {
+                    "primitive": "usize"
+                  }
+                ],
+                "returns": {
+                  "primitive": "bool"
+                }
+              }
+            }
+          },
+          "has_default": true
+        },
+        {
+          "name": "amount",
+          "type": {
+            "option": {
+              "val": "ladfile_builder::test::AmountEnum"
+            }
+          },
+          "has_default": true
+        }
+      ]
     },
     "ladfile_builder::test::TupleStructType": {
       "identifier": "TupleStructType",
@@ -693,6 +753,60 @@
         }
       },
       "metadata": {}
+    },
+    "::typed_arguments": {
+      "namespace": null,
+      "identifier": "typed_arguments",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "ladfile_builder::test::OptionsStruct"
+            }
+          },
+          "name": "options"
+        },
+        {
+          "kind": {
+            "union": [
+              {
+                "literal": "First"
+              },
+              {
+                "literal": "SecondVariant"
+              }
+            ]
+          },
+          "name": "name"
+        },
+        {
+          "kind": {
+            "val": {
+              "param": "A"
+            }
+          },
+          "name": "value"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "val": {
+            "generic_type": "ladfile_builder::test::OpaqueGenericType",
+            "args": [
+              {
+                "val": {
+                  "param": "A"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "metadata": {},
+      "generics": [
+        "A"
+      ]
     },
     "ladfile_builder::test::GenericStructType<usize>::hello_world": {
       "namespace": "ladfile_builder::test::GenericStructType<usize>",

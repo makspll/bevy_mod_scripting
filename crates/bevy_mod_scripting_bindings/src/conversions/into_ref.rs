@@ -7,8 +7,8 @@ use bevy_mod_scripting_world::WorldGuard;
 use bevy_reflect::PartialReflect;
 
 use crate::{
-    ReferencePart, ReflectReference, ScriptValue, error::InteropError, function::into::IntoScript,
-    reflection_extensions::PartialReflectExt,
+    ReferencePart, ReflectReference, ScriptValue, conversions::into::IntoScript,
+    error::InteropError, reflection_extensions::PartialReflectExt,
 };
 
 /// Converts a value represented by a reference into a [`crate::ScriptValue`].
