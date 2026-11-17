@@ -6,11 +6,8 @@ use std::time::Duration;
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_mod_scripting_bindings::{
     InteropError, ReflectReference,
-    function::{
-        from::{M, R, V},
-        generics::ValueOf,
-        script_function::FunctionCallContext,
-    },
+    conversions::from::{M, R, V},
+    function::{generics::ValueOf, script_function::FunctionCallContext},
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_time::{Fixed, Real, Time, Virtual};

@@ -5,7 +5,7 @@ use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{Dir2, Dir3, Vec2, Vec3};
 use bevy_mod_scripting_bindings::{
     InteropError,
-    function::from::{R, V},
+    conversions::from::{R, V},
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_shape::{InfinitePlane3d, Plane2d, Ray2d, Ray3d};
