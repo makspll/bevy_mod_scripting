@@ -46,8 +46,8 @@ pub struct LadFile {
     #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
     pub namespaces: IndexMap<Cow<'static, str>, LadNamespace>,
 
-    /// The types defined in the LAD file.
-    pub types: IndexMap<LadTypeId, LadTypeDefinition>,
+    /// The types defined in the LAD file, by how scripts get their values, see [`LadType`].
+    pub types: IndexMap<LadTypeId, LadType>,
 
     /// The generic types which types in the LAD file are instantiations of, i.e. `Handle` for `Handle<Image>`.
     ///
@@ -90,6 +90,35 @@ impl LadFile {
             .find(|instantiation| instantiation.args == args)
     }
 
+    /// The type scripts hold references to with the given id, if it is one, see [`LadType::Reference`].
+    pub fn get_reference_type(&self, type_id: &LadTypeId) -> Option<&LadTypeDefinition> {
+        self.types.get(type_id).and_then(LadType::as_reference)
+    }
+
+    /// The same as [`Self::get_reference_type`], mutably.
+    pub fn get_reference_type_mut(
+        &mut self,
+        type_id: &LadTypeId,
+    ) -> Option<&mut LadTypeDefinition> {
+        self.types
+            .get_mut(type_id)
+            .and_then(LadType::as_reference_mut)
+    }
+
+    /// The types scripts hold references to, see [`LadType::Reference`].
+    pub fn reference_types(&self) -> impl Iterator<Item = (&LadTypeId, &LadTypeDefinition)> {
+        self.types
+            .iter()
+            .filter_map(|(id, lad_type)| Some((id, lad_type.as_reference()?)))
+    }
+
+    /// The data types, copied to and from scripts as maps of their fields, see [`LadType::Data`].
+    pub fn data_types(&self) -> impl Iterator<Item = (&LadTypeId, &LadDataType)> {
+        self.types
+            .iter()
+            .filter_map(|(id, lad_type)| Some((id, lad_type.as_data()?)))
+    }
+
     /// Retrieves the best type identifier suitable for a type id.
     pub fn get_type_identifier(
         &self,
@@ -98,7 +127,7 @@ impl LadFile {
     ) -> Cow<'static, str> {
         self.types
             .get(type_id)
-            .map(|t| t.identifier.clone().into())
+            .map(|t| t.identifier().to_owned().into())
             .unwrap_or_else(|| {
                 if let Some(replacement) = raw_type_id_replacement {
                     replacement.into()
@@ -110,15 +139,13 @@ impl LadFile {
 
     /// Retrieves true if the type id corresponds to a primitive type.
     pub fn primitive_kind(&self, type_id: &LadTypeId) -> Option<&ReflectionPrimitiveKind> {
-        self.types
-            .get(type_id)
+        self.get_reference_type(type_id)
             .and_then(|t| t.metadata.mapped_to_primitive_kind.as_ref())
     }
 
     /// Retrieves the generics of a type id if it is a generic type.
     pub fn get_type_generics(&self, type_id: &LadTypeId) -> Option<&[LadGeneric]> {
-        self.types
-            .get(type_id)
+        self.get_reference_type(type_id)
             .and_then(|t| (!t.generics.is_empty()).then_some(t.generics.as_slice()))
     }
 
@@ -126,7 +153,7 @@ impl LadFile {
     pub fn get_type_documentation(&self, type_id: &LadTypeId) -> Option<&str> {
         self.types
             .get(type_id)
-            .and_then(|t| t.documentation.as_deref())
+            .and_then(LadType::documentation)
             .or_else(|| {
                 self.generic_types
                     .get(type_id)
@@ -135,9 +162,9 @@ impl LadFile {
     }
 
     /// Retrieves the metadata section for the given lad type id.
-    /// Primitives don't contain metadata
+    /// Primitives and data types don't contain metadata
     pub fn get_type_metadata(&self, type_id: &LadTypeId) -> Option<&LadTypeMetadata> {
-        self.types.get(type_id).map(|t| &t.metadata)
+        self.get_reference_type(type_id).map(|t| &t.metadata)
     }
 
     /// The builtins, the functions every script sees as globals, i.e. `import_namespace`.
@@ -381,6 +408,16 @@ pub enum LadTypeKind {
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
     },
+    /// A function, i.e. a callback a script passes, `{ "function": { "params": [..], "returns": .. } }`.
+    Function {
+        /// The kinds of its arguments, in order
+        #[serde(skip_serializing_if = "Vec::is_empty", default)]
+        params: Vec<LadTypeKind>,
+        /// The kind of what it returns
+        returns: Box<LadTypeKind>,
+    },
+    /// One exact string, i.e. one of the names of the variants of an enum passed by name.
+    Literal(Cow<'static, str>),
     /// A type itself rather than a value of it, i.e. the component type `get_component` takes,
     /// `{ "type": { "of": { "param": "A" }, "erased": { "val": "..::ScriptComponentRegistration" } } }`.
     Type {
@@ -453,6 +490,9 @@ impl LadTypeKind {
             LadTypeKind::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
+            LadTypeKind::Function { params, returns } => {
+                params.iter().chain(std::iter::once(&**returns)).collect()
+            }
             LadTypeKind::Ref(named)
             | LadTypeKind::Mut(named)
             | LadTypeKind::Val(named)
@@ -460,9 +500,10 @@ impl LadTypeKind {
             LadTypeKind::Type { of, erased } => {
                 of.args().iter().chain(std::iter::once(&**erased)).collect()
             }
-            LadTypeKind::Unknown(_) | LadTypeKind::Primitive(_) | LadTypeKind::UntypedTuple => {
-                vec![]
-            }
+            LadTypeKind::Unknown(_)
+            | LadTypeKind::Primitive(_)
+            | LadTypeKind::UntypedTuple
+            | LadTypeKind::Literal(_) => vec![],
         }
     }
 
@@ -479,6 +520,10 @@ impl LadTypeKind {
             LadTypeKind::TupleWithRest { head, rest } => head
                 .iter_mut()
                 .chain(std::iter::once(&mut **rest))
+                .collect(),
+            LadTypeKind::Function { params, returns } => params
+                .iter_mut()
+                .chain(std::iter::once(&mut **returns))
                 .collect(),
             LadTypeKind::Ref(LadNamedType::Generic { args, .. })
             | LadTypeKind::Mut(LadNamedType::Generic { args, .. })
@@ -500,6 +545,7 @@ impl LadTypeKind {
             | LadTypeKind::Unknown(_)
             | LadTypeKind::Primitive(_)
             | LadTypeKind::UntypedTuple
+            | LadTypeKind::Literal(_)
             | LadTypeKind::Fields { .. } => vec![],
         }
     }
@@ -660,6 +706,12 @@ pub trait ArgumentVisitor {
     /// A value of the type a generic parameter stands for
     fn visit_param(&mut self, param: &str) -> Self::Output;
 
+    /// A function taking arguments of the `params` kinds and returning a value of the `returns` kind
+    fn visit_function(&mut self, params: &[LadTypeKind], returns: &LadTypeKind) -> Self::Output;
+
+    /// One exact string
+    fn visit_literal(&mut self, value: &str) -> Self::Output;
+
     /// A type itself, passed as `erased` at runtime, by default [`Self::visit_named`] of the type
     fn visit_type(&mut self, of: &LadNamedType, _erased: &LadTypeKind) -> Self::Output {
         self.visit_named(of)
@@ -685,6 +737,8 @@ pub trait ArgumentVisitor {
             LadTypeKind::Union(inner) => self.visit_union(inner),
             LadTypeKind::Fields { of, variant } => self.visit_fields(of, variant.as_deref()),
             LadTypeKind::Type { of, erased } => self.visit_type(of, erased),
+            LadTypeKind::Function { params, returns } => self.visit_function(params, returns),
+            LadTypeKind::Literal(value) => self.visit_literal(value),
         }
     }
 }
@@ -762,6 +816,141 @@ impl LadTypeId {
     pub fn new_string_id(type_id: Cow<'static, str>) -> Self {
         LadTypeId(type_id)
     }
+}
+
+/// A type of a LAD file, by how scripts get its values.
+///
+/// Serialized as the definition itself: a data type has `fields`, a type scripts hold references to doesn't.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+pub enum LadType {
+    /// Plain data, copied to and from scripts, i.e. a type deriving `ScriptData`: a map of its fields (a struct) or
+    /// any of several kinds of values (an enum), see [`LadDataShape`].
+    ///
+    /// Scripts never hold a reference to it nor import it, so it has no functions, registration or metadata.
+    Data(LadDataType),
+    /// Scripts hold references to its values and import it from its namespace, i.e. a reflected type.
+    Reference(Box<LadTypeDefinition>),
+}
+
+impl From<LadTypeDefinition> for LadType {
+    fn from(definition: LadTypeDefinition) -> Self {
+        LadType::Reference(Box::new(definition))
+    }
+}
+
+impl From<LadDataType> for LadType {
+    fn from(data_type: LadDataType) -> Self {
+        LadType::Data(data_type)
+    }
+}
+
+impl LadType {
+    /// The definition of a type scripts hold references to, see [`LadType::Reference`].
+    pub fn as_reference(&self) -> Option<&LadTypeDefinition> {
+        match self {
+            LadType::Reference(definition) => Some(definition),
+            LadType::Data(_) => None,
+        }
+    }
+
+    /// The same as [`Self::as_reference`], mutably.
+    pub fn as_reference_mut(&mut self) -> Option<&mut LadTypeDefinition> {
+        match self {
+            LadType::Reference(definition) => Some(definition),
+            LadType::Data(_) => None,
+        }
+    }
+
+    /// The definition of a data type, see [`LadType::Data`].
+    pub fn as_data(&self) -> Option<&LadDataType> {
+        match self {
+            LadType::Data(data_type) => Some(data_type),
+            LadType::Reference(_) => None,
+        }
+    }
+
+    /// The name of the type, i.e. `Vec3`.
+    pub fn identifier(&self) -> &str {
+        match self {
+            LadType::Reference(definition) => &definition.identifier,
+            LadType::Data(data_type) => &data_type.identifier,
+        }
+    }
+
+    /// The full path of the type.
+    pub fn path(&self) -> &str {
+        match self {
+            LadType::Reference(definition) => &definition.path,
+            LadType::Data(data_type) => &data_type.path,
+        }
+    }
+
+    /// The script namespace the type is documented in.
+    pub fn namespace(&self) -> &str {
+        match self {
+            LadType::Reference(definition) => &definition.namespace,
+            LadType::Data(data_type) => &data_type.namespace,
+        }
+    }
+
+    /// The documentation of the type.
+    pub fn documentation(&self) -> Option<&str> {
+        match self {
+            LadType::Reference(definition) => definition.documentation.as_deref(),
+            LadType::Data(data_type) => data_type.documentation.as_deref(),
+        }
+    }
+}
+
+/// Plain data, copied to and from scripts, see [`LadType::Data`].
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LadDataType {
+    /// The name of the type, i.e. `SpawnOptions`.
+    pub identifier: String,
+
+    /// The source crate of the type
+    #[serde(rename = "crate", skip_serializing_if = "Option::is_none", default)]
+    pub crate_: Option<String>,
+
+    /// The full path of the type
+    pub path: String,
+
+    /// The script namespace the type is documented in. It can't be imported from it.
+    #[serde(skip_serializing_if = "String::is_empty", default)]
+    pub namespace: String,
+
+    /// The documentation describing the type.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub documentation: Option<String>,
+
+    /// What the type is made of, serialized as its `fields` or its `union`.
+    #[serde(flatten)]
+    pub shape: LadDataShape,
+}
+
+impl LadDataType {
+    /// The kinds the type is made of: the types of its fields, or the members of its union.
+    pub fn kinds(&self) -> Vec<&LadTypeKind> {
+        match &self.shape {
+            LadDataShape::Fields(fields) => fields.iter().map(|f| &f.type_).collect(),
+            LadDataShape::Union(kinds) => kinds.iter().collect(),
+        }
+    }
+}
+
+/// What a [`LadDataType`] is made of.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum LadDataShape {
+    /// A map of these fields, in order, i.e. a struct. A field with `has_default` can be left out.
+    ///
+    /// Functions refer to it as a [`LadTypeKind::Fields`] of the type.
+    Fields(Vec<LadNamedField>),
+    /// Any value of these kinds, i.e. an enum whose variants hold one value each.
+    ///
+    /// Functions refer to it as a [`LadTypeKind::Val`] of the type, which stands for the union.
+    Union(Vec<LadTypeKind>),
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -890,22 +1079,34 @@ pub enum LadTypeLayout {
 }
 
 impl LadTypeLayout {
+    /// The variants of the layout, in order, none if it is opaque.
+    pub fn variants(&self) -> &[LadVariant] {
+        match self {
+            LadTypeLayout::Opaque => &[],
+            LadTypeLayout::MonoVariant(variant) => std::slice::from_ref(variant),
+            LadTypeLayout::Enum(variants) => variants,
+        }
+    }
+
+    /// The same as [`Self::variants`], mutably.
+    pub fn variants_mut(&mut self) -> &mut [LadVariant] {
+        match self {
+            LadTypeLayout::Opaque => &mut [],
+            LadTypeLayout::MonoVariant(variant) => std::slice::from_mut(variant),
+            LadTypeLayout::Enum(variants) => variants,
+        }
+    }
+
+    /// The kinds of the fields of every variant, in order.
+    pub fn field_kinds(&self) -> impl Iterator<Item = &LadTypeKind> {
+        self.variants().iter().flat_map(LadVariant::field_kinds)
+    }
+
     /// Replaces the generic parameter with the given name in the types of all fields with the given argument, see [`LadGenericType::layout`].
     pub fn replace_param(&mut self, name: &str, arg: &LadTypeKind) {
-        let variants = match self {
-            LadTypeLayout::Opaque => return,
-            LadTypeLayout::MonoVariant(variant) => std::slice::from_mut(variant),
-            LadTypeLayout::Enum(variants) => variants.as_mut_slice(),
-        };
-        for variant in variants {
-            match variant {
-                LadVariant::TupleStruct { fields, .. } => fields
-                    .iter_mut()
-                    .for_each(|field| field.type_.replace_param(name, arg)),
-                LadVariant::Struct { fields, .. } => fields
-                    .iter_mut()
-                    .for_each(|field| field.type_.replace_param(name, arg)),
-                LadVariant::Unit { .. } => {}
+        for variant in self.variants_mut() {
+            for kind in variant.field_kinds_mut() {
+                kind.replace_param(name, arg);
             }
         }
     }
@@ -931,6 +1132,28 @@ impl LadTypeLayout {
                 }
                 None
             }
+        }
+    }
+}
+
+impl LadVariant {
+    /// The kinds of the fields of the variant, in order, none for a unit variant.
+    pub fn field_kinds(&self) -> Vec<&LadTypeKind> {
+        match self {
+            LadVariant::TupleStruct { fields, .. } => fields.iter().map(|f| &f.type_).collect(),
+            LadVariant::Struct { fields, .. } => fields.iter().map(|f| &f.type_).collect(),
+            LadVariant::Unit { .. } => vec![],
+        }
+    }
+
+    /// The same as [`Self::field_kinds`], mutably.
+    pub fn field_kinds_mut(&mut self) -> Vec<&mut LadTypeKind> {
+        match self {
+            LadVariant::TupleStruct { fields, .. } => {
+                fields.iter_mut().map(|f| &mut f.type_).collect()
+            }
+            LadVariant::Struct { fields, .. } => fields.iter_mut().map(|f| &mut f.type_).collect(),
+            LadVariant::Unit { .. } => vec![],
         }
     }
 }

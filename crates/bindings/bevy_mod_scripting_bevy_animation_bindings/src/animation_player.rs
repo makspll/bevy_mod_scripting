@@ -5,7 +5,7 @@ use bevy_animation::{AnimationPlayer, graph::AnimationNodeIndex};
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_mod_scripting_bindings::{
     InteropError,
-    function::from::{M, R},
+    conversions::from::{M, R},
 };
 use bevy_mod_scripting_derive::script_bindings;
 

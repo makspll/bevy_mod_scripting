@@ -12,7 +12,7 @@ use bevy_system_reflection::ReflectSystemSet;
 use crate::{
     AppScriptNamespaceMembers, DynamicScriptFunction, FunctionCallContext, FunctionInfo,
     FunctionScope, GetFunctionInfo, InteropError, ScriptNamedSet, ScriptTypeCatalogue, ScriptValue,
-    WorldExtensions, WorldGuard, function::from::V, function::into::IntoScript,
+    WorldExtensions, WorldGuard, conversions::from::V, conversions::into::IntoScript,
     function::script_function::documented_function, script_path,
 };
 

@@ -12,11 +12,8 @@ use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_mod_scripting_bindings::{
     GetTypeDependencies, InteropError, ReflectReference, ScriptValue, ThroughTypeInfo,
     TypedThrough,
-    function::{
-        arg_meta::ArgMeta,
-        from::{FromScript, R, V},
-        script_function::FunctionCallContext,
-    },
+    conversions::from::{FromScript, R, V},
+    function::{arg_meta::ArgMeta, script_function::FunctionCallContext},
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_shape::{
