@@ -9,9 +9,8 @@ use bevy_mod_scripting_world::{CallScope, WorldGuard};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::TypeRegistry;
 
-use super::{
-    arg_meta::ArgMeta, from::FromScript, into::IntoScript, type_dependencies::GetTypeDependencies,
-};
+use super::{arg_meta::ArgMeta, type_dependencies::GetTypeDependencies};
+use crate::conversions::{from::FromScript, into::IntoScript};
 use crate::{
     ReflectReference, ScriptValue,
     docgen::typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedThrough},

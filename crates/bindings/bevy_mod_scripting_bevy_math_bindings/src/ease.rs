@@ -3,7 +3,7 @@
 // `script_bindings` expects these in scope
 use bevy_curve::{Curve, EaseFunction};
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
-use bevy_mod_scripting_bindings::function::from::R;
+use bevy_mod_scripting_bindings::conversions::from::R;
 use bevy_mod_scripting_derive::script_bindings;
 
 #[script_bindings(

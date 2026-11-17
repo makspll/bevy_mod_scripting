@@ -11,10 +11,8 @@ use bevy_ecs::{
 };
 use bevy_mod_scripting_bindings::{
     InteropError, ScriptQueryBuilder, ScriptTypeRegistration, WorldExtensions,
-    function::{
-        from::{M, R, Union, V},
-        script_function::FunctionCallContext,
-    },
+    conversions::from::{M, R, Union, V},
+    function::script_function::FunctionCallContext,
 };
 use bevy_mod_scripting_derive::script_bindings;
 

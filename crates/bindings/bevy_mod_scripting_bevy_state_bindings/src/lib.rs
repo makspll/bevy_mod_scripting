@@ -7,8 +7,8 @@ use bevy_app::{App, Plugin};
 use bevy_ecs::world::World;
 use bevy_mod_scripting_bindings::{
     InteropError, ReferencePart, ReflectReference, ScriptTypeRegistration, WorldExtensions,
+    conversions::from::V,
     function::{
-        from::V,
         generics::{A, TypeOf, ValueOf},
         script_function::FunctionCallContext,
     },

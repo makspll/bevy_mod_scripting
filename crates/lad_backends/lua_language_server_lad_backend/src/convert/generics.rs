@@ -274,7 +274,7 @@ pub(super) fn instantiation_class_name(
                 ladfile
                     .types
                     .get(type_id)
-                    .map(|t| t.identifier.clone())
+                    .map(|t| t.identifier().to_owned())
                     .unwrap_or_else(|| super::short_type_name(&type_id.to_string())),
             )),
             // i.e. `Range<f32>`

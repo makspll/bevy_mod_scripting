@@ -20,13 +20,15 @@ use bevy_mod_scripting_bindings::{
     ScriptComponentRegistration, ScriptEventRegistration, ScriptQueryBuilder, ScriptQueryResult,
     ScriptResourceRegistration, ScriptTypeRegistration, Union, VariadicTuple, WorldExtensions,
     construct::construct_reference,
+    conversions::{
+        from::{R, V},
+        from_ref::FromScriptErased,
+        into_ref::IntoScriptErased,
+    },
     docgen::typed_through::ThroughTypeInfo,
     function::{
         bound::BoundFields,
-        from::{R, V},
-        from_ref::FromScriptErased,
         generics::{A, TypeOf, ValueOf},
-        into_ref::IntoScriptErased,
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
     script_value::ScriptValue,
