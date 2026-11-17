@@ -10,11 +10,19 @@ use bevy_reflect::{
 
 use crate::{
     ScriptValue,
-    docgen::typed_through::{ThroughTypeInfo, TypedThrough},
+    docgen::{
+        info::GetFunctionInfo,
+        typed_through::{ThroughTypeInfo, TypedThrough},
+    },
     error::InteropError,
     function::{
-        arg_meta::ArgMeta, from::FromScript, from::V, into::IntoScript,
-        script_function::DynamicScriptFunction, type_dependencies::GetTypeDependencies,
+        arg_meta::ArgMeta,
+        from::FromScript,
+        from::V,
+        into::IntoScript,
+        namespace::FunctionScope,
+        script_function::DynamicScriptFunction,
+        type_dependencies::{GetFunctionTypeDependencies, GetTypeDependencies},
     },
 };
 
@@ -74,31 +82,33 @@ impl<F> IntoScript for FunctionOf<F> {
 
 impl<F> ArgMeta for FunctionOf<F> {}
 
-macro_rules! impl_function_of {
-    ($($param:ident),*) => {
-        impl<$($param: TypedThrough,)* Ret: TypedThrough> TypedThrough for FunctionOf<fn($($param),*) -> Ret> {
-            fn through_type_info() -> ThroughTypeInfo {
-                ThroughTypeInfo::Function {
-                    params: vec![$($param::through_type_info()),*],
-                    returns: Box::new(Ret::through_type_info()),
-                }
-            }
+// a signature `fn(A) -> R` is itself a function, described by the machinery of registered functions
+impl<F: GetFunctionInfo<F>> TypedThrough for FunctionOf<F> {
+    fn through_type_info() -> ThroughTypeInfo {
+        let info = F::function_info("".into(), FunctionScope::Builtin);
+        let described = |type_info: Option<ThroughTypeInfo>| {
+            type_info.unwrap_or(ThroughTypeInfo::Primitive(
+                bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind::ScriptValue,
+            ))
+        };
+        ThroughTypeInfo::Function {
+            params: info
+                .arg_info
+                .into_iter()
+                .map(|arg| described(arg.type_info))
+                .collect(),
+            returns: Box::new(described(info.return_info.type_info)),
         }
-
-        impl<$($param: GetTypeDependencies,)* Ret: GetTypeDependencies> GetTypeDependencies
-            for FunctionOf<fn($($param),*) -> Ret>
-        {
-            type Underlying = DynamicScriptFunction;
-
-            fn register_type_dependencies(_registry: &mut TypeRegistry) {
-                $($param::register_type_dependencies(_registry);)*
-                Ret::register_type_dependencies(_registry);
-            }
-        }
-    };
+    }
 }
 
-variadics_please::all_tuples!(impl_function_of, 0, 13, P);
+impl<F: GetFunctionTypeDependencies<F>> GetTypeDependencies for FunctionOf<F> {
+    type Underlying = DynamicScriptFunction;
+
+    fn register_type_dependencies(registry: &mut TypeRegistry) {
+        F::register_type_dependencies(registry)
+    }
+}
 
 /// A unit variant of the reflected enum `E`, passed by its name in snake case, i.e. `"flex_start"` for `JustifyContent::FlexStart`.
 ///
