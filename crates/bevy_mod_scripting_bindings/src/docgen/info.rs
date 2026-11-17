@@ -19,7 +19,7 @@ use super::typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedThrough};
 )]
 pub trait GetFunctionInfo<Marker> {
     /// The function info of functions of this type, which needs no function, i.e. for the signature of a
-    /// [`FunctionOf<fn(A) -> R>`](crate::function::typed::FunctionOf).
+    /// [`FunctionOf<fn(A) -> R>`](crate::function::function_of::FunctionOf).
     fn function_info(name: Cow<'static, str>, namespace: FunctionScope) -> FunctionInfo
     where
         Self: Sized;
@@ -310,7 +310,7 @@ variadics_please::all_tuples!(impl_documentable, 0, 13, T);
 mod test {
     use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
 
-    use crate::function::from::{M, R, V};
+    use crate::conversions::from::{M, R, V};
 
     use super::*;
 

@@ -10,12 +10,10 @@ use bevy_reflect::{CreateTypeData, Reflect, TypeInfo, TypeRegistry, Typed};
 
 use crate::{
     ReflectReference, ScriptValue,
+    conversions::{from::FromScript, into::IntoScript},
     docgen::{TypedThrough, typed_through::ThroughTypeInfo},
     error::InteropError,
-    function::{
-        arg_meta::ArgMeta, from::FromScript, into::IntoScript,
-        type_dependencies::GetTypeDependencies,
-    },
+    function::{arg_meta::ArgMeta, type_dependencies::GetTypeDependencies},
 };
 
 /// Stands in for the generic parameter of a generic type, so the type's definition can be reflected.

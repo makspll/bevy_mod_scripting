@@ -1365,7 +1365,9 @@ mod test {
     use bevy_mod_scripting_bindings::{ReflectReference, function::generics::A};
     use std::collections::HashMap;
 
-    use bevy_mod_scripting_bindings::{Union, V, docgen::info::GetFunctionInfo, function::from::R};
+    use bevy_mod_scripting_bindings::{
+        Union, V, conversions::from::R, docgen::info::GetFunctionInfo,
+    };
     use bevy_reflect::Reflect;
 
     use super::*;
@@ -2245,11 +2247,9 @@ mod test {
         use LadTypeKind as Kind;
         use bevy_mod_scripting_bindings::{
             VariadicTuple,
+            conversions::from::{M, R, Union, V},
             docgen::TypedThrough,
-            function::{
-                bound::BoundFields,
-                from::{M, R, Union, V},
-            },
+            function::bound::BoundFields,
         };
         use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
 

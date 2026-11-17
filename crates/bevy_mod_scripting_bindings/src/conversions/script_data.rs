@@ -1,5 +1,5 @@
-//! Values whose type in scripts is more precise than how they are converted: functions with a signature, enums passed by
-//! name, and the conversions of `#[derive(ScriptData)]`.
+//! The conversions of `#[derive(ScriptData)]`: plain data, copied to and from scripts, see [`StructFields`] and
+//! [`StructMap`].
 //!
 //! A type is either reflected, which scripts hold references to, or plain data deriving `ScriptData`, never both:
 //!
@@ -21,210 +21,16 @@
 //! }
 //! ```
 
-use std::{any::TypeId, marker::PhantomData, ops::Deref};
+use std::any::TypeId;
 
 use bevy_mod_scripting_world::{CallScope, WorldGuard};
-use bevy_reflect::{
-    FromReflect, GetTypeRegistration, TypeInfo, TypeRegistry, Typed,
-    enums::{DynamicEnum, DynamicVariant, Enum},
-};
 
 use crate::{
     ScriptValue,
-    docgen::{
-        info::GetFunctionInfo,
-        typed_through::{ThroughTypeInfo, TypedThrough},
-    },
+    conversions::{from::FromScript, into::IntoScript},
     error::InteropError,
-    function::{
-        arg_meta::ArgMeta,
-        from::FromScript,
-        from::V,
-        into::IntoScript,
-        namespace::FunctionScope,
-        script_function::DynamicScriptFunction,
-        type_dependencies::{GetFunctionTypeDependencies, GetTypeDependencies},
-    },
+    function::arg_meta::ArgMeta,
 };
-
-/// A function, documented with the types of its arguments and of what it returns, i.e. `FunctionOf<fn(V<Entity>) -> bool>`
-/// is `fun(arg1: Entity): boolean` in Lua. It converts like a [`DynamicScriptFunction`]:
-///
-/// ```rust,ignore
-/// fn on_hit(callback: FunctionOf<fn(V<Entity>, f32) -> ()>) { .. }
-/// ```
-///
-/// The signature only documents the function, calls aren't checked against it.
-pub struct FunctionOf<F>(pub DynamicScriptFunction, PhantomData<fn() -> F>);
-
-impl<F> FunctionOf<F> {
-    /// Wrap a function.
-    pub fn new(function: DynamicScriptFunction) -> Self {
-        FunctionOf(function, PhantomData)
-    }
-
-    /// Unwrap the function.
-    pub fn into_inner(self) -> DynamicScriptFunction {
-        self.0
-    }
-}
-
-impl<F> Clone for FunctionOf<F> {
-    fn clone(&self) -> Self {
-        FunctionOf::new(self.0.clone())
-    }
-}
-
-impl<F> Deref for FunctionOf<F> {
-    type Target = DynamicScriptFunction;
-
-    fn deref(&self) -> &DynamicScriptFunction {
-        &self.0
-    }
-}
-
-impl<F> FromScript for FunctionOf<F> {
-    type This<'w> = Self;
-
-    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
-        DynamicScriptFunction::from_script(value, scope).map(FunctionOf::new)
-    }
-
-    fn could_convert(value: &ScriptValue) -> bool {
-        DynamicScriptFunction::could_convert(value)
-    }
-}
-
-impl<F> IntoScript for FunctionOf<F> {
-    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        self.0.into_script(world)
-    }
-}
-
-impl<F> ArgMeta for FunctionOf<F> {}
-
-// a signature `fn(A) -> R` is itself a function, described by the machinery of registered functions
-impl<F: GetFunctionInfo<F>> TypedThrough for FunctionOf<F> {
-    fn through_type_info() -> ThroughTypeInfo {
-        let info = F::function_info("".into(), FunctionScope::Builtin);
-        let described = |type_info: Option<ThroughTypeInfo>| {
-            type_info.unwrap_or(ThroughTypeInfo::Primitive(
-                bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind::ScriptValue,
-            ))
-        };
-        ThroughTypeInfo::Function {
-            params: info
-                .arg_info
-                .into_iter()
-                .map(|arg| described(arg.type_info))
-                .collect(),
-            returns: Box::new(described(info.return_info.type_info)),
-        }
-    }
-}
-
-impl<F: GetFunctionTypeDependencies<F>> GetTypeDependencies for FunctionOf<F> {
-    type Underlying = DynamicScriptFunction;
-
-    fn register_type_dependencies(registry: &mut TypeRegistry) {
-        F::register_type_dependencies(registry)
-    }
-}
-
-/// A unit variant of the reflected enum `E`, passed by its name as in Rust, i.e. `"FlexStart"` for `JustifyContent::FlexStart`.
-///
-/// It is documented as the names, i.e. `"Row" | "Column"` in Lua, and converts from a name or from a reference to a value of `E`.
-/// Variants with fields can't be named.
-pub struct ByName<E>(pub E);
-
-impl<E> ByName<E> {
-    /// Unwrap the value.
-    pub fn into_inner(self) -> E {
-        self.0
-    }
-}
-
-impl<E> Deref for ByName<E> {
-    type Target = E;
-
-    fn deref(&self) -> &E {
-        &self.0
-    }
-}
-
-/// The variants of `E` which can be named, see [`ByName`].
-fn unit_variants(type_info: &'static TypeInfo) -> impl Iterator<Item = &'static str> {
-    type_info.as_enum().into_iter().flat_map(|info| {
-        info.iter()
-            .filter(|variant| variant.as_unit_variant().is_ok())
-            .map(|variant| variant.name())
-    })
-}
-
-impl<E: Enum + FromReflect + Typed> FromScript for ByName<E> {
-    type This<'w> = Self;
-
-    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
-        let name = match value {
-            ScriptValue::String(name) => name,
-            ScriptValue::Reference(_) => {
-                return V::<E>::from_script(value, scope).map(|v| ByName(v.into_inner()));
-            }
-            value => return Err(InteropError::value_mismatch(TypeId::of::<E>(), value)),
-        };
-        let variant = unit_variants(E::type_info()).find(|variant| *variant == name);
-        let Some(variant) = variant else {
-            let names = unit_variants(E::type_info())
-                .map(|variant| format!("\"{variant}\""))
-                .collect::<Vec<_>>()
-                .join(", ");
-            return Err(InteropError::string(format!(
-                "`{name}` is not a name of `{}`, use one of: {names}",
-                E::type_path()
-            )));
-        };
-        E::from_reflect(&DynamicEnum::new(variant, DynamicVariant::Unit))
-            .map(ByName)
-            .ok_or_else(|| {
-                InteropError::string(format!(
-                    "the `{variant}` variant of `{}` could not be built",
-                    E::type_path()
-                ))
-            })
-    }
-
-    fn could_convert(value: &ScriptValue) -> bool {
-        matches!(value, ScriptValue::String(_) | ScriptValue::Reference(_))
-    }
-}
-
-impl<E: Enum> IntoScript for ByName<E> {
-    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        Ok(ScriptValue::String(self.0.variant_name().to_owned().into()))
-    }
-}
-
-impl<E> ArgMeta for ByName<E> {}
-
-impl<E: GetTypeRegistration> GetTypeDependencies for ByName<E> {
-    type Underlying = E;
-
-    fn register_type_dependencies(registry: &mut TypeRegistry) {
-        registry.register::<E>();
-    }
-}
-
-impl<E: Typed> TypedThrough for ByName<E> {
-    fn through_type_info() -> ThroughTypeInfo {
-        let mut names = unit_variants(E::type_info())
-            .map(|variant| ThroughTypeInfo::Literal(variant.to_owned()))
-            .collect::<Vec<_>>();
-        match names.len() {
-            1 => names.remove(0),
-            _ => ThroughTypeInfo::Union(names),
-        }
-    }
-}
 
 /// The fields of a data struct, taken from the map scripts pass one by one, see `#[derive(ScriptData)]`.
 ///
@@ -312,7 +118,10 @@ impl StructMap {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{CurrentScriptAttachment, ScriptDataInfo, WorldExtensions};
+    use crate::{
+        ByName, CurrentScriptAttachment, FunctionOf, ScriptDataInfo, ThroughTypeInfo, TypedThrough,
+        WorldExtensions,
+    };
     use bevy_ecs::world::World;
     use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
     use bevy_mod_scripting_derive::ScriptData;

@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_mod_scripting_bindings::{
     InteropError,
-    function::from::{R, V},
+    conversions::from::{R, V},
 };
 use bevy_mod_scripting_derive::script_bindings;
 

@@ -1,7 +1,7 @@
 //! This module contains the [`FromScript`] trait and its implemenations.
 
-use super::bound::BoundFields;
-use super::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
+use crate::function::bound::BoundFields;
+use crate::function::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
 use crate::{
     EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
     error::InteropError, script_value::VariadicTuple,
@@ -405,13 +405,13 @@ impl<'a, T> From<&'a T> for R<'a, T> {
 /// which is why the borrow can't be kept past the call:
 ///
 /// ```
-/// # use bevy_mod_scripting_bindings::function::{from::M, script_function::ScriptFunction};
+/// # use bevy_mod_scripting_bindings::{conversions::from::M, function::script_function::ScriptFunction};
 /// fn double(mut m: M<u32>) { *m.0 *= 2 }
 /// let _ = double.into_dynamic_script_function();
 /// ```
 ///
 /// ```compile_fail
-/// # use bevy_mod_scripting_bindings::function::{from::M, script_function::ScriptFunction};
+/// # use bevy_mod_scripting_bindings::{conversions::from::M, function::script_function::ScriptFunction};
 /// fn stash(m: M<'static, u32>) {}
 /// let _ = stash.into_dynamic_script_function();
 /// ```

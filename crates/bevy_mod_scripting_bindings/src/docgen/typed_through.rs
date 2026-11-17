@@ -7,9 +7,9 @@ use std::{any::TypeId, collections::VecDeque, ffi::OsString, path::PathBuf};
 
 use crate::{
     ReflectReference, StaticTypeRef, VariadicTuple,
-    function::{
-        from::{M, R, Union, V},
-        script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
+    conversions::from::{M, R, Union, V},
+    function::script_function::{
+        DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
     },
     script_value::ScriptValue,
 };
@@ -73,14 +73,14 @@ pub enum ThroughTypeInfo {
     ///
     /// See [`ThroughTypeInfo::bind_placeholders`].
     Bound(BoundPlaceholder),
-    /// A function taking and returning values of the given types, see [`crate::function::typed::FunctionOf`]
+    /// A function taking and returning values of the given types, see [`crate::function::function_of::FunctionOf`]
     Function {
         /// The types of its arguments, in order
         params: Vec<ThroughTypeInfo>,
         /// The type of what it returns
         returns: Box<ThroughTypeInfo>,
     },
-    /// One exact string, see [`crate::function::typed::ByName`]
+    /// One exact string, see [`crate::conversions::by_name::ByName`]
     Literal(String),
     /// A data struct, copied to and from scripts as a map of its fields, see [`ScriptDataInfo`]
     Data(&'static ScriptDataInfo),

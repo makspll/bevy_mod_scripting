@@ -315,9 +315,9 @@ mod test {
     use bevy_app::App;
     use bevy_mod_scripting_bindings::{
         EnumVariantRef, NamespaceMembers,
+        conversions::from::V,
         function::{
             bound::{BoundFields, BoundValue},
-            from::V,
             namespace::NamespaceBuilder,
         },
     };
@@ -644,9 +644,9 @@ mod test {
         NamespaceBuilder::<StaticTypeRef>::new(app.world_mut())
             .register("describe", |_: StaticTypeRef| 1usize);
         // a generic function, over the markers of its signature, which also uses one as an argument of a generic type
-        use bevy_mod_scripting_bindings::function::{
-            from::V,
-            generics::{TypeOf, ValueOf},
+        use bevy_mod_scripting_bindings::{
+            conversions::from::V,
+            function::generics::{TypeOf, ValueOf},
         };
         NamespaceBuilder::<OtherAsset>::new(app.world_mut()).register(
             "get",
