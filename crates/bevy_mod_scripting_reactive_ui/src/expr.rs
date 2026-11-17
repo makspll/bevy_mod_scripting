@@ -5,11 +5,8 @@ use std::sync::Arc;
 
 use bevy_ecs::world::World;
 use bevy_mod_scripting_bindings::{
-    InteropError, NamespaceMembers, ReflectReference, ScriptValue, WorldGuard,
-    function::{
-        from::{Union, V},
-        namespace::NamespaceBuilder,
-    },
+    InteropError, NamespaceMembers, ReflectReference, ScriptValue, Union, V, WorldGuard,
+    function::namespace::NamespaceBuilder,
 };
 use bevy_reflect::{PartialReflect, Reflect, ReflectRef};
 use parking_lot::Mutex;

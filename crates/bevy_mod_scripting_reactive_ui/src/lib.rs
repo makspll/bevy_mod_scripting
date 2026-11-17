@@ -44,9 +44,8 @@ use bevy_ecs::{
 };
 use bevy_mod_scripting_bindings::{
     AppScriptCallbackRunners, CurrentScriptAttachment, FunctionCallContext, InteropError,
-    NamespaceMembers, ScriptComponentRegistration, ScriptValue, WorldAccessGuard, WorldExtensions,
-    WorldGuard,
-    function::{from::V, namespace::NamespaceBuilder},
+    NamespaceMembers, ScriptComponentRegistration, ScriptValue, V, WorldAccessGuard,
+    WorldExtensions, WorldGuard, function::namespace::NamespaceBuilder,
 };
 use bevy_mod_scripting_core::event::ScriptLifecycleMessage;
 use bevy_mod_scripting_script::ScriptAttachment;
