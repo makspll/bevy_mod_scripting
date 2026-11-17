@@ -6,11 +6,8 @@ use std::{any::TypeId, sync::Arc};
 use bevy_ecs::{component::ComponentId, world::World};
 use bevy_mod_scripting_bindings::{
     InteropError, NamespaceMembers, ReflectReference, ScriptComponentRegistration, ScriptValue,
-    WorldGuard,
-    function::{
-        from::{Union, V},
-        namespace::NamespaceBuilder,
-    },
+    Union, V, WorldGuard,
+    function::namespace::NamespaceBuilder,
 };
 use bevy_reflect::{PartialReflect, Reflect, ReflectRef};
 use parking_lot::Mutex;
