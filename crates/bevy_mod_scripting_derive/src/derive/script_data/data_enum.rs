@@ -1,54 +1,17 @@
+//! An enum whose variants hold one value each, passed as the value of any of them.
+
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, spanned::Spanned};
+use syn::{DataEnum, DeriveInput, spanned::Spanned};
 
-use crate::derive::SharedArgs;
+use super::Args;
 
-#[derive(Default)]
-struct Args {
-    shared_args: SharedArgs,
-}
-
-impl Args {
-    fn parse(attrs: &[syn::Attribute]) -> syn::Result<Self> {
-        let mut args = Args::default();
-        for attr in attrs {
-            if attr.path().is_ident("script_union") {
-                attr.parse_nested_meta(|meta| {
-                    if args.shared_args.apply_nested_meta(&meta)? {
-                        return Ok(());
-                    }
-                    Err(meta.error("Unknown argument to script_union"))
-                })?;
-            }
-        }
-        Ok(args)
-    }
-}
-
-pub fn script_union(input: TokenStream) -> TokenStream {
-    let derive_input = match syn::parse2::<DeriveInput>(input) {
-        Ok(derive_input) => derive_input,
-        Err(err) => return err.to_compile_error(),
-    };
-    let args = match Args::parse(&derive_input.attrs) {
-        Ok(args) => args,
-        Err(error) => return error.to_compile_error(),
-    };
-    if !derive_input.generics.params.is_empty() {
-        return syn::Error::new(
-            derive_input.generics.span(),
-            "ScriptUnion can't be derived for generic types",
-        )
-        .to_compile_error();
-    }
-    let syn::Data::Enum(data) = &derive_input.data else {
-        return syn::Error::new(
-            derive_input.ident.span(),
-            "ScriptUnion can only be derived for enums",
-        )
-        .to_compile_error();
-    };
+/// The conversions and documentation of the enum, a name for a nested `Union` of its variants' types.
+pub(super) fn expand(
+    derive_input: &DeriveInput,
+    data: &DataEnum,
+    args: &Args,
+) -> syn::Result<TokenStream> {
     let mut variants = Vec::new();
     let mut types = Vec::new();
     for variant in &data.variants {
@@ -58,17 +21,18 @@ pub fn script_union(input: TokenStream) -> TokenStream {
                 types.push(&fields.unnamed[0].ty);
             }
             _ => {
-                return syn::Error::new(
+                return Err(syn::Error::new(
                     variant.span(),
-                    "each variant of a ScriptUnion holds one value, i.e. `Number(f64)`",
-                )
-                .to_compile_error();
+                    "each variant of a ScriptData enum holds one value, i.e. `Number(f64)`",
+                ));
             }
         }
     }
     if variants.is_empty() {
-        return syn::Error::new(derive_input.ident.span(), "a ScriptUnion needs variants")
-            .to_compile_error();
+        return Err(syn::Error::new(
+            derive_input.ident.span(),
+            "a ScriptData enum needs variants",
+        ));
     }
 
     let bms = &args.shared_args.bms_bindings_path;
@@ -110,7 +74,7 @@ pub fn script_union(input: TokenStream) -> TokenStream {
         quote! { Self::#variant(value) => #wrapped }
     });
 
-    quote! {
+    Ok(quote! {
         #[automatically_derived]
         impl #bms::FromScript for #ident {
             type This<'w> = Self;
@@ -151,12 +115,12 @@ pub fn script_union(input: TokenStream) -> TokenStream {
 
         #[automatically_derived]
         impl #bms::GetTypeDependencies for #ident {
-            // it isn't reflected, containers of it are registered as containers of the map it converts from
+            // it isn't reflected, containers of it are registered as containers of the values it converts from
             type Underlying = #bms::ScriptValue;
 
             fn register_type_dependencies(registry: &mut #bms::__derive::TypeRegistry) {
                 #( <#types as #bms::GetTypeDependencies>::register_type_dependencies(registry); )*
             }
         }
-    }
+    })
 }

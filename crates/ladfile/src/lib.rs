@@ -112,11 +112,11 @@ impl LadFile {
             .filter_map(|(id, lad_type)| Some((id, lad_type.as_reference()?)))
     }
 
-    /// The types passed by value, see [`LadType::Value`].
-    pub fn value_types(&self) -> impl Iterator<Item = (&LadTypeId, &LadValueType)> {
+    /// The data types, copied to and from scripts as maps of their fields, see [`LadType::Data`].
+    pub fn data_types(&self) -> impl Iterator<Item = (&LadTypeId, &LadDataType)> {
         self.types
             .iter()
-            .filter_map(|(id, lad_type)| Some((id, lad_type.as_value()?)))
+            .filter_map(|(id, lad_type)| Some((id, lad_type.as_data()?)))
     }
 
     /// Retrieves the best type identifier suitable for a type id.
@@ -162,7 +162,7 @@ impl LadFile {
     }
 
     /// Retrieves the metadata section for the given lad type id.
-    /// Primitives and value types don't contain metadata
+    /// Primitives and data types don't contain metadata
     pub fn get_type_metadata(&self, type_id: &LadTypeId) -> Option<&LadTypeMetadata> {
         self.get_reference_type(type_id).map(|t| &t.metadata)
     }
@@ -820,15 +820,15 @@ impl LadTypeId {
 
 /// A type of a LAD file, by how scripts get its values.
 ///
-/// Serialized as the definition itself: a value type has `fields`, a type scripts hold references to doesn't.
+/// Serialized as the definition itself: a data type has `fields`, a type scripts hold references to doesn't.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum LadType {
-    /// Passed to and from scripts by value, as a map of its fields, i.e. a `#[derive(ScriptStruct)]`.
+    /// Plain data, copied to and from scripts as a map of its fields, i.e. a struct deriving `ScriptData`.
     ///
-    /// Scripts never hold a value of it nor import it: they pass and get maps of its fields, which functions
+    /// Scripts never hold a reference to it nor import it: they pass and get maps of its fields, which functions
     /// refer to as [`LadTypeKind::Fields`]. Backends describe it by its fields alone, not as a type of its own.
-    Value(LadValueType),
+    Data(LadDataType),
     /// Scripts hold references to its values and import it from its namespace, i.e. a reflected type.
     Reference(Box<LadTypeDefinition>),
 }
@@ -839,9 +839,9 @@ impl From<LadTypeDefinition> for LadType {
     }
 }
 
-impl From<LadValueType> for LadType {
-    fn from(value_type: LadValueType) -> Self {
-        LadType::Value(value_type)
+impl From<LadDataType> for LadType {
+    fn from(data_type: LadDataType) -> Self {
+        LadType::Data(data_type)
     }
 }
 
@@ -850,7 +850,7 @@ impl LadType {
     pub fn as_reference(&self) -> Option<&LadTypeDefinition> {
         match self {
             LadType::Reference(definition) => Some(definition),
-            LadType::Value(_) => None,
+            LadType::Data(_) => None,
         }
     }
 
@@ -858,14 +858,14 @@ impl LadType {
     pub fn as_reference_mut(&mut self) -> Option<&mut LadTypeDefinition> {
         match self {
             LadType::Reference(definition) => Some(definition),
-            LadType::Value(_) => None,
+            LadType::Data(_) => None,
         }
     }
 
-    /// The definition of a type passed by value, see [`LadType::Value`].
-    pub fn as_value(&self) -> Option<&LadValueType> {
+    /// The definition of a data type, see [`LadType::Data`].
+    pub fn as_data(&self) -> Option<&LadDataType> {
         match self {
-            LadType::Value(value_type) => Some(value_type),
+            LadType::Data(data_type) => Some(data_type),
             LadType::Reference(_) => None,
         }
     }
@@ -874,7 +874,7 @@ impl LadType {
     pub fn identifier(&self) -> &str {
         match self {
             LadType::Reference(definition) => &definition.identifier,
-            LadType::Value(value_type) => &value_type.identifier,
+            LadType::Data(data_type) => &data_type.identifier,
         }
     }
 
@@ -882,7 +882,7 @@ impl LadType {
     pub fn path(&self) -> &str {
         match self {
             LadType::Reference(definition) => &definition.path,
-            LadType::Value(value_type) => &value_type.path,
+            LadType::Data(data_type) => &data_type.path,
         }
     }
 
@@ -890,7 +890,7 @@ impl LadType {
     pub fn namespace(&self) -> &str {
         match self {
             LadType::Reference(definition) => &definition.namespace,
-            LadType::Value(value_type) => &value_type.namespace,
+            LadType::Data(data_type) => &data_type.namespace,
         }
     }
 
@@ -898,14 +898,14 @@ impl LadType {
     pub fn documentation(&self) -> Option<&str> {
         match self {
             LadType::Reference(definition) => definition.documentation.as_deref(),
-            LadType::Value(value_type) => value_type.documentation.as_deref(),
+            LadType::Data(data_type) => data_type.documentation.as_deref(),
         }
     }
 }
 
-/// A type passed to and from scripts by value, as a map of its fields, see [`LadType::Value`].
+/// Plain data, copied to and from scripts as a map of its fields, see [`LadType::Data`].
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct LadValueType {
+pub struct LadDataType {
     /// The name of the type, i.e. `SpawnOptions`.
     pub identifier: String,
 

@@ -54,8 +54,8 @@ pub fn convert_ladfile_to_lua_declaration_files(
 pub fn lua_class_name(ladfile: &LadFile, type_id: &LadTypeId) -> String {
     if let Some(lad_type) = ladfile.get_reference_type(type_id) {
         qualified(&lad_type.namespace, &lua_type_name(lad_type))
-    } else if let Some(value_type) = ladfile.types.get(type_id).and_then(LadType::as_value) {
-        qualified(&value_type.namespace, &value_type.identifier)
+    } else if let Some(data_type) = ladfile.types.get(type_id).and_then(LadType::as_data) {
+        qualified(&data_type.namespace, &data_type.identifier)
     } else if let Some(generic_type) = ladfile.generic_types.get(type_id) {
         qualified(&generic_type.namespace, &generic_type.identifier)
     } else {
@@ -105,7 +105,7 @@ fn qualified(namespace: &str, name: &str) -> String {
 fn type_lua_classes(
     ladfile: &ladfile::LadFile,
 ) -> IndexMap<LadTypeId, (LuaClass, Vec<ClassField>, Vec<FunctionSignature>)> {
-    // value types are only ever maps of their fields, see `fields_modules`
+    // data types are only ever maps of their fields, see `fields_modules`
     ladfile
         .reference_types()
         .map(|(type_id, lad_type)| {
@@ -214,13 +214,13 @@ fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
             .chain([&function.return_type])
             .map(|arg| &arg.kind)
     });
-    // fields can be tables of the fields of other types too, i.e. a value type holding another
+    // fields can be tables of the fields of other types too, i.e. a data type holding another
     let fields = ladfile
         .reference_types()
         .flat_map(|(_, t)| t.layout.field_kinds())
         .chain(
             ladfile
-                .value_types()
+                .data_types()
                 .flat_map(|(_, v)| v.fields.iter().map(|f| &f.type_)),
         );
     for kind in signatures.chain(fields) {
@@ -1120,13 +1120,13 @@ fn fields_module(
         .get(type_id)
         .ok_or_else(|| anyhow::anyhow!("Type not found: {type_id}"))?;
     let type_name = ladfile.get_type_identifier(type_id, None);
-    // the fields of a value type's map are optional when they can be left out, a constructor's when it has a default
+    // the fields of a data type's map are optional when they can be left out, a constructor's when it has a default
     let (optional, note): (Box<dyn Fn(bool) -> bool>, _) = match lad_type {
         LadType::Reference(definition) => (
             Box::new(|has_default| definition.field_has_default(variant, has_default)),
             "Optional fields are filled in from defaults.",
         ),
-        LadType::Value(_) => (
+        LadType::Data(_) => (
             Box::new(|has_default| has_default),
             "Optional fields can be left out.",
         ),
@@ -1316,7 +1316,7 @@ fn namespace_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
         .collect()
 }
 
-/// The fields a constructor of the type takes, or of the variant for enums, or the fields of a value type's map.
+/// The fields a constructor of the type takes, or of the variant for enums, or the fields of a data type's map.
 ///
 /// `None` if the fields cannot be described, i.e. for opaque types, or enums without a variant given.
 fn lad_fields<'a>(
@@ -1326,10 +1326,10 @@ fn lad_fields<'a>(
 ) -> Option<Cow<'a, ladfile::LadVariant>> {
     let lad_type = match ladfile.types.get(type_id)? {
         LadType::Reference(lad_type) => lad_type,
-        LadType::Value(value_type) => {
+        LadType::Data(data_type) => {
             return Some(Cow::Owned(ladfile::LadVariant::Struct {
-                name: value_type.identifier.clone().into(),
-                fields: value_type.fields.clone(),
+                name: data_type.identifier.clone().into(),
+                fields: data_type.fields.clone(),
             }));
         }
     };

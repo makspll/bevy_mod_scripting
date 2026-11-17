@@ -205,7 +205,7 @@ impl<E: Typed> TypedThrough for ByName<E> {
     }
 }
 
-/// The fields of a struct passed by value, taken from the map scripts pass one by one, see `#[derive(ScriptStruct)]`.
+/// The fields of a data struct, taken from the map scripts pass one by one, see `#[derive(ScriptData)]`.
 ///
 /// A field converts like an argument of a function: [`FromScript`] converts it, and a missing field is its
 /// [`ArgMeta::default_value`], so `Option<T>` fields can be left out and others can't.
@@ -263,7 +263,7 @@ impl StructFields {
     }
 }
 
-/// The map of fields a struct passed by value is returned as, see `#[derive(ScriptStruct)]`.
+/// The map of fields a data struct is returned as, see `#[derive(ScriptData)]`.
 #[derive(Default)]
 pub struct StructMap(Vec<(String, ScriptValue)>);
 
@@ -291,10 +291,10 @@ impl StructMap {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{CurrentScriptAttachment, ScriptStructInfo, WorldExtensions};
+    use crate::{CurrentScriptAttachment, ScriptDataInfo, WorldExtensions};
     use bevy_ecs::world::World;
     use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
-    use bevy_mod_scripting_derive::{ScriptStruct, ScriptUnion};
+    use bevy_mod_scripting_derive::ScriptData;
     use bevy_mod_scripting_world::WorldAccessGuard;
     use bevy_reflect::Reflect;
 
@@ -305,8 +305,8 @@ mod test {
         Custom(f32),
     }
 
-    #[derive(ScriptUnion)]
-    #[script_union(bms_bindings_path = "crate")]
+    #[derive(ScriptData)]
+    #[script_data(bms_bindings_path = "crate")]
     enum Size {
         Named(ByName<Direction>),
         Pixels(f64),
@@ -314,8 +314,8 @@ mod test {
     }
 
     /// The options of a test
-    #[derive(ScriptStruct)]
-    #[script_struct(bms_bindings_path = "crate", namespace = "test")]
+    #[derive(ScriptData)]
+    #[script_data(bms_bindings_path = "crate", namespace = "test")]
     struct Options {
         name: String,
         size: Option<Size>,
@@ -399,10 +399,10 @@ mod test {
             assert!(map.contains_key("name") && !map.contains_key("on_done"));
         });
 
-        let ThroughTypeInfo::Struct(info) = Options::through_type_info() else {
+        let ThroughTypeInfo::Data(info) = Options::through_type_info() else {
             panic!("not a table")
         };
-        let ScriptStructInfo {
+        let ScriptDataInfo {
             identifier,
             namespace,
             docs,

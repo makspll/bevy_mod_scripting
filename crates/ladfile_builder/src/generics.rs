@@ -380,8 +380,8 @@ impl LadFileBuilder<'_> {
         {
             named_generic_types_in_layout(layout, &mut named);
         }
-        for (_, value_type) in file.value_types() {
-            for field in &value_type.fields {
+        for (_, data_type) in file.data_types() {
+            for field in &data_type.fields {
                 named_generic_types(&field.type_, &mut named);
             }
         }

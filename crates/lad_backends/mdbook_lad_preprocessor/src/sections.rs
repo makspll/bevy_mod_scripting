@@ -339,7 +339,7 @@ impl<'a> Section<'a> {
     /// Whether the namespace has no types, functions or values, so no page
     fn namespace_is_empty(&self, namespace: &str) -> bool {
         self.types_in_namespace(namespace).is_empty()
-            && self.value_types_in_namespace(namespace).is_empty()
+            && self.data_types_in_namespace(namespace).is_empty()
             && self
                 .ladfile
                 .namespaces
@@ -349,8 +349,8 @@ impl<'a> Section<'a> {
                 })
     }
 
-    /// The ids of the types in the namespace which have a page of their own, generic types last. Value types aren't
-    /// imported from the namespace, see [`Self::value_types_in_namespace`]
+    /// The ids of the types in the namespace which have a page of their own, generic types last. Data types aren't
+    /// imported from the namespace, see [`Self::data_types_in_namespace`]
     fn types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
         self.ladfile
             .reference_types()
@@ -366,12 +366,12 @@ impl<'a> Section<'a> {
             .collect()
     }
 
-    /// The ids of the value types documented in the namespace, which scripts pass as maps of their fields, see
-    /// [`ladfile::LadType::Value`]
-    fn value_types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
+    /// The ids of the data types documented in the namespace, which scripts pass as maps of their fields, see
+    /// [`ladfile::LadType::Data`]
+    fn data_types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
         self.ladfile
-            .value_types()
-            .filter(|(_, value_type)| value_type.namespace == namespace)
+            .data_types()
+            .filter(|(_, data_type)| data_type.namespace == namespace)
             .map(|(id, _)| id)
             .collect()
     }
@@ -534,7 +534,7 @@ impl<'a> Section<'a> {
                 let lad_namespace = self.ladfile.namespaces.get(namespace);
                 let contents = [
                     count(self.types_in_namespace(namespace).len(), "type"),
-                    count(self.value_types_in_namespace(namespace).len(), "value type"),
+                    count(self.data_types_in_namespace(namespace).len(), "data type"),
                     count(self.namespace_functions(namespace).len(), "function"),
                     count(lad_namespace.map_or(0, |n| n.values.len()), "value"),
                 ]
@@ -593,9 +593,9 @@ impl<'a> Section<'a> {
                 ladfile: self.ladfile,
             },
             SectionItem::TypesSummary {
-                heading: "Value types",
-                description: Some(VALUE_TYPE_DESCRIPTION),
-                types: self.value_types_in_namespace(namespace),
+                heading: "Data types",
+                description: Some(DATA_TYPE_DESCRIPTION),
+                types: self.data_types_in_namespace(namespace),
                 types_directory: ".".to_owned(),
                 ladfile: self.ladfile,
             },
@@ -654,26 +654,26 @@ impl<'a> Section<'a> {
         let lad_type = match lad_type {
             LadType::Reference(lad_type) => lad_type,
             // only ever a map of its fields
-            LadType::Value(value_type) => {
+            LadType::Data(data_type) => {
                 return vec![
                     SectionItem::Badges {
-                        badges: vec!["Value type"],
+                        badges: vec!["Data"],
                     },
                     SectionItem::Markdown {
                         markdown: Box::new(|builder| {
-                            builder.raw(VALUE_TYPE_DESCRIPTION);
+                            builder.raw(DATA_TYPE_DESCRIPTION);
                             builder.append("\n\n");
                         }),
                     },
                     SectionItem::Description {
-                        documentation: value_type.documentation.as_deref(),
+                        documentation: data_type.documentation.as_deref(),
                         ladfile: self.ladfile,
                         types_directory: ".".to_owned(),
                     },
                     SectionItem::Layout {
                         layout: Cow::Owned(LadTypeLayout::MonoVariant(LadVariant::Struct {
-                            name: value_type.identifier.clone().into(),
-                            fields: value_type.fields.clone(),
+                            name: data_type.identifier.clone().into(),
+                            fields: data_type.fields.clone(),
                         })),
                         ladfile: self.ladfile,
                         types_directory: PathBuf::from("./"),
@@ -772,7 +772,7 @@ pub enum SectionItem<'a> {
     /// What kind of type the page is about, i.e. a component
     Badges { badges: Vec<&'static str> },
     Layout {
-        /// Owned for value types, whose fields aren't a layout
+        /// Owned for data types, whose fields aren't a layout
         layout: Cow<'a, LadTypeLayout>,
         ladfile: &'a LadFile,
         types_directory: PathBuf,
@@ -1295,8 +1295,8 @@ fn signature(function: &LadFunction, ladfile: &LadFile, types_directory: &str) -
     )
 }
 
-/// What a value type is, on its page and above the list of them, see [`ladfile::LadTypeMetadata::is_value_type`]
-const VALUE_TYPE_DESCRIPTION: &str = "Value types are passed to and from functions as a table of their fields, which is copied: scripts can't import them or hold a reference to one.";
+/// What a data type is, on its page and above the list of them, see [`ladfile::LadType::Data`]
+const DATA_TYPE_DESCRIPTION: &str = "Data types are plain data, copied to and from functions as a table of their fields: scripts can't import them or hold a reference to one.";
 
 /// A table of types as a quick reference, sorted by name, linking to the type pages
 fn types_summary_markdown(
@@ -1414,7 +1414,7 @@ mod test {
             "{titles:?}"
         );
 
-        // and the pages of the namespaces list the same, in their types and value types
+        // and the pages of the namespaces list the same, in their types and data types
         let listed = namespace_pages(&ladfile)
             .iter()
             .flat_map(|namespace| namespace.section_items())

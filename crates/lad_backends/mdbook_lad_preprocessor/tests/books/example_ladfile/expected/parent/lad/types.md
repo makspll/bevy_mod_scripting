@@ -8,6 +8,6 @@ Types are grouped by the namespace scripts import them from, i.e. `import_namesp
 
 | Namespace | Contents |
 | --- | --- |
-| [`ladfile_builder`](./types/namespace_ladfile_builder.md) | 7 types, 1 value type, 3 values |
+| [`ladfile_builder`](./types/namespace_ladfile_builder.md) | 7 types, 1 data type, 3 values |
 | [`root`](./types/namespace_root.md) | 26 types |
 

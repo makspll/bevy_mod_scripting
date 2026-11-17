@@ -82,8 +82,8 @@ pub enum ThroughTypeInfo {
     },
     /// One exact string, see [`crate::function::typed::ByName`]
     Literal(String),
-    /// A struct passed by value as a map of its fields, see [`ScriptStructInfo`]
-    Struct(&'static ScriptStructInfo),
+    /// A data struct, copied to and from scripts as a map of its fields, see [`ScriptDataInfo`]
+    Data(&'static ScriptDataInfo),
     /// A type itself rather than a value of it, i.e. the component type `get_component` takes, see [`crate::function::generics::TypeOf`]
     TypeOf {
         /// The type, usually a marker standing for a parameter of a generic function
@@ -93,11 +93,12 @@ pub enum ThroughTypeInfo {
     },
 }
 
-/// Describes a struct passed to and from scripts by value, as a map of its fields, made by `#[derive(ScriptStruct)]`.
+/// Describes a data struct, copied to and from scripts as a map of its fields, made by `#[derive(ScriptData)]` on a
+/// struct (an enum is documented as the union of its variants' types instead).
 ///
 /// The struct isn't reflected: its fields are described by the [`TypedThrough`] of their types, and it is documented
 /// as the class of its fields, like the payload of a constructor.
-pub struct ScriptStructInfo {
+pub struct ScriptDataInfo {
     /// The struct
     pub type_id: fn() -> TypeId,
     /// The full path of the type, i.e. `my_crate::options::Options`
@@ -109,11 +110,11 @@ pub struct ScriptStructInfo {
     /// The documentation of the type
     pub docs: Option<&'static str>,
     /// The fields, in order of declaration
-    pub fields: &'static [ScriptStructField],
+    pub fields: &'static [ScriptDataField],
 }
 
-/// A field of a [`ScriptStructInfo`].
-pub struct ScriptStructField {
+/// A field of a [`ScriptDataInfo`].
+pub struct ScriptDataField {
     /// The name of the field, its key in the map
     pub name: &'static str,
     /// How the value of the field is passed
@@ -122,13 +123,13 @@ pub struct ScriptStructField {
     pub default: fn() -> Option<ScriptValue>,
 }
 
-impl std::fmt::Debug for ScriptStructInfo {
+impl std::fmt::Debug for ScriptDataInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.path)
     }
 }
 
-impl bevy_mod_scripting_display::DebugWithTypeInfo for &'static ScriptStructInfo {
+impl bevy_mod_scripting_display::DebugWithTypeInfo for &'static ScriptDataInfo {
     fn to_string_with_type_info(
         &self,
         f: &mut std::fmt::Formatter<'_>,
@@ -166,8 +167,8 @@ impl ThroughTypeInfo {
             ThroughTypeInfo::Function { params, returns } => {
                 params.iter().chain(std::iter::once(&**returns)).collect()
             }
-            // the fields of a table are described by its own definition, see `ScriptStructInfo::fields`
-            ThroughTypeInfo::Literal(_) | ThroughTypeInfo::Struct(_) => vec![],
+            // the fields of a data struct are described by its own definition, see `ScriptDataInfo::fields`
+            ThroughTypeInfo::Literal(_) | ThroughTypeInfo::Data(_) => vec![],
             ThroughTypeInfo::Ref(_)
             | ThroughTypeInfo::Mut(_)
             | ThroughTypeInfo::Val(_)
@@ -617,7 +618,7 @@ mod test {
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
         Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
-        UntypedTuple, TupleWithRest, Union, Fields, Bound, Function, Literal, Struct, TypeOf
+        UntypedTuple, TupleWithRest, Union, Fields, Bound, Function, Literal, Data, TypeOf
     );
     variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields);
 
@@ -678,8 +679,8 @@ mod test {
         A,
     }
 
-    #[derive(bevy_mod_scripting_derive::ScriptStruct)]
-    #[script_struct(bms_bindings_path = "crate")]
+    #[derive(bevy_mod_scripting_derive::ScriptData)]
+    #[script_data(bms_bindings_path = "crate")]
     #[allow(dead_code)]
     struct Passed {
         value: i32,
@@ -777,10 +778,10 @@ mod test {
         "ThroughTypeInfo::Bound",
         // the parameters of generic functions are declared in their signature
         "ThroughTypeInfo::TypeOf",
-        // the signatures of functions, names and structs passed by value are described by the types which convert them
+        // the signatures of functions, names and data structs are described by the types which convert them
         "ThroughTypeInfo::Function",
         "ThroughTypeInfo::Literal",
-        "ThroughTypeInfo::Struct",
+        "ThroughTypeInfo::Data",
         "BoundPlaceholder::Value",
         "BoundPlaceholder::Fields",
         // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses a value instead

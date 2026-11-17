@@ -13,8 +13,7 @@ use bevy_mod_scripting_bindings::{
         TypedThrough,
         info::FunctionInfo,
         typed_through::{
-            BoundPlaceholder, ScriptStructInfo, ThroughTypeInfo, primitive_kind_of,
-            primitive_type_id,
+            BoundPlaceholder, ScriptDataInfo, ThroughTypeInfo, primitive_kind_of, primitive_type_id,
         },
     },
     function::{
@@ -233,9 +232,9 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
-    /// The id of a struct passed by value (see `#[derive(ScriptStruct)]`), adding it and the types of its fields to
-    /// the file as a [`LadType::Value`]. It isn't reflected, its fields are described by how they are passed.
-    fn add_script_struct(&mut self, info: &'static ScriptStructInfo) -> LadTypeId {
+    /// The id of a data struct (see `#[derive(ScriptData)]`), adding it and the types of its fields to the file as a
+    /// [`LadType::Data`]. It isn't reflected, its fields are described by how they are passed.
+    fn add_script_data(&mut self, info: &'static ScriptDataInfo) -> LadTypeId {
         let type_id = (info.type_id)();
         let lad_type_id = LadTypeId::new_string_id(info.path.into());
         self.type_id_mapping.insert(type_id, lad_type_id.clone());
@@ -243,7 +242,7 @@ impl<'t> LadFileBuilder<'t> {
             return lad_type_id;
         }
         let crate_ = info.path.split("::").next().map(str::to_owned);
-        let mut value_type = LadValueType {
+        let mut data_type = LadDataType {
             identifier: info.identifier.to_owned(),
             namespace: info
                 .namespace
@@ -256,8 +255,8 @@ impl<'t> LadFileBuilder<'t> {
             fields: vec![],
         };
         // added before its fields, which may refer to the struct itself
-        self.insert_type(lad_type_id.clone(), value_type.clone());
-        value_type.fields = info
+        self.insert_type(lad_type_id.clone(), data_type.clone());
+        data_type.fields = info
             .fields
             .iter()
             .map(|field| LadNamedField {
@@ -267,7 +266,7 @@ impl<'t> LadFileBuilder<'t> {
                 has_default: (field.default)().is_some(),
             })
             .collect();
-        self.insert_type(lad_type_id.clone(), value_type);
+        self.insert_type(lad_type_id.clone(), data_type);
         lad_type_id
     }
 
@@ -918,7 +917,7 @@ impl<'t> LadFileBuilder<'t> {
         }
 
         if self.sorted {
-            // value types have no functions, and are neither generated nor more or less important than others
+            // data types have no functions, and are neither generated nor more or less important than others
             let insignificance = |t: &LadType| {
                 t.as_reference()
                     .map_or(default_importance(), |t| t.insignificance)
@@ -1345,8 +1344,8 @@ impl<'t> LadFileBuilder<'t> {
             ThroughTypeInfo::Literal(value) => LadTypeKind::Literal(Cow::Owned(value.clone())),
             // passed as a map of its fields, like the payload of a constructor. It is always added, as unlike
             // reflected types, it isn't in the type registry the types of the file usually come from
-            ThroughTypeInfo::Struct(info) => LadTypeKind::Fields {
-                of: LadNamedType::Id(self.add_script_struct(info)),
+            ThroughTypeInfo::Data(info) => LadTypeKind::Fields {
+                of: LadNamedType::Id(self.add_script_data(info)),
                 variant: None,
             },
             // functions are bound before they are added, any placeholders left are documented as what they are at runtime
@@ -1705,8 +1704,8 @@ mod test {
         );
 
         /// The options of a function, passed by value
-        #[derive(bevy_mod_scripting_derive::ScriptStruct)]
-        #[script_struct(
+        #[derive(bevy_mod_scripting_derive::ScriptData)]
+        #[script_data(
             bms_bindings_path = "bevy_mod_scripting_bindings",
             namespace = "ladfile_builder"
         )]
@@ -2183,8 +2182,8 @@ mod test {
     }
 
     /// Passed by value, as a map of its fields
-    #[derive(bevy_mod_scripting_derive::ScriptStruct)]
-    #[script_struct(bms_bindings_path = "bevy_mod_scripting_bindings", namespace = "test")]
+    #[derive(bevy_mod_scripting_derive::ScriptData)]
+    #[script_data(bms_bindings_path = "bevy_mod_scripting_bindings", namespace = "test")]
     #[allow(dead_code)]
     struct PassedStruct {
         required: f32,
@@ -2197,10 +2196,10 @@ mod test {
         let mut builder = LadFileBuilder::new_empty(&registry);
         builder.add_through_type_info(&PassedStruct::through_type_info());
         let file = builder.build();
-        let Some(LadType::Value(definition)) = file.types.get(&LadTypeId::new_string_id(
+        let Some(LadType::Data(definition)) = file.types.get(&LadTypeId::new_string_id(
             "ladfile_builder::test::PassedStruct".into(),
         )) else {
-            panic!("the struct is a value type of the file");
+            panic!("the struct is a data type of the file");
         };
         assert_eq!(
             (
