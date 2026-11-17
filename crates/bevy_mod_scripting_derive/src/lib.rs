@@ -38,6 +38,8 @@ pub fn script_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// It is for what crosses the boundary once, i.e. the options of a function, properties, events and results.
 /// Data scripts keep and change, or which Rust keeps as state, is a reflected type, which scripts hold references to.
+/// A type is one or the other: deriving both `Reflect` and `ScriptData` doesn't compile ("conflicting implementations
+/// of trait `ReflectedTypesCannotDeriveScriptData`").
 ///
 /// **A struct with named fields** is a map of its fields, a table in Lua and an object in Rune:
 ///

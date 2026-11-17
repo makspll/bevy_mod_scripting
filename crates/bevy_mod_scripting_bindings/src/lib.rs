@@ -53,4 +53,13 @@ pub use world_extensions::*;
 #[doc(hidden)]
 pub mod __derive {
     pub use bevy_reflect::TypeRegistry;
+
+    /// Implemented by every reflected type, and by each type deriving `ScriptData`, so a type doing both doesn't
+    /// compile: "conflicting implementations of trait `ReflectedTypesCannotDeriveScriptData`".
+    ///
+    /// A type is either reflected, which scripts hold references to, or plain data copied across, never both:
+    /// it would be a reference as the field of a component and a copied table as an argument.
+    pub trait ReflectedTypesCannotDeriveScriptData {}
+
+    impl<T: bevy_reflect::PartialReflect + ?Sized> ReflectedTypesCannotDeriveScriptData for T {}
 }

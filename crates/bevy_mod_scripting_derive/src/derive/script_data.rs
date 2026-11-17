@@ -1,6 +1,7 @@
 //! `#[derive(ScriptData)]`: plain data passed to and from scripts by value, see the derive's documentation.
 
 use proc_macro2::TokenStream;
+use quote::quote;
 use syn::{DeriveInput, spanned::Spanned};
 
 use crate::derive::SharedArgs;
@@ -72,5 +73,16 @@ pub fn script_data(input: TokenStream) -> TokenStream {
             "ScriptData is derived for structs with named fields, or enums whose variants hold one value each",
         )),
     };
-    result.unwrap_or_else(|error| error.to_compile_error())
+    let bms = &args.shared_args.bms_bindings_path;
+    let ident = &derive_input.ident;
+    match result {
+        Ok(expanded) => quote! {
+            #expanded
+
+            // conflicts with the implementation for every reflected type, so a reflected type can't derive this
+            #[automatically_derived]
+            impl #bms::__derive::ReflectedTypesCannotDeriveScriptData for #ident {}
+        },
+        Err(error) => error.to_compile_error(),
+    }
 }

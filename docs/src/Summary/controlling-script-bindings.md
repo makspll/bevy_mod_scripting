@@ -186,7 +186,7 @@ game.spawn({ name = "goblin", sped = 2 })      -- flagged by the language server
 | `#[derive(ScriptData)]` struct | a map of its fields: a table in Lua, an object in Rune | the class of its fields, a data type in the book |
 | `#[derive(ScriptData)]` enum | the value of any variant, each holding one value: the first variant whose type converts it | the union of the variants' types |
 
-`ScriptData` is plain data, **copied** across: a struct is converted from the map when it is passed, and to a new map when it is returned, so changing one doesn't change the other. It is for what crosses once, i.e. options, properties, events and results. Data scripts keep a handle to and change, or which Rust keeps as state, is a reflected type.
+`ScriptData` is plain data, **copied** across: a struct is converted from the map when it is passed, and to a new map when it is returned, so changing one doesn't change the other. It is for what crosses once, i.e. options, properties, events and results. Data scripts keep a handle to and change, or which Rust keeps as state, is a reflected type. A type is one or the other: deriving both `Reflect` and `ScriptData` doesn't compile.
 
 Each field of a struct converts like a function argument of its type: a missing field is its default, so `Option<T>` fields can be left out, and unknown fields, missing fields without a default and fields of the wrong type are errors naming the field.
 

@@ -1,4 +1,25 @@
-//! Values whose type in scripts is more precise than how they are converted: functions with a signature, and enums passed by name.
+//! Values whose type in scripts is more precise than how they are converted: functions with a signature, enums passed by
+//! name, and the conversions of `#[derive(ScriptData)]`.
+//!
+//! A type is either reflected, which scripts hold references to, or plain data deriving `ScriptData`, never both:
+//!
+//! ```
+//! # use bevy_mod_scripting_derive::ScriptData;
+//! #[derive(ScriptData)]
+//! #[script_data(bms_bindings_path = "bevy_mod_scripting_bindings")]
+//! struct Options {
+//!     name: String,
+//! }
+//! ```
+//!
+//! ```compile_fail,E0119
+//! # use bevy_mod_scripting_derive::ScriptData;
+//! #[derive(bevy_reflect::Reflect, ScriptData)]
+//! #[script_data(bms_bindings_path = "bevy_mod_scripting_bindings")]
+//! struct Options {
+//!     name: String,
+//! }
+//! ```
 
 use std::{any::TypeId, marker::PhantomData, ops::Deref};
 
