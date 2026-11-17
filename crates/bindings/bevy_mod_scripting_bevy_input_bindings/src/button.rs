@@ -5,10 +5,8 @@ use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_input::{ButtonInput, gamepad::GamepadButton, keyboard::KeyCode, mouse::MouseButton};
 use bevy_mod_scripting_bindings::{
     InteropError,
-    function::{
-        from::{M, R, V},
-        script_function::FunctionCallContext,
-    },
+    conversions::from::{M, R, V},
+    function::script_function::FunctionCallContext,
 };
 use bevy_mod_scripting_derive::script_bindings;
 

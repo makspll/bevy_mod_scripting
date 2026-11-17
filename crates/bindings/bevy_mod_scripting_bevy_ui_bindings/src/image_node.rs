@@ -5,7 +5,7 @@ use bevy_asset::Handle;
 use bevy_color::Color;
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_image::Image;
-use bevy_mod_scripting_bindings::function::from::{R, V};
+use bevy_mod_scripting_bindings::conversions::from::{R, V};
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_ui::widget::ImageNode;
 

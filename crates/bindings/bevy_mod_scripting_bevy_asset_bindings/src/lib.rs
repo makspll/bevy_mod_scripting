@@ -12,8 +12,8 @@ use bevy_ecs::world::World;
 use bevy_mod_scripting_bindings::{
     InteropError, ReflectReference, ScriptTypeRegistration, StaticTypeRef, WorldExtensions,
     WorldGuard,
+    conversions::from::V,
     function::{
-        from::V,
         generics::{A, TypeOf, ValueOf},
         script_function::FunctionCallContext,
     },

@@ -7,9 +7,9 @@ use std::{any::TypeId, collections::VecDeque, ffi::OsString, path::PathBuf};
 
 use crate::{
     ReflectReference, StaticTypeRef, VariadicTuple,
-    function::{
-        from::{M, R, Union, V},
-        script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
+    conversions::from::{M, R, Union, V},
+    function::script_function::{
+        DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
     },
     script_value::ScriptValue,
 };
@@ -73,6 +73,17 @@ pub enum ThroughTypeInfo {
     ///
     /// See [`ThroughTypeInfo::bind_placeholders`].
     Bound(BoundPlaceholder),
+    /// A function taking and returning values of the given types, see [`crate::function::function_of::FunctionOf`]
+    Function {
+        /// The types of its arguments, in order
+        params: Vec<ThroughTypeInfo>,
+        /// The type of what it returns
+        returns: Box<ThroughTypeInfo>,
+    },
+    /// One exact string, see [`crate::conversions::by_name::ByName`]
+    Literal(String),
+    /// Plain data, copied to and from scripts: a struct as a map of its fields, an enum as the value of a variant, see [`ScriptDataInfo`]
+    Data(&'static ScriptDataInfo),
     /// A type itself rather than a value of it, i.e. the component type `get_component` takes, see [`crate::function::generics::TypeOf`]
     TypeOf {
         /// The type, usually a marker standing for a parameter of a generic function
@@ -80,6 +91,59 @@ pub enum ThroughTypeInfo {
         /// How the type is passed at runtime, i.e. as a component registration
         erased: Box<ThroughTypeInfo>,
     },
+}
+
+/// Describes plain data, copied to and from scripts, made by `#[derive(ScriptData)]`.
+///
+/// It isn't reflected: its parts are described by the [`TypedThrough`] of their types, lazily, so a type which holds
+/// itself (i.e. a tree) is described without recursing. It is documented as a data type of its own.
+pub struct ScriptDataInfo {
+    /// The type
+    pub type_id: fn() -> TypeId,
+    /// The full path of the type, i.e. `my_crate::options::Options`
+    pub path: &'static str,
+    /// The name of the type, i.e. `Options`
+    pub identifier: &'static str,
+    /// The script namespace the type is documented in, the crate defining it if `None`
+    pub namespace: Option<&'static str>,
+    /// The documentation of the type
+    pub docs: Option<&'static str>,
+    /// What the type is made of
+    pub shape: ScriptDataShape,
+}
+
+/// What a [`ScriptDataInfo`] is made of.
+pub enum ScriptDataShape {
+    /// A struct, a map of these fields, in order of declaration
+    Fields(&'static [ScriptDataField]),
+    /// An enum, the value of any of these types: one per variant, in order of declaration
+    Union(&'static [fn() -> ThroughTypeInfo]),
+}
+
+/// A field of a [`ScriptDataInfo`].
+pub struct ScriptDataField {
+    /// The name of the field, its key in the map
+    pub name: &'static str,
+    /// How the value of the field is passed
+    pub type_info: fn() -> ThroughTypeInfo,
+    /// What the field is when it is left out, none if it can't be, see [`crate::ArgMeta::default_value`]
+    pub default: fn() -> Option<ScriptValue>,
+}
+
+impl std::fmt::Debug for ScriptDataInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.path)
+    }
+}
+
+impl bevy_mod_scripting_display::DebugWithTypeInfo for &'static ScriptDataInfo {
+    fn to_string_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        _type_info_provider: Option<&bevy_mod_scripting_display::WorldAccessGuard>,
+    ) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self, f)
+    }
 }
 
 /// The parts of a shared function's signature which depend on the type it is bound to.
@@ -107,6 +171,11 @@ impl ThroughTypeInfo {
             ThroughTypeInfo::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
+            ThroughTypeInfo::Function { params, returns } => {
+                params.iter().chain(std::iter::once(&**returns)).collect()
+            }
+            // the fields of a data struct are described by its own definition, see `ScriptDataInfo::fields`
+            ThroughTypeInfo::Literal(_) | ThroughTypeInfo::Data(_) => vec![],
             ThroughTypeInfo::Ref(_)
             | ThroughTypeInfo::Mut(_)
             | ThroughTypeInfo::Val(_)
@@ -148,6 +217,10 @@ impl ThroughTypeInfo {
                 rest: bind(rest),
             },
             ThroughTypeInfo::Union(inner) => ThroughTypeInfo::Union(bind_all(inner)),
+            ThroughTypeInfo::Function { params, returns } => ThroughTypeInfo::Function {
+                params: bind_all(params),
+                returns: bind(returns),
+            },
             ThroughTypeInfo::TypeOf { of, erased } => ThroughTypeInfo::TypeOf {
                 of,
                 erased: bind(erased),
@@ -317,8 +390,16 @@ pub trait TypedThrough {
 }
 
 impl<T1: TypedThrough, T2: TypedThrough> TypedThrough for Union<T1, T2> {
+    /// Nested unions are one union, `Union<A, Union<B, C>>` is `A | B | C`.
     fn through_type_info() -> ThroughTypeInfo {
-        ThroughTypeInfo::Union(vec![T1::through_type_info(), T2::through_type_info()])
+        let mut types = Vec::new();
+        for info in [T1::through_type_info(), T2::through_type_info()] {
+            match info {
+                ThroughTypeInfo::Union(inner) => types.extend(inner),
+                info => types.push(info),
+            }
+        }
+        ThroughTypeInfo::Union(types)
     }
 }
 
@@ -544,7 +625,7 @@ mod test {
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
         Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
-        UntypedTuple, TupleWithRest, Union, Fields, Bound, TypeOf
+        UntypedTuple, TupleWithRest, Union, Fields, Bound, Function, Literal, Data, TypeOf
     );
     variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields);
 
@@ -599,6 +680,18 @@ mod test {
 
     #[derive(bevy_reflect::Reflect)]
     struct Value;
+
+    #[derive(bevy_reflect::Reflect)]
+    enum Named {
+        A,
+    }
+
+    #[derive(bevy_mod_scripting_derive::ScriptData)]
+    #[script_data(bms_bindings_path = "crate")]
+    #[allow(dead_code)]
+    struct Passed {
+        value: i32,
+    }
 
     /// The static and the dynamic description of the same type, i.e. `Vec<V<Value>>` and `Vec<Value>`
     type StaticDynamicPair = (ThroughTypeInfo, &'static TypeInfo);
@@ -692,6 +785,10 @@ mod test {
         "ThroughTypeInfo::Bound",
         // the parameters of generic functions are declared in their signature
         "ThroughTypeInfo::TypeOf",
+        // the signatures of functions, names and data structs are described by the types which convert them
+        "ThroughTypeInfo::Function",
+        "ThroughTypeInfo::Literal",
+        "ThroughTypeInfo::Data",
         "BoundPlaceholder::Value",
         "BoundPlaceholder::Fields",
         // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses a value instead
@@ -725,6 +822,9 @@ mod test {
             V<Value>,
             crate::function::generics::A,
         >::through_type_info());
+        collect(crate::FunctionOf::<fn(i32) -> bool>::through_type_info());
+        collect(crate::ByName::<Named>::through_type_info());
+        collect(Passed::through_type_info());
         // placeholders, and what they turn into when bound
         for placeholder in [
             BoundValue::through_type_info(),

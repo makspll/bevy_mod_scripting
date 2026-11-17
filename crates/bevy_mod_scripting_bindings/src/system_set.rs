@@ -17,7 +17,7 @@ use bevy_system_reflection::ReflectSystemSet;
 
 use crate::{
     AppScriptNamespaceMembers, IntoScript, NamespaceValue, SCRIPT_NAMESPACE_PREFIX,
-    docgen::typed_through::TypedThrough, function::from::V, script_path,
+    conversions::from::V, docgen::typed_through::TypedThrough, script_path,
 };
 
 /// A system set registered by a script, identified by its full path, i.e. `script.game.ai`.
