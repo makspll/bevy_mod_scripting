@@ -8,10 +8,8 @@ use bevy_gizmos::prelude::{GizmoConfigStore, gizmo};
 use bevy_math::{Isometry2d, Isometry3d, Vec2, Vec3};
 use bevy_mod_scripting_bindings::{
     InteropError, WorldExtensions,
-    function::{
-        from::{R, V},
-        script_function::FunctionCallContext,
-    },
+    conversions::from::{R, V},
+    function::script_function::FunctionCallContext,
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_reflect::Reflect;

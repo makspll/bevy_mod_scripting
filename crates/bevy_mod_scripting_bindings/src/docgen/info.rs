@@ -18,8 +18,19 @@ use super::typed_through::{BoundPlaceholder, ThroughTypeInfo, TypedThrough};
     note = "These types are necessary to build [`FunctionInfo`] structs for each registered function."
 )]
 pub trait GetFunctionInfo<Marker> {
+    /// The function info of functions of this type, which needs no function, i.e. for the signature of a
+    /// [`FunctionOf<fn(A) -> R>`](crate::function::function_of::FunctionOf).
+    fn function_info(name: Cow<'static, str>, namespace: FunctionScope) -> FunctionInfo
+    where
+        Self: Sized;
+
     /// Get the function info for the function.
-    fn get_function_info(&self, name: Cow<'static, str>, namespace: FunctionScope) -> FunctionInfo;
+    fn get_function_info(&self, name: Cow<'static, str>, namespace: FunctionScope) -> FunctionInfo
+    where
+        Self: Sized,
+    {
+        Self::function_info(name, namespace)
+    }
 }
 
 #[derive(Clone, Reflect, DebugWithTypeInfo)]
@@ -281,7 +292,7 @@ macro_rules! impl_documentable {
             $($param: ArgMeta + TypedThrough + 'static,)*
             O: TypedThrough + 'static
         {
-            fn get_function_info(&self, name: Cow<'static, str>, namespace: FunctionScope) -> FunctionInfo {
+            fn function_info(name: Cow<'static, str>, namespace: FunctionScope) -> FunctionInfo {
                 #[allow(unused_mut)]
                 let mut info = FunctionInfo::new_for(name, namespace);
                 $(
@@ -299,7 +310,7 @@ variadics_please::all_tuples!(impl_documentable, 0, 13, T);
 mod test {
     use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
 
-    use crate::function::from::{M, R, V};
+    use crate::conversions::from::{M, R, V};
 
     use super::*;
 

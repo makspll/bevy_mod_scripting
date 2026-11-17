@@ -1,5 +1,6 @@
 //! All the switchable special functions used by language implementors
-use super::{FromScriptErased, FunctionCallContext, IntoScriptErased};
+use super::FunctionCallContext;
+use crate::conversions::{FromScriptErased, IntoScriptErased};
 use crate::{ReferencePart, ReflectReference, ScriptValue, error::InteropError};
 use bevy_mod_scripting_derive::DebugWithTypeInfo;
 use bevy_mod_scripting_display::OrFakeId;

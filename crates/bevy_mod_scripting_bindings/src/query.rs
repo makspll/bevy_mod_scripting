@@ -7,11 +7,11 @@ use super::{DynamicComponent, ReflectReference};
 use crate::{
     GetTypeDependencies, IntoScript, PartialReflectExt, ReflectNoTypeFunctions, ScriptValue,
     ThroughTypeInfo, TypedThrough, WorldExtensions,
-    error::InteropError,
-    function::{
+    conversions::{
         from::{Union, V},
         from_ref::FromScriptErased,
     },
+    error::InteropError,
 };
 use ::{
     bevy_ecs::{
