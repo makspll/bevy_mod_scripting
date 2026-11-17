@@ -3,7 +3,7 @@
 // `script_bindings` expects these in scope
 use bevy_ecs::{entity::Entity, reflect::AppTypeRegistry, world::World};
 use bevy_input_focus::{FocusCause, InputFocus};
-use bevy_mod_scripting_bindings::function::from::{M, R, V};
+use bevy_mod_scripting_bindings::conversions::from::{M, R, V};
 use bevy_mod_scripting_derive::script_bindings;
 
 #[script_bindings(

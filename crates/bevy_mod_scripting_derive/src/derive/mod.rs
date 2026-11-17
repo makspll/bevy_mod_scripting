@@ -4,6 +4,7 @@ mod from_script;
 mod get_type_dependencies;
 mod into_script;
 mod script_bindings;
+mod script_data;
 mod script_type;
 mod typed_through;
 
@@ -14,7 +15,8 @@ use syn::{Ident, ImplItemFn, ItemImpl};
 pub use self::{
     arg_meta::arg_meta, debug_with_type_info::debug_with_type_info, from_script::from_script,
     get_type_dependencies::get_type_dependencies, into_script::into_script,
-    script_bindings::script_bindings, script_type::script_type, typed_through::typed_through,
+    script_bindings::script_bindings, script_data::script_data, script_type::script_type,
+    typed_through::typed_through,
 };
 
 #[allow(dead_code)]

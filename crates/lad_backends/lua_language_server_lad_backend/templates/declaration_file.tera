@@ -89,13 +89,18 @@ function {% if module.class -%}{{module.table}}.{%- endif -%} {{ function.name }
         {{ ty.value }}
     {%- elif ty.kind == "Any" -%}
         any
-    {%- elif ty.kind == "Array" and ty.value.kind == "Union" -%}
+    {%- elif ty.kind == "Array" and (ty.value.kind == "Union" or ty.value.kind == "Function") -%}
         ({{ self::lua_type(ty=ty.value) }})[]
     {%- elif ty.kind == "Array" -%}
         {{ self::lua_type(ty=ty.value) }}[]
     {%- elif ty.kind == "Union" -%}
         {%- for subtype in ty.value -%}
+            {#- `fun(): a | b` returns the union, a function in a union is parenthesized -#}
+            {%- if subtype.kind == "Function" -%}
+            ({{ self::lua_type(ty=subtype) }})
+            {%- else -%}
             {{ self::lua_type(ty=subtype) }}
+            {%- endif -%}
             {%- if not loop.last %} | {% endif -%}
         {%- endfor -%}
     {%- elif ty.kind == "Tuple" -%}
