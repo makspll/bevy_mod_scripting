@@ -9,10 +9,12 @@ use crate::{
 };
 
 use super::{
-    from::{FromScript, M, R, Union, V},
-    into::IntoScript,
     script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     type_dependencies::GetTypeDependencies,
+};
+use crate::conversions::{
+    from::{FromScript, M, R, Union, V},
+    into::IntoScript,
 };
 
 /// Marker trait for types that can be used as arguments to a script function.

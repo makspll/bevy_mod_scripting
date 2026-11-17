@@ -14,7 +14,7 @@ use parking_lot::RwLock;
 use crate::{
     AnyTypeRegistration, AnyTypeRegistrationV, ScriptBundleRegistration,
     ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
-    WorldExtensions, error::InteropError, function::from::V,
+    WorldExtensions, conversions::from::V, error::InteropError,
 };
 use bevy_mod_scripting_world::WorldGuard;
 
@@ -47,7 +47,7 @@ impl CatalogueRegistration {
 
     /// Converts to the form scripts receive, cloning the registration.
     pub fn to_script(&self) -> AnyTypeRegistrationV {
-        use crate::function::from::Union;
+        use crate::conversions::from::Union;
         match self.clone() {
             Self::Type(r) => Union::new_left(V(r)),
             Self::Component(c) => Union::new_right(Union::new_left(V(c))),
