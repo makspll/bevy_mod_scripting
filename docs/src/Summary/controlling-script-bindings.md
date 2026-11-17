@@ -146,11 +146,11 @@ To accept any kind of value, i.e. numbers or strings alike, take `ScriptValue` a
         );
 ```
 
-You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see [Generics](#generics), to accept a few kinds of values, see [Typed arguments](#typed-arguments).
+You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see [Generics](#generics). To accept callbacks, names or tables of options, see [Typed arguments](#typed-arguments).
 
 ## Typed arguments
 
-Arguments which aren't reflected values keep their exact type in the docs and the Lua language server files with these:
+These wrappers and derives keep the exact type of arguments which aren't reflected values, in the book and the Lua language server files:
 
 ```rust,ignore
 /// Spawns an enemy
@@ -187,9 +187,11 @@ game.spawn({ name = "goblin", sped = 2 })      -- flagged by the language server
 | `#[derive(ScriptData)]` struct | a map of its fields: a table in Lua, an object in Rune | the class of its fields, a data type in the book |
 | `#[derive(ScriptData)]` enum | the value of any variant, each holding one value: the first variant whose type converts it | an alias of the union of the variants' types (`game.Speed`), a data type in the book |
 
-`ScriptData` is plain data, **copied** across: a struct is converted from the map when it is passed, and to a new map when it is returned, so changing one doesn't change the other. It is for what crosses once, i.e. options, properties, events and results. Data scripts keep a handle to and change, or which Rust keeps as state, is a reflected type. A type is one or the other: deriving both `Reflect` and `ScriptData` doesn't compile.
+`ScriptData` is plain data, **copied** across: a struct is read from the map when passed and written to a new map when returned, so changing one doesn't change the other. Use it for what crosses once (options, properties, events, results). Use a reflected type for what scripts hold a handle to, or Rust keeps as state. A type is one or the other: deriving both `Reflect` and `ScriptData` doesn't compile.
 
-Each field of a struct converts like a function argument of its type: a missing field is its default, so `Option<T>` fields can be left out, and unknown fields, missing fields without a default and fields of the wrong type are errors naming the field.
+Each field converts like a function argument of its type. A missing field takes its type's default, so `Option<T>` fields can be left out. Unknown fields, missing fields without a default and mistyped fields are errors naming the field.
+
+An enum's variants are tried in order, so put the more specific of two types taking the same kind of value first, i.e. `ByName` before `String`.
 
 Unions only try the types which could convert a value, as told by `FromScript::could_convert`. When implementing `FromScript` by hand, override it to rule out the kinds of values your type never converts.
 
