@@ -33,6 +33,69 @@ pub fn script_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     derive::script_type(input.into()).into()
 }
 
+#[proc_macro_derive(ScriptData, attributes(script_data))]
+/// Plain data, passed to and from scripts **by value**: copied across, never held by reference.
+///
+/// It is for what crosses the boundary once, i.e. the options of a function, properties, events and results.
+/// Data scripts keep and change, or which Rust keeps as state, is a reflected type, which scripts hold references to.
+/// A type is one or the other: deriving both `Reflect` and `ScriptData` doesn't compile ("conflicting implementations
+/// of trait `ReflectedTypesCannotDeriveScriptData`").
+///
+/// **A struct with named fields** is a map of its fields, a table in Lua and an object in Rune:
+///
+/// ```rust,ignore
+/// /// How to spawn an enemy
+/// #[derive(ScriptData)]
+/// #[script_data(namespace = "game")]
+/// struct SpawnOptions {
+///     name: String,                                        // required
+///     speed: Option<Speed>,                                // optional: `None` when left out
+///     on_death: Option<FunctionOf<fn(V<Entity>) -> ()>>,
+/// }
+///
+/// #[script_bindings(remote, namespace = "game")]
+/// impl NamespaceMembers {
+///     fn spawn(ctxt: FunctionCallContext, options: SpawnOptions) -> Result<V<Entity>, InteropError> { .. }
+/// }
+/// ```
+///
+/// ```lua
+/// game.spawn({ name = "goblin", speed = 2.5, on_death = function(entity) end })
+/// ```
+///
+/// - **A copy.** The map is converted into the struct when it is passed, and the struct into a new map when it is
+///   returned: changing either side afterwards doesn't change the other.
+/// - **Fields are arguments.** Each converts like a function argument of its type, and a missing one is its type's
+///   `ArgMeta::default_value`, so `Option<T>` fields can be left out. Unknown fields, missing fields without a default
+///   and fields of the wrong type are errors naming the field. Returned structs leave out the fields which are `nil`.
+///   The conversion is `StructFields` and `StructMap`, the derive only lists the fields.
+/// - **Documented** as a data type of the LAD file (`LadType::Data`) in its `namespace`, the crate defining it unless
+///   given: the class of its fields in Lua (`game.SpawnOptions.Fields`), a data type page in the book.
+///
+/// **An enum whose variants hold one value each** is the value of any of its variants:
+///
+/// ```rust,ignore
+/// #[derive(ScriptData)]
+/// enum Speed {
+///     Named(ByName<Pace>),                // "Slow" | "Fast"
+///     Exact(f32),                         // 2.5
+///     Bound(FunctionOf<fn() -> f32>),     // function() return 2.5 end
+/// }
+/// ```
+///
+/// - **A name** for `Union<Named, Union<Exact, Bound>>`, which converts and documents it: a value converts to the
+///   first variant whose type converts it, only trying the types which could (see `FromScript::could_convert`), so
+///   put the more specific of two types taking the same kind of value first, i.e. names before text.
+/// - **Documented** as a data type of the LAD file in its `namespace`, the union of its variants' types: an alias in
+///   Lua (`---@alias game.Speed "Slow" | "Fast" | number | fun(): number`), a data type page in the book. Variants
+///   are described lazily, so an enum may hold itself (`Many(Vec<Speed>)`).
+///
+/// Implements `FromScript`, `IntoScript`, `TypedThrough`, `ArgMeta` and `GetTypeDependencies`. Not for generic types.
+/// `#[script_data(bms_bindings_path = "..")]` changes the path of the bindings crate.
+pub fn script_data(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::script_data(input.into()).into()
+}
+
 #[proc_macro_derive(ArgMeta, attributes(arg_meta))]
 /// Default implementation for the `TypedThrough` trait
 pub fn arg_meta(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

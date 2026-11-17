@@ -6,10 +6,8 @@ use bevy_input::gamepad::{Gamepad, GamepadAxis, GamepadButton};
 use bevy_math::Vec2;
 use bevy_mod_scripting_bindings::{
     InteropError, ScriptQueryBuilder, WorldExtensions,
-    function::{
-        from::{R, V},
-        script_function::FunctionCallContext,
-    },
+    conversions::from::{R, V},
+    function::script_function::FunctionCallContext,
 };
 use bevy_mod_scripting_derive::script_bindings;
 

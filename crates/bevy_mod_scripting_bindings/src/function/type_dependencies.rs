@@ -1,10 +1,9 @@
 //! This module contains the [`GetTypeDependencies`] trait and its implementations for various types.
 
 use super::{
-    DynamicScriptFunction, DynamicScriptFunctionMut,
-    from::{M, R, Union, V},
-    script_function::FunctionCallContext,
+    DynamicScriptFunction, DynamicScriptFunctionMut, script_function::FunctionCallContext,
 };
+use crate::conversions::from::{M, R, Union, V};
 use crate::{ReflectReference, ScriptValue, StaticTypeRef, VariadicTuple, error::InteropError};
 use bevy_mod_scripting_derive::impl_get_type_dependencies;
 use bevy_platform::collections::HashMap;
