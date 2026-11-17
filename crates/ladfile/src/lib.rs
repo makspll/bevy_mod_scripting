@@ -863,6 +863,14 @@ pub struct LadTypeMetadata {
     /// added as namespaces without actually implementing the Reflect trait
     pub is_reflect: bool,
 
+    /// True if the type is only ever passed by value, as a map of its fields, i.e. a `#[derive(ScriptStruct)]`.
+    ///
+    /// Scripts never hold a value of a value type, nor import the type: they pass and get maps of its fields
+    /// ([`LadTypeKind::Fields`]). Backends describe it by its fields alone, not as a type of its own, i.e. the Lua
+    /// declarations have a `X.Fields` class but no `X` class, and it is in no namespace's types.
+    #[serde(skip_serializing_if = "is_false", default)]
+    pub is_value_type: bool,
+
     /// Set to a primitive kind if this type is mapped to a primitive
     pub mapped_to_primitive_kind: Option<ReflectionPrimitiveKind>,
 

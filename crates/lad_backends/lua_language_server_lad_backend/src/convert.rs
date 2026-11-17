@@ -119,10 +119,8 @@ fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
         let Some(lad_type) = ladfile.types.get(&type_id) else {
             continue;
         };
-        // structs passed by value (`#[derive(ScriptStruct)]`) are only ever maps of their fields, see `fields_modules`
-        if !lad_type.metadata.is_reflect
-            && !matches!(lad_type.layout, ladfile::LadTypeLayout::Opaque)
-        {
+        // only ever maps of their fields, see `fields_modules`
+        if lad_type.metadata.is_value_type {
             continue;
         }
         let module =
@@ -1166,10 +1164,10 @@ fn fields_module(
             generics: vec![],
             documentation: Some(format!(
                 "The fields of {subject}, {documentation}. {}",
-                // structs passed by value (`#[derive(ScriptStruct)]`) aren't built from a default
-                match lad_type.metadata.is_reflect {
-                    true => "Optional fields are filled in from defaults.",
-                    false => "Optional fields can be left out.",
+                // value types aren't built from a default, their missing fields are
+                match lad_type.metadata.is_value_type {
+                    false => "Optional fields are filled in from defaults.",
+                    true => "Optional fields can be left out.",
                 }
             )),
             exact: true,

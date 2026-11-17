@@ -618,6 +618,7 @@
         "is_component": false,
         "is_resource": false,
         "is_reflect": false,
+        "is_value_type": true,
         "mapped_to_primitive_kind": null
       }
     },

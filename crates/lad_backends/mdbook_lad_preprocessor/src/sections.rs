@@ -348,12 +348,15 @@ impl<'a> Section<'a> {
                 })
     }
 
-    /// The ids of the types in the namespace which have a page of their own, generic types last
+    /// The ids of the types in the namespace which have a page of their own, generic types last. Value types aren't
+    /// imported from the namespace, see [`Self::value_types_in_namespace`]
     fn types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
         self.ladfile
             .types
             .iter()
-            .filter(|(_, lad_type)| lad_type.namespace == namespace)
+            .filter(|(_, lad_type)| {
+                lad_type.namespace == namespace && !lad_type.metadata.is_value_type
+            })
             .map(|(id, _)| id)
             .chain(
                 self.ladfile
@@ -362,6 +365,19 @@ impl<'a> Section<'a> {
                     .filter(|(_, generic_type)| generic_type.namespace == namespace)
                     .map(|(id, _)| id),
             )
+            .collect()
+    }
+
+    /// The ids of the value types documented in the namespace, which scripts pass as maps of their fields, see
+    /// [`ladfile::LadTypeMetadata::is_value_type`]
+    fn value_types_in_namespace(&self, namespace: &str) -> Vec<&'a LadTypeId> {
+        self.ladfile
+            .types
+            .iter()
+            .filter(|(_, lad_type)| {
+                lad_type.namespace == namespace && lad_type.metadata.is_value_type
+            })
+            .map(|(id, _)| id)
             .collect()
     }
 
@@ -523,6 +539,7 @@ impl<'a> Section<'a> {
                 let lad_namespace = self.ladfile.namespaces.get(namespace);
                 let contents = [
                     count(self.types_in_namespace(namespace).len(), "type"),
+                    count(self.value_types_in_namespace(namespace).len(), "value type"),
                     count(self.namespace_functions(namespace).len(), "function"),
                     count(lad_namespace.map_or(0, |n| n.values.len()), "value"),
                 ]
@@ -573,8 +590,17 @@ impl<'a> Section<'a> {
                 }),
             },
             SectionItem::TypesSummary {
+                heading: "Types",
+                description: None,
                 types: self.types_in_namespace(namespace),
                 // the pages of the types are next to this one
+                types_directory: ".".to_owned(),
+                ladfile: self.ladfile,
+            },
+            SectionItem::TypesSummary {
+                heading: "Value types",
+                description: Some(VALUE_TYPE_DESCRIPTION),
+                types: self.value_types_in_namespace(namespace),
                 types_directory: ".".to_owned(),
                 ladfile: self.ladfile,
             },
@@ -636,12 +662,22 @@ impl<'a> Section<'a> {
             (metadata.is_resource, "Resource"),
             (metadata.is_bundle, "Bundle"),
             (metadata.is_asset, "Asset"),
+            (metadata.is_value_type, "Value type"),
         ]
         .into_iter()
         .filter_map(|(is, badge)| is.then_some(badge))
         .collect();
+        let value_type = metadata.is_value_type;
         vec![
             SectionItem::Badges { badges },
+            SectionItem::Markdown {
+                markdown: Box::new(move |builder| {
+                    if value_type {
+                        builder.raw(VALUE_TYPE_DESCRIPTION);
+                        builder.append("\n\n");
+                    }
+                }),
+            },
             SectionItem::Description {
                 documentation: lad_type.documentation.as_deref(),
                 ladfile: self.ladfile,
@@ -747,6 +783,10 @@ pub enum SectionItem<'a> {
         by_instantiation: bool,
     },
     TypesSummary {
+        /// The heading of the table, i.e. `Types`
+        heading: &'static str,
+        /// What the types listed are, under the heading
+        description: Option<&'static str>,
         types: Vec<&'a LadTypeId>,
         types_directory: String,
         ladfile: &'a ladfile::LadFile,
@@ -827,10 +867,19 @@ impl IntoMarkdown for SectionItem<'_> {
                 builder,
             ),
             SectionItem::TypesSummary {
+                heading,
+                description,
                 types,
                 types_directory,
                 ladfile,
-            } => types_summary_markdown(types, types_directory, ladfile, builder),
+            } => types_summary_markdown(
+                heading,
+                *description,
+                types,
+                types_directory,
+                ladfile,
+                builder,
+            ),
             SectionItem::InstancesSummary {
                 instances,
                 ladfile,
@@ -1230,8 +1279,13 @@ fn signature(function: &LadFunction, ladfile: &LadFile, types_directory: &str) -
     )
 }
 
+/// What a value type is, on its page and above the list of them, see [`ladfile::LadTypeMetadata::is_value_type`]
+const VALUE_TYPE_DESCRIPTION: &str = "Value types are passed to and from functions as a table of their fields, which is copied: scripts can't import them or hold a reference to one.";
+
 /// A table of types as a quick reference, sorted by name, linking to the type pages
 fn types_summary_markdown(
+    heading: &'static str,
+    description: Option<&'static str>,
     types: &[&LadTypeId],
     types_directory: &str,
     ladfile: &LadFile,
@@ -1240,7 +1294,11 @@ fn types_summary_markdown(
     if types.is_empty() {
         return;
     }
-    builder.heading(2, "Types");
+    builder.heading(2, heading);
+    if let Some(description) = description {
+        builder.raw(description);
+        builder.append("\n\n");
+    }
 
     let mut rows = types
         .iter()
@@ -1340,12 +1398,13 @@ mod test {
             "{titles:?}"
         );
 
-        // and the pages of the namespaces list the same
+        // and the pages of the namespaces list the same, in their types and value types
         let listed = namespace_pages(&ladfile)
             .iter()
-            .map(|namespace| match namespace.section_items().as_slice() {
-                [_, SectionItem::TypesSummary { types, .. }, ..] => types.len(),
-                items => panic!("expected a types summary, got {items:?}"),
+            .flat_map(|namespace| namespace.section_items())
+            .map(|item| match item {
+                SectionItem::TypesSummary { types, .. } => types.len(),
+                _ => 0,
             })
             .sum::<usize>();
         assert_eq!(listed, titles.len());
