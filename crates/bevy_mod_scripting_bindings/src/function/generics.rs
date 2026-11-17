@@ -124,6 +124,10 @@ impl<R: FromScript, M> FromScript for TypeOf<R, M> {
     ) -> Result<Self::This<'s>, InteropError> {
         R::from_script(value, scope).map(|inner| TypeOf(inner, PhantomData))
     }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        R::could_convert(value)
+    }
 }
 
 impl<R: IntoScript, M> IntoScript for TypeOf<R, M> {
@@ -155,56 +159,68 @@ impl<R: TypedThrough, M: Typed> TypedThrough for TypeOf<R, M> {
     }
 }
 
-/// A value of the type a [`TypeOf`] with the same marker was given, i.e. the component `get_component` returns.
+/// A value of the type a [`TypeOf`] with the same marker was given, i.e. the component `get_component` returns,
+/// or of a parameter of the function, i.e. `fn signal(initial: ValueOf<A, ScriptValue>) -> V<Signal<A>>`.
 ///
-/// It is a reference at runtime, and only changes how the function is documented.
-pub struct ValueOf<M>(pub ReflectReference, PhantomData<fn() -> M>);
+/// It converts as `R`, a reference unless given, and only changes how the function is documented.
+pub struct ValueOf<M, R = ReflectReference>(pub R, PhantomData<fn() -> M>);
 
-impl<M> ValueOf<M> {
-    /// Wrap a reference to a value of the type.
-    pub fn new(reference: ReflectReference) -> Self {
-        ValueOf(reference, PhantomData)
+impl<M, R> ValueOf<M, R> {
+    /// Wrap the value.
+    pub fn new(inner: R) -> Self {
+        ValueOf(inner, PhantomData)
     }
 
-    /// Unwrap the reference.
-    pub fn into_inner(self) -> ReflectReference {
+    /// Unwrap the value.
+    pub fn into_inner(self) -> R {
         self.0
     }
 }
 
-impl<M> Deref for ValueOf<M> {
-    type Target = ReflectReference;
+impl<M, R> Deref for ValueOf<M, R> {
+    type Target = R;
 
-    fn deref(&self) -> &ReflectReference {
+    fn deref(&self) -> &R {
         &self.0
     }
 }
 
-impl<M> FromScript for ValueOf<M> {
-    type This<'w> = Self;
+impl<M, R: FromScript> FromScript for ValueOf<M, R> {
+    type This<'w> = ValueOf<M, R::This<'w>>;
 
-    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
-        ReflectReference::from_script(value, scope).map(ValueOf::new)
+    fn from_script<'s>(
+        value: ScriptValue,
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
+        R::from_script(value, scope).map(ValueOf::new)
+    }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        R::could_convert(value)
     }
 }
 
-impl<M> IntoScript for ValueOf<M> {
+impl<M, R: IntoScript> IntoScript for ValueOf<M, R> {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
         self.0.into_script(world)
     }
 }
 
-impl<M> ArgMeta for ValueOf<M> {}
-
-impl<M> GetTypeDependencies for ValueOf<M> {
-    type Underlying = ReflectReference;
-
-    fn register_type_dependencies(registry: &mut TypeRegistry) {
-        ReflectReference::register_type_dependencies(registry)
+impl<M, R: ArgMeta> ArgMeta for ValueOf<M, R> {
+    fn default_value() -> Option<ScriptValue> {
+        R::default_value()
     }
 }
 
-impl<M: Typed> TypedThrough for ValueOf<M> {
+impl<M, R: GetTypeDependencies> GetTypeDependencies for ValueOf<M, R> {
+    type Underlying = R::Underlying;
+
+    fn register_type_dependencies(registry: &mut TypeRegistry) {
+        R::register_type_dependencies(registry)
+    }
+}
+
+impl<M: Typed, R> TypedThrough for ValueOf<M, R> {
     fn through_type_info() -> ThroughTypeInfo {
         ThroughTypeInfo::Val(M::type_info())
     }

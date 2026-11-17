@@ -11,6 +11,7 @@ pub mod magic_functions;
 pub mod namespace;
 pub mod script_function;
 pub mod type_dependencies;
+pub mod typed;
 
 pub use arg_meta::*;
 pub use bound::*;
@@ -23,6 +24,7 @@ pub use magic_functions::*;
 pub use namespace::*;
 pub use script_function::*;
 pub use type_dependencies::*;
+pub use typed::*;
 
 #[cfg(test)]
 #[allow(dead_code)]

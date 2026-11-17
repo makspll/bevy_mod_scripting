@@ -164,4 +164,12 @@ local Usize = {}
 ---@return integer
 function hello_world(arg1,...) end
 
+---@generic A
+---@param options ladfile_builder.OptionsStruct.Fields
+---@param name "first" | "second_variant"
+---@param value A
+---@overload fun(options: ladfile_builder.OptionsStruct.Fields, name: "first" | "second_variant", value: ReflectReference): ReflectReference
+---@return ladfile_builder.OpaqueGenericType<A>
+function typed_arguments(options,name,value) end
+
 

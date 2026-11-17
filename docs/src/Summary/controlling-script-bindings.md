@@ -146,7 +146,49 @@ To accept any kind of value, i.e. numbers or strings alike, take `ScriptValue` a
         );
 ```
 
-You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see [Generics](#generics).
+You can treat return values similarly. To accept a reference of any type while keeping it typed in the docs, see [Generics](#generics), to accept a few kinds of values, see [Typed arguments](#typed-arguments).
+
+## Typed arguments
+
+Arguments which aren't reflected values keep their exact type in the docs and the Lua language server files with these:
+
+```rust,ignore
+/// Spawns an enemy
+#[derive(ScriptStruct)]
+#[script_struct(namespace = "game")]
+struct SpawnOptions {
+    name: String,
+    speed: Option<Speed>,                                   // optional
+    on_death: Option<FunctionOf<fn(V<Entity>) -> ()>>,
+}
+
+#[derive(ScriptUnion)]
+enum Speed {
+    Named(ByName<Pace>),     // "slow" | "fast", for `enum Pace { Slow, Fast }`
+    Exact(f32),              // 2.5
+}
+
+#[script_bindings(remote, namespace = "game")]
+impl NamespaceMembers {
+    fn spawn(ctxt: FunctionCallContext, options: SpawnOptions) -> Result<V<Entity>, InteropError> { .. }
+}
+```
+
+```lua
+game.spawn({ name = "goblin", speed = "fast", on_death = function(entity) end })   -- `entity` is an ecs.Entity
+game.spawn({ name = "goblin", sped = 2 })      -- flagged by the language server, an error at runtime
+```
+
+| | scripts pass | documented as |
+|---|---|---|
+| `FunctionOf<fn(A, B) -> R>` | a function, which is a `DynamicScriptFunction` in Rust | `fun(arg1: A, arg2: B): R` |
+| `ByName<E>` | a unit variant of the reflected enum `E` by its name in snake case, or a reference to an `E` | `"slow" \| "fast"` |
+| `#[derive(ScriptUnion)]` enum | the value of any variant, each holding one value: the first variant whose type converts it | the union of the variants' types |
+| `#[derive(ScriptStruct)]` struct | a map of its fields: a table in Lua, an object in Rune | the class of its fields |
+
+A `ScriptStruct` is passed **by value**: the map is converted to the struct when it is passed, and back to a new map when it is returned, so changing one doesn't change the other. Unknown fields, missing fields and fields of the wrong type are errors naming the field, and fields written `Option<..>` can be left out. For data scripts keep a handle to and change, use a reflected type.
+
+Unions only try the types which could convert a value, as told by `FromScript::could_convert`. When implementing `FromScript` by hand, override it to rule out the kinds of values your type never converts.
 
 ## Generics
 
@@ -159,7 +201,7 @@ Reflection only knows concrete types (`Handle<Image>`, `Time<Virtual>`), so gene
 
 Two wrappers carry the markers in signatures:
 
-- `ValueOf<T>`: a `ReflectReference`, documented as a `T`.
+- `ValueOf<T, R>`: a value converted as `R`, a `ReflectReference` unless given, documented as a `T`.
 - `TypeOf<R, A>`: a type argument passed as `R`, i.e. a registration, documented as the parameter `A`.
 
 Using the same marker ties them together, so `get_component` returns a value of the type it is given:
@@ -181,6 +223,13 @@ print(transform)
 ```
 
 A marker can also stand inside a type, i.e. `ValueOf<Handle<A>>` accepts the handle of any asset type, see [References](../ScriptingReference/references.md#references-in-rust).
+
+For values which aren't references, give the conversion: `ValueOf<A, ScriptValue>` takes any value, typed as whatever the script passed:
+
+```rust,ignore
+// with `MyBox` declared as a generic type (see below): `boxed(5)` is a `MyBox<integer>`
+fn boxed(initial: ValueOf<A, ScriptValue>) -> V<MyBox<A>> { .. }
+```
 
 ### Generic types
 

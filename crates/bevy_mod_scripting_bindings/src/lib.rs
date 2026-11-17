@@ -48,3 +48,9 @@ pub use static_type::*;
 pub use system_set::*;
 pub use type_data::*;
 pub use world_extensions::*;
+
+/// Paths the derives of `bevy_mod_scripting_derive` use, which don't depend on what the deriving crate imports.
+#[doc(hidden)]
+pub mod __derive {
+    pub use bevy_reflect::TypeRegistry;
+}

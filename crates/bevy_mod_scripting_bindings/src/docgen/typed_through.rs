@@ -73,6 +73,17 @@ pub enum ThroughTypeInfo {
     ///
     /// See [`ThroughTypeInfo::bind_placeholders`].
     Bound(BoundPlaceholder),
+    /// A function taking and returning values of the given types, see [`crate::function::typed::FunctionOf`]
+    Function {
+        /// The types of its arguments, in order
+        params: Vec<ThroughTypeInfo>,
+        /// The type of what it returns
+        returns: Box<ThroughTypeInfo>,
+    },
+    /// One exact string, see [`crate::function::typed::ByName`]
+    Literal(String),
+    /// A struct passed by value as a map of its fields, see [`ScriptStructInfo`]
+    Struct(&'static ScriptStructInfo),
     /// A type itself rather than a value of it, i.e. the component type `get_component` takes, see [`crate::function::generics::TypeOf`]
     TypeOf {
         /// The type, usually a marker standing for a parameter of a generic function
@@ -80,6 +91,51 @@ pub enum ThroughTypeInfo {
         /// How the type is passed at runtime, i.e. as a component registration
         erased: Box<ThroughTypeInfo>,
     },
+}
+
+/// Describes a struct passed to and from scripts by value, as a map of its fields, made by `#[derive(ScriptStruct)]`.
+///
+/// The struct isn't reflected: its fields are described by the [`TypedThrough`] of their types, and it is documented
+/// as the class of its fields, like the payload of a constructor.
+pub struct ScriptStructInfo {
+    /// The struct
+    pub type_id: fn() -> TypeId,
+    /// The full path of the type, i.e. `my_crate::options::Options`
+    pub path: &'static str,
+    /// The name of the type, i.e. `Options`
+    pub identifier: &'static str,
+    /// The script namespace the type is documented in, the crate defining it if `None`
+    pub namespace: Option<&'static str>,
+    /// The documentation of the type
+    pub docs: Option<&'static str>,
+    /// The fields, in order of declaration
+    pub fields: &'static [ScriptStructField],
+}
+
+/// A field of a [`ScriptStructInfo`].
+pub struct ScriptStructField {
+    /// The name of the field, its key in the map
+    pub name: &'static str,
+    /// How the value of the field is passed
+    pub type_info: fn() -> ThroughTypeInfo,
+    /// Whether the field can be left out, i.e. it is an `Option`
+    pub optional: bool,
+}
+
+impl std::fmt::Debug for ScriptStructInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.path)
+    }
+}
+
+impl bevy_mod_scripting_display::DebugWithTypeInfo for &'static ScriptStructInfo {
+    fn to_string_with_type_info(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        _type_info_provider: Option<&bevy_mod_scripting_display::WorldAccessGuard>,
+    ) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self, f)
+    }
 }
 
 /// The parts of a shared function's signature which depend on the type it is bound to.
@@ -107,6 +163,11 @@ impl ThroughTypeInfo {
             ThroughTypeInfo::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
+            ThroughTypeInfo::Function { params, returns } => {
+                params.iter().chain(std::iter::once(&**returns)).collect()
+            }
+            // the fields of a table are described by its own definition, see `ScriptStructInfo::fields`
+            ThroughTypeInfo::Literal(_) | ThroughTypeInfo::Struct(_) => vec![],
             ThroughTypeInfo::Ref(_)
             | ThroughTypeInfo::Mut(_)
             | ThroughTypeInfo::Val(_)
@@ -148,6 +209,10 @@ impl ThroughTypeInfo {
                 rest: bind(rest),
             },
             ThroughTypeInfo::Union(inner) => ThroughTypeInfo::Union(bind_all(inner)),
+            ThroughTypeInfo::Function { params, returns } => ThroughTypeInfo::Function {
+                params: bind_all(params),
+                returns: bind(returns),
+            },
             ThroughTypeInfo::TypeOf { of, erased } => ThroughTypeInfo::TypeOf {
                 of,
                 erased: bind(erased),
@@ -544,7 +609,7 @@ mod test {
     variant_names!(
         ThroughTypeInfo, ALL_THROUGH_TYPES, through_name:
         Ref, Mut, Val, Opaque, Primitive, Option, Vec, HashMap, HashSet, Array, InteropResult, Tuple,
-        UntypedTuple, TupleWithRest, Union, Fields, Bound, TypeOf
+        UntypedTuple, TupleWithRest, Union, Fields, Bound, Function, Literal, Struct, TypeOf
     );
     variant_names!(BoundPlaceholder, ALL_BOUND_PLACEHOLDERS, bound_placeholder_name: Value, Fields);
 
@@ -599,6 +664,18 @@ mod test {
 
     #[derive(bevy_reflect::Reflect)]
     struct Value;
+
+    #[derive(bevy_reflect::Reflect)]
+    enum Named {
+        A,
+    }
+
+    #[derive(bevy_mod_scripting_derive::ScriptStruct)]
+    #[script_struct(bms_bindings_path = "crate")]
+    #[allow(dead_code)]
+    struct Passed {
+        value: i32,
+    }
 
     /// The static and the dynamic description of the same type, i.e. `Vec<V<Value>>` and `Vec<Value>`
     type StaticDynamicPair = (ThroughTypeInfo, &'static TypeInfo);
@@ -692,6 +769,10 @@ mod test {
         "ThroughTypeInfo::Bound",
         // the parameters of generic functions are declared in their signature
         "ThroughTypeInfo::TypeOf",
+        // the signatures of functions, names and structs passed by value are described by the types which convert them
+        "ThroughTypeInfo::Function",
+        "ThroughTypeInfo::Literal",
+        "ThroughTypeInfo::Struct",
         "BoundPlaceholder::Value",
         "BoundPlaceholder::Fields",
         // only produced by `#[derive(TypedThrough)]`, the dynamic conversion uses a value instead
@@ -725,6 +806,9 @@ mod test {
             V<Value>,
             crate::function::generics::A,
         >::through_type_info());
+        collect(crate::FunctionOf::<fn(i32) -> bool>::through_type_info());
+        collect(crate::ByName::<Named>::through_type_info());
+        collect(Passed::through_type_info());
         // placeholders, and what they turn into when bound
         for placeholder in [
             BoundValue::through_type_info(),

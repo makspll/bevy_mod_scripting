@@ -33,6 +33,73 @@ pub fn script_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     derive::script_type(input.into()).into()
 }
 
+#[proc_macro_derive(ScriptStruct, attributes(script_struct))]
+/// Passes a struct with named fields to and from scripts **by value**, as a map of its fields: a table in Lua,
+/// an object in Rune. Each field converts with its own `FromScript` / `IntoScript`, so fields can be anything a
+/// function argument can be, i.e. unions, functions or names, which a reflected type's fields can't:
+///
+/// ```rust,ignore
+/// /// How to spawn an enemy
+/// #[derive(ScriptStruct)]
+/// #[script_struct(namespace = "game")]
+/// struct SpawnOptions {
+///     name: String,                                        // required
+///     health: Option<f32>,                                 // optional: `None` when left out or `nil`
+///     on_death: Option<FunctionOf<fn(V<Entity>) -> ()>>,
+/// }
+///
+/// #[script_bindings(remote, namespace = "game")]
+/// impl NamespaceMembers {
+///     fn spawn(ctxt: FunctionCallContext, options: SpawnOptions) -> Result<V<Entity>, InteropError> { .. }
+/// }
+/// ```
+///
+/// ```lua
+/// game.spawn({ name = "goblin", on_death = function(entity) end })
+/// ```
+///
+/// - **A copy, not a reference.** The map is converted into the struct when it is passed, and the struct into a new
+///   map when it is returned. Changing either side afterwards doesn't change the other, unlike a reflected value,
+///   which scripts hold a reference to. Use a reflected type for data scripts keep and change.
+/// - **Strict.** Unknown fields, missing required fields and fields of the wrong type are errors naming the field.
+///   Fields whose type is written `Option<..>` are optional. An empty list is accepted as an empty map, as Lua can't
+///   tell them apart.
+/// - **Returned** structs leave out the fields which are `nil`.
+/// - **Documented** as the class of its fields (`game.SpawnOptions.Fields` in Lua), like the payload of a
+///   constructor, in its `namespace`: the crate defining it unless given.
+///
+/// Implements `FromScript`, `IntoScript`, `TypedThrough`, `ArgMeta` and `GetTypeDependencies`. Not for generic types.
+/// `#[script_struct(bms_bindings_path = "..")]` changes the path of the bindings crate.
+pub fn script_struct(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::script_struct(input.into()).into()
+}
+
+#[proc_macro_derive(ScriptUnion, attributes(script_union))]
+/// Passes an enum whose variants each hold one value to and from scripts as the value of any of its variants,
+/// i.e. a property which takes a number, a text or a function:
+///
+/// ```rust,ignore
+/// #[derive(ScriptUnion)]
+/// enum Size {
+///     Named(ByName<SizeKeyword>),         // "auto"
+///     Pixels(f64),                        // 50
+///     Text(String),                       // "50%"
+///     Bound(FunctionOf<fn() -> f64>),     // function() return 50 end
+/// }
+/// ```
+///
+/// - **Converting** gives the first variant whose type converts the value. Only the types which could convert it
+///   are tried (see `FromScript::could_convert`), so a number never builds an error for the text variants. Put the
+///   more specific of two types taking the same kind of value first, i.e. names before text.
+/// - **Returning** a value returns the value of its variant.
+/// - **Documented** as the union of the variants' types, `SizeKeyword | number | string | fun(): number` in Lua.
+///
+/// Implements `FromScript`, `IntoScript`, `TypedThrough`, `ArgMeta` and `GetTypeDependencies`. Not for generic types.
+/// `#[script_union(bms_bindings_path = "..")]` changes the path of the bindings crate.
+pub fn script_union(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::script_union(input.into()).into()
+}
+
 #[proc_macro_derive(ArgMeta, attributes(arg_meta))]
 /// Default implementation for the `TypedThrough` trait
 pub fn arg_meta(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

@@ -12,7 +12,10 @@ use bevy_mod_scripting_bindings::{
     docgen::{
         TypedThrough,
         info::FunctionInfo,
-        typed_through::{BoundPlaceholder, ThroughTypeInfo, primitive_kind_of, primitive_type_id},
+        typed_through::{
+            BoundPlaceholder, ScriptStructInfo, ThroughTypeInfo, primitive_kind_of,
+            primitive_type_id,
+        },
     },
     function::{
         bound::is_asset_type, namespace::FunctionScope, script_function::FunctionCallContext,
@@ -223,6 +226,64 @@ impl<'t> LadFileBuilder<'t> {
             },
         );
         self
+    }
+
+    /// The id of a struct passed by value (see `#[derive(ScriptStruct)]`), adding its definition and the types of its
+    /// fields to the file. It isn't reflected, its fields are described by how they are passed.
+    fn add_script_struct(&mut self, info: &'static ScriptStructInfo) -> LadTypeId {
+        let type_id = (info.type_id)();
+        let lad_type_id = LadTypeId::new_string_id(info.path.into());
+        self.type_id_mapping.insert(type_id, lad_type_id.clone());
+        if self.file.types.contains_key(&lad_type_id) {
+            return lad_type_id;
+        }
+        let crate_ = info.path.split("::").next().map(str::to_owned);
+        let definition = LadTypeDefinition {
+            identifier: info.identifier.to_owned(),
+            namespace: info
+                .namespace
+                .map(str::to_owned)
+                .or_else(|| crate_.clone())
+                .unwrap_or_default(),
+            crate_,
+            path: info.path.to_owned(),
+            generics: vec![],
+            documentation: info.docs.map(|docs| docs.trim().to_owned()),
+            associated_functions: vec![],
+            // filled in below, the fields may refer to the struct itself
+            layout: LadTypeLayout::Opaque,
+            generated: false,
+            insignificance: default_importance(),
+            metadata: LadTypeMetadata {
+                is_component: false,
+                is_resource: false,
+                is_bundle: false,
+                is_asset: false,
+                is_reflect: false,
+                mapped_to_primitive_kind: None,
+                registration: None,
+                default: None,
+                misc: Default::default(),
+            },
+        };
+        self.file.types.insert(lad_type_id.clone(), definition);
+        let fields = info
+            .fields
+            .iter()
+            .map(|field| LadNamedField {
+                name: field.name.to_owned(),
+                type_: self.lad_kind(&(field.type_info)(), true),
+                // optional fields are left out of the map, which is what a default does for a constructor
+                has_default: field.optional,
+            })
+            .collect();
+        if let Some(definition) = self.file.types.get_mut(&lad_type_id) {
+            definition.layout = LadTypeLayout::MonoVariant(LadVariant::Struct {
+                name: info.identifier.into(),
+                fields,
+            });
+        }
+        lad_type_id
     }
 
     /// Adds a type which is only known by its path, i.e. the asset type of `Handle<Font>`, which isn't reflected.
@@ -1277,6 +1338,17 @@ impl<'t> LadFileBuilder<'t> {
                 of: self.lad_named_type(of, register),
                 erased: nested(self, erased),
             },
+            ThroughTypeInfo::Function { params, returns } => LadTypeKind::Function {
+                params: params.iter().map(|p| *nested(self, p)).collect(),
+                returns: nested(self, returns),
+            },
+            ThroughTypeInfo::Literal(value) => LadTypeKind::Literal(Cow::Owned(value.clone())),
+            // passed as a map of its fields, like the payload of a constructor. It is always added, as unlike
+            // reflected types, it isn't in the type registry the types of the file usually come from
+            ThroughTypeInfo::Struct(info) => LadTypeKind::Fields {
+                of: LadNamedType::Id(self.add_script_struct(info)),
+                variant: None,
+            },
             // functions are bound before they are added, any placeholders left are documented as what they are at runtime
             ThroughTypeInfo::Bound(BoundPlaceholder::Value) => {
                 LadTypeKind::Primitive(ReflectionPrimitiveKind::ReflectReference)
@@ -1632,6 +1704,40 @@ mod test {
             FunctionScope::OnType(TypeId::of::<HoldsOpaqueType>()),
         );
 
+        /// The options of a function, passed by value
+        #[derive(bevy_mod_scripting_derive::ScriptStruct)]
+        #[script_struct(
+            bms_bindings_path = "bevy_mod_scripting_bindings",
+            namespace = "ladfile_builder"
+        )]
+        #[allow(dead_code)]
+        struct OptionsStruct {
+            name: String,
+            callback: Option<bevy_mod_scripting_bindings::FunctionOf<fn(usize) -> bool>>,
+        }
+
+        #[derive(Reflect)]
+        enum NamedEnum {
+            First,
+            SecondVariant,
+        }
+
+        let typed_function = |_: OptionsStruct,
+                              _: bevy_mod_scripting_bindings::ByName<NamedEnum>,
+                              _: bevy_mod_scripting_bindings::ValueOf<
+            A,
+            bevy_mod_scripting_bindings::ScriptValue,
+        >| {
+            // a generic type of whatever value was passed
+            V::new(OpaqueGenericType::<A> {
+                value: A,
+                phantom: std::marker::PhantomData,
+            })
+        };
+        let typed_function_info = typed_function
+            .get_function_info("typed_arguments".into(), FunctionScope::Builtin)
+            .with_arg_names(&["options", "name", "value"]);
+
         let mut lad_file = LadFileBuilder::new(&type_registry)
             .set_description("## Hello gentlemen\n I am  markdown file.\n - hello\n - world")
             .set_sorted(true)
@@ -1648,6 +1754,7 @@ mod test {
             .add_function_info(&function_info)
             .add_function_info(&global_function_info)
             .add_function_info(&function_with_complex_args_info)
+            .add_function_info(&typed_function_info)
             .add_type::<GenericStructType<usize>>()
             .add_type::<UnitType>()
             .add_type::<TupleStructType>()
@@ -1878,7 +1985,7 @@ mod test {
     variant_names!(
         LadTypeKind, ALL_LAD_KINDS, lad_kind_name:
         Ref, Mut, Val, Option, Vec, HashMap, HashSet, InteropResult, Tuple, UntypedTuple,
-        TupleWithRest, Array, Primitive, Union, Unknown, Fields, Type
+        TupleWithRest, Array, Primitive, Union, Unknown, Fields, Type, Function, Literal
     );
 
     /// Records every kind found anywhere in the given kind
@@ -1902,12 +2009,17 @@ mod test {
                 collect_kinds(rest, seen);
             }
             LadTypeKind::Type { erased, .. } => collect_kinds(erased, seen),
+            LadTypeKind::Function { params, returns } => {
+                params.iter().for_each(|kind| collect_kinds(kind, seen));
+                collect_kinds(returns, seen);
+            }
             LadTypeKind::Ref(_)
             | LadTypeKind::Mut(_)
             | LadTypeKind::Val(_)
             | LadTypeKind::UntypedTuple
             | LadTypeKind::Primitive(_)
             | LadTypeKind::Unknown(_)
+            | LadTypeKind::Literal(_)
             | LadTypeKind::Fields { .. } => {}
         }
     }
@@ -2061,6 +2173,77 @@ mod test {
         }
     }
 
+    /// Named by its unit variants, the variant with a field can't be named
+    #[derive(Reflect)]
+    enum NamedVariants {
+        Unit,
+        OtherUnit,
+        WithField(f32),
+    }
+
+    /// Passed by value, as a map of its fields
+    #[derive(bevy_mod_scripting_derive::ScriptStruct)]
+    #[script_struct(bms_bindings_path = "bevy_mod_scripting_bindings", namespace = "test")]
+    #[allow(dead_code)]
+    struct PassedStruct {
+        required: f32,
+        optional: Option<String>,
+    }
+
+    #[test]
+    fn structs_passed_by_value_are_types_of_their_fields() {
+        let registry = field_test_registry();
+        let mut builder = LadFileBuilder::new_empty(&registry);
+        builder.add_through_type_info(&PassedStruct::through_type_info());
+        let file = builder.build();
+        let definition = file
+            .types
+            .get(&LadTypeId::new_string_id(
+                "ladfile_builder::test::PassedStruct".into(),
+            ))
+            .expect("the struct is a type of the file");
+        assert_eq!(
+            (
+                definition.identifier.as_str(),
+                definition.namespace.as_str(),
+                definition.documentation.as_deref(),
+                definition.metadata.is_reflect,
+            ),
+            (
+                "PassedStruct",
+                "test",
+                Some("Passed by value, as a map of its fields"),
+                false
+            )
+        );
+        let LadTypeLayout::MonoVariant(LadVariant::Struct { fields, .. }) = &definition.layout
+        else {
+            panic!("expected a struct, got {:?}", definition.layout);
+        };
+        let fields: Vec<_> = fields
+            .iter()
+            .map(|f| (f.name.as_str(), &f.type_, f.has_default))
+            .collect();
+        use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind as Primitive;
+        assert_eq!(
+            fields,
+            [
+                ("required", &LadTypeKind::Primitive(Primitive::F32), false),
+                (
+                    "optional",
+                    &LadTypeKind::Option(Box::new(LadTypeKind::Primitive(Primitive::String))),
+                    true
+                ),
+            ]
+        );
+        // it can't be imported, as it isn't reflected
+        assert!(
+            file.namespaces
+                .get("test")
+                .is_none_or(|n| n.types.is_empty())
+        );
+    }
+
     /// The kinds which can only come from the signature of a function, as fields are always plain values
     fn documented_argument_kinds(
         registry: &TypeRegistry,
@@ -2147,7 +2330,37 @@ mod test {
             (
                 "type info",
                 ThroughTypeInfo::Opaque(FieldValue::type_info()),
-                Kind::Unknown(value),
+                Kind::Unknown(value.clone()),
+            ),
+            (
+                "function",
+                bevy_mod_scripting_bindings::FunctionOf::<fn(V<FieldValue>, f32) -> bool>::through_type_info(),
+                Kind::Function {
+                    params: vec![
+                        Kind::Val(value.into()),
+                        Kind::Primitive(Primitive::F32),
+                    ],
+                    returns: Box::new(Kind::Primitive(Primitive::Bool)),
+                },
+            ),
+            (
+                "name",
+                bevy_mod_scripting_bindings::ByName::<NamedVariants>::through_type_info(),
+                Kind::Union(vec![
+                    Kind::Literal("unit".into()),
+                    Kind::Literal("other_unit".into()),
+                ]),
+            ),
+            (
+                "struct passed by value",
+                PassedStruct::through_type_info(),
+                Kind::Fields {
+                    of: LadTypeId::new_string_id(
+                        "ladfile_builder::test::PassedStruct".into(),
+                    )
+                    .into(),
+                    variant: None,
+                },
             ),
         ];
 

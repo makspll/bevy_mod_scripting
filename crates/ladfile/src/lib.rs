@@ -381,6 +381,16 @@ pub enum LadTypeKind {
         #[serde(skip_serializing_if = "Option::is_none", default)]
         variant: Option<Cow<'static, str>>,
     },
+    /// A function, i.e. a callback a script passes, `{ "function": { "params": [..], "returns": .. } }`.
+    Function {
+        /// The kinds of its arguments, in order
+        #[serde(skip_serializing_if = "Vec::is_empty", default)]
+        params: Vec<LadTypeKind>,
+        /// The kind of what it returns
+        returns: Box<LadTypeKind>,
+    },
+    /// One exact string, i.e. one of the names of the variants of an enum passed by name.
+    Literal(Cow<'static, str>),
     /// A type itself rather than a value of it, i.e. the component type `get_component` takes,
     /// `{ "type": { "of": { "param": "A" }, "erased": { "val": "..::ScriptComponentRegistration" } } }`.
     Type {
@@ -453,6 +463,9 @@ impl LadTypeKind {
             LadTypeKind::TupleWithRest { head, rest } => {
                 head.iter().chain(std::iter::once(&**rest)).collect()
             }
+            LadTypeKind::Function { params, returns } => {
+                params.iter().chain(std::iter::once(&**returns)).collect()
+            }
             LadTypeKind::Ref(named)
             | LadTypeKind::Mut(named)
             | LadTypeKind::Val(named)
@@ -460,9 +473,10 @@ impl LadTypeKind {
             LadTypeKind::Type { of, erased } => {
                 of.args().iter().chain(std::iter::once(&**erased)).collect()
             }
-            LadTypeKind::Unknown(_) | LadTypeKind::Primitive(_) | LadTypeKind::UntypedTuple => {
-                vec![]
-            }
+            LadTypeKind::Unknown(_)
+            | LadTypeKind::Primitive(_)
+            | LadTypeKind::UntypedTuple
+            | LadTypeKind::Literal(_) => vec![],
         }
     }
 
@@ -479,6 +493,10 @@ impl LadTypeKind {
             LadTypeKind::TupleWithRest { head, rest } => head
                 .iter_mut()
                 .chain(std::iter::once(&mut **rest))
+                .collect(),
+            LadTypeKind::Function { params, returns } => params
+                .iter_mut()
+                .chain(std::iter::once(&mut **returns))
                 .collect(),
             LadTypeKind::Ref(LadNamedType::Generic { args, .. })
             | LadTypeKind::Mut(LadNamedType::Generic { args, .. })
@@ -500,6 +518,7 @@ impl LadTypeKind {
             | LadTypeKind::Unknown(_)
             | LadTypeKind::Primitive(_)
             | LadTypeKind::UntypedTuple
+            | LadTypeKind::Literal(_)
             | LadTypeKind::Fields { .. } => vec![],
         }
     }
@@ -660,6 +679,12 @@ pub trait ArgumentVisitor {
     /// A value of the type a generic parameter stands for
     fn visit_param(&mut self, param: &str) -> Self::Output;
 
+    /// A function taking arguments of the `params` kinds and returning a value of the `returns` kind
+    fn visit_function(&mut self, params: &[LadTypeKind], returns: &LadTypeKind) -> Self::Output;
+
+    /// One exact string
+    fn visit_literal(&mut self, value: &str) -> Self::Output;
+
     /// A type itself, passed as `erased` at runtime, by default [`Self::visit_named`] of the type
     fn visit_type(&mut self, of: &LadNamedType, _erased: &LadTypeKind) -> Self::Output {
         self.visit_named(of)
@@ -685,6 +710,8 @@ pub trait ArgumentVisitor {
             LadTypeKind::Union(inner) => self.visit_union(inner),
             LadTypeKind::Fields { of, variant } => self.visit_fields(of, variant.as_deref()),
             LadTypeKind::Type { of, erased } => self.visit_type(of, erased),
+            LadTypeKind::Function { params, returns } => self.visit_function(params, returns),
+            LadTypeKind::Literal(value) => self.visit_literal(value),
         }
     }
 }

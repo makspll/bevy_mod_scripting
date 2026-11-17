@@ -203,11 +203,35 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
 
     fn visit_union(&mut self, inner: &[ladfile::LadTypeKind]) {
         for (idx, arg) in inner.iter().enumerate() {
+            // `fn() -> A | B` would read as returning the union
+            let function = matches!(arg, ladfile::LadTypeKind::Function { .. });
+            if function {
+                self.buffer.text("(");
+            }
             self.visit(arg);
+            if function {
+                self.buffer.text(")");
+            }
             if idx < inner.len() - 1 {
                 self.buffer.text(" | ");
             }
         }
+    }
+
+    fn visit_function(&mut self, params: &[ladfile::LadTypeKind], returns: &ladfile::LadTypeKind) {
+        self.buffer.text("fn(");
+        for (idx, param) in params.iter().enumerate() {
+            if idx > 0 {
+                self.buffer.text(", ");
+            }
+            self.visit(param);
+        }
+        self.buffer.text(") -> ");
+        self.visit(returns);
+    }
+
+    fn visit_literal(&mut self, value: &str) {
+        self.buffer.text(format!("{value:?}"));
     }
 
     fn visit_array(&mut self, inner: &ladfile::LadTypeKind, size: usize) {

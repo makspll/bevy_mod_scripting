@@ -576,6 +576,51 @@
         "mapped_to_primitive_kind": null
       }
     },
+    "ladfile_builder::test::OptionsStruct": {
+      "identifier": "OptionsStruct",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::OptionsStruct",
+      "namespace": "ladfile_builder",
+      "documentation": "The options of a function, passed by value",
+      "layout": {
+        "kind": "Struct",
+        "name": "OptionsStruct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "primitive": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "type": {
+              "option": {
+                "function": {
+                  "params": [
+                    {
+                      "primitive": "usize"
+                    }
+                  ],
+                  "returns": {
+                    "primitive": "bool"
+                  }
+                }
+              }
+            },
+            "has_default": true
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000,
+      "metadata": {
+        "is_component": false,
+        "is_resource": false,
+        "is_reflect": false,
+        "mapped_to_primitive_kind": null
+      }
+    },
     "ladfile_builder::test::TupleStructType": {
       "identifier": "TupleStructType",
       "crate": "ladfile_builder",
@@ -693,6 +738,60 @@
         }
       },
       "metadata": {}
+    },
+    "::typed_arguments": {
+      "namespace": null,
+      "identifier": "typed_arguments",
+      "overload_index": null,
+      "arguments": [
+        {
+          "kind": {
+            "fields": {
+              "type": "ladfile_builder::test::OptionsStruct"
+            }
+          },
+          "name": "options"
+        },
+        {
+          "kind": {
+            "union": [
+              {
+                "literal": "first"
+              },
+              {
+                "literal": "second_variant"
+              }
+            ]
+          },
+          "name": "name"
+        },
+        {
+          "kind": {
+            "val": {
+              "param": "A"
+            }
+          },
+          "name": "value"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "val": {
+            "generic_type": "ladfile_builder::test::OpaqueGenericType",
+            "args": [
+              {
+                "val": {
+                  "param": "A"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "metadata": {},
+      "generics": [
+        "A"
+      ]
     },
     "ladfile_builder::test::GenericStructType<usize>::hello_world": {
       "namespace": "ladfile_builder::test::GenericStructType<usize>",

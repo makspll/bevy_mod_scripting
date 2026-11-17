@@ -36,6 +36,16 @@ pub trait FromScript {
     ) -> Result<Self::This<'s>, InteropError>
     where
         Self: Sized;
+
+    /// Whether a value of this kind could be converted, without converting it. `false` means [`Self::from_script`] would fail.
+    ///
+    /// Unions only try the types which could convert a value, so they don't build an error for each type which can't.
+    fn could_convert(_value: &ScriptValue) -> bool
+    where
+        Self: Sized,
+    {
+        true
+    }
 }
 
 #[profiling::all_functions]
@@ -74,6 +84,10 @@ impl FromScript for bool {
             )),
         }
     }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::Bool(_) | ScriptValue::Reference(_))
+    }
 }
 
 macro_rules! impl_from_with_downcast {
@@ -91,6 +105,13 @@ macro_rules! impl_from_with_downcast {
                         ScriptValue::Bool(b) => Ok(b as usize as $ty),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
+                }
+
+                fn could_convert(value: &ScriptValue) -> bool {
+                    matches!(
+                        value,
+                        ScriptValue::Integer(_) | ScriptValue::Float(_) | ScriptValue::Bool(_) | ScriptValue::Reference(_)
+                    )
                 }
             }
         )*
@@ -114,6 +135,10 @@ macro_rules! impl_from_stringlike {
                         ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
+                }
+
+                fn could_convert(value: &ScriptValue) -> bool {
+                    matches!(value, ScriptValue::String(_) | ScriptValue::Reference(_))
                 }
             }
         )*
@@ -167,6 +192,13 @@ impl FromScript for char {
             )),
         }
     }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(
+            value,
+            ScriptValue::Integer(_) | ScriptValue::String(_) | ScriptValue::Reference(_)
+        )
+    }
 }
 
 #[profiling::all_functions]
@@ -181,6 +213,10 @@ impl FromScript for ReflectReference {
                 value,
             )),
         }
+    }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::Reference(_))
     }
 }
 
@@ -286,6 +322,10 @@ impl<T: FromReflect> FromScript for V<T> {
             )),
         }
     }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::Reference(_))
+    }
 }
 
 /// A wrapper around a reference to a value of type `T`.
@@ -343,6 +383,10 @@ impl<T: FromReflect> FromScript for R<'_, T> {
                 value,
             )),
         }
+    }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::Reference(_))
     }
 }
 
@@ -427,6 +471,10 @@ impl<T: FromReflect> FromScript for M<'_, T> {
             )),
         }
     }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::Reference(_))
+    }
 }
 
 #[profiling::all_functions]
@@ -441,6 +489,10 @@ impl<T: FromScript> FromScript for Option<T> {
             ScriptValue::Unit => Ok(None),
             _ => Ok(Some(T::from_script(value, scope)?)),
         }
+    }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::Unit) || T::could_convert(value)
     }
 }
 
@@ -466,6 +518,10 @@ where
             )),
         }
     }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::List(_))
+    }
 }
 
 #[profiling::all_functions]
@@ -489,6 +545,10 @@ where
                 value,
             )),
         }
+    }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::List(_))
     }
 }
 
@@ -516,6 +576,10 @@ where
             )),
         }
     }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::List(_))
+    }
 }
 
 #[profiling::all_functions]
@@ -537,6 +601,10 @@ impl FromScript for DynamicScriptFunctionMut {
             )),
         }
     }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::FunctionMut(_))
+    }
 }
 
 #[profiling::all_functions]
@@ -557,6 +625,10 @@ impl FromScript for DynamicScriptFunction {
                 value,
             )),
         }
+    }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        matches!(value, ScriptValue::Function(_))
     }
 }
 
@@ -592,6 +664,10 @@ macro_rules! impl_from_script_hashmap {
                         value,
                     )),
                 }
+            }
+
+            fn could_convert(value: &ScriptValue) -> bool {
+                matches!(value, ScriptValue::Map(_) | ScriptValue::List(_))
             }
         }
     };
@@ -632,6 +708,10 @@ macro_rules! impl_from_script_hashset {
                         value,
                     )),
                 }
+            }
+
+            fn could_convert(value: &ScriptValue) -> bool {
+                matches!(value, ScriptValue::Map(_) | ScriptValue::List(_))
             }
         }
     };
@@ -696,11 +776,21 @@ impl<T1: FromScript, T2: FromScript> FromScript for Union<T1, T2> {
         value: ScriptValue,
         scope: &'s CallScope<'_>,
     ) -> Result<Self::This<'s>, InteropError> {
-        if let Ok(v) = T1::from_script(value.clone(), scope) {
-            return Ok(Union(Ok(v)));
+        // only types which could convert the value are tried, and it is only copied to try both
+        match (T1::could_convert(&value), T2::could_convert(&value)) {
+            (true, true) => {
+                if let Ok(v) = T1::from_script(value.clone(), scope) {
+                    return Ok(Union(Ok(v)));
+                }
+                T2::from_script(value, scope).map(|v| Union(Err(v)))
+            }
+            (true, false) => T1::from_script(value, scope).map(|v| Union(Ok(v))),
+            (false, _) => T2::from_script(value, scope).map(|v| Union(Err(v))),
         }
+    }
 
-        T2::from_script(value, scope).map(|v| Union(Err(v)))
+    fn could_convert(value: &ScriptValue) -> bool {
+        T1::could_convert(value) || T2::could_convert(value)
     }
 }
 

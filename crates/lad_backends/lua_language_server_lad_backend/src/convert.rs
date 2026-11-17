@@ -119,6 +119,12 @@ fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
         let Some(lad_type) = ladfile.types.get(&type_id) else {
             continue;
         };
+        // structs passed by value (`#[derive(ScriptStruct)]`) are only ever maps of their fields, see `fields_modules`
+        if !lad_type.metadata.is_reflect
+            && !matches!(lad_type.layout, ladfile::LadTypeLayout::Opaque)
+        {
+            continue;
+        }
         let module =
             |class: LuaClass, functions: Vec<FunctionSignature>, type_only: bool| LuaModule {
                 name: lua_type_name(lad_type),
@@ -205,6 +211,9 @@ fn fields_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
     let mut fields_references = FieldsReferences::default();
     for function in ladfile.functions.values() {
         fields_references.visit_function(function);
+    }
+    for lad_type in ladfile.types.values() {
+        fields_references.visit_layout(&lad_type.layout);
     }
     let fields_references = fields_references.0;
 
@@ -886,6 +895,25 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
         Ok(LuaType::Alias(param.to_owned()))
     }
 
+    fn visit_function(&mut self, params: &[LadTypeKind], returns: &LadTypeKind) -> Self::Output {
+        Ok(LuaType::Function(
+            crate::lua_declaration_file::FunctionSignatureShort {
+                // LuaLS needs names, the signature doesn't have any
+                parameters: params
+                    .iter()
+                    .enumerate()
+                    .map(|(i, param)| Ok((format!("arg{}", i + 1), self.visit(param)?)))
+                    .collect::<Result<_, anyhow::Error>>()?,
+                return_type: Box::new(self.visit(returns)?),
+            },
+        ))
+    }
+
+    fn visit_literal(&mut self, value: &str) -> Self::Output {
+        let escaped = value.replace('\\', "\\\\").replace('"', "\\\"");
+        Ok(LuaType::Literal(format!("\"{escaped}\"")))
+    }
+
     fn visit_generic(&mut self, generic_type: &LadTypeId, args: &[LadTypeKind]) -> Self::Output {
         let Some(generic) = self.ladfile.generic_types.get(generic_type) else {
             return Err(anyhow::anyhow!(
@@ -975,6 +1003,32 @@ impl FieldsReferences {
             arg.kind.for_each(&mut collect);
         }
         function.return_type.kind.for_each(&mut collect);
+    }
+
+    /// Structs passed by value can hold others, i.e. a field which is a table of the fields of another struct
+    fn visit_layout(&mut self, layout: &ladfile::LadTypeLayout) {
+        let mut collect = |kind: &LadTypeKind| {
+            if let LadTypeKind::Fields {
+                of: LadNamedType::Id(type_id),
+                variant,
+            } = kind
+            {
+                self.0
+                    .insert((type_id.clone(), variant.as_deref().map(str::to_owned)));
+            }
+        };
+        layout.for_each_variant(
+            |variant, _| match variant {
+                ladfile::LadVariant::Struct { fields, .. } => {
+                    fields.iter().for_each(|f| f.type_.for_each(&mut collect))
+                }
+                ladfile::LadVariant::TupleStruct { fields, .. } => {
+                    fields.iter().for_each(|f| f.type_.for_each(&mut collect))
+                }
+                ladfile::LadVariant::Unit { .. } => {}
+            },
+            (),
+        );
     }
 }
 
@@ -1134,7 +1188,12 @@ fn fields_module(
             fields,
             generics: vec![],
             documentation: Some(format!(
-                "The fields of {subject}, {documentation}. Optional fields are filled in from defaults."
+                "The fields of {subject}, {documentation}. {}",
+                // structs passed by value (`#[derive(ScriptStruct)]`) aren't built from a default
+                match lad_type.metadata.is_reflect {
+                    true => "Optional fields are filled in from defaults.",
+                    false => "Optional fields can be left out.",
+                }
             )),
             exact: true,
             operators: vec![],
