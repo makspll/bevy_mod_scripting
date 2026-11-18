@@ -17,7 +17,7 @@ use bevy_platform::collections::HashMap;
 use rune::{
     Any, ContextError, Module,
     alloc::fmt::TryWrite,
-    runtime::{Formatter, InstAddress, Memory, Output, Protocol, Value, VmResult},
+    runtime::{Formatter, InstAddress, Memory, Output, Protocol, SyncFunction, Value, VmResult},
 };
 
 use crate::{
@@ -489,6 +489,15 @@ pub fn register_types(
                 let function = function
                     .borrow_ref::<RuneFunction>()
                     .map_err(crate::error::IntoInteropError::to_bms_error)?;
+                // a function from Rune is called with the values as they are
+                if let ScriptFunction::Plain(plain) = &function.0
+                    && let Some(script) = plain.script_function::<SyncFunction>()
+                {
+                    return script
+                        .call::<Value>(rest.to_vec())
+                        .into_result()
+                        .map_err(crate::error::IntoInteropError::to_bms_error);
+                }
                 let args = rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>()?;
                 to_rune(function.0.call(args)?)
             }),

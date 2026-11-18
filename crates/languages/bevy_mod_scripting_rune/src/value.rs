@@ -1,5 +1,5 @@
 //! Conversions between [`ScriptValue`] and Rune values.
-use std::{any::TypeId, collections::VecDeque};
+use std::{any::TypeId, collections::VecDeque, sync::Arc};
 
 use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
@@ -191,14 +191,18 @@ pub fn rune_function_to_script(function: Value) -> Result<DynamicScriptFunction,
                 "this function can't be passed to BMS, closures can only capture numbers, strings, lists and maps of them: {error}"
             )))
         })?;
+    // kept next to the function calling it, so Rune calls it directly, see `RuneFunction`
+    let function = Arc::new(function);
+    let called = function.clone();
     Ok(DynamicScriptFunction::from(
         move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| match call_sync_function(
-            &function, args, None,
+            &called, args, None,
         ) {
             Ok(value) => value,
             Err(error) => ScriptValue::Error(error),
         },
-    ))
+    )
+    .with_script_function(function))
 }
 
 fn rune_args(args: VecDeque<ScriptValue>) -> Result<Vec<Value>, InteropError> {
