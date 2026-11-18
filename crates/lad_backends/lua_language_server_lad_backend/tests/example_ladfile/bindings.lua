@@ -168,7 +168,6 @@ function hello_world(arg1,...) end
 ---@param options ladfile_builder.OptionsStruct.Fields
 ---@param name "First" | "SecondVariant"
 ---@param value A
----@overload fun(options: ladfile_builder.OptionsStruct.Fields, name: "First" | "SecondVariant", value: ReflectReference): ReflectReference
 ---@return ladfile_builder.OpaqueGenericType<A>
 function typed_arguments(options,name,value) end
 
