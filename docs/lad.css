@@ -50,6 +50,12 @@
     overflow-wrap: anywhere;
 }
 
+/* long lists of names in a type are folded */
+.lad-page ~ .table-wrapper td summary {
+    cursor: pointer;
+    text-decoration: underline dotted;
+}
+
 /* each function is a section of its own */
 .lad-page ~ h3.lad-function {
     margin-top: 2.5em;

@@ -11,7 +11,7 @@ use ladfile::{
 use mdbook_preprocessor::book::{BookItem, Chapter, SectionNumber};
 
 use crate::{
-    argument_visitor::MarkdownArgumentVisitor,
+    argument_visitor::{MarkdownArgumentVisitor, cell_html},
     docstrings::{DocLinks, render_docs, summary},
     markdown::{IntoMarkdown, Markdown, MarkdownBuilder},
     markdown_vec,
@@ -38,6 +38,20 @@ fn print_linked_type(
         Some("Unknown"),
         Some((PathBuf::from(types_directory), true)),
     )
+}
+
+/// A type as it is printed in a cell of a table of fields: as [`print_linked_type`], laid out over lines when it is long
+fn print_cell_type(ladfile: &LadFile, kind: &LadTypeKind, types_directory: &str) -> String {
+    let types_directory = PathBuf::from(types_directory);
+    let mut visitor = MarkdownArgumentVisitor::new_with_linkifier(ladfile, move |str| {
+        types_directory
+            .join(linkify_filename(str))
+            .with_extension("md")
+    })
+    .with_raw_type_id_replacement("Unknown")
+    .in_table_cell();
+    kind.accept(&mut visitor);
+    cell_html(escape_table_cell(visitor.build()))
 }
 
 fn print_type(
@@ -934,7 +948,7 @@ fn layout_markdown(
 ) {
     let types_directory = types_directory.to_string_lossy();
     let types_directory = types_directory.trim_end_matches('/');
-    let print = |kind: &LadTypeKind| print_linked_type(ladfile, kind, types_directory);
+    let print = |kind: &LadTypeKind| print_cell_type(ladfile, kind, types_directory);
     match layout {
         LadTypeLayout::Opaque => {
             builder.block(
