@@ -224,6 +224,53 @@ impl<M: Typed, R> TypedThrough for ValueOf<M, R> {
     }
 }
 
+/// A script value documented as a `T`, kept as it is: the function converts it later, i.e. when it is used.
+///
+/// For arguments whose conversion depends on more than the value, i.e. on what other arguments were given.
+pub struct Lazy<T>(pub ScriptValue, PhantomData<fn() -> T>);
+
+impl<T> Lazy<T> {
+    /// Wrap the value.
+    pub fn new(value: ScriptValue) -> Self {
+        Lazy(value, PhantomData)
+    }
+
+    /// Unwrap the value.
+    pub fn into_inner(self) -> ScriptValue {
+        self.0
+    }
+}
+
+impl<T> FromScript for Lazy<T> {
+    type This<'w> = Self;
+
+    fn from_script(value: ScriptValue, _: &CallScope) -> Result<Self, InteropError> {
+        Ok(Lazy::new(value))
+    }
+}
+
+impl<T> IntoScript for Lazy<T> {
+    fn into_script(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(self.0)
+    }
+}
+
+impl<T> ArgMeta for Lazy<T> {}
+
+impl<T: TypedThrough> TypedThrough for Lazy<T> {
+    fn through_type_info() -> ThroughTypeInfo {
+        T::through_type_info()
+    }
+}
+
+impl<T: GetTypeDependencies> GetTypeDependencies for Lazy<T> {
+    type Underlying = ScriptValue;
+
+    fn register_type_dependencies(registry: &mut TypeRegistry) {
+        T::register_type_dependencies(registry)
+    }
+}
+
 /// A generic type declared for documentation, see [`GenericTypesAppExt::register_generic_type`].
 #[derive(Clone, Debug)]
 pub struct GenericTypeDeclaration {

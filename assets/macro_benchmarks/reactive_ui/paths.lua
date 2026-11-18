@@ -1,0 +1,124 @@
+-- reactive ui benchmarks, the closures.lua ui with properties computed in Rust wherever the helpers can express them.
+-- `BENCH` is prepended by the harness and selects the scenario, `bench_step` makes the change whose ui update is measured
+local bms = import_namespace("bms")
+local world = bms.world
+local DynamicComponent = bms.DynamicComponent
+local ui = import_namespace("reactive_ui")
+local t = import_namespace("reactive_ui_test")
+
+local Health = world.register_new_component("script.bench", "Health", true)
+local Item = world.register_new_component("script.bench", "Item", true)
+
+local player = world.spawn()
+world.insert_component(player, Health, DynamicComponent.new({ data = { current = 100, max = 100 } }))
+local items, entities = {}, {}
+for i = 1, 200 do
+    local name = "item " .. i
+    local e = world.spawn()
+    world.insert_component(e, Item, DynamicComponent.new({ data = { name = name, count = 1 } }))
+    items[i] = name
+    entities[name] = e
+end
+local search = ui.signal("")
+local shown = ui.signal(true)
+local removed = ui.signal(nil)
+
+local HealthBar = ui.component("HealthBar", function(p)
+    local hp = ui.watch(p.player, Health)
+    local current, max = ui.path(hp, "data.current"), ui.path(hp, "data.max")
+    -- the low hp warning is structure, it stays a script region
+    local low = ui.computed(function()
+        local h = hp:get().data
+        return h.current < h.max * 0.25
+    end)
+    return ui.node({ flex_direction = "Column" }, {
+        ui.node({
+            width = ui.percent(current, max),
+            background_color = ui.when(ui.lt(current, ui.mul(max, 0.25)), "#ff0000", "#00ff00"),
+        }),
+        ui.text({ text = ui.format("{} / {}", { current, max }) }),
+        ui.show(function()
+            if low:get() then return ui.text({ key = "low", text = "LOW HP" }) end
+        end),
+    })
+end)
+
+local Slot = ui.component("Slot", function(name, entity, selected, on_select)
+    local item = ui.watch(entity, Item)
+    return ui.node({
+        name = "slot_" .. name,
+        background_color = ui.when(ui.selected(selected, name), "#ffcc00", "#333333"),
+        on_click = function() on_select(name) end,
+    }, {
+        ui.text({ text = ui.format("x{}", { ui.path(item, "data.count") }) }),
+    })
+end)
+
+local Details = ui.component("Details", function(p)
+    return ui.text({ text = "details: " .. p.name })
+end)
+
+local Inventory = ui.component("Inventory", function(p)
+    local selected = ui.signal(nil)
+    local is_selected = ui.selector(selected)
+    local visible = ui.computed(function()
+        local query, without = search:get(), removed:get()
+        local out = {}
+        for _, name in ipairs(items) do
+            if name ~= without and string.find(name, query, 1, true) then out[#out + 1] = name end
+        end
+        return out
+    end)
+    local function select(name) selected:set(name) end
+    return ui.node({ flex_direction = "Column" }, {
+        ui.text({ text = function() return "Inventory (" .. #visible:get() .. ")" end }),
+        ui.list(visible, function(name)
+            -- called with its arguments, no props table
+            return Slot(name, entities[name], is_selected, select)
+        end),
+        ui.show(function()
+            local s = selected:get()
+            if s ~= nil then return Details({ key = s, name = s }) end
+        end),
+    })
+end)
+
+local Root = ui.component("Root", function()
+    return ui.show(function()
+        if shown:get() then return Inventory({ key = "inventory" }) end
+    end)
+end)
+
+local root
+function on_script_loaded()
+    if BENCH == "health" then
+        root = ui.render("bench", HealthBar({ player = player }))
+    else
+        root = ui.render("bench", Root())
+    end
+end
+
+local n = 0
+function bench_step()
+    n = n + 1
+    if BENCH == "health" then
+        world.get_component(player, Health).data = { current = 50 + n % 2, max = 100 }
+    elseif BENCH == "mount" then
+        shown:set(not shown:peek())
+    elseif BENCH == "select" then
+        local s = t.screen(root)
+        -- queued, the click runs in the timed UI update
+        s:dispatch(s:get_by_name("slot_" .. items[n % 200 + 1]), "click")
+    elseif BENCH == "search" then
+        search:set(n % 2 == 0 and "" or "5")
+    elseif BENCH == "one" then
+        removed:set(n % 2 == 1 and "item 100" or nil)
+    elseif BENCH == "count" then
+        world.get_component(entities[items[n % 200 + 1]], Item).data = { name = "x", count = n }
+    elseif BENCH == "all" then
+        -- every slot's count changes in the same frame (timers, cooldowns)
+        for _, name in ipairs(items) do
+            world.get_component(entities[name], Item).data = { name = name, count = n }
+        end
+    end
+end

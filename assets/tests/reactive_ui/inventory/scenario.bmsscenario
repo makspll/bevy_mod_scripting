@@ -1,0 +1,23 @@
+// #main_script inventory.lua
+// on_test drives the ui with `reactive_ui_test`, whose events and `act` run what they change before returning
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin
+SetupHandler OnTest=null, Update=null
+FinalizeApp
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptAssetLoaded name="@this_script"
+SpawnEntityWithScript name="test_entity", script="@this_script"
+RunUpdateOnce
+
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script", expect_string_value="load 1"
+
+// after a reload the new code renders and the state survives
+ReloadScriptFrom script="@this_script", path="inventory.lua"
+RunUpdateOnce
+RunUpdateOnce
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script", expect_string_value="load 2"

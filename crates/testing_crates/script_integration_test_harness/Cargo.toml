@@ -19,6 +19,7 @@ rune = [
 
 [dependencies]
 bevy_asset = { workspace = true }
+bevy_image = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_app = { workspace = true }
 test_utils = { workspace = true }
@@ -45,3 +46,4 @@ bevy_mod_scripting_script = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_test_scenario_syntax = { workspace = true }
 bevy_mod_scripting_world = { workspace = true }
+bevy_mod_scripting_reactive_ui = { workspace = true, features = ["testing"] }

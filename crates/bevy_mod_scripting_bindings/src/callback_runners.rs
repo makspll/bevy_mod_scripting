@@ -54,6 +54,14 @@ pub type ScriptContextRunner = dyn Fn(
 pub type ScriptCallbackErrorSink =
     dyn Fn(WorldGuard, Option<&ScriptAttachment>, String, InteropError) + Send + Sync + 'static;
 
+/// Runs inside the context of a script which is being unloaded, after its `on_script_unloaded` callback, given the
+/// script's language. Lets language agnostic plugins release what they hold for the script, i.e. call its cleanup functions.
+/// See [`AppScriptCallbackRunners::add_unload_hook`].
+pub type ScriptUnloadHook = dyn Fn(WorldGuard, &ScriptAttachment, Language) -> Result<(), InteropError>
+    + Send
+    + Sync
+    + 'static;
+
 /// A callback waiting to run once the callback which queued it finishes, see [`AppScriptCallbackRunners::queue`].
 #[derive(Clone, Debug)]
 pub struct QueuedScriptCallback {
@@ -76,6 +84,7 @@ pub struct AppScriptCallbackRunners {
     context_runners: Arc<RwLock<Vec<(Language, Arc<ScriptContextRunner>)>>>,
     queue: Arc<CallbackQueue>,
     error_sink: Arc<RwLock<Option<Arc<ScriptCallbackErrorSink>>>>,
+    unload_hooks: Arc<RwLock<Vec<Arc<ScriptUnloadHook>>>>,
 }
 
 #[derive(Default)]
@@ -130,6 +139,16 @@ impl AppScriptCallbackRunners {
         Err(InteropError::string(format!(
             "Cannot run in the context of script {attachment}: the script is not loaded"
         )))
+    }
+
+    /// Adds a hook run in the context of every script being unloaded (not reloaded), see [`ScriptUnloadHook`].
+    pub fn add_unload_hook(&self, hook: Arc<ScriptUnloadHook>) {
+        self.unload_hooks.write().push(hook);
+    }
+
+    /// The hooks added with [`Self::add_unload_hook`].
+    pub fn unload_hooks(&self) -> Vec<Arc<ScriptUnloadHook>> {
+        self.unload_hooks.read().clone()
     }
 
     /// Sets where errors reported with [`Self::report_error`] go, replacing the previous sink.
