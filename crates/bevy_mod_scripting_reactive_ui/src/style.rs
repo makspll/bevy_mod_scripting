@@ -17,8 +17,8 @@ use bevy_reflect::{
 use bevy_text::{FontSize, TextColor, TextFont};
 use bevy_ui::{
     AlignContent, AlignItems, AlignSelf, BackgroundColor, BorderColor, BorderRadius, BoxSizing,
-    Display, FlexDirection, FlexWrap, GridAutoFlow, InlineDirection, JustifyContent, JustifyItems,
-    JustifySelf, Node, Overflow, OverflowAxis, PositionType, UiRect, Val, ZIndex,
+    Display, FlexDirection, FlexWrap, GlobalZIndex, GridAutoFlow, InlineDirection, JustifyContent,
+    JustifyItems, JustifySelf, Node, Overflow, OverflowAxis, PositionType, UiRect, Val, ZIndex,
     widget::{ImageNode, Text},
 };
 
@@ -30,6 +30,7 @@ pub(crate) enum Prop {
     BackgroundColor,
     BorderColor,
     ZIndex,
+    GlobalZIndex,
     Text,
     FontSize,
     Color,
@@ -141,6 +142,7 @@ static PROPS: LazyLock<HashMap<&'static str, Prop>> = LazyLock::new(|| {
         ("background_color", Prop::BackgroundColor),
         ("border_color", Prop::BorderColor),
         ("z_index", Prop::ZIndex),
+        ("global_z_index", Prop::GlobalZIndex),
         ("text", Prop::Text),
         ("font_size", Prop::FontSize),
         ("color", Prop::Color),
@@ -411,6 +413,11 @@ fn color(value: &ScriptValue) -> Result<Color, InteropError> {
                 .iter()
                 .map(f32::from_prop)
                 .collect::<Result<Vec<_>, _>>()?;
+            if let Some(out_of_range) = parts.iter().find(|c| !(0.0..=1.0).contains(*c)) {
+                return Err(InteropError::string(format!(
+                    "colour channels are from 0 to 1, got {out_of_range} (for 0 to 255 use a hex colour: \"#ff8000\")"
+                )));
+            }
             match parts[..] {
                 [r, g, b] => Ok(Color::srgb(r, g, b)),
                 [r, g, b, a] => Ok(Color::srgba(r, g, b, a)),
@@ -444,6 +451,8 @@ pub(crate) trait PropTarget {
     fn set_bg(&mut self, bg: BackgroundColor);
     fn set_name(&mut self, name: Name);
     fn set_image(&mut self, path: String);
+    fn clear_image(&mut self);
+    fn remove_global_z_index(&mut self);
     /// Sets components which few elements have
     fn insert(&mut self, bundle: impl Bundle);
 }
@@ -492,6 +501,14 @@ impl PropTarget for EntityWorldMut<'_> {
         }
         let image = world.resource::<AssetServer>().load(path);
         self.insert(ImageNode::new(image));
+    }
+
+    fn clear_image(&mut self) {
+        self.remove::<ImageNode>();
+    }
+
+    fn remove_global_z_index(&mut self) {
+        self.remove::<GlobalZIndex>();
     }
 
     fn insert(&mut self, bundle: impl Bundle) {
@@ -563,6 +580,13 @@ impl PropTarget for UiParts {
         self.image = Some(path);
     }
 
+    fn clear_image(&mut self) {
+        self.image = None;
+    }
+
+    // nothing to remove before spawning
+    fn remove_global_z_index(&mut self) {}
+
     fn insert(&mut self, bundle: impl Bundle) {
         self.rest.push(Box::new(move |entity| {
             entity.insert(bundle);
@@ -595,6 +619,13 @@ pub(crate) fn apply_prop(
             let index = if unset { 0.0 } else { f32::from_prop(value)? };
             target.insert(ZIndex(index as i32));
         }
+        Prop::GlobalZIndex => {
+            if unset {
+                target.remove_global_z_index();
+            } else {
+                target.insert(GlobalZIndex(f32::from_prop(value)? as i32));
+            }
+        }
         Prop::Text => target.set_text(as_text(value))?,
         Prop::FontSize => {
             target.text_font().font_size = if unset {
@@ -611,6 +642,7 @@ pub(crate) fn apply_prop(
             };
             target.insert(TextColor(color));
         }
+        Prop::Image if unset => target.clear_image(),
         Prop::Image => {
             let ScriptValue::String(path) = value else {
                 return Err(InteropError::string(format!(
@@ -800,6 +832,9 @@ pub(crate) mod testing {
             Prop::BorderColor => entity.get::<BorderColor>().map_or(unit, |c| hex(c.top)),
             Prop::ZIndex => entity
                 .get::<ZIndex>()
+                .map_or(unit, |z| ScriptValue::Integer(z.0 as i64)),
+            Prop::GlobalZIndex => entity
+                .get::<GlobalZIndex>()
                 .map_or(unit, |z| ScriptValue::Integer(z.0 as i64)),
             Prop::Text => entity.get::<Text>().map_or(unit, |t| text(t.0.clone())),
             Prop::FontSize => entity

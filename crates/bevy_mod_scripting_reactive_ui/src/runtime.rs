@@ -58,6 +58,8 @@ pub struct UiRoot {
 pub struct UiHandlers {
     pub(crate) attachment: ScriptAttachment,
     pub(crate) handlers: Vec<(UiEvent, Func)>,
+    /// What was provided where the element is, `use_context` in a handler reads it
+    pub(crate) contexts: Contexts,
 }
 
 impl UiHandlers {
@@ -94,6 +96,8 @@ pub(crate) enum BindingSource {
 pub(crate) enum NodeKind {
     Signal {
         value: ScriptValue,
+        /// The value as a selector key (see `selector_key`), kept up to date once a selector reads the signal
+        key: Option<String>,
     },
     Watch {
         entity: Entity,
@@ -104,15 +108,21 @@ pub(crate) enum NodeKind {
     Computed {
         f: Func,
         value: Option<ScriptValue>,
+        /// What was provided where it was made, `use_context` reads it
+        contexts: Contexts,
     },
     Effect {
         f: Func,
         cleanup: Option<Func>,
+        /// What was provided where it was made, `use_context` reads it
+        contexts: Contexts,
     },
     Binding {
         entity: Entity,
         prop: Prop,
         source: BindingSource,
+        /// What was provided where it was mounted, `use_context` reads it
+        contexts: Contexts,
     },
     Region {
         container: Entity,
@@ -200,6 +210,7 @@ pub(crate) struct QueuedEvent {
     pub attachment: ScriptAttachment,
     pub handler: Func,
     pub args: Vec<ScriptValue>,
+    pub contexts: Contexts,
 }
 
 /// What is mounted for an element.
@@ -217,6 +228,7 @@ pub(crate) enum Mounted {
     Dynamic {
         region: NodeId,
         entity: Entity,
+        key: Option<String>,
     },
 }
 
@@ -224,10 +236,27 @@ impl Mounted {
     fn key(&self) -> Option<&str> {
         match self {
             Mounted::Host { element, .. } => element.0.key.as_deref(),
-            Mounted::Component { key, .. } => key.as_deref(),
-            Mounted::Dynamic { .. } => None,
+            Mounted::Component { key, .. } | Mounted::Dynamic { key, .. } => key.as_deref(),
         }
     }
+}
+
+/// Errors if two of the keys are the same: siblings are told apart by their key.
+fn check_unique_keys<'a>(
+    keys: impl Iterator<Item = &'a str>,
+    what: &str,
+) -> Result<(), InteropError> {
+    let mut seen = bevy_platform::collections::HashSet::<&str>::default();
+    for key in keys {
+        if !seen.insert(key) {
+            // keys are tagged with their type, see `key_of`
+            let shown = key.split_once(':').map_or(key, |(_, k)| k);
+            return Err(InteropError::string(format!(
+                "{what} has the key `{shown}` twice, keys must be unique among siblings"
+            )));
+        }
+    }
+    Ok(())
 }
 
 #[derive(Default)]
@@ -358,9 +387,9 @@ impl Runtime {
         };
         let new_key = match self.nodes.get(source) {
             Some(GraphNode {
-                kind: NodeKind::Signal { value },
+                kind: NodeKind::Signal { key, .. },
                 ..
-            }) => selector_key(value),
+            }) => key.clone(),
             _ => None,
         };
         let Some(GraphNode {
@@ -578,6 +607,26 @@ pub(crate) fn provided(context: crate::element::UiContext) -> Option<ScriptValue
     None
 }
 
+thread_local! {
+    /// Set while a component renders and patches what it rendered, see `Each::refresh`
+    static REFRESHING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Marks what is patched as part of a component rendering again, until dropped.
+struct Refreshing(bool);
+
+impl Refreshing {
+    fn set() -> Self {
+        Self(REFRESHING.replace(true))
+    }
+}
+
+impl Drop for Refreshing {
+    fn drop(&mut self) {
+        REFRESHING.set(self.0);
+    }
+}
+
 /// What the script function currently running is a part of.
 #[derive(Clone, Copy)]
 pub(crate) struct Frame {
@@ -648,19 +697,26 @@ pub(crate) fn with_frame<R>(frame: Frame, f: impl FnOnce() -> R) -> R {
     f()
 }
 
-/// Finds or creates the node of the next slot of the instance being rendered.
-///
-/// `reuse` decides whether an existing node can be kept, and may update it (i.e. with the new function).
 pub(crate) fn slot_node(
     runtime: &Mutex<Runtime>,
     attachment: ScriptAttachment,
+    hook: &str,
     reuse: impl FnOnce(&mut NodeKind) -> bool,
     create: impl FnOnce() -> NodeKind,
-) -> NodeId {
-    let mut rt = runtime.lock();
+) -> Result<NodeId, InteropError> {
     let Some((instance, index)) = next_slot() else {
-        return rt.create(create(), attachment);
+        // outside of any ui code it is plain script state; inside a row, a region, a binding or an effect it would be
+        // made again on every run with nothing owning it
+        if current_frame().is_some() {
+            return Err(InteropError::string(format!(
+                "`{hook}` can only be called at the top of a component, or outside of the ui. It was called in a \
+                 function the ui runs again (a `list` row, a `show`, a bound property, a computed or an effect): \
+                 call it in the component and capture it"
+            )));
+        }
+        return Ok(runtime.lock().create(create(), attachment));
     };
+    let mut rt = runtime.lock();
     let existing = rt
         .instance_mut(instance)
         .and_then(|i| i.slots.get(index).copied());
@@ -668,7 +724,7 @@ pub(crate) fn slot_node(
         && let Some(node) = rt.nodes.get_mut(&id)
         && reuse(&mut node.kind)
     {
-        return id;
+        return Ok(id);
     }
     let id = rt.create(create(), attachment);
     if let Some(old) = existing {
@@ -681,55 +737,68 @@ pub(crate) fn slot_node(
             instance.slots.push(id);
         }
     }
-    id
+    Ok(id)
 }
 
-/// The key a selector compares, only plain values can be selected.
-pub(crate) fn selector_key(value: &ScriptValue) -> Option<String> {
+/// The key a selector compares, typed as list keys are (see `key_of`): `nil` selects nothing.
+pub(crate) fn selector_key(
+    value: &ScriptValue,
+    world: &WorldGuard,
+) -> Result<Option<String>, InteropError> {
     match value {
-        ScriptValue::String(s) => Some(s.to_string()),
-        ScriptValue::Integer(i) => Some(i.to_string()),
-        ScriptValue::Float(f) => Some(f.to_string()),
-        ScriptValue::Bool(b) => Some(b.to_string()),
-        _ => None,
+        ScriptValue::Unit => Ok(None),
+        value => crate::element::key_of(value, world).map(Some),
     }
 }
 
 /// Creates (or finds, in a component's slots) a selector over a signal.
 pub(crate) fn selector(
     runtime: &Mutex<Runtime>,
+    world: &WorldGuard,
     attachment: ScriptAttachment,
     source: NodeId,
 ) -> Result<NodeId, InteropError> {
-    let current = match runtime.lock().nodes.get(&source) {
+    let value = match runtime.lock().nodes.get(&source) {
         Some(GraphNode {
-            kind: NodeKind::Signal { value },
+            kind: NodeKind::Signal { value, .. },
             ..
-        }) => selector_key(value),
+        }) => value.clone(),
         _ => return Err(InteropError::str("selectors can only select over a signal")),
     };
+    let current = selector_key(&value, world)?;
     let id = slot_node(
         runtime,
         attachment,
+        "selector",
         |k| matches!(k, NodeKind::Selector { source: s, .. } if *s == source),
-        move || NodeKind::Selector {
+        || NodeKind::Selector {
             source,
-            current,
+            current: current.clone(),
             by_key: HashMap::default(),
         },
-    );
-    runtime.lock().link(id, source);
+    )?;
+    let mut rt = runtime.lock();
+    if let Some(GraphNode {
+        kind: NodeKind::Signal { key, .. },
+        ..
+    }) = rt.nodes.get_mut(&source)
+    {
+        *key = current;
+    }
+    rt.link(id, source);
     Ok(id)
 }
 
 /// Whether `key` is selected, recording the read for the running observer under that key only.
 pub(crate) fn is_selected(
     runtime: &Mutex<Runtime>,
+    world: &WorldGuard,
     selector: NodeId,
     key: &ScriptValue,
 ) -> Result<bool, InteropError> {
-    let key = selector_key(key)
-        .ok_or_else(|| InteropError::str("selector keys must be strings, numbers or booleans"))?;
+    let Some(key) = selector_key(key, world)? else {
+        return Ok(false);
+    };
     let observer = current_frame().and_then(|f| f.observer);
     let mut rt = runtime.lock();
     if let Some(observer) = observer {
@@ -752,13 +821,18 @@ pub(crate) fn update_computed(
     ctx: &FunctionCallContext,
     id: NodeId,
 ) -> Result<bool, InteropError> {
-    let (dirty, check, f) = match runtime.lock().nodes.get(&id) {
+    let (dirty, check, f, contexts) = match runtime.lock().nodes.get(&id) {
         Some(GraphNode {
-            kind: NodeKind::Computed { f, value },
+            kind: NodeKind::Computed { f, value, contexts },
             dirty,
             check,
             ..
-        }) => (*dirty || value.is_none(), *check, f.clone()),
+        }) => (
+            *dirty || value.is_none(),
+            *check,
+            f.clone(),
+            contexts.clone(),
+        ),
         _ => return Ok(false),
     };
     if !dirty {
@@ -773,13 +847,16 @@ pub(crate) fn update_computed(
         }
     }
     runtime.lock().clear_deps(id);
-    let new = with_frame(
-        Frame {
-            observer: Some(id),
-            instance: None,
-        },
-        || f.call(vec![], ctx.clone()),
-    )?;
+    let new = {
+        let _contexts = ContextsGuard::set(contexts);
+        with_frame(
+            Frame {
+                observer: Some(id),
+                instance: None,
+            },
+            || f.call(vec![], ctx.clone()),
+        )?
+    };
     let mut rt = runtime.lock();
     let Some(node) = rt.nodes.get_mut(&id) else {
         return Ok(false);
@@ -867,6 +944,7 @@ pub(crate) fn run_rust_binding(
                     entity,
                     prop,
                     source: BindingSource::Expr(expr),
+                    ..
                 },
             dirty,
             check,
@@ -910,7 +988,7 @@ pub(crate) fn read(
         .get_mut(&id)
         .ok_or_else(|| InteropError::str("this signal no longer exists"))?;
     match &node.kind {
-        NodeKind::Signal { value } => Ok(value.clone()),
+        NodeKind::Signal { value, .. } => Ok(value.clone()),
         NodeKind::Computed { .. } => {
             drop(rt);
             update_computed(runtime, ctx, id)?;
@@ -947,19 +1025,49 @@ pub(crate) fn read(
 /// Sets a signal, marking what read it as dirty.
 pub(crate) fn write(
     runtime: &Mutex<Runtime>,
+    world: &WorldGuard,
     id: NodeId,
     value: ScriptValue,
 ) -> Result<(), InteropError> {
     let mut rt = runtime.lock();
-    match rt.nodes.get_mut(&id).map(|n| &mut n.kind) {
-        Some(NodeKind::Signal { value: current }) => {
+    let selected = match rt.nodes.get(&id) {
+        Some(GraphNode {
+            kind: NodeKind::Signal { value: current, .. },
+            subs,
+            ..
+        }) => {
             if script_values_equal(current, &value) {
                 return Ok(());
             }
-            *current = value;
+            subs.iter().any(|sub| {
+                matches!(
+                    rt.nodes.get(sub),
+                    Some(GraphNode {
+                        kind: NodeKind::Selector { .. },
+                        ..
+                    })
+                )
+            })
         }
         Some(_) => return Err(InteropError::str("only signals can be set")),
         None => return Err(InteropError::str("this signal no longer exists")),
+    };
+    // only selectors need the key, and making it may read the world (entities)
+    let new_key = if selected {
+        selector_key(&value, world)?
+    } else {
+        None
+    };
+    if let Some(GraphNode {
+        kind: NodeKind::Signal {
+            value: current,
+            key,
+        },
+        ..
+    }) = rt.nodes.get_mut(&id)
+    {
+        *current = value;
+        *key = new_key;
     }
     rt.mark_subs_dirty(id);
     Ok(())
@@ -1051,6 +1159,7 @@ impl Cx<'_, '_> {
         (!handlers.is_empty()).then(|| UiHandlers {
             attachment: self.attachment.clone(),
             handlers,
+            contexts: current_contexts(),
         })
     }
 
@@ -1145,6 +1254,10 @@ impl Cx<'_, '_> {
                         PropValue::Handler(_) => {}
                     }
                 }
+                check_unique_keys(
+                    data.children.iter().filter_map(|e| e.0.key.as_deref()),
+                    "a list of children",
+                )?;
                 let children = data
                     .children
                     .iter()
@@ -1200,7 +1313,11 @@ impl Cx<'_, '_> {
                     self.attachment.clone(),
                 );
                 self.run_region(region)?;
-                Ok(Mounted::Dynamic { region, entity })
+                Ok(Mounted::Dynamic {
+                    region,
+                    entity,
+                    key: data.key.clone(),
+                })
             }
         }
     }
@@ -1217,6 +1334,7 @@ impl Cx<'_, '_> {
                 entity,
                 prop,
                 source: source.clone(),
+                contexts: current_contexts(),
             },
             self.attachment.clone(),
         );
@@ -1237,7 +1355,7 @@ impl Cx<'_, '_> {
     }
 
     pub fn run_binding(&self, id: NodeId) -> Result<(), InteropError> {
-        let (entity, prop, source) = {
+        let (entity, prop, source, contexts) = {
             let mut rt = self.runtime.lock();
             let source = match rt.nodes.get_mut(&id) {
                 Some(GraphNode {
@@ -1255,26 +1373,35 @@ impl Cx<'_, '_> {
             }
             match rt.nodes.get_mut(&id) {
                 Some(GraphNode {
-                    kind: NodeKind::Binding { entity, prop, .. },
+                    kind:
+                        NodeKind::Binding {
+                            entity,
+                            prop,
+                            contexts,
+                            ..
+                        },
                     dirty,
                     check,
                     ..
                 }) => {
                     *dirty = false;
                     *check = false;
-                    (*entity, *prop, source)
+                    (*entity, *prop, source, contexts.clone())
                 }
                 _ => return Ok(()),
             }
         };
         let value = match source {
-            BindingSource::Script(f) => with_frame(
-                Frame {
-                    observer: Some(id),
-                    instance: None,
-                },
-                || self.call(&f, vec![]),
-            )?,
+            BindingSource::Script(f) => {
+                let _contexts = ContextsGuard::set(contexts);
+                with_frame(
+                    Frame {
+                        observer: Some(id),
+                        instance: None,
+                    },
+                    || self.call(&f, vec![]),
+                )?
+            }
             BindingSource::Expr(expr) => {
                 let mut sources = Vec::new();
                 expr.sources(&mut sources);
@@ -1424,10 +1551,17 @@ impl Cx<'_, '_> {
             if templated && (template.is_none() || refresh) {
                 template = Some(build(crate::expr::item_placeholder())?);
             }
+            let item_keys = items
+                .iter()
+                .map(|item| crate::element::key_of(item, &self.world))
+                .collect::<Result<Vec<_>, _>>()?;
+            check_unique_keys(
+                item_keys.iter().map(String::as_str),
+                "the list given to `list`",
+            )?;
             keys.reserve(items.len());
             children.reserve(items.len());
-            for item in items {
-                let key = crate::element::key_of(&item, &self.world)?;
+            for (item, key) in items.into_iter().zip(item_keys) {
                 let kept = match old.remove(&key) {
                     Some(kept) if !refresh => {
                         keys.push(key);
@@ -1539,6 +1673,7 @@ impl Cx<'_, '_> {
                         item,
                         &mut |component, type_id| self.watch_item(item, component, type_id, owned),
                         &|expr| expr.eval(self.runtime, &self.world),
+                        &self.world,
                     )?;
                     let mut sources = Vec::new();
                     bound.sources(&mut sources);
@@ -1622,7 +1757,7 @@ impl Cx<'_, '_> {
     }
 
     pub fn run_effect(&self, id: NodeId) -> Result<(), InteropError> {
-        let (f, cleanup) = {
+        let (f, cleanup, contexts) = {
             let mut rt = self.runtime.lock();
             rt.clear_deps(id);
             #[cfg(feature = "testing")]
@@ -1631,21 +1766,29 @@ impl Cx<'_, '_> {
             }
             match rt.nodes.get_mut(&id) {
                 Some(GraphNode {
-                    kind: NodeKind::Effect { f, cleanup },
+                    kind:
+                        NodeKind::Effect {
+                            f,
+                            cleanup,
+                            contexts,
+                        },
                     dirty,
                     check,
                     ..
                 }) => {
                     *dirty = false;
                     *check = false;
-                    (f.clone(), cleanup.take())
+                    (f.clone(), cleanup.take(), contexts.clone())
                 }
                 _ => return Ok(()),
             }
         };
-        if let Some(cleanup) = cleanup {
-            self.call(&cleanup, vec![])?;
-        }
+        let _contexts = ContextsGuard::set(contexts);
+        // the effect runs even if its cleanup failed, else it would never run again (it read nothing)
+        let cleaned = match cleanup {
+            Some(cleanup) => self.call(&cleanup, vec![]).map(|_| ()),
+            None => Ok(()),
+        };
         let result = with_frame(
             Frame {
                 observer: Some(id),
@@ -1661,7 +1804,7 @@ impl Cx<'_, '_> {
         {
             *cleanup = Some(new_cleanup);
         }
-        Ok(())
+        cleaned
     }
 
     /// Runs the component's render function and mounts or diffs its output.
@@ -1700,6 +1843,7 @@ impl Cx<'_, '_> {
             )
         };
         let _contexts = ContextsGuard::set(contexts);
+        let _refreshing = Refreshing::set();
         self.runtime.lock().dirty.remove(&id);
         let result = with_frame(
             Frame {
@@ -1851,14 +1995,19 @@ impl Cx<'_, '_> {
                 let ElementKind::Component(_, props) = &element.0.kind else {
                     unreachable!("checked by same_kind")
                 };
-                // components run once, new props are seen when they run again (i.e. on reload)
+                // renders again with the new props when they changed, its state (slots) is kept. Functions compare
+                // as equal: a region running again makes new closures, which alone don't render the component again
                 let rerender = {
                     let mut rt = self.runtime.lock();
                     let dirty = rt.nodes.get(&instance).is_some_and(|n| n.dirty);
-                    if let Some(i) = rt.instance_mut(instance) {
-                        i.props = props.clone();
+                    match rt.instance_mut(instance) {
+                        Some(i) => {
+                            let changed = !crate::element::props_equal(&i.props, props);
+                            i.props = props.clone();
+                            dirty || changed
+                        }
+                        None => dirty,
                     }
-                    dirty
                 };
                 if rerender {
                     self.render_instance(instance)?;
@@ -1868,7 +2017,7 @@ impl Cx<'_, '_> {
                     key: element.0.key.clone(),
                 })
             }
-            Mounted::Dynamic { region, entity } => {
+            Mounted::Dynamic { region, entity, .. } => {
                 let (ElementKind::Dynamic(f) | ElementKind::Each(_, f, _)) = &element.0.kind else {
                     unreachable!("checked by same_kind")
                 };
@@ -1883,11 +2032,17 @@ impl Cx<'_, '_> {
                     {
                         each.source = *source;
                         each.templated = *templated;
-                        each.refresh = true;
+                        // kept rows are built again with the new function only when the component around
+                        // renders again (its code may have changed), not when a region around runs again
+                        each.refresh = REFRESHING.get();
                     }
                 }
                 self.run_region(region)?;
-                Ok(Mounted::Dynamic { region, entity })
+                Ok(Mounted::Dynamic {
+                    region,
+                    entity,
+                    key: element.0.key.clone(),
+                })
             }
         }
     }
@@ -1924,6 +2079,10 @@ impl Cx<'_, '_> {
         new: &[UiElement],
         parent: Entity,
     ) -> Result<Vec<Mounted>, InteropError> {
+        check_unique_keys(
+            new.iter().filter_map(|e| e.0.key.as_deref()),
+            "a list of children",
+        )?;
         let mut keyed: HashMap<String, Mounted> = HashMap::default();
         let mut unkeyed = VecDeque::new();
         for mounted in old {
@@ -1958,8 +2117,17 @@ impl Cx<'_, '_> {
 
     /// Removes what is mounted, running effect cleanups, and despawns its entity if `despawn` is set.
     ///
-    /// Descendants are not despawned one by one, despawning the top entity despawns them.
+    /// Descendants are not despawned one by one, despawning the top entity despawns them. Keeps going when a cleanup
+    /// fails, returning the first error.
     pub fn unmount(&self, mounted: Mounted, despawn: bool) -> Result<(), InteropError> {
+        let mut first_error = None;
+        let mut unmount_all = |children: Vec<Mounted>| {
+            for child in children {
+                if let Err(e) = self.unmount(child, false) {
+                    first_error.get_or_insert(e);
+                }
+            }
+        };
         match mounted {
             Mounted::Host {
                 entity,
@@ -1973,15 +2141,13 @@ impl Cx<'_, '_> {
                         rt.remove(id);
                     }
                 }
-                for child in children {
-                    self.unmount(child, false)?;
-                }
+                unmount_all(children);
                 if despawn {
                     self.despawn(entity)?;
                 }
             }
             Mounted::Component { instance, .. } => self.dispose_instance(instance, despawn)?,
-            Mounted::Dynamic { region, entity } => {
+            Mounted::Dynamic { region, entity, .. } => {
                 let node = self.runtime.lock().remove(region);
                 if let Some(GraphNode {
                     kind: NodeKind::Region { children, each, .. },
@@ -1994,18 +2160,19 @@ impl Cx<'_, '_> {
                             rt.remove(node);
                         }
                     }
-                    for child in children {
-                        self.unmount(child, false)?;
-                    }
+                    unmount_all(children);
                 }
                 if despawn {
                     self.despawn(entity)?;
                 }
             }
         }
-        Ok(())
+        first_error.map_or(Ok(()), Err)
     }
 
+    /// Removes a component instance with everything it rendered and made, running its effects' cleanups.
+    ///
+    /// Keeps going when a cleanup fails, so the instance is gone either way, and returns the first error.
     pub fn dispose_instance(&self, instance: NodeId, despawn: bool) -> Result<(), InteropError> {
         let node = self.runtime.lock().remove(instance);
         let Some(GraphNode {
@@ -2015,8 +2182,11 @@ impl Cx<'_, '_> {
         else {
             return Ok(());
         };
-        if let Some(rendered) = instance.rendered {
-            self.unmount(rendered, despawn)?;
+        let mut first_error = None;
+        if let Some(rendered) = instance.rendered
+            && let Err(e) = self.unmount(rendered, despawn)
+        {
+            first_error.get_or_insert(e);
         }
         for slot in instance.slots {
             let node = self.runtime.lock().remove(slot);
@@ -2024,14 +2194,18 @@ impl Cx<'_, '_> {
                 kind:
                     NodeKind::Effect {
                         cleanup: Some(cleanup),
+                        contexts,
                         ..
                     },
                 ..
             }) = node
             {
-                self.call(&cleanup, vec![])?;
+                let _contexts = ContextsGuard::set(contexts);
+                if let Err(e) = self.call(&cleanup, vec![]) {
+                    first_error.get_or_insert(e);
+                }
             }
         }
-        Ok(())
+        first_error.map_or(Ok(()), Err)
     }
 }

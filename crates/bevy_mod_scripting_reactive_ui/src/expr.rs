@@ -5,8 +5,8 @@ use std::{any::TypeId, sync::Arc};
 
 use bevy_ecs::{component::ComponentId, world::World};
 use bevy_mod_scripting_bindings::{
-    InteropError, Lazy, NamespaceMembers, ReflectReference, ScriptComponentRegistration,
-    ScriptValue, Union, V, WorldGuard,
+    FunctionCallContext, InteropError, Lazy, NamespaceMembers, ReflectReference,
+    ScriptComponentRegistration, ScriptValue, Union, V, WorldGuard,
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_reflect::{PartialReflect, Reflect, ReflectRef};
@@ -235,8 +235,9 @@ impl Expr {
         item: &ScriptValue,
         watch: &mut dyn FnMut(ComponentId, TypeId) -> Result<NodeId, InteropError>,
         eval: &dyn Fn(&Expr) -> Result<ScriptValue, InteropError>,
+        world: &WorldGuard,
     ) -> Result<Expr, InteropError> {
-        let mut bind = |expr: &Expr| expr.bind(item, watch, eval).map(Box::new);
+        let mut bind = |expr: &Expr| expr.bind(item, watch, eval, world).map(Box::new);
         Ok(match self {
             Expr::Item => Expr::Const(item.clone()),
             Expr::ItemPath {
@@ -251,16 +252,14 @@ impl Expr {
                 let key = eval(&*bind(key)?)?;
                 Expr::Is {
                     selector: *selector,
-                    key: selector_key(&key).ok_or_else(|| {
-                        InteropError::str("selector keys must be strings, numbers or booleans")
-                    })?,
+                    key: selector_key(&key, world)?.unwrap_or_default(),
                 }
             }
             Expr::Format { pieces, args } => Expr::Format {
                 pieces: pieces.clone(),
                 args: args
                     .iter()
-                    .map(|a| a.bind(item, watch, eval))
+                    .map(|a| a.bind(item, watch, eval, world))
                     .collect::<Result<_, _>>()?,
             },
             Expr::Percent(a, b) => Expr::Percent(bind(a)?, bind(b)?),
@@ -363,7 +362,7 @@ fn read_path(
     path: &[String],
 ) -> Result<ScriptValue, InteropError> {
     let watched = match runtime.lock().nodes.get(&source).map(|n| &n.kind) {
-        Some(NodeKind::Signal { value }) => return walk_script_value(value, path),
+        Some(NodeKind::Signal { value, .. }) => return walk_script_value(value, path),
         Some(NodeKind::Computed { value, .. }) => {
             return walk_script_value(value.as_ref().unwrap_or(&ScriptValue::Unit), path);
         }
@@ -678,7 +677,11 @@ impl NamespaceMembers {
     /// * `key`: The key.
     /// Returns:
     /// * `value`: Whether it is selected.
-    fn selected(selector: V<Selector>, key: ValueArg) -> Result<V<UiValue>, InteropError> {
+    fn selected(
+        ctx: FunctionCallContext,
+        selector: V<Selector>,
+        key: ValueArg,
+    ) -> Result<V<UiValue>, InteropError> {
         let selector = selector.into_inner().0;
         let key = match key.into_left() {
             // a value of the row in a template, read when the row is built
@@ -690,9 +693,7 @@ impl NamespaceMembers {
             }
             Err(key) => key.0,
         };
-        let key = selector_key(&key).ok_or_else(|| {
-            InteropError::str("selector keys must be strings, numbers or booleans")
-        })?;
+        let key = selector_key(&key, &ctx.world()?)?.unwrap_or_default();
         Ok(value(Expr::Is { selector, key }))
     }
 }

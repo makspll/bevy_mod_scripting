@@ -214,6 +214,7 @@ pub struct UiStyle {
     background_color: Option<ColorValue>,
     border_color: Option<ColorValue>,
     z_index: Option<f64>,
+    global_z_index: Option<f64>,
     text: Option<Label>,
     font_size: Option<f64>,
     color: Option<ColorValue>,

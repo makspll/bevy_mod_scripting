@@ -41,9 +41,10 @@ trait Forwarded: PointerEvent {
 fn button(button: PointerButton) -> ScriptValue {
     ScriptValue::String(
         match button {
-            PointerButton::Primary => "primary",
-            PointerButton::Secondary => "secondary",
-            PointerButton::Middle => "middle",
+            // the Rust names of the variants, as enum values are everywhere in the API
+            PointerButton::Primary => "Primary",
+            PointerButton::Secondary => "Secondary",
+            PointerButton::Middle => "Middle",
         }
         .into(),
     )
@@ -130,6 +131,7 @@ fn queue(
         attachment: element.attachment.clone(),
         handler: handler.clone(),
         args: arguments(event, hover, data()),
+        contexts: element.contexts.clone(),
     });
     true
 }
@@ -224,6 +226,27 @@ pub(crate) fn simulate(
         match world.get::<ChildOf>(entity) {
             Some(child_of) => entity = child_of.parent(),
             None => return,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// R08: `props::PointerEvent::button` documents `"Primary"`, `"Secondary"` or `"Middle"`.
+    #[test]
+    fn button_names_match_the_documented_names() {
+        for (pointer, documented) in [
+            (PointerButton::Primary, "Primary"),
+            (PointerButton::Secondary, "Secondary"),
+            (PointerButton::Middle, "Middle"),
+        ] {
+            let sent = button(pointer);
+            assert!(
+                matches!(&sent, ScriptValue::String(s) if s.as_ref() == documented),
+                "handlers get {sent:?}, the docs say {documented:?}"
+            );
         }
     }
 }

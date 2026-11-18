@@ -85,8 +85,9 @@ use element::{
 pub use expr::UiValue;
 use parking_lot::Mutex;
 use runtime::{
-    CurrentRuntime, Cx, Def, Instance, NodeId, NodeKind, Root, Runtime, deps_changed, read,
-    run_rust_binding, runtime, slot_node, take_rust_bindings, write,
+    ContextsGuard, CurrentRuntime, Cx, Def, Instance, NodeId, NodeKind, Root, Runtime,
+    current_contexts, deps_changed, read, run_rust_binding, runtime, slot_node, take_rust_bindings,
+    write,
 };
 pub use runtime::{ReactiveUi, UiHandlers, UiRoot};
 use std::sync::Arc;
@@ -211,6 +212,9 @@ impl Plugin for ReactiveUiPlugin {
                     .before(UiSystems::Layout),
             );
         events::add_observers(app);
+        app.world_mut()
+            .get_resource_or_init::<AppScriptCallbackRunners>()
+            .add_unload_hook(Arc::new(dispose_unloading_script));
         register_ui_functions(app.world_mut());
         register_selector_functions(app.world_mut());
         register_signal_functions(app.world_mut());
@@ -303,18 +307,18 @@ fn component_element(
     ))
 }
 
-/// A region element, `props` are the properties of the node holding its children.
+/// A region element, `props` are the properties of the node holding its children (and its `key`).
 fn region(
     ctx: &FunctionCallContext,
     kind: ElementKind,
     props: Option<Lazy<UiProps>>,
 ) -> Result<Element, InteropError> {
-    let props = parse_props(props.map_or(ScriptValue::Unit, |p| p.0), &ctx.world()?)?.1;
+    let (key, props) = parse_props(props.map_or(ScriptValue::Unit, |p| p.0), &ctx.world()?)?;
     Ok(Element::new(new_element(
         &*runtime(ctx)?,
         ElementData {
             kind,
-            key: None,
+            key,
             props,
             children: Vec::new(),
         },
@@ -532,18 +536,62 @@ impl NamespaceMembers {
                 "`render` renders a component, i.e. `render(\"key\", Counter({ start = 1 }))`",
             ));
         };
+        // the root renders in a later update, when the elements of this one are gone
+        if props
+            .iter()
+            .any(|p| runtime.lock().elements.holds_element(p))
+        {
+            return Err(InteropError::str(
+                "`render` can't be given elements in its props, they are only valid in the update which built them: \
+                 build them inside the component, or pass a component to call",
+            ));
+        }
         let existing = runtime
             .lock()
             .roots
             .get(&(attachment.clone(), key.clone()))
             .map(|r| (r.container, r.instance));
         if let Some((container, instance)) = existing {
-            let mut rt = runtime.lock();
-            if let Some(i) = rt.instance_mut(instance) {
-                i.def = def;
-                i.props = props;
+            let same = runtime
+                .lock()
+                .instance_mut(instance)
+                .is_some_and(|i| i.def == def);
+            if same {
+                let mut rt = runtime.lock();
+                if let Some(i) = rt.instance_mut(instance) {
+                    i.props = props;
+                }
+                rt.mark_dirty(instance);
+                return Ok(V(container));
             }
+            // another component: the old one is removed with its state (running its cleanups), the new one starts fresh
+            let cx = Cx {
+                runtime: &runtime,
+                world: ctx.world()?,
+                attachment: &attachment,
+                language: ctx.language(),
+            };
+            cx.dispose_instance(instance, true)?;
+            let mut rt = runtime.lock();
+            let instance = rt.create(
+                NodeKind::Instance(Instance {
+                    def,
+                    props,
+                    slots: Vec::new(),
+                    rendered: None,
+                    parent: container,
+                    contexts: None,
+                }),
+                attachment.clone(),
+            );
             rt.mark_dirty(instance);
+            rt.roots.insert(
+                (attachment, key),
+                Root {
+                    container,
+                    instance,
+                },
+            );
             return Ok(V(container));
         }
         let root = UiRoot {
@@ -664,9 +712,13 @@ impl NamespaceMembers {
         let id = slot_node(
             &*runtime(&ctx)?,
             attachment,
+            "signal",
             |k| matches!(k, NodeKind::Signal { .. }),
-            move || NodeKind::Signal { value: initial },
-        );
+            move || NodeKind::Signal {
+                value: initial,
+                key: None,
+            },
+        )?;
         Ok(V(Signal::<A>::new(id)))
     }
 
@@ -704,23 +756,32 @@ impl NamespaceMembers {
         let f = f.into_inner();
         let attachment = current_attachment(&ctx)?;
         let new_f = f.clone();
+        let contexts = current_contexts();
+        let new_contexts = contexts.clone();
         let id = slot_node(
             &*runtime(&ctx)?,
             attachment,
+            "computed",
             move |k| match k {
-                NodeKind::Computed { f, value } => {
+                NodeKind::Computed { f, value, contexts } => {
                     *f = new_f;
                     *value = None;
+                    *contexts = new_contexts;
                     true
                 }
                 _ => false,
             },
-            move || NodeKind::Computed { f, value: None },
-        );
+            move || NodeKind::Computed {
+                f,
+                value: None,
+                contexts,
+            },
+        )?;
         Ok(V(Signal::<A>::new(id)))
     }
 
-    /// Runs `f` now and whenever what it read changes. `f` can return a function to clean up before the next run.
+    /// Runs `f` once the UI update it was made in has mounted the tree, then whenever what it read changes. `f` can
+    /// return a function to clean up before the next run and when its component is removed or its script unloaded.
     /// For what isn't a property: writing to the world, logging, starting sounds.
     ///
     /// ```multi-lang-example,lua
@@ -765,22 +826,30 @@ impl NamespaceMembers {
         let attachment = current_attachment(&ctx)?;
         let runtime = runtime(&ctx)?;
         let new_f = f.clone();
+        let contexts = current_contexts();
+        let new_contexts = contexts.clone();
         let mut created = false;
         let id = slot_node(
             &runtime,
             attachment,
+            "effect",
             move |k| match k {
-                NodeKind::Effect { f, .. } => {
+                NodeKind::Effect { f, contexts, .. } => {
                     *f = new_f;
+                    *contexts = new_contexts;
                     true
                 }
                 _ => false,
             },
             || {
                 created = true;
-                NodeKind::Effect { f, cleanup: None }
+                NodeKind::Effect {
+                    f,
+                    cleanup: None,
+                    contexts,
+                }
             },
-        );
+        )?;
         if created {
             runtime.lock().mark_dirty(id);
         }
@@ -856,6 +925,7 @@ impl NamespaceMembers {
         let id = slot_node(
             &*runtime(&ctx)?,
             attachment,
+            "watch",
             |k| matches!(k, NodeKind::Watch { entity: e, component: c, .. } if *e == entity && *c == component_id),
             move || NodeKind::Watch {
                 entity,
@@ -863,7 +933,7 @@ impl NamespaceMembers {
                 type_id,
                 last_changed: now,
             },
-        );
+        )?;
         Ok(V(Signal::<A>::new(id)))
     }
 
@@ -1059,8 +1129,13 @@ impl NamespaceMembers {
         source: V<Signal<A>>,
     ) -> Result<V<Selector<A>>, InteropError> {
         let attachment = current_attachment(&ctx)?;
-        runtime::selector(&*runtime(&ctx)?, attachment, source.into_inner().0)
-            .map(|id| V(Selector::<A>::new(id)))
+        runtime::selector(
+            &*runtime(&ctx)?,
+            &ctx.world()?,
+            attachment,
+            source.into_inner().0,
+        )
+        .map(|id| V(Selector::<A>::new(id)))
     }
 
     /// One child per item of the list in the signal, made by `f(item)`. Children are kept by item, `f` only runs for
@@ -1214,7 +1289,12 @@ impl Selector {
         selector: V<Selector<A>>,
         key: ValueOf<A, ScriptValue>,
     ) -> Result<bool, InteropError> {
-        runtime::is_selected(&*runtime(&ctx)?, selector.into_inner().0, &key)
+        runtime::is_selected(
+            &*runtime(&ctx)?,
+            &ctx.world()?,
+            selector.into_inner().0,
+            &key,
+        )
     }
 }
 
@@ -1317,8 +1397,48 @@ impl Signal {
         signal: V<Signal<A>>,
         value: ValueOf<A, ScriptValue>,
     ) -> Result<(), InteropError> {
-        write(&*runtime(&ctx)?, signal.into_inner().0, value.into_inner())
+        write(
+            &*runtime(&ctx)?,
+            &ctx.world()?,
+            signal.into_inner().0,
+            value.into_inner(),
+        )
     }
+}
+
+/// Removes the component instances a script rendered while it is being unloaded, in its context, so the cleanups of
+/// their effects run. What is left (roots, script state) is forgotten by `forget_detached_scripts`.
+fn dispose_unloading_script(
+    world: WorldGuard,
+    attachment: &ScriptAttachment,
+    language: Language,
+) -> Result<(), InteropError> {
+    let Some(runtime) =
+        world.with_world_access(|w| w.get_resource::<ReactiveUi>().map(|r| r.0.clone()))?
+    else {
+        return Ok(());
+    };
+    let _current = CurrentRuntime::set(runtime.clone());
+    let instances = runtime
+        .lock()
+        .roots
+        .iter()
+        .filter(|((a, _), _)| a == attachment)
+        .map(|(_, root)| root.instance)
+        .collect::<Vec<_>>();
+    let cx = Cx {
+        runtime: &runtime,
+        world,
+        attachment,
+        language,
+    };
+    let mut first_error = None;
+    for instance in instances {
+        if let Err(e) = cx.dispose_instance(instance, true) {
+            first_error.get_or_insert(e);
+        }
+    }
+    first_error.map_or(Ok(()), Err)
 }
 
 /// Forgets the trees and state of scripts which were unloaded.
@@ -1520,6 +1640,7 @@ fn run_script_work(cx: &Cx, report: &Report) {
         mine
     };
     for event in events {
+        let _contexts = ContextsGuard::set(event.contexts);
         if let Err(e) = event
             .handler
             .call(event.args, FunctionCallContext::new(cx.language.clone()))

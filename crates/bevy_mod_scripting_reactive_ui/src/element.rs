@@ -116,23 +116,35 @@ pub(crate) enum PropValue {
     Handler(Func),
 }
 
-/// A canonical key for reconciling children: entities compare by value, not by reference.
 pub(crate) fn key_of(value: &ScriptValue, world: &WorldGuard) -> Result<String, InteropError> {
+    // tagged by type so `1` and `"1"` differ, numbers by value so `1` and `1.0` don't (as in Lua)
     Ok(match value {
-        ScriptValue::String(s) => s.to_string(),
-        ScriptValue::Integer(i) => i.to_string(),
-        ScriptValue::Float(f) => f.to_string(),
-        ScriptValue::Bool(b) => b.to_string(),
+        ScriptValue::String(s) => format!("s:{s}"),
+        ScriptValue::Integer(i) => format!("n:{i}"),
+        ScriptValue::Float(f) if f.fract() == 0.0 && f.abs() < i64::MAX as f64 => {
+            format!("n:{}", *f as i64)
+        }
+        ScriptValue::Float(f) => format!("n:{f}"),
+        ScriptValue::Bool(b) => format!("b:{b}"),
         ScriptValue::Reference(r) => match r.downcast::<Entity>(world.clone()) {
-            Ok(entity) => format!("e{}", entity.to_bits()),
-            Err(_) => format!("{r:?}"),
+            Ok(entity) => format!("e:{}", entity.to_bits()),
+            Err(_) => format!("r:{r:?}"),
         },
-        other => format!("{other:?}"),
+        other => format!("v:{other:?}"),
     })
 }
 
-/// Equality of plain values, references compare by identity.
 pub(crate) fn script_values_equal(a: &ScriptValue, b: &ScriptValue) -> bool {
+    values_equal(a, b, false)
+}
+
+/// Whether a component was called with the same arguments, functions compare as equal: a closure made again
+/// by a region re-running doesn't make its component render again.
+pub(crate) fn props_equal(a: &[ScriptValue], b: &[ScriptValue]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).all(|(a, b)| values_equal(a, b, true))
+}
+
+fn values_equal(a: &ScriptValue, b: &ScriptValue, functions_equal: bool) -> bool {
     match (a, b) {
         (ScriptValue::Unit, ScriptValue::Unit) => true,
         (ScriptValue::Bool(a), ScriptValue::Bool(b)) => a == b,
@@ -142,13 +154,22 @@ pub(crate) fn script_values_equal(a: &ScriptValue, b: &ScriptValue) -> bool {
         | (ScriptValue::Float(b), ScriptValue::Integer(a)) => (*a as f64) == *b,
         (ScriptValue::String(a), ScriptValue::String(b)) => a == b,
         (ScriptValue::Reference(a), ScriptValue::Reference(b)) => a == b,
+        (
+            ScriptValue::Function(_) | ScriptValue::FunctionMut(_),
+            ScriptValue::Function(_) | ScriptValue::FunctionMut(_),
+        ) => functions_equal,
         (ScriptValue::List(a), ScriptValue::List(b)) => {
-            a.len() == b.len() && a.iter().zip(b).all(|(a, b)| script_values_equal(a, b))
+            a.len() == b.len()
+                && a.iter()
+                    .zip(b)
+                    .all(|(a, b)| values_equal(a, b, functions_equal))
         }
         (ScriptValue::Map(a), ScriptValue::Map(b)) => {
             a.len() == b.len()
-                && a.iter()
-                    .all(|(k, v)| b.get(k).is_some_and(|w| script_values_equal(v, w)))
+                && a.iter().all(|(k, v)| {
+                    b.get(k)
+                        .is_some_and(|w| values_equal(v, w, functions_equal))
+                })
         }
         _ => false,
     }
@@ -159,10 +180,20 @@ pub(crate) fn script_values_equal(a: &ScriptValue, b: &ScriptValue) -> bool {
 ///
 /// Elements are only built while components and regions run, and what is mounted keeps its own copy,
 /// so the arena is emptied at the start of every flush.
-#[derive(Default)]
+///
+/// Generations start at 1, so a handle is never below `1 << 32`: numbers scripts use by mistake are not handles.
 pub(crate) struct ElementArena {
     items: Vec<UiElement>,
     generation: u32,
+}
+
+impl Default for ElementArena {
+    fn default() -> Self {
+        Self {
+            items: Vec::new(),
+            generation: 1,
+        }
+    }
 }
 
 /// Bits of a handle holding the index, the generation is above them. 53 bits in all, so handles stay exact
@@ -179,9 +210,15 @@ impl ElementArena {
     pub fn get(&self, handle: i64) -> Result<UiElement, InteropError> {
         let generation = (handle >> INDEX_BITS) as u32;
         let index = (handle & ((1 << INDEX_BITS) - 1)) as usize;
+        if generation == 0 || generation > GENERATION_MASK {
+            return Err(InteropError::string(format!(
+                "expected a ui element, got the number {handle}"
+            )));
+        }
         if generation != self.generation {
             return Err(InteropError::str(
-                "this ui element was built in an earlier update, elements are only valid in the update which built them",
+                "this ui element was built in an earlier update. Elements are only valid in the update which built \
+                 them: build them where they are returned, don't keep them in signals or pass them to `render`",
             ));
         }
         self.items
@@ -190,19 +227,33 @@ impl ElementArena {
             .ok_or_else(|| InteropError::string(format!("{handle} is not a ui element")))
     }
 
+    /// Whether the value is, or holds, a handle to an element of this update.
+    pub fn holds_element(&self, value: &ScriptValue) -> bool {
+        match value {
+            ScriptValue::Integer(handle) => {
+                (handle >> INDEX_BITS) as u32 == self.generation
+                    && ((handle & ((1 << INDEX_BITS) - 1)) as usize) < self.items.len()
+            }
+            ScriptValue::List(list) => list.iter().any(|v| self.holds_element(v)),
+            ScriptValue::Map(map) => map.values().any(|v| self.holds_element(v)),
+            _ => false,
+        }
+    }
+
     pub fn reset(&mut self) {
         self.items.clear();
-        self.generation = (self.generation + 1) & GENERATION_MASK;
+        // skips 0 when wrapping, see `ElementArena`
+        self.generation = (self.generation % GENERATION_MASK) + 1;
     }
 }
 
-/// Reads an element handle out of a script value.
+/// Reads an element handle out of a script value, `nil` and `false` are no element.
 pub(crate) fn element_from_script(
     value: &ScriptValue,
     runtime: &Mutex<Runtime>,
 ) -> Result<Option<UiElement>, InteropError> {
     match value {
-        ScriptValue::Unit => Ok(None),
+        ScriptValue::Unit | ScriptValue::Bool(false) => Ok(None),
         ScriptValue::Integer(handle) => runtime.lock().elements.get(*handle).map(Some),
         other => Err(InteropError::string(format!(
             "expected a ui element, got: {other:?}"
@@ -210,25 +261,39 @@ pub(crate) fn element_from_script(
     }
 }
 
-/// Reads the elements returned by a dynamic region or passed as children: one element, a list of them, or nil.
+/// Reads the elements returned by a dynamic region or passed as children: one element, a list of them, or nothing.
+/// `nil` and `false` in a list are skipped (`cond and X()`). A list with holes reaches Rust as a table with integer
+/// keys, which is read in the order of its keys.
 pub(crate) fn elements_from_script(
     value: &ScriptValue,
     runtime: &Mutex<Runtime>,
 ) -> Result<Vec<UiElement>, InteropError> {
+    let read = |items: &mut dyn Iterator<Item = &ScriptValue>| {
+        let rt = runtime.lock();
+        items
+            .filter_map(|v| match v {
+                ScriptValue::Unit | ScriptValue::Bool(false) => None,
+                ScriptValue::Integer(handle) => Some(rt.elements.get(*handle)),
+                other => Some(Err(InteropError::string(format!(
+                    "expected a ui element, got: {other:?}"
+                )))),
+            })
+            .collect()
+    };
     match value {
-        ScriptValue::List(list) => {
-            let rt = runtime.lock();
-            list.iter()
-                .filter_map(|v| match v {
-                    ScriptValue::Unit => None,
-                    ScriptValue::Integer(handle) => Some(rt.elements.get(*handle)),
-                    other => Some(Err(InteropError::string(format!(
-                        "expected a ui element, got: {other:?}"
-                    )))),
-                })
-                .collect()
-        }
+        ScriptValue::List(list) => read(&mut list.iter()),
         ScriptValue::Map(map) if map.is_empty() => Ok(Vec::new()),
+        ScriptValue::Map(map) => {
+            let mut indexed = map
+                .iter()
+                .map(|(k, v)| k.parse::<i64>().map(|k| (k, v)))
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|_| {
+                    InteropError::string(format!("expected a list of ui elements, got: {value:?}"))
+                })?;
+            indexed.sort_by_key(|(k, _)| *k);
+            read(&mut indexed.into_iter().map(|(_, v)| v))
+        }
         v => Ok(element_from_script(v, runtime)?.into_iter().collect()),
     }
 }

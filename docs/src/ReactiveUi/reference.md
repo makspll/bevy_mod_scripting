@@ -16,7 +16,9 @@ Everything is a member of the `reactive_ui` namespace: `local ui = import_namesp
 | `ui.list_template(items, f)` | As `ui.list`, but `f` runs once, see [row templates](#row-templates) |
 | `ui.provide(context, value, children)` | A node providing a context value to what is below it |
 
-Elements are only valid during the update which built them: build them where they are returned, don't store them.
+Elements are only valid during the update which built them: build them where they are returned, don't keep them in signals or pass them to `ui.render` (an error says so). In a list of children `nil` and `false` are nothing, so `cond and X()` works.
+
+Keys tell siblings apart, so they must be unique among them: the same key twice is an error. Keys are strings, numbers or entities, `1` and `"1"` are different keys.
 
 `ui.show`, `ui.list` and `ui.list_template` are nodes holding their children. Their last argument is the properties of that node, which is where the layout of a list goes:
 
@@ -36,7 +38,7 @@ local Slot = ui.component("Slot", function(name, entity) .. end)
 ui.keyed(name, Slot(name, entity))    -- arguments are passed as they are, nothing is converted
 ```
 
-Defining the name again (a reload) swaps the code and re-renders its instances.
+Defining the name again (a reload) swaps the code and re-renders its instances. A region running again renders a component it shows again when its props changed, keeping its state; functions in the props don't count as a change.
 
 ## Properties
 
@@ -53,8 +55,9 @@ A property is a plain value, a function (re-run when what it read changes), or a
 | `align_items`, `align_self`, `align_content`, `justify_items`, `justify_self`, `justify_content` | the variant's Rust name: `"Center"`, `"FlexStart"`, `"SpaceBetween"`, .. |
 | `overflow` | `"Visible"`, `"Clip"`, `"Hidden"`, `"Scroll"`, or `{ x = .., y = .. }` |
 | `aspect_ratio`, `box_sizing`, `direction`, `grid_auto_flow` | as the `Node` field |
-| `background_color`, `border_color` | `"#rrggbb"`, `"#rrggbbaa"`, or `{ red, green, blue, alpha }` from 0 to 1 |
-| `z_index` | a whole number |
+| `background_color`, `border_color` | `"#rrggbb"`, `"#rrggbbaa"`, or `{ red, green, blue, alpha }` from 0 to 1 (more is an error) |
+| `z_index` | a whole number, ordering the element among its siblings |
+| `global_z_index` | a whole number, drawing the element above the rest of the UI (modals, tooltips) |
 | `text` | the text of a `ui.text` |
 | `font_size`, `color` | text size in pixels and colour |
 | `image` | the path of an image asset |
@@ -74,7 +77,9 @@ A wrong value is an error naming the property and listing what it accepts.
 | `on_drag` | `{ x, y, button, delta_x, delta_y }` |
 | `on_scroll` | `{ x, y, delta_x, delta_y }` |
 
-An element whose `overflow` is `"scroll"` scrolls with the mouse wheel, without a handler: give it a size and let its children overflow.
+`button` is `"Primary"`, `"Secondary"` or `"Middle"`.
+
+An element whose `overflow` is `"Scroll"` scrolls with the mouse wheel, without a handler: give it a size and let its children overflow.
 
 These are `bevy_picking`'s pointer events. The innermost element with a handler for an event gets it. Handlers run during the next UI update, where they can set signals and change the world.
 
@@ -84,12 +89,12 @@ These are `bevy_picking`'s pointer events. The innermost element with a handler 
 |---|---|
 | `ui.signal(value)` | State, a `Signal<T>` of the value's type. `s:get()` reads it and records the read, `s:peek()` reads without recording, `s:set(value)` changes it |
 | `ui.computed(f)` | A value derived from others, recomputed when what `f` read changed. Its readers only update when the value did |
-| `ui.effect(f)` | Runs `f` now and whenever what it read changes. `f` can return a function to clean up before the next run |
+| `ui.effect(f)` | Runs `f` once the UI update it was made in has mounted the tree, then whenever what it read changes. `f` can return a function to clean up before the next run, and when its component is removed or its script unloaded |
 | `ui.watch(entity, Component)` | A signal over a component of an entity: `:get()` returns the component, or `nil` when it is gone |
 | `ui.selector(signal)` | For "which one is selected": `sel:selected(key)` only wakes the readers of the key which was and the key which is the signal's value |
 | `ui.create_context(default)`, `ui.provide`, `ui.use_context(context)` | A value provided to a subtree. Read when a component renders, provide a signal for a value which changes |
 
-Inside a component these belong to the instance: call them at the top, in the same order every time.
+Inside a component these belong to the instance: call them at the top, in the same order every time. Outside of the UI they are plain script state. In a function the UI runs again (a `ui.list` row, a `ui.show`, a bound property, a computed or an effect) they are an error: call them in the component and capture them. `ui.use_context` works in components and in the functions they hand out (bound properties, handlers, effects).
 
 ## Values computed in Rust
 

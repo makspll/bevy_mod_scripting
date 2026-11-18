@@ -3,12 +3,16 @@ use bevy_ecs::{
     system::{Commands, In},
     world::{World, WorldId},
 };
-use bevy_mod_scripting_bindings::remove_script_registrations;
+use bevy_mod_scripting_bindings::{
+    AppScriptCallbackRunners, CurrentScriptAttachment, WorldAccessGuard, WorldExtensions,
+    WorldGuard, remove_script_registrations,
+};
 use bevy_mod_scripting_script::ScriptAttachment;
 
 use crate::{
     commands::RunScriptCallback,
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded},
+    handler::run_in_script_context,
     script_system::remove_script_systems,
 };
 
@@ -90,7 +94,51 @@ pub fn on_script_unloaded_for_unload_pipeline_handler<P: IntoScriptPluginParams>
             }),
         );
     }
+    run_unload_hooks::<P>(
+        &mut commands,
+        event.attachment.clone(),
+        trigger.existing_context.clone(),
+    );
     remove_registrations_when_unloaded(&mut commands, event.attachment.clone());
+}
+
+/// Runs the hooks plugins added with [`AppScriptCallbackRunners::add_unload_hook`] in the context of the script being
+/// unloaded, after its `on_script_unloaded` callback. Errors are reported, they don't stop the unload.
+fn run_unload_hooks<P: IntoScriptPluginParams>(
+    commands: &mut Commands,
+    attachment: ScriptAttachment,
+    context: Arc<Mutex<P::C>>,
+) {
+    commands.queue(move |world: &mut World| {
+        let Some(runners) = world.get_resource::<AppScriptCallbackRunners>().cloned() else {
+            return;
+        };
+        let hooks = runners.unload_hooks();
+        if hooks.is_empty() {
+            return;
+        }
+        let cache = WorldGuard::setup_cache(world, CurrentScriptAttachment(None));
+        WorldAccessGuard::with_static_guard(world, cache, |guard| {
+            let result = run_in_script_context::<P, _>(
+                &attachment,
+                &OnScriptUnloaded::into_callback_label(),
+                &context,
+                guard.clone(),
+                |_, world| {
+                    let mut first_error = None;
+                    for hook in &hooks {
+                        if let Err(e) = hook(world.clone(), &attachment, P::LANGUAGE) {
+                            first_error.get_or_insert(e);
+                        }
+                    }
+                    first_error.map_or(Ok(()), Err)
+                },
+            );
+            if let Err(e) = result {
+                runners.report_error(guard, Some(&attachment), "running unload hooks".into(), e);
+            }
+        });
+    });
 }
 
 /// Removes the registrations and script systems of a script which is unloaded, or reloaded (it adds them again once loaded).

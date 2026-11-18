@@ -31,8 +31,8 @@ end)
 
 - **No dependency arrays.** What a function reads while it runs is what it depends on. (The lists of a function and values Rune passes are for [passing values in](./reference.md#dependencies), not for tracking.)
 - **Reading state is a call**, `n:get()`. A value read outside of a bound function, computed or effect is read once.
-- **The rules of hooks still apply** to `ui.signal`, `ui.computed`, `ui.effect` and `ui.watch`: call them at the top of the component, unconditionally. This is how state survives a script reload.
-- **Props don't flow.** A component keeps the props it was created with: pass a signal down when the child has to follow a value.
+- **The rules of hooks still apply** to `ui.signal`, `ui.computed`, `ui.effect` and `ui.watch`: call them at the top of the component, unconditionally. This is how state survives a script reload. Calling one in a `ui.list` row or a `ui.show` function is an error.
+- **Props are read when the component renders.** A component renders again only when a region showing it runs again with other props (closures don't count). For a value which changes often, pass a signal down instead.
 
 ## Solid, Preact Signals, Vue, Svelte
 

@@ -210,6 +210,8 @@ pub struct PointerEvent {
     y: f64,
     /// `"Primary"`, `"Secondary"` or `"Middle"`
     button: Option<String>,
+    /// How many clicks in a row, for clicks
+    count: Option<i64>,
     delta_x: Option<f64>,
     delta_y: Option<f64>,
 }
@@ -277,6 +279,9 @@ pub struct UiProps {
     image: Option<Reactive<String>>,
     /// The `Name` of the entity, i.e. to find it in tests
     name: Option<Reactive<Label>>,
+    /// Draws the element and what is below it above the rest of the UI, ordered by this number (`GlobalZIndex`).
+    /// `z_index` only orders it among its siblings
+    global_z_index: Option<Reactive<f64>>,
     on_click: Option<Handler>,
     on_press: Option<Handler>,
     on_release: Option<Handler>,

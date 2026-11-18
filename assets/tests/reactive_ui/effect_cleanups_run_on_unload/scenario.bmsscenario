@@ -1,0 +1,24 @@
+// #main_script check.lua
+// unloading a script runs the cleanups of its effects, in its context.
+// ui.lua mounts a component whose effect cleanup spawns a `CleanupRan` entity; check.lua looks for it after ui.lua's entity is despawned.
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin
+SetupHandler OnTest=null, Update=null
+FinalizeApp
+
+LoadScriptAs as_name="ui", path="ui.lua"
+WaitForScriptAssetLoaded name="ui"
+SpawnEntityWithScript name="ui_entity", script="ui"
+RunUpdateOnce
+RunUpdateOnce
+DespawnEntity entity="ui_entity"
+RunUpdateOnce
+RunUpdateOnce
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptAssetLoaded name="@this_script"
+SpawnEntityWithScript name="test_entity", script="@this_script"
+RunUpdateOnce
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script", expect_string_value="cleanup ran"
