@@ -117,6 +117,34 @@ impl<F> WithDeps<F> {
     pub fn into_inner(self) -> DynamicScriptFunction {
         self.0.0
     }
+
+    /// The function of a list of a function and its dependencies, `{ f, a, b }`, called with them first.
+    pub fn curry(
+        mut list: std::collections::VecDeque<ScriptValue>,
+    ) -> Result<DynamicScriptFunction, InteropError> {
+        let function = match list.pop_front() {
+            Some(ScriptValue::Function(function)) => function,
+            other => {
+                return Err(InteropError::string(format!(
+                    "expected a function, or a list of a function and its dependencies, got a list starting with: {other:?}"
+                )));
+            }
+        };
+        if list.is_empty() {
+            return Ok(function);
+        }
+        let deps = list;
+        Ok(DynamicScriptFunction::from(
+            move |context, mut args: std::collections::VecDeque<ScriptValue>| {
+                for dep in deps.iter().rev() {
+                    args.push_front(dep.clone());
+                }
+                function
+                    .call(args, context)
+                    .unwrap_or_else(ScriptValue::Error)
+            },
+        ))
+    }
 }
 
 impl<F> Clone for WithDeps<F> {
@@ -129,32 +157,10 @@ impl<F> FromScript for WithDeps<F> {
     type This<'w> = Self;
 
     fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
-        let ScriptValue::List(mut list) = value else {
+        let ScriptValue::List(list) = value else {
             return FunctionOf::from_script(value, scope).map(WithDeps);
         };
-        let function = match list.pop_front() {
-            Some(ScriptValue::Function(function)) => function,
-            other => {
-                return Err(InteropError::string(format!(
-                    "expected a function, or a list of a function and its dependencies, got a list starting with: {other:?}"
-                )));
-            }
-        };
-        if list.is_empty() {
-            return Ok(WithDeps(FunctionOf::new(function)));
-        }
-        let deps = list;
-        let curried = DynamicScriptFunction::from(
-            move |context, mut args: std::collections::VecDeque<ScriptValue>| {
-                for dep in deps.iter().rev() {
-                    args.push_front(dep.clone());
-                }
-                function
-                    .call(args, context)
-                    .unwrap_or_else(ScriptValue::Error)
-            },
-        );
-        Ok(WithDeps(FunctionOf::new(curried)))
+        Self::curry(list).map(|f| WithDeps(FunctionOf::new(f)))
     }
 
     fn could_convert(value: &ScriptValue) -> bool {

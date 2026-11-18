@@ -23,11 +23,6 @@ pub(super) fn expand(
         .map(|ident| ident.map(|i| i.to_string()).unwrap_or_default())
         .collect::<Vec<_>>();
     let types = fields.iter().map(|field| &field.ty).collect::<Vec<_>>();
-    // the converted fields, named so they can't shadow the locals of the conversion
-    let locals = names
-        .iter()
-        .map(|name| quote::format_ident!("__field_{}", name))
-        .collect::<Vec<_>>();
     let typed_through = typed_through(
         derive_input,
         args,
@@ -51,24 +46,10 @@ pub(super) fn expand(
                 value: #bms::ScriptValue,
                 scope: &#bms::CallScope<'_>,
             ) -> Result<Self, #bms::InteropError> {
-                const NAMES: &[&str] = &[#( #names ),*];
-                let given = #bms::StructFields::given(value)?;
-                // the fields given, converted in one pass, the others are their defaults
-                #( let mut #locals: Option<#types> = None; )*
-                for (name, value) in given {
-                    match name.as_str() {
-                        #( #names => #locals = Some(
-                            #bms::StructFields::convert::<#types>(stringify!(#ident), #names, value, scope)?
-                        ), )*
-                        unknown => {
-                            return Err(#bms::StructFields::unknown(stringify!(#ident), unknown, NAMES));
-                        }
-                    }
-                }
-                Ok(Self { #( #field_idents: match #locals {
-                    Some(value) => value,
-                    None => #bms::StructFields::missing::<#types>(stringify!(#ident), #names, scope)?,
-                }, )* })
+                let mut fields = #bms::StructFields::new(stringify!(#ident), value)?;
+                let value = Self { #( #field_idents: fields.take::<#types>(#names, scope)?, )* };
+                fields.finish(&[#( #names ),*])?;
+                Ok(value)
             }
 
             fn could_convert(value: &#bms::ScriptValue) -> bool {
