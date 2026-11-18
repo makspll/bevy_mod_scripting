@@ -32,24 +32,23 @@ use crate::{
     function::arg_meta::ArgMeta,
 };
 
-/// The fields of a data struct, taken from the map scripts pass one by one, see `#[derive(ScriptData)]`.
+/// The fields of a data struct, from the map scripts pass, see `#[derive(ScriptData)]`.
 ///
-/// A field converts like an argument of a function: [`FromScript`] converts it, and a missing field is its
+/// The derive converts the fields given in one pass, so its cost is in the fields given, not in the fields the struct
+/// has. A field converts like an argument of a function: [`FromScript`] converts it, and a missing field is its
 /// [`ArgMeta::default_value`], so `Option<T>` fields can be left out and others can't.
-pub struct StructFields {
-    of: &'static str,
-    fields: bevy_platform::collections::HashMap<String, ScriptValue>,
-}
+pub struct StructFields;
 
 impl StructFields {
-    /// The fields in the given map, of the struct named `of`. An empty list is an empty map, as Lua can't tell them apart.
-    pub fn new(of: &'static str, value: ScriptValue) -> Result<Self, InteropError> {
-        let fields = match value {
-            ScriptValue::Map(fields) => fields,
-            ScriptValue::List(list) if list.is_empty() => Default::default(),
-            value => return Err(InteropError::value_mismatch(TypeId::of::<Self>(), value)),
-        };
-        Ok(StructFields { of, fields })
+    /// The fields given, by name. An empty list is an empty map, as Lua can't tell them apart.
+    pub fn given(
+        value: ScriptValue,
+    ) -> Result<bevy_platform::collections::HashMap<String, ScriptValue>, InteropError> {
+        match value {
+            ScriptValue::Map(fields) => Ok(fields),
+            ScriptValue::List(list) if list.is_empty() => Ok(Default::default()),
+            value => Err(InteropError::value_mismatch(TypeId::of::<Self>(), value)),
+        }
     }
 
     /// Whether the value could be the fields of a struct, see [`FromScript::could_convert`].
@@ -61,32 +60,34 @@ impl StructFields {
         }
     }
 
-    /// Converts the field with the given name, or its default if it is missing.
-    pub fn take<'s, T: FromScript + ArgMeta>(
-        &mut self,
+    /// Converts a field given to the struct named `of`, see [`Self::given`].
+    pub fn convert<'s, T: FromScript>(
+        of: &str,
+        name: &str,
+        value: ScriptValue,
+        scope: &'s CallScope<'_>,
+    ) -> Result<T::This<'s>, InteropError> {
+        T::from_script(value, scope)
+            .map_err(|e| InteropError::string(format!("field `{name}` of `{of}`: {e}")))
+    }
+
+    /// The value of a field which wasn't given: its [`ArgMeta::default_value`], so `Option<T>` fields can be left out.
+    pub fn missing<'s, T: FromScript + ArgMeta>(
+        of: &str,
         name: &str,
         scope: &'s CallScope<'_>,
     ) -> Result<T::This<'s>, InteropError> {
-        let value = match self.fields.remove(name) {
-            Some(value) => value,
-            None => T::default_value().ok_or_else(|| {
-                InteropError::string(format!("missing field `{name}` of `{}`", self.of))
-            })?,
-        };
-        T::from_script(value, scope)
-            .map_err(|e| InteropError::string(format!("field `{name}` of `{}`: {e}", self.of)))
+        let value = T::default_value()
+            .ok_or_else(|| InteropError::string(format!("missing field `{name}` of `{of}`")))?;
+        Self::convert::<T>(of, name, value, scope)
     }
 
-    /// Fails if fields other than the ones taken were given, naming the ones the struct has.
-    pub fn finish(self, names: &[&str]) -> Result<(), InteropError> {
-        match self.fields.keys().next() {
-            Some(unknown) => Err(InteropError::string(format!(
-                "unknown field `{unknown}` of `{}`, the fields are: {}",
-                self.of,
-                names.join(", ")
-            ))),
-            None => Ok(()),
-        }
+    /// The error of a field the struct named `of` doesn't have, naming the ones it has.
+    pub fn unknown(of: &str, name: &str, names: &[&str]) -> InteropError {
+        InteropError::string(format!(
+            "unknown field `{name}` of `{of}`, the fields are: {}",
+            names.join(", ")
+        ))
     }
 }
 
