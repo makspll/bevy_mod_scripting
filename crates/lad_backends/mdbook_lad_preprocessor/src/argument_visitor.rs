@@ -32,34 +32,11 @@ pub(crate) fn primitive_name(primitive_kind: &ladfile::ReflectionPrimitiveKind) 
     }
 }
 
-/// Stand-ins for the HTML laying out types in table cells, which survives escaping the cell, see [`cell_html`]
-const LINE: char = '\u{E000}';
-const DETAILS: char = '\u{E001}';
-const SUMMARY_END: char = '\u{E002}';
-const DETAILS_END: char = '\u{E003}';
-
-/// Unions of more names than this are folded in table cells
-const FOLDED_NAMES: usize = 5;
-
-/// The HTML of a table cell printed with [`MarkdownArgumentVisitor::in_table_cell`], once it is escaped
-pub(crate) fn cell_html(cell: String) -> String {
-    // a folded list is a block, which starts a line of its own
-    cell.replace(&format!("{DETAILS_END}{LINE}"), &DETAILS_END.to_string())
-        .replace(LINE, "<br>")
-        .replace(DETAILS, "<details><summary>")
-        .replace(SUMMARY_END, "</summary>")
-        .replace(DETAILS_END, "</details>")
-}
-
 pub(crate) struct MarkdownArgumentVisitor<'a> {
     ladfile: &'a ladfile::LadFile,
     buffer: MarkdownBuilder,
     linkifier: Option<Box<dyn Fn(String) -> PathBuf + 'static>>,
     pub raw_type_id_replacement: Option<&'static str>,
-    /// Long types are laid out over lines in table cells: the alternatives of a union one per line, long lists of names folded
-    in_table_cell: bool,
-    /// How deep the visitor is in the type, the alternatives of the type itself get lines of their own
-    depth: usize,
 }
 impl<'a> MarkdownArgumentVisitor<'a> {
     /// Create a new instance of the visitor
@@ -71,15 +48,7 @@ impl<'a> MarkdownArgumentVisitor<'a> {
             buffer: builder,
             linkifier: None,
             raw_type_id_replacement: None,
-            in_table_cell: false,
-            depth: 0,
         }
-    }
-
-    /// Lays out long types over lines, for a table cell, see [`cell_html`]
-    pub fn in_table_cell(mut self) -> Self {
-        self.in_table_cell = true;
-        self
     }
 
     /// Create a new instance of the visitor with a custom linkifier function
@@ -173,47 +142,32 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     }
 
     fn visit_option(&mut self, inner: &ladfile::LadTypeKind) {
-        // the type of an optional field, its alternatives on lines of their own
-        if self.in_table_cell && self.depth == 0 {
-            self.visit(inner);
-            self.buffer.text(format!("{LINE}*optional*"));
-            return;
-        }
-        self.depth += 1;
         self.buffer.text("Optional<");
         self.visit(inner);
         self.buffer.text(">");
-        self.depth -= 1;
     }
 
     fn visit_vec(&mut self, inner: &ladfile::LadTypeKind) {
-        self.depth += 1;
         self.buffer.text("Vec<");
         self.visit(inner);
         self.buffer.text(">");
-        self.depth -= 1;
     }
 
     fn visit_hash_map(&mut self, key: &ladfile::LadTypeKind, value: &ladfile::LadTypeKind) {
-        self.depth += 1;
         self.buffer.text("HashMap<");
         self.visit(key);
         self.buffer.text(", ");
         self.visit(value);
         self.buffer.text(">");
-        self.depth -= 1;
     }
 
     fn visit_hash_set(&mut self, inner: &ladfile::LadTypeKind) {
-        self.depth += 1;
         self.buffer.text("HashSet<");
         self.visit(inner);
         self.buffer.text(">");
-        self.depth -= 1;
     }
 
     fn visit_tuple(&mut self, inner: &[ladfile::LadTypeKind]) {
-        self.depth += 1;
         self.buffer.text("(");
         for (idx, arg) in inner.iter().enumerate() {
             self.visit(arg);
@@ -222,7 +176,6 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
             }
         }
         self.buffer.text(")");
-        self.depth -= 1;
     }
 
     fn visit_untyped_tuple(&mut self) {
@@ -245,28 +198,6 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     }
 
     fn visit_union(&mut self, inner: &[ladfile::LadTypeKind]) {
-        let names = inner
-            .iter()
-            .filter(|arg| matches!(arg, ladfile::LadTypeKind::Literal(_)))
-            .count();
-        // a long list of names, i.e. the variants of `JustifyContent`, folded where it has a line of its own,
-        // and only counted inside other types, i.e. the return of a function, which repeat it
-        let folded = self.in_table_cell && names > FOLDED_NAMES;
-        if folded && self.depth > 1 {
-            self.buffer.text(format!("one of {names} names"));
-            return;
-        }
-        if folded {
-            self.buffer
-                .text(format!("{DETAILS}one of {names} names{SUMMARY_END}"));
-        }
-        // the alternatives of the type itself, one per line
-        let separator = if self.in_table_cell && self.depth == 0 && !folded {
-            LINE.to_string()
-        } else {
-            " | ".to_owned()
-        };
-        self.depth += 1;
         for (idx, arg) in inner.iter().enumerate() {
             // `fn() -> A | B` would read as returning the union
             let function = matches!(arg, ladfile::LadTypeKind::Function { .. });
@@ -278,17 +209,12 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
                 self.buffer.text(")");
             }
             if idx < inner.len() - 1 {
-                self.buffer.text(separator.clone());
+                self.buffer.text(" | ");
             }
-        }
-        self.depth -= 1;
-        if folded {
-            self.buffer.text(DETAILS_END.to_string());
         }
     }
 
     fn visit_function(&mut self, params: &[ladfile::LadTypeKind], returns: &ladfile::LadTypeKind) {
-        self.depth += 1;
         self.buffer.text("fn(");
         for (idx, param) in params.iter().enumerate() {
             if idx > 0 {
@@ -298,7 +224,6 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         }
         self.buffer.text(") -> ");
         self.visit(returns);
-        self.depth -= 1;
     }
 
     fn visit_literal(&mut self, value: &str) {
@@ -344,7 +269,6 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
                 self.buffer.text(generic_type.to_string());
             }
         }
-        self.depth += 1;
         self.buffer.text('<');
         for (i, arg) in args.iter().enumerate() {
             if i > 0 {
@@ -353,7 +277,6 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
             self.visit(arg);
         }
         self.buffer.text('>');
-        self.depth -= 1;
     }
 }
 
