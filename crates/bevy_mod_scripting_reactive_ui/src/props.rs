@@ -8,7 +8,7 @@ use std::marker::PhantomData;
 use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_bindings::{
     ArgMeta, ByName, CallScope, FromScript, GetTypeDependencies, InteropError, IntoScript, Lazy,
-    ScriptValue, ThroughTypeInfo, TypedThrough, V, WithDeps, WorldGuard,
+    ScriptValue, ThroughTypeInfo, TypedThrough, Union, V, WithDeps, WorldGuard,
 };
 use bevy_mod_scripting_derive::ScriptData;
 use bevy_reflect::{TypeRegistry, Typed};
@@ -26,8 +26,8 @@ use crate::{
 /// A ui element, built by `node`, `text`, a component and so on. Scripts hold a handle to it.
 pub type Element = Lazy<V<UiElement>>;
 
-/// The children of an element: a list of elements.
-pub type Children = Lazy<Vec<V<UiElement>>>;
+/// The children of an element: a list of elements, where `false` is nothing (`cond and X()`).
+pub type Children = Lazy<Vec<Union<V<UiElement>, bool>>>;
 
 /// A property value: a `T`, a value computed in Rust ([`UiValue`]), or a function returning a `T`, re-run when
 /// what it reads changes. Functions can be given with their dependencies, see [`WithDeps`].
@@ -55,9 +55,10 @@ impl<T: TypedThrough> TypedThrough for Reactive<T> {
         ThroughTypeInfo::Union(vec![
             T::through_type_info(),
             ThroughTypeInfo::Val(UiValue::type_info()),
+            // `nil` resets the property, so a function may return it
             ThroughTypeInfo::Function {
                 params: Vec::new(),
-                returns: Box::new(T::through_type_info()),
+                returns: Box::new(Option::<T>::through_type_info()),
             },
         ])
     }

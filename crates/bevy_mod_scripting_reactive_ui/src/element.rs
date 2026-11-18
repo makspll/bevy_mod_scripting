@@ -312,3 +312,29 @@ pub(crate) fn empty_node() -> UiElement {
 pub(crate) fn new_element(runtime: &Mutex<Runtime>, data: ElementData) -> ScriptValue {
     ScriptValue::Integer(runtime.lock().elements.push(UiElement(Arc::new(data))))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn numbers_are_not_element_handles() {
+        let mut arena = ElementArena::default();
+        for _ in 0..5 {
+            arena.push(empty_node());
+        }
+        let handle = arena.push(empty_node());
+        assert!(arena.get(handle).is_ok());
+        assert!(arena.holds_element(&ScriptValue::Integer(handle)));
+
+        // before and after a reset, a small number is never one of them
+        for _ in 0..2 {
+            let error = format!("{:?}", arena.get(3).err());
+            assert!(error.contains("got the number 3"), "{error}");
+            assert!(!arena.holds_element(&ScriptValue::Integer(3)));
+            arena.reset();
+        }
+        let error = format!("{:?}", arena.get(handle).err());
+        assert!(error.contains("earlier update"), "{error}");
+    }
+}

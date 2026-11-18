@@ -14,6 +14,16 @@ s:act(function() label:set("!") end)
 assert(#s:all_by_name("mixed") == 3, "expected 3 rows")
 assert(s:updates().bindings == 3, "a row was left behind")
 
-assert(not ui.selector(ui.signal("1")):selected(1), "the number 1 is selected by the string \"1\"")
+---@type reactive_ui.Signal<string|integer|nil>
+local key = ui.signal(nil)
+local by_key = ui.selector(key)
+key:set("1")
+assert(by_key:selected("1"), "\"1\" is not selected by itself")
+assert(not by_key:selected(1), "the number 1 is selected by the string \"1\"")
+
+---@type reactive_ui.Signal<ecs.Entity|nil>
+local picked = ui.signal(nil)
+local by_entity = ui.selector(picked)
 local entity = world.spawn()
-assert(ui.selector(ui.signal(entity)):selected(entity), "an entity is not selected by itself")
+picked:set(entity)
+assert(by_entity:selected(entity), "an entity is not selected by itself")
