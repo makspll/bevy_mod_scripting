@@ -119,7 +119,13 @@ pub(crate) enum PropValue {
 pub(crate) fn key_of(value: &ScriptValue, world: &WorldGuard) -> Result<String, InteropError> {
     // tagged by type so `1` and `"1"` differ, numbers by value so `1` and `1.0` don't (as in Lua)
     Ok(match value {
-        ScriptValue::String(s) => format!("s:{s}"),
+        // the common case, built without `format!`: a list run makes one key per item
+        ScriptValue::String(s) => {
+            let mut key = String::with_capacity(s.len() + 2);
+            key.push_str("s:");
+            key.push_str(s);
+            key
+        }
         ScriptValue::Integer(i) => format!("n:{i}"),
         ScriptValue::Float(f) if f.fract() == 0.0 && f.abs() < i64::MAX as f64 => {
             format!("n:{}", *f as i64)

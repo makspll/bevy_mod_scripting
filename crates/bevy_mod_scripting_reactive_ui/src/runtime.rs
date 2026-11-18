@@ -246,17 +246,25 @@ fn check_unique_keys<'a>(
     keys: impl Iterator<Item = &'a str>,
     what: &str,
 ) -> Result<(), InteropError> {
-    let mut seen = bevy_platform::collections::HashSet::<&str>::default();
+    let mut seen = bevy_platform::collections::HashSet::<&str>::with_capacity_and_hasher(
+        keys.size_hint().0,
+        Default::default(),
+    );
     for key in keys {
         if !seen.insert(key) {
-            // keys are tagged with their type, see `key_of`
-            let shown = key.split_once(':').map_or(key, |(_, k)| k);
-            return Err(InteropError::string(format!(
-                "{what} has the key `{shown}` twice, keys must be unique among siblings"
-            )));
+            return Err(duplicate_key(key, what));
         }
     }
     Ok(())
+}
+
+/// The error for a key found twice among siblings.
+fn duplicate_key(key: &str, what: &str) -> InteropError {
+    // keys are tagged with their type, see `key_of`
+    let shown = key.split_once(':').map_or(key, |(_, k)| k);
+    InteropError::string(format!(
+        "{what} has the key `{shown}` twice, keys must be unique among siblings"
+    ))
 }
 
 #[derive(Default)]
@@ -1516,8 +1524,9 @@ impl Cx<'_, '_> {
                 rt.remove(node);
             }
         };
-        // each child with the nodes made for it (the watches of a template's row)
-        let mut old: HashMap<String, (Mounted, Vec<NodeId>)> = old_keys
+        // each child with the nodes made for it (the watches of a template's row). An entry is `None` once its key
+        // was used in this run: meeting it again means the key is in the list twice
+        let mut old: HashMap<String, Option<(Mounted, Vec<NodeId>)>> = old_keys
             .into_iter()
             .zip(
                 old_children.into_iter().zip(
@@ -1526,6 +1535,7 @@ impl Cx<'_, '_> {
                         .chain(std::iter::repeat_with(Vec::new)),
                 ),
             )
+            .map(|(key, child)| (key, Some(child)))
             .collect();
         let mut keys = Vec::new();
         let mut children = Vec::new();
@@ -1551,18 +1561,22 @@ impl Cx<'_, '_> {
             if templated && (template.is_none() || refresh) {
                 template = Some(build(crate::expr::item_placeholder())?);
             }
-            let item_keys = items
-                .iter()
-                .map(|item| crate::element::key_of(item, &self.world))
-                .collect::<Result<Vec<_>, _>>()?;
-            check_unique_keys(
-                item_keys.iter().map(String::as_str),
-                "the list given to `list`",
-            )?;
             keys.reserve(items.len());
             children.reserve(items.len());
-            for (item, key) in items.into_iter().zip(item_keys) {
-                let kept = match old.remove(&key) {
+            for item in items {
+                let key = crate::element::key_of(&item, &self.world)?;
+                let kept = match old.get_mut(&key) {
+                    Some(entry) => Some(
+                        entry
+                            .take()
+                            .ok_or_else(|| duplicate_key(&key, "the list given to `list`"))?,
+                    ),
+                    None => {
+                        old.insert(key.clone(), None);
+                        None
+                    }
+                };
+                let kept = match kept {
                     Some(kept) if !refresh => {
                         keys.push(key);
                         children.push(kept.0);
@@ -1581,7 +1595,7 @@ impl Cx<'_, '_> {
                     Err(e) => {
                         remove_nodes(nodes);
                         if let Some(kept) = kept {
-                            old.insert(key, kept);
+                            old.insert(key, Some(kept));
                         }
                         return Err(e);
                     }
@@ -1609,7 +1623,7 @@ impl Cx<'_, '_> {
             Ok(())
         })();
         if result.is_ok() {
-            for (_, (leftover, nodes)) in old.drain() {
+            for (leftover, nodes) in old.into_values().flatten() {
                 remove_nodes(nodes);
                 self.unmount(leftover, true)?;
             }
@@ -1620,7 +1634,10 @@ impl Cx<'_, '_> {
             self.order_children(container, &order)?;
         } else {
             // keep showing the children which were not reached
-            for (key, (child, nodes)) in old.drain() {
+            for (key, (child, nodes)) in old
+                .into_iter()
+                .filter_map(|(key, entry)| entry.map(|e| (key, e)))
+            {
                 keys.push(key);
                 children.push(child);
                 owned.push(nodes);
