@@ -75,14 +75,8 @@ pub struct Reactive<T>(ScriptValue, PhantomData<fn() -> T>);
 impl<T> FromScript for Reactive<T> {
     type This<'w> = Self;
 
-    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
-        let value = match value {
-            ScriptValue::List(list) if matches!(list.front(), Some(ScriptValue::Function(_))) => {
-                let f = WithDeps::<fn()>::from_script(ScriptValue::List(list), scope)?;
-                ScriptValue::Function(f.into_inner())
-            }
-            value => value,
-        };
+    // only documents props, see `parse_props`
+    fn from_script(value: ScriptValue, _: &CallScope) -> Result<Self, InteropError> {
         Ok(Reactive(value, PhantomData))
     }
 }
@@ -114,30 +108,6 @@ impl<T: GetTypeDependencies> GetTypeDependencies for Reactive<T> {
     fn register_type_dependencies(registry: &mut TypeRegistry) {
         T::register_type_dependencies(registry);
         registry.register::<UiValue>();
-    }
-}
-
-/// How a property is stored on its element.
-trait IntoPropValue {
-    fn into_prop_value(self, world: &WorldGuard) -> PropValue;
-}
-
-impl<T> IntoPropValue for Reactive<T> {
-    fn into_prop_value(self, world: &WorldGuard) -> PropValue {
-        match self.0 {
-            ScriptValue::Function(f) => PropValue::Bound(f),
-            ScriptValue::Reference(r) => match r.downcast::<UiValue>(world.clone()) {
-                Ok(value) => PropValue::Expr(value.0),
-                Err(_) => PropValue::Static(ScriptValue::Reference(r)),
-            },
-            v => PropValue::Static(v),
-        }
-    }
-}
-
-impl<F> IntoPropValue for WithDeps<F> {
-    fn into_prop_value(self, _: &WorldGuard) -> PropValue {
-        PropValue::Handler(self.into_inner())
     }
 }
 
@@ -308,97 +278,132 @@ pub struct Description {
 /// A handler of a pointer event.
 pub type Handler = WithDeps<fn(PointerEvent)>;
 
-macro_rules! ui_props {
-    ($($(#[$doc:meta])* $field:ident: $ty:ty),* $(,)?) => {
-        /// The properties of an element, all optional. Layout properties are the fields of `bevy_ui`'s `Node`.
-        ///
-        /// Each takes a value, a value computed in Rust (`UiValue`) or a function re-run when what it reads changes.
-        #[derive(ScriptData)]
-        #[script_data(namespace = "reactive_ui", bms_bindings_path = "bevy_mod_scripting_bindings")]
-        pub struct UiProps {
-            /// Tells the element apart from its siblings, so it is kept when they change
-            key: Option<As<Key>>,
-            $($(#[$doc])* $field: Option<$ty>,)*
-        }
-
-        impl UiProps {
-            /// The key, and the properties sorted so that diffs walk them in the same order.
-            pub(crate) fn into_props(
-                self,
-                world: &WorldGuard,
-            ) -> Result<(Option<String>, Vec<(Prop, PropValue)>), InteropError> {
-                let key = self
-                    .key
-                    .map(|key| crate::element::key_of(&key.0, world))
-                    .transpose()?;
-                let mut props = Vec::new();
-                $(if let Some(value) = self.$field {
-                    let prop = Prop::parse(stringify!($field)).ok_or_else(|| {
-                        InteropError::str(concat!("unknown ui property `", stringify!($field), "`"))
-                    })?;
-                    props.push((prop, value.into_prop_value(world)));
-                })*
-                props.sort_by_key(|(p, _)| *p);
-                Ok((key, props))
-            }
-        }
-    };
+/// The properties of an element, all optional. Layout properties are the fields of `bevy_ui`'s `Node`.
+///
+/// Each takes a value, a value computed in Rust (`UiValue`) or a function re-run when what it reads changes.
+///
+/// It documents what elements take: they are given an [`As<UiProps>`] parsed in one pass with [`parse_props`],
+/// building only the properties given (converting a struct of all of them doubled the cost of building elements).
+#[derive(ScriptData)]
+#[script_data(
+    namespace = "reactive_ui",
+    bms_bindings_path = "bevy_mod_scripting_bindings"
+)]
+pub struct UiProps {
+    /// Tells the element apart from its siblings, so it is kept when they change
+    key: Option<As<Key>>,
+    display: Option<Reactive<DisplayMode>>,
+    box_sizing: Option<Reactive<ByName<BoxSizing>>>,
+    position_type: Option<Reactive<ByName<PositionType>>>,
+    overflow: Option<Reactive<OverflowMode>>,
+    left: Option<Reactive<Size>>,
+    right: Option<Reactive<Size>>,
+    top: Option<Reactive<Size>>,
+    bottom: Option<Reactive<Size>>,
+    width: Option<Reactive<Size>>,
+    height: Option<Reactive<Size>>,
+    min_width: Option<Reactive<Size>>,
+    min_height: Option<Reactive<Size>>,
+    max_width: Option<Reactive<Size>>,
+    max_height: Option<Reactive<Size>>,
+    aspect_ratio: Option<Reactive<f64>>,
+    align_items: Option<Reactive<ByName<AlignItems>>>,
+    justify_items: Option<Reactive<ByName<JustifyItems>>>,
+    align_self: Option<Reactive<ByName<AlignSelf>>>,
+    justify_self: Option<Reactive<ByName<JustifySelf>>>,
+    align_content: Option<Reactive<ByName<AlignContent>>>,
+    justify_content: Option<Reactive<ByName<JustifyContent>>>,
+    direction: Option<Reactive<ByName<InlineDirection>>>,
+    margin: Option<Reactive<Sides>>,
+    padding: Option<Reactive<Sides>>,
+    border: Option<Reactive<Sides>>,
+    border_radius: Option<Reactive<Corners>>,
+    flex_direction: Option<Reactive<ByName<FlexDirection>>>,
+    flex_wrap: Option<Reactive<ByName<FlexWrap>>>,
+    flex_grow: Option<Reactive<f64>>,
+    flex_shrink: Option<Reactive<f64>>,
+    flex_basis: Option<Reactive<Size>>,
+    row_gap: Option<Reactive<Size>>,
+    column_gap: Option<Reactive<Size>>,
+    grid_auto_flow: Option<Reactive<ByName<GridAutoFlow>>>,
+    background_color: Option<Reactive<ColorValue>>,
+    border_color: Option<Reactive<ColorValue>>,
+    z_index: Option<Reactive<f64>>,
+    /// The text of a text element
+    text: Option<Reactive<Label>>,
+    font_size: Option<Reactive<f64>>,
+    /// The colour of text
+    color: Option<Reactive<ColorValue>>,
+    /// The path of an image asset
+    image: Option<Reactive<String>>,
+    /// The `Name` of the entity, i.e. to find it in tests
+    name: Option<Reactive<Label>>,
+    on_click: Option<Handler>,
+    on_press: Option<Handler>,
+    on_release: Option<Handler>,
+    on_pointer_enter: Option<Handler>,
+    on_pointer_leave: Option<Handler>,
+    /// Called with whether the pointer is over the element
+    on_hover: Option<WithDeps<fn(bool)>>,
+    on_drag: Option<Handler>,
+    on_scroll: Option<Handler>,
 }
 
-ui_props! {
-    display: Reactive<DisplayMode>,
-    box_sizing: Reactive<ByName<BoxSizing>>,
-    position_type: Reactive<ByName<PositionType>>,
-    overflow: Reactive<OverflowMode>,
-    left: Reactive<Size>,
-    right: Reactive<Size>,
-    top: Reactive<Size>,
-    bottom: Reactive<Size>,
-    width: Reactive<Size>,
-    height: Reactive<Size>,
-    min_width: Reactive<Size>,
-    min_height: Reactive<Size>,
-    max_width: Reactive<Size>,
-    max_height: Reactive<Size>,
-    aspect_ratio: Reactive<f64>,
-    align_items: Reactive<ByName<AlignItems>>,
-    justify_items: Reactive<ByName<JustifyItems>>,
-    align_self: Reactive<ByName<AlignSelf>>,
-    justify_self: Reactive<ByName<JustifySelf>>,
-    align_content: Reactive<ByName<AlignContent>>,
-    justify_content: Reactive<ByName<JustifyContent>>,
-    direction: Reactive<ByName<InlineDirection>>,
-    margin: Reactive<Sides>,
-    padding: Reactive<Sides>,
-    border: Reactive<Sides>,
-    border_radius: Reactive<Corners>,
-    flex_direction: Reactive<ByName<FlexDirection>>,
-    flex_wrap: Reactive<ByName<FlexWrap>>,
-    flex_grow: Reactive<f64>,
-    flex_shrink: Reactive<f64>,
-    flex_basis: Reactive<Size>,
-    row_gap: Reactive<Size>,
-    column_gap: Reactive<Size>,
-    grid_auto_flow: Reactive<ByName<GridAutoFlow>>,
-    background_color: Reactive<ColorValue>,
-    border_color: Reactive<ColorValue>,
-    z_index: Reactive<f64>,
-    /// The text of a text element
-    text: Reactive<Label>,
-    font_size: Reactive<f64>,
-    /// The colour of text
-    color: Reactive<ColorValue>,
-    /// The path of an image asset
-    image: Reactive<String>,
-    /// The `Name` of the entity, i.e. to find it in tests
-    name: Reactive<Label>,
-    on_click: Handler,
-    on_press: Handler,
-    on_release: Handler,
-    on_pointer_enter: Handler,
-    on_pointer_leave: Handler,
-    /// Called with whether the pointer is over the element
-    on_hover: WithDeps<fn(bool)>,
-    on_drag: Handler,
-    on_scroll: Handler,
+/// The key of an element and its properties, sorted so that diffs walk them in the same order, from a table of
+/// properties ([`UiProps`]) or the text of a text element.
+pub(crate) fn parse_props(
+    props: ScriptValue,
+    world: &WorldGuard,
+) -> Result<(Option<String>, Vec<(Prop, PropValue)>), InteropError> {
+    let map = match props {
+        ScriptValue::Unit => return Ok((None, Vec::new())),
+        ScriptValue::String(text) => {
+            return Ok((
+                None,
+                vec![(Prop::Text, PropValue::Static(ScriptValue::String(text)))],
+            ));
+        }
+        ScriptValue::Map(map) => map,
+        ScriptValue::List(list) if list.is_empty() => return Ok((None, Vec::new())),
+        other => {
+            return Err(InteropError::string(format!(
+                "expected a table of properties, got: {other:?}"
+            )));
+        }
+    };
+    let mut key = None;
+    let mut props = Vec::with_capacity(map.len());
+    for (name, value) in map {
+        if name == "key" {
+            key = Some(crate::element::key_of(&value, world)?);
+            continue;
+        }
+        let prop = Prop::parse(&name)
+            .ok_or_else(|| InteropError::string(format!("unknown ui property `{name}`")))?;
+        let handler = matches!(prop, Prop::On(_));
+        let value = match value {
+            // a function with its dependencies, see `WithDeps`
+            ScriptValue::List(list) if matches!(list.front(), Some(ScriptValue::Function(_))) => {
+                ScriptValue::Function(WithDeps::<fn()>::curry(list)?)
+            }
+            value => value,
+        };
+        let value = match value {
+            ScriptValue::Function(f) if handler => PropValue::Handler(f),
+            ScriptValue::Function(f) => PropValue::Bound(f),
+            value if handler => {
+                return Err(InteropError::string(format!(
+                    "`{name}` must be a function, got: {value:?}"
+                )));
+            }
+            ScriptValue::Reference(r) => match r.downcast::<UiValue>(world.clone()) {
+                Ok(value) => PropValue::Expr(value.0),
+                Err(_) => PropValue::Static(ScriptValue::Reference(r)),
+            },
+            value => PropValue::Static(value),
+        };
+        props.push((prop, value));
+    }
+    props.sort_by_key(|(p, _)| *p);
+    Ok((key, props))
 }

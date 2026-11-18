@@ -50,8 +50,7 @@ use bevy_mod_scripting_bindings::{
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_reflect::{GetTypeRegistration, TypePath, TypeRegistry, Typed};
-use element::{Prop, PropValue};
-use props::{As, Element, UiProps};
+use props::{As, Element, UiProps, parse_props};
 
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_ecs::{
@@ -301,12 +300,9 @@ fn component_element(
 fn region(
     ctx: &FunctionCallContext,
     kind: ElementKind,
-    props: Option<UiProps>,
+    props: Option<As<UiProps>>,
 ) -> Result<Element, InteropError> {
-    let props = match props {
-        Some(props) => props.into_props(&ctx.world()?)?.1,
-        None => Vec::new(),
-    };
+    let props = parse_props(props.map_or(ScriptValue::Unit, |p| p.0), &ctx.world()?)?.1;
     Ok(Element::new(new_element(
         &*runtime(ctx)?,
         ElementData {
@@ -336,15 +332,12 @@ impl NamespaceMembers {
     /// * `element`: The element.
     fn node(
         ctx: FunctionCallContext,
-        props: Option<UiProps>,
+        props: Option<As<UiProps>>,
         children: Option<props::Children>,
     ) -> Result<Element, InteropError> {
         let world = ctx.world()?;
         let runtime = runtime(&ctx)?;
-        let (key, props) = match props {
-            Some(props) => props.into_props(&world)?,
-            None => (None, Vec::new()),
-        };
+        let (key, props) = parse_props(props.map_or(ScriptValue::Unit, |p| p.0), &world)?;
         let children = match children {
             Some(children) => elements_from_script(&children.0, &runtime)?,
             None => Vec::new(),
@@ -369,18 +362,9 @@ impl NamespaceMembers {
     /// * `element`: The element.
     fn text(
         ctx: FunctionCallContext,
-        props: Union<String, UiProps>,
+        props: As<Union<String, UiProps>>,
     ) -> Result<Element, InteropError> {
-        let (key, props) = match props.into_left() {
-            Ok(text) => (
-                None,
-                vec![(
-                    Prop::Text,
-                    PropValue::Static(ScriptValue::String(text.into())),
-                )],
-            ),
-            Err(props) => props.into_props(&ctx.world()?)?,
-        };
+        let (key, props) = parse_props(props.0, &ctx.world()?)?;
         Ok(Element::new(new_element(
             &*runtime(&ctx)?,
             ElementData {
@@ -399,8 +383,8 @@ impl NamespaceMembers {
     /// * `props`: Its properties.
     /// Returns:
     /// * `element`: The element.
-    fn image(ctx: FunctionCallContext, props: UiProps) -> Result<Element, InteropError> {
-        let (key, props) = props.into_props(&ctx.world()?)?;
+    fn image(ctx: FunctionCallContext, props: As<UiProps>) -> Result<Element, InteropError> {
+        let (key, props) = parse_props(props.0, &ctx.world()?)?;
         Ok(Element::new(new_element(
             &*runtime(&ctx)?,
             ElementData {
@@ -840,7 +824,7 @@ impl NamespaceMembers {
         ctx: FunctionCallContext,
         items: SignalOf<Vec<A>>,
         f: WithDeps<fn(ValueOf<A, ScriptValue>) -> Element>,
-        props: Option<UiProps>,
+        props: Option<As<UiProps>>,
     ) -> Result<Element, InteropError> {
         let kind = ElementKind::Each(items.0.0, f.into_inner(), false);
         region(&ctx, kind, props)
@@ -860,7 +844,7 @@ impl NamespaceMembers {
         ctx: FunctionCallContext,
         items: SignalOf<Vec<A>>,
         f: WithDeps<fn(As<V<UiValue>>) -> Element>,
-        props: Option<UiProps>,
+        props: Option<As<UiProps>>,
     ) -> Result<Element, InteropError> {
         let kind = ElementKind::Each(items.0.0, f.into_inner(), true);
         region(&ctx, kind, props)
@@ -877,7 +861,7 @@ impl NamespaceMembers {
     fn show(
         ctx: FunctionCallContext,
         f: WithDeps<fn() -> Option<Element>>,
-        props: Option<UiProps>,
+        props: Option<As<UiProps>>,
     ) -> Result<Element, InteropError> {
         region(&ctx, ElementKind::Dynamic(f.into_inner()), props)
     }
