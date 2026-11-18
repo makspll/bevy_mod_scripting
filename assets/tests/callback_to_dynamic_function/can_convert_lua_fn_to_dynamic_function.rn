@@ -1,13 +1,17 @@
 pub fn main() {
     let test_utils = import_namespace("test_utils");
     let my_fn = test_utils.into_script_function(
-        |text, list| {
+        |text, list, range| {
             println!("{} {:?}", text, list);
             assert!(text == "test", "string is not test got: {}", text);
             assert!(list[0] == "test", "list[0] is not test, got: {}", list[0]);
+            assert!(range.start == 1, "range.start is not 1, got: {}", range.start);
+            42
         }
     );
 
-    // functions which come from scripts are called with `.call(..)`, as Rune can't know how many arguments they take
-    my_fn.call("test", ["test"]);
+    // functions which come from scripts are called with `.call(..)`, as Rune can't know how many arguments they take,
+    // and get Rune's own values, i.e. a range, which has no script value
+    let result = my_fn.call("test", ["test"], 1..2);
+    assert!(result == 42, "result is not 42, got: {}", result);
 }
