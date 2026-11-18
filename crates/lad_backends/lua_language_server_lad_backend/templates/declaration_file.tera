@@ -50,7 +50,8 @@
 {{- self::function_param(arg=param) -}}
 {%- endfor -%}
 {%- for overload in function.overloads -%}
----@overload fun({% for param in overload.params %}{% if param.variadic %}...: {{ self::lua_type(ty=param.ty.value) }}{% else %}{{ param.name }}{% if param.optional %}?{% endif %}: {{ self::lua_type(ty=param.ty) }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}): {% for return in overload.returns %}{{ self::lua_type(ty=return) }}{% if not loop.last %}, {% endif %}{% endfor %}
+{#- optional parameters are spelled `name: T | nil`: LuaLS 3.19 adds the type of a `name?: T` left out of a call to what it returns -#}
+---@overload fun({% for param in overload.params %}{% if param.variadic %}...: {{ self::lua_type(ty=param.ty.value) }}{% else %}{{ param.name }}: {{ self::lua_type(ty=param.ty) }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}): {% for return in overload.returns %}{{ self::lua_type(ty=return) }}{% if not loop.last %}, {% endif %}{% endfor %}
 {% endfor -%}
 {%- for return in function.returns -%}
 ---@return {{ self::lua_type(ty=return, return_position=true) }}

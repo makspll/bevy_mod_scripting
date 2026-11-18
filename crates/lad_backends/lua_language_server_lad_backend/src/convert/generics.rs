@@ -24,6 +24,7 @@ pub(super) fn generic_type_modules(ladfile: &LadFile) -> Vec<LuaModule> {
         let mut fields = layout_fields(ladfile, &generic_type.layout);
         let (variant_fields, variant_modules) = variant_modules(ladfile, generic_type, &name);
         fields.extend(variant_fields);
+        fields.extend(generic_functions(ladfile, generic_type, &name));
         modules.push(LuaModule {
             name: generic_type.identifier.clone(),
             table: generic_type.identifier.clone(),
@@ -43,6 +44,138 @@ pub(super) fn generic_type_modules(ladfile: &LadFile) -> Vec<LuaModule> {
         modules.extend(instantiation_modules(ladfile, generic_type, &name));
     }
     modules
+}
+
+/// The instantiation of the generic type with its own parameters, i.e. `Signal<A>`, which the functions of the generic
+/// type itself are registered on, see [`generic_functions`].
+fn is_identity(instantiation: &LadInstantiation) -> bool {
+    !instantiation.args.is_empty()
+        && instantiation
+            .args
+            .iter()
+            .all(|arg| matches!(arg, LadTypeKind::Val(LadNamedType::Param { .. })))
+}
+
+/// The functions of the generic type itself, registered on the instantiation with its own parameters (`Signal<A>`), as fields
+/// of the generic class in terms of its parameters, i.e. `---@field get fun(self: reactive_ui.Signal<T>): T`.
+///
+/// Fields, as LuaLS only applies the arguments of an instantiation to the functions of a generic class given as fields.
+fn generic_functions(
+    ladfile: &LadFile,
+    generic_type: &LadGenericType,
+    name: &str,
+) -> Vec<ClassField> {
+    let Some(instantiation) = generic_type.instantiations.iter().find(|i| is_identity(i)) else {
+        return vec![];
+    };
+    // the markers standing for the parameters, by their short name as functions name them, to the parameters' names
+    let renames = instantiation
+        .args
+        .iter()
+        .zip(&generic_type.params)
+        .filter_map(|(arg, param)| match arg {
+            LadTypeKind::Val(LadNamedType::Param { param: marker }) => Some((
+                marker.rsplit("::").next().unwrap_or(marker).to_owned(),
+                param.clone(),
+            )),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    let rename = |ty: LuaType| rename_aliases(ty, &renames);
+    let class = LuaType::Generic {
+        name: name.to_owned(),
+        args: generic_type
+            .params
+            .iter()
+            .map(|p| LuaType::Alias(p.clone()))
+            .collect(),
+    };
+    instantiation
+        .associated_functions
+        .iter()
+        .filter_map(|id| ladfile.functions.get(id))
+        // a generic type is constructed by the functions making it, i.e. `signal`
+        .filter(|function| function.identifier != "new")
+        .filter_map(
+            |function| match lad_function_to_lua_function(ladfile, function) {
+                Ok(lua_function) => Some(lua_function),
+                Err(err) => {
+                    log::warn!(
+                        "Error converting function {} for {name}: {err}. Ignoring function.",
+                        function.identifier
+                    );
+                    None
+                }
+            },
+        )
+        .map(|function| {
+            let parameters = function
+                .params
+                .into_iter()
+                .enumerate()
+                .map(|(i, param)| match i {
+                    0 if function.has_self => ("self".to_owned(), class.clone()),
+                    _ => (param.name, rename(param.ty)),
+                })
+                .collect();
+            let returns =
+                function
+                    .returns
+                    .into_iter()
+                    .next()
+                    .map(rename)
+                    .unwrap_or(LuaType::Primitive(
+                        crate::lua_declaration_file::LuaPrimitiveType::Nil,
+                    ));
+            ClassField {
+                name: function.name,
+                ty: LuaType::Function(crate::lua_declaration_file::FunctionSignatureShort {
+                    parameters,
+                    return_type: Box::new(returns),
+                }),
+                scope: FieldScope::Public,
+                optional: false,
+                description: function.documentation,
+            }
+        })
+        .collect()
+}
+
+/// The type with the given aliases renamed, i.e. markers to the parameters they stand for.
+fn rename_aliases(ty: LuaType, renames: &[(String, String)]) -> LuaType {
+    let rename = |ty: LuaType| rename_aliases(ty, renames);
+    match ty {
+        LuaType::Alias(alias) => LuaType::Alias(
+            renames
+                .iter()
+                .find(|(from, _)| *from == alias)
+                .map(|(_, to)| to.clone())
+                .unwrap_or(alias),
+        ),
+        LuaType::Union(types) => LuaType::Union(types.into_iter().map(rename).collect()),
+        LuaType::Array(ty) => LuaType::Array(Box::new(rename(*ty))),
+        LuaType::Tuple(types) => LuaType::Tuple(types.into_iter().map(rename).collect()),
+        LuaType::Variadic(ty) => LuaType::Variadic(Box::new(rename(*ty))),
+        LuaType::Dictionary { key, value } => LuaType::Dictionary {
+            key: Box::new(rename(*key)),
+            value: Box::new(rename(*value)),
+        },
+        LuaType::Function(signature) => {
+            LuaType::Function(crate::lua_declaration_file::FunctionSignatureShort {
+                parameters: signature
+                    .parameters
+                    .into_iter()
+                    .map(|(name, ty)| (name, rename(ty)))
+                    .collect(),
+                return_type: Box::new(rename(*signature.return_type)),
+            })
+        }
+        LuaType::Generic { name, args } => LuaType::Generic {
+            name,
+            args: args.into_iter().map(rename).collect(),
+        },
+        ty => ty,
+    }
 }
 
 /// The fields of the class of a generic enum for its variants, and the class of each variant, generic over the same
@@ -107,7 +240,12 @@ fn instantiation_modules(
     name: &str,
 ) -> Vec<LuaModule> {
     let mut modules = vec![];
-    for instantiation in &generic_type.instantiations {
+    // the functions of the generic type itself are on its class, see `generic_functions`
+    for instantiation in generic_type
+        .instantiations
+        .iter()
+        .filter(|i| !is_identity(i))
+    {
         let Some(class_name) = instantiation_class_name(ladfile, generic_type, instantiation)
         else {
             continue;
