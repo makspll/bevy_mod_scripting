@@ -58,7 +58,7 @@ A property is a plain value, a function (re-run when what it read changes), or a
 | `text` | the text of a `ui.text` |
 | `font_size`, `color` | text size in pixels and colour |
 | `image` | the path of an image asset |
-| `name` | the entity's `Name`, to find it with `ui.find` or from Rust |
+| `name` | the entity's `Name`, to find it in [tests](./testing.md) or from Rust |
 | `key` | identifies the element among its siblings when a region re-runs |
 
 A wrong value is an error naming the property and listing what it accepts.
@@ -138,16 +138,13 @@ ui.node(#{ on_click: [|selected, name, _event| selected.set(name), selected, nam
 
 This is for Rune, where they are required for signals and entities, see below. The Lua declarations only offer the function: Lua functions capture what they need.
 
-## Mounting and testing
+## Mounting
 
 | | |
 |---|---|
 | `ui.render(key, Component(props))` | Shows a component under a new root entity filling the window, returned. Calling it again with the key updates it. Call it from `on_script_loaded` |
-| `ui.find(root, name)` | The entity with the `Name` below `root` |
-| `ui.describe(entity)` | What an element shows: its text, colours, layout |
-| `ui.interact(entity, "click")` | What a pointer event on the element would do |
 
-The UI of a script is removed when the script is unloaded.
+The UI of a script is removed when the script is unloaded. To find elements, click them and check what they show from a test, see [testing](./testing.md).
 
 ## Rune
 

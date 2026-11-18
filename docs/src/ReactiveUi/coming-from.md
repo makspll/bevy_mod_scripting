@@ -19,6 +19,7 @@ Components, props, keys, context and effects are what you expect. The one big di
 | `createContext`, `<Ctx.Provider value>`, `useContext` | `ui.create_context`, `ui.provide`, `ui.use_context` |
 | `onClick={e => ..}` | `on_click = function(event) .. end` |
 | `style={{ flexDirection: "row" }}` | `flex_direction = "Row"`, directly in the props |
+| Testing Library: `render(<App />)`, `screen.getByText("+1")`, `fireEvent.click` | `t.render(App())`, `s:get_by_text("+1")`, `s:click(..)`, see [testing](./testing.md) |
 
 ```lua
 local Counter = ui.component("Counter", function(props)

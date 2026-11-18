@@ -30,7 +30,7 @@ end
 
 The API is typed: with the [Lua declarations](../Summary/controlling-script-bindings.md#typed-arguments) the language server checks properties and their values, the props components are called with, and what signals hold (`count:set("x")` above is flagged).
 
-Coming from another UI framework? [Start here](./coming-from.md). To see it running, `cargo run --example reactive_ui --features lua54` shows an inventory of 500 items which Rust restocks and the UI edits, with the time each UI update took (`examples/reactive_ui.rs`, `assets/scripts/inventory_ui.lua`).
+Coming from another UI framework? [Start here](./coming-from.md). Testing a UI? See [testing](./testing.md). To see it running, `cargo run --example reactive_ui --features lua54` shows an inventory of 500 items which Rust restocks and the UI edits, with the time each UI update took (`examples/reactive_ui.rs`, `assets/scripts/inventory_ui.lua`).
 
 ## The model in five lines
 

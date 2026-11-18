@@ -16,6 +16,7 @@
 - [Reactive UI](./ReactiveUi/introduction.md)
     - [Coming From Another Framework](./ReactiveUi/coming-from.md)
     - [Performance](./ReactiveUi/performance.md)
+    - [Testing](./ReactiveUi/testing.md)
     - [Reference](./ReactiveUi/reference.md)
 - [Script Pipeline](./ScriptPipeline/pipeline.md)
 - [Editor Support](./ScriptTooling/introduction.md)
