@@ -23,6 +23,7 @@ pub mod script_value;
 pub mod static_type;
 pub mod system_set;
 pub mod type_data;
+pub mod value_type;
 pub mod world_extensions;
 
 pub use allocator::*;
@@ -47,6 +48,7 @@ pub use script_value::*;
 pub use static_type::*;
 pub use system_set::*;
 pub use type_data::*;
+pub use value_type::*;
 pub use world_extensions::*;
 
 /// Paths the derives of `bevy_mod_scripting_derive` use, which don't depend on what the deriving crate imports.

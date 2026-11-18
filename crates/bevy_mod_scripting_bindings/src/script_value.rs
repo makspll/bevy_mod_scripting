@@ -9,7 +9,7 @@ use bevy_reflect::Reflect;
 use std::{any::TypeId, borrow::Cow, collections::VecDeque};
 
 use super::{
-    ReflectReference,
+    OwnedValue, ReflectReference,
     function::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
 };
 
@@ -39,6 +39,8 @@ pub enum ScriptValue {
     Map(HashMap<String, ScriptValue>),
     /// Represents a reference to a value.
     Reference(ReflectReference),
+    /// A copy of a value type the script owns, see [`crate::ReflectScriptValueType`].
+    Owned(OwnedValue),
     /// Represents a type itself, i.e. the [`crate::StaticTypeRef`] scripts use to reach a type's static members.
     ///
     /// Unlike a reference, a type carries no data, so it never allocates.
@@ -110,6 +112,7 @@ impl DisplayWithTypeInfo for ScriptValue {
                 f.write_str("}")
             }
             ScriptValue::Reference(v) => v.display_with_type_info(f, type_info_provider),
+            ScriptValue::Owned(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Type(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::FunctionMut(v) => v.display_with_type_info(f, type_info_provider),
             ScriptValue::Function(v) => v.display_with_type_info(f, type_info_provider),
@@ -157,6 +160,7 @@ impl ScriptValue {
             ScriptValue::List(_) => "List".to_owned(),
             ScriptValue::Tuple(_) => "Tuple".to_owned(),
             ScriptValue::Reference(_) => "Reference".to_owned(),
+            ScriptValue::Owned(_) => "Owned".to_owned(),
             ScriptValue::Type(_) => "Type".to_owned(),
             ScriptValue::FunctionMut(_) => "FunctionMut".to_owned(),
             ScriptValue::Function(_) => "Function".to_owned(),

@@ -12,9 +12,12 @@ use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_display::OrFakeId;
 use bevy_mod_scripting_world::WorldGuard;
 
+use bevy_reflect::{PartialReflect, ReflectRef};
+
 use crate::{
-    DynamicScriptFunction, EnumVariantRef, FunctionCallContext, FunctionScope, InteropError,
-    ReflectReference, ScriptValue, WorldExtensions,
+    DynamicScriptFunction, EnumVariantRef, FromScriptErased, FunctionCallContext, FunctionScope,
+    InteropError, OwnedValue, ReferencePart, ReflectReference, ScriptValue, WorldExtensions,
+    copy_into_script,
     world_extensions::{FunctionLookups, Lookups},
 };
 
@@ -114,6 +117,116 @@ pub fn set_index(
     set(ctx, reference, key, value)
 }
 
+/// [`index_name`] for a value owned by the script, see [`OwnedValue`].
+///
+/// Fields are copied out, without the world's access map.
+pub fn index_owned_name(
+    world: WorldGuard,
+    value: &OwnedValue,
+    name: &str,
+    ctx: FunctionCallContext,
+) -> Result<Member, InteropError> {
+    profiling::function_scope!("dispatch::index_owned");
+    let type_id = value.type_id();
+    // functions callable on the value: its type's, then the ones shared by all references
+    let func = Lookups::with(&world, |lookups| {
+        lookups
+            .function([type_id, TypeId::of::<ReflectReference>()], name)
+            .ok()
+    });
+    if let Some(func) = func {
+        return Ok(match is_method(&func, type_id) {
+            true => Member::Method(func),
+            false => Member::Static(ScriptValue::Function(func)),
+        });
+    }
+    if let ReflectRef::Struct(fields) = value.as_reflect().reflect_ref()
+        && let Some(field) = fields.field(name)
+    {
+        return copy_into_script(field, world).map(Member::Static);
+    }
+    index_owned(
+        world,
+        value,
+        ScriptValue::String(Cow::Owned(name.to_owned())),
+        ctx,
+    )
+}
+
+/// [`index`] for a value owned by the script, see [`index_owned_name`].
+pub fn index_owned(
+    world: WorldGuard,
+    value: &OwnedValue,
+    key: ScriptValue,
+    ctx: FunctionCallContext,
+) -> Result<Member, InteropError> {
+    let key = match key.as_string() {
+        Ok(name) if value.as_reflect().reflect_ref().as_struct().is_err() => {
+            ScriptValue::String(name)
+        }
+        Ok(name) => return index_owned_name(world, value, &name, ctx),
+        Err(key) => key,
+    };
+    let part = owned_path_part(&world, key, &ctx)?;
+    let field = {
+        let registry = world.type_registry().read();
+        part.reflect_element(value.as_reflect().as_partial_reflect(), &registry)
+    };
+    match field {
+        Ok(Some(field)) => copy_into_script(field, world).map(Member::Static),
+        _ => Err(InteropError::string(format!(
+            "'{part}' is not a member of a value of type {:?}",
+            value.as_reflect().reflect_type_path()
+        ))),
+    }
+}
+
+/// [`set_index`] for a value owned by the script, i.e. `v.x = 1`, which sets the value itself.
+pub fn set_index_owned(
+    world: WorldGuard,
+    value: &mut OwnedValue,
+    key: ScriptValue,
+    new: ScriptValue,
+    ctx: FunctionCallContext,
+) -> Result<(), InteropError> {
+    profiling::function_scope!("dispatch::set_index_owned");
+    let part = owned_path_part(&world, key, &ctx)?;
+    let registry = world.type_registry().clone();
+    let registry = registry.read();
+    let field = part
+        .reflect_element_mut(value.as_reflect_mut().as_partial_reflect_mut(), &registry)
+        .ok()
+        .flatten();
+    let Some(field) = field else {
+        return Err(InteropError::string(format!(
+            "'{part}' is not a member of a value of type {:?}",
+            value.as_reflect().reflect_type_path()
+        )));
+    };
+    let target_type_id = field
+        .get_represented_type_info()
+        .map(|i| i.type_id())
+        .or_fake_id();
+    drop(registry);
+    let new = <Box<dyn PartialReflect>>::from_script_erased(target_type_id, new, world)?;
+    field
+        .try_apply(new.as_partial_reflect())
+        .map_err(InteropError::reflect_apply_error)
+}
+
+fn owned_path_part(
+    world: &WorldGuard,
+    key: ScriptValue,
+    ctx: &FunctionCallContext,
+) -> Result<ReferencePart, InteropError> {
+    ReferencePart::new_from_script_val(key, ctx.language(), Some(world.clone())).map_err(|e| {
+        InteropError::InvalidIndex {
+            index: Box::new(e),
+            reason: Box::new("Cannot convert to valid reflection path".to_owned()),
+        }
+    })
+}
+
 /// Indexes a type, i.e. `Vec3.new` where `Vec3` is a [`ScriptValue::Type`], see [`WorldExtensions::lookup_static_member`].
 pub fn static_index(
     world: WorldGuard,
@@ -148,11 +261,13 @@ pub fn binary(
     ctx: FunctionCallContext,
 ) -> Result<ScriptValue, InteropError> {
     profiling::function_scope!("dispatch::binary");
+    let is_receiver =
+        |v: &ScriptValue| matches!(v, ScriptValue::Reference(_) | ScriptValue::Owned(_));
     let (receiver, other, name) = match (lhs, rhs) {
-        (ScriptValue::Reference(receiver), other) => {
+        (receiver, other) if is_receiver(&receiver) => {
             (receiver, other, operator.script_function_name())
         }
-        (other, ScriptValue::Reference(receiver)) => {
+        (other, receiver) if is_receiver(&receiver) => {
             match operator.reflected_script_function_name() {
                 Some(name) => (receiver, other, name),
                 None => {
@@ -168,13 +283,17 @@ pub fn binary(
             ));
         }
     };
-    let type_id = receiver.tail_type_id(world.clone())?.or_fake_id();
-    world.call_operator(
-        type_id,
-        name,
-        vec![ScriptValue::Reference(receiver), other],
-        ctx,
-    )
+    let type_id = receiver_type_id(&world, &receiver)?;
+    world.call_operator(type_id, name, vec![receiver, other], ctx)
+}
+
+/// The type of a reference or owned value whose functions are called for it.
+fn receiver_type_id(world: &WorldGuard, receiver: &ScriptValue) -> Result<TypeId, InteropError> {
+    Ok(match receiver {
+        ScriptValue::Reference(reference) => reference.tail_type_id(world.clone())?.or_fake_id(),
+        ScriptValue::Owned(owned) => owned.type_id(),
+        _ => TypeId::of::<()>(),
+    })
 }
 
 /// Applies a unary operator to a reference, i.e. `-v`.
@@ -184,14 +303,19 @@ pub fn unary(
     value: ReflectReference,
     ctx: FunctionCallContext,
 ) -> Result<ScriptValue, InteropError> {
+    unary_value(world, operator, ScriptValue::Reference(value), ctx)
+}
+
+/// [`unary`] for a reference or an owned value.
+pub fn unary_value(
+    world: WorldGuard,
+    operator: ScriptOperatorNames,
+    value: ScriptValue,
+    ctx: FunctionCallContext,
+) -> Result<ScriptValue, InteropError> {
     profiling::function_scope!("dispatch::unary");
-    let type_id = value.tail_type_id(world.clone())?.or_fake_id();
-    world.call_operator(
-        type_id,
-        operator.script_function_name(),
-        vec![ScriptValue::Reference(value)],
-        ctx,
-    )
+    let type_id = receiver_type_id(&world, &value)?;
+    world.call_operator(type_id, operator.script_function_name(), vec![value], ctx)
 }
 
 /// The length of a value, i.e. `#v` in Lua.
@@ -206,8 +330,8 @@ pub fn len(
     profiling::function_scope!("dispatch::len");
     match value {
         ScriptValue::List(list) => Ok(ScriptValue::Integer(list.len() as i64)),
-        ScriptValue::Reference(reference) => {
-            unary(world, ScriptOperatorNames::Length, reference, ctx)
+        value @ (ScriptValue::Reference(_) | ScriptValue::Owned(_)) => {
+            unary_value(world, ScriptOperatorNames::Length, value, ctx)
         }
         _ => Ok(ScriptValue::Unit),
     }

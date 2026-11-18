@@ -43,6 +43,10 @@ assert(m:determinant() == 6, "determinant")
 assert(m:transpose() == m, "transpose")
 assert(m * m:inverse() == Mat3.identity(), "inverse")
 assert(m:col(1) == Vec3.new(0, 2, 0), "col")
+-- returned vectors are copies: setting a field changes the copy only
+local col = m:col(1)
+col.y = 5
+assert(col.y == 5 and m:col(1) == Vec3.new(0, 2, 0), "values are copies")
 assert(m + m == m * 2, "mat3 + mat3")
 assert(m - m == m * 0, "mat3 - mat3")
 assert(m / 2 == m * 0.5, "mat3 / number")

@@ -4,8 +4,9 @@ In order for a language to be called "implemented" in BMS, it needs to support t
 
 ## Values
 
-Every `ScriptValue` variant needs a counterpart in the language, in both directions. Two of them are handles rather than data:
+Every `ScriptValue` variant needs a counterpart in the language, in both directions. Three of them are handles rather than data:
 - `ScriptValue::Reference`: a reference to a reflected value, usually a userdata/custom type wrapping `ReflectReference`.
+- `ScriptValue::Owned`: a copy of a value type (`ReflectScriptValueType`, i.e. `Vec3`) owned by the script, indexed with `dispatch::index_owned`/`set_index_owned`, and copied when passed to a function. A language may turn it into a reference with `OwnedValue::into_reference` instead (Rune does).
 - `ScriptValue::Type`: a type itself, i.e. what scripts use to reach a type's static members. It carries only a `TypeId` and never allocates.
 
 Every context gets the builtins as globals, nothing else: `bevy_mod_scripting_bindings::builtins::builtins()` (`import_namespace`, `export_namespace`) plus the language's own `register_callback`:

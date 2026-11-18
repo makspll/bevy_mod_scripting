@@ -18,7 +18,7 @@ use mlua::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, MultiValue, Value, ffi,
 
 use crate::{IntoMluaError, LuaContextAppData};
 
-use super::reference::{LuaReflectReference, LuaTypeRef};
+use super::reference::{LuaOwnedValue, LuaReflectReference, LuaTypeRef};
 
 /// A wrapper around many [`ScriptValue`]'s, used where the potential to return/receive many values separately arises.
 pub struct MultiLuaScriptValue(pub VecDeque<ScriptValue>);
@@ -232,6 +232,10 @@ fn non_table_value(value: Value) -> mlua::Result<ScriptValue> {
         Value::UserData(ud) => {
             if let Ok(type_ref) = ud.borrow::<LuaTypeRef>() {
                 return Ok(ScriptValue::Type(type_ref.0));
+            }
+            if let Ok(owned) = ud.borrow::<LuaOwnedValue>() {
+                // a copy, the script keeps its value
+                return Ok(ScriptValue::Owned(owned.0.clone()));
             }
             let ud = ud.borrow::<LuaReflectReference>().map_err(|e| {
                 mlua::Error::FromLuaConversionError {
@@ -556,6 +560,7 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Float(f) => Value::Number(f),
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
+            ScriptValue::Owned(v) => LuaOwnedValue(v).into_lua(lua)?,
             ScriptValue::Type(type_id) => LuaTypeRef(type_id).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => match function.script_function::<mlua::Function>() {

@@ -114,7 +114,12 @@ impl IntoScript for ReflectReference {
 
 #[profiling::all_functions]
 impl<T: Reflect> IntoScript for V<T> {
-    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        if let Some(value_type) =
+            crate::ReflectScriptValueType::of(&world, std::any::TypeId::of::<T>())
+        {
+            return Ok(ScriptValue::Owned(value_type.own(Box::new(self.0))));
+        }
         // one heap allocation, holding the value and its reference counts
         Ok(ScriptValue::Reference(ReflectReference::new_allocated(
             self.0,

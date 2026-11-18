@@ -151,6 +151,7 @@ impl FromScriptErased for Box<dyn PartialReflect> {
             ScriptValue::Reference(reflect_reference) => {
                 reflect_reference.to_owned_value(world.clone())
             }
+            ScriptValue::Owned(owned) => Ok(owned.into_partial_reflect()),
             value => Err(InteropError::value_mismatch(target, value)),
         }
     }

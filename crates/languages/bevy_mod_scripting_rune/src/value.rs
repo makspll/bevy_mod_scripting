@@ -64,6 +64,8 @@ pub fn to_rune(value: ScriptValue) -> Result<Value, InteropError> {
             new_value(object)?
         }
         ScriptValue::Reference(reference) => new_value(RuneRef(reference))?,
+        // Rune holds references only
+        ScriptValue::Owned(owned) => new_value(RuneRef(owned.into_reference()))?,
         ScriptValue::Type(type_id) => new_value(RuneType(type_id))?,
         ScriptValue::Function(function) => function_to_rune(function, None)?,
         ScriptValue::FunctionMut(function) => {

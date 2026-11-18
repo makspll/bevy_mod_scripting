@@ -1,6 +1,8 @@
 use std::{any::TypeId, borrow::Cow};
 
-use bevy_mod_scripting_bindings::{ReflectReference, WorldGuard, dispatch, error::InteropError};
+use bevy_mod_scripting_bindings::{
+    OwnedValue, ReflectReference, WorldGuard, dispatch, error::InteropError,
+};
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
 use mlua::{FromLua, IntoLua, MetaMethod, UserData, UserDataMethods};
@@ -154,6 +156,114 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(MetaMethod::ToString, |_, self_: LuaReflectReference| {
             profiling::function_scope!("MetaMethod::ToString");
             with_world(|world| dispatch::display(world, self_.0, LUA_CALLER_CONTEXT))
+        });
+    }
+}
+
+/// Lua UserData for a value the script owns, see [`OwnedValue`].
+///
+/// Its fields and methods are reached like a reference's, without the world's access map. Passing it to a function copies it.
+#[derive(Debug, Clone, mlua::FromLua)]
+pub struct LuaOwnedValue(pub OwnedValue);
+
+impl UserData for LuaOwnedValue {
+    fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
+        m.add_meta_function(
+            MetaMethod::Index,
+            |lua, (self_, key): (mlua::UserDataRef<LuaOwnedValue>, mlua::Value)| {
+                profiling::function_scope!("MetaMethod::Index");
+                let member = match &key {
+                    mlua::Value::String(name) => {
+                        let name = name.to_str()?;
+                        with_world(|world| {
+                            dispatch::index_owned_name(world, &self_.0, &name, LUA_CALLER_CONTEXT)
+                        })?
+                    }
+                    _ => {
+                        let key = LuaScriptValue::from_lua(key, lua)?;
+                        with_world(|world| {
+                            dispatch::index_owned(world, &self_.0, key.into(), LUA_CALLER_CONTEXT)
+                        })?
+                    }
+                };
+                match member {
+                    dispatch::Member::Method(func) => registered_function_into_lua(lua, func),
+                    member => LuaScriptValue(member.into()).into_lua(lua),
+                }
+            },
+        );
+
+        m.add_meta_function(
+            MetaMethod::NewIndex,
+            |_,
+             (mut self_, key, value): (
+                mlua::UserDataRefMut<LuaOwnedValue>,
+                LuaScriptValue,
+                LuaScriptValue,
+            )| {
+                profiling::function_scope!("MetaMethod::NewIndex");
+                with_world(|world| {
+                    dispatch::set_index_owned(
+                        world,
+                        &mut self_.0,
+                        key.into(),
+                        value.into(),
+                        LUA_CALLER_CONTEXT,
+                    )
+                })
+            },
+        );
+
+        for (metamethod, operator) in [
+            (MetaMethod::Add, ScriptOperatorNames::Addition),
+            (MetaMethod::Sub, ScriptOperatorNames::Subtraction),
+            (MetaMethod::Mul, ScriptOperatorNames::Multiplication),
+            (MetaMethod::Div, ScriptOperatorNames::Division),
+            (MetaMethod::Mod, ScriptOperatorNames::Remainder),
+            (MetaMethod::Pow, ScriptOperatorNames::Exponentiation),
+            (MetaMethod::Eq, ScriptOperatorNames::Equality),
+            (MetaMethod::Lt, ScriptOperatorNames::LessThanComparison),
+        ] {
+            m.add_meta_function(metamethod, binary_operator(operator));
+        }
+
+        m.add_meta_function(MetaMethod::Unm, |_, self_: LuaScriptValue| {
+            profiling::function_scope!("MetaMethod::Unm");
+            with_world(|world| {
+                dispatch::unary_value(
+                    world,
+                    ScriptOperatorNames::Negation,
+                    self_.into(),
+                    LUA_CALLER_CONTEXT,
+                )
+            })
+            .map(LuaScriptValue)
+        });
+
+        m.add_meta_function(MetaMethod::Len, |_lua, self_: LuaScriptValue| {
+            profiling::function_scope!("MetaMethod::Len");
+            with_world(|world| dispatch::len(world, self_.into(), LUA_CALLER_CONTEXT))
+                .map(LuaScriptValue)
+        });
+
+        // the rest works on a reference to a copy
+        #[cfg(any(
+            feature = "lua54",
+            feature = "lua53",
+            feature = "lua52",
+            feature = "luajit52",
+        ))]
+        m.add_meta_function(MetaMethod::Pairs, |_, self_: LuaOwnedValue| {
+            profiling::function_scope!("MetaMethod::Pairs");
+            with_world(|world| dispatch::iter(world, self_.0.into_reference(), LUA_CALLER_CONTEXT))
+                .map(LuaScriptValue)
+        });
+
+        m.add_meta_function(MetaMethod::ToString, |_, self_: LuaOwnedValue| {
+            profiling::function_scope!("MetaMethod::ToString");
+            with_world(|world| {
+                dispatch::display(world, self_.0.into_reference(), LUA_CALLER_CONTEXT)
+            })
         });
     }
 }

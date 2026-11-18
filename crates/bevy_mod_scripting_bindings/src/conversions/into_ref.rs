@@ -126,6 +126,32 @@ fn into_script_erased(r: &dyn PartialReflect, world: WorldGuard) -> Result<Erase
     Ok(Erased::Reference { somes: 0 })
 }
 
+/// Converts a value which isn't reached through a reference, i.e. the field of a [`crate::OwnedValue`], into a copy:
+/// primitives are converted, value types are copied (see [`crate::ReflectScriptValueType`]), anything else is copied into an allocation.
+pub fn copy_into_script(
+    r: &dyn PartialReflect,
+    world: WorldGuard,
+) -> Result<ScriptValue, InteropError> {
+    if let Erased::Value(value) = into_script_erased(r, world.clone())? {
+        return Ok(value);
+    }
+    let type_id = r
+        .get_represented_type_info()
+        .map(|i| i.type_id())
+        .or_fake_id();
+    if let Some(value_type) = crate::ReflectScriptValueType::of(&world, type_id)
+        && let Some(r) = r.try_as_reflect()
+    {
+        return Ok(ScriptValue::Owned(value_type.copy(r)));
+    }
+    let copy = r
+        .reflect_clone()
+        .map_err(|e| InteropError::string(format!("could not copy a value: {e}")))?;
+    Ok(ScriptValue::Reference(
+        ReflectReference::new_allocated_boxed(copy),
+    ))
+}
+
 /// What a reference converts to, worked out while borrowing the value, so the reference is only moved into the result when needed.
 enum Erased {
     /// A value converted on its own, i.e. a primitive

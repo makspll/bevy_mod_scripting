@@ -208,6 +208,8 @@ impl FromScript for ReflectReference {
     fn from_script(value: ScriptValue, _scope: &CallScope) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Reference(r) => Ok(r),
+            // functions working on any reference get a copy of the value
+            ScriptValue::Owned(owned) => Ok(owned.into_reference()),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<ReflectReference>(),
                 value,
@@ -216,7 +218,7 @@ impl FromScript for ReflectReference {
     }
 
     fn could_convert(value: &ScriptValue) -> bool {
-        matches!(value, ScriptValue::Reference(_))
+        matches!(value, ScriptValue::Reference(_) | ScriptValue::Owned(_))
     }
 }
 
@@ -316,6 +318,7 @@ impl<T: FromReflect> FromScript for V<T> {
                     },
                 }
             }
+            ScriptValue::Owned(owned) => owned.into_typed::<T>().map(|value| V(*value)),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<T>(),
                 value,
@@ -324,7 +327,7 @@ impl<T: FromReflect> FromScript for V<T> {
     }
 
     fn could_convert(value: &ScriptValue) -> bool {
-        matches!(value, ScriptValue::Reference(_))
+        matches!(value, ScriptValue::Reference(_) | ScriptValue::Owned(_))
     }
 }
 
@@ -378,6 +381,8 @@ impl<T: FromReflect> FromScript for R<'_, T> {
                     ))
                 }
             }
+            // the copy is kept by the scope, which the borrow can't outlive
+            ScriptValue::Owned(owned) => Ok(R(scope.hold(owned.downcast::<T>()?))),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<T>(),
                 value,
@@ -386,7 +391,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
     }
 
     fn could_convert(value: &ScriptValue) -> bool {
-        matches!(value, ScriptValue::Reference(_))
+        matches!(value, ScriptValue::Reference(_) | ScriptValue::Owned(_))
     }
 }
 
@@ -465,6 +470,11 @@ impl<T: FromReflect> FromScript for M<'_, T> {
                     ))
                 }
             }
+            // the change would be made to a copy the script never sees
+            ScriptValue::Owned(_) => Err(InteropError::string(format!(
+                "a copied value of type '{}' can't be changed in place by a function, set its fields instead",
+                std::any::type_name::<T>()
+            ))),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<T>(),
                 value,

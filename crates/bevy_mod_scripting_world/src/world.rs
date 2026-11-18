@@ -93,6 +93,8 @@ pub struct CallScope<'w> {
     guard: WorldGuard<'w>,
     /// The claims made through this scope, released when it's dropped
     claims: RefCell<SmallVec<[WorldAccessRange; 4]>>,
+    /// Values owned by the scope, see [`Self::hold`], freed when it's dropped
+    held: RefCell<SmallVec<[*mut dyn Any; 2]>>,
 }
 
 impl<'w> CallScope<'w> {
@@ -100,7 +102,18 @@ impl<'w> CallScope<'w> {
         Self {
             guard,
             claims: Default::default(),
+            held: Default::default(),
         }
+    }
+
+    /// Keeps a value alive as long as this scope, for a borrow of it which lives as long as the scope,
+    /// i.e. an argument borrowing a value which was copied into the call.
+    pub fn hold<T: Any>(&self, value: Box<T>) -> &T {
+        let raw = Box::into_raw(value);
+        self.held.borrow_mut().push(raw as *mut dyn Any);
+        // Safety: the value is only freed when the scope is dropped, which the borrow can't outlive,
+        // and it is never borrowed mutably
+        unsafe { &*raw }
     }
 
     /// The world guard this scope belongs to
@@ -139,6 +152,10 @@ impl Drop for CallScope<'_> {
         for key in self.claims.get_mut().drain(..).rev() {
             // Safety: the borrows made under the claim can't outlive the scope
             unsafe { self.guard.release_access(key) }
+        }
+        for raw in self.held.get_mut().drain(..) {
+            // Safety: made with `Box::into_raw` in `hold`, the borrows of it ended with the scope
+            drop(unsafe { Box::from_raw(raw) });
         }
     }
 }
