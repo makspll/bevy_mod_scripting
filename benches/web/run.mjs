@@ -11,7 +11,7 @@ import { pathToFileURL } from "node:url";
 const ROUNDS = 3;
 const WARMUP_MS = 2000;
 const MEASURE_MS = 8000;
-const frameworks = ["react", "solid"];
+const frameworks = ["react", "solid", "solid_h"];
 const scenarios = ["mount", "health", "all"];
 
 const executablePath = process.env.CHROMIUM ?? execSync("command -v chromium").toString().trim();

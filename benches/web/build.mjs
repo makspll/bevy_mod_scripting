@@ -19,16 +19,17 @@ const solidJsx = {
 };
 
 await mkdir("dist", { recursive: true });
-for (const app of ["react", "solid"]) {
+// `solid_h` is Solid without its compiler, see src/solid_h.js
+for (const app of ["react", "solid", "solid_h"]) {
     await build({
-        entryPoints: [`src/${app}.jsx`],
+        entryPoints: [app === "solid_h" ? "src/solid_h.js" : `src/${app}.jsx`],
         bundle: true,
         minify: true,
         format: "iife",
         outfile: `dist/${app}.js`,
         jsx: "automatic",
         define: { "process.env.NODE_ENV": '"production"' },
-        conditions: app === "solid" ? ["browser", "solid"] : [],
+        conditions: app.startsWith("solid") ? ["browser", "solid"] : [],
         plugins: app === "solid" ? [solidJsx] : [],
         logLevel: "warning",
     });
