@@ -104,3 +104,91 @@ impl<F: GetFunctionTypeDependencies<F>> GetTypeDependencies for FunctionOf<F> {
         F::register_type_dependencies(registry)
     }
 }
+
+/// A [`FunctionOf<F>`], or a list of a function and values it is called with before its own arguments:
+/// `{ f, a, b }` is `f` called as `f(a, b, ..)`.
+///
+/// It's for languages whose closures can't capture what the function needs (Rune closures handed to BMS only
+/// capture constants). It is documented as `F` only, so typed languages are offered the plain function.
+pub struct WithDeps<F>(pub FunctionOf<F>);
+
+impl<F> WithDeps<F> {
+    /// Unwrap the function, called with its dependencies first.
+    pub fn into_inner(self) -> DynamicScriptFunction {
+        self.0.0
+    }
+
+    /// The function of a list of a function and its dependencies, `{ f, a, b }`, called with them first.
+    pub fn curry(
+        mut list: std::collections::VecDeque<ScriptValue>,
+    ) -> Result<DynamicScriptFunction, InteropError> {
+        let function = match list.pop_front() {
+            Some(ScriptValue::Function(function)) => function,
+            other => {
+                return Err(InteropError::string(format!(
+                    "expected a function, or a list of a function and its dependencies, got a list starting with: {other:?}"
+                )));
+            }
+        };
+        if list.is_empty() {
+            return Ok(function);
+        }
+        let deps = list;
+        Ok(DynamicScriptFunction::from(
+            move |context, mut args: std::collections::VecDeque<ScriptValue>| {
+                for dep in deps.iter().rev() {
+                    args.push_front(dep.clone());
+                }
+                function
+                    .call(args, context)
+                    .unwrap_or_else(ScriptValue::Error)
+            },
+        ))
+    }
+}
+
+impl<F> Clone for WithDeps<F> {
+    fn clone(&self) -> Self {
+        WithDeps(self.0.clone())
+    }
+}
+
+impl<F> FromScript for WithDeps<F> {
+    type This<'w> = Self;
+
+    fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
+        let ScriptValue::List(list) = value else {
+            return FunctionOf::from_script(value, scope).map(WithDeps);
+        };
+        Self::curry(list).map(|f| WithDeps(FunctionOf::new(f)))
+    }
+
+    fn could_convert(value: &ScriptValue) -> bool {
+        match value {
+            ScriptValue::List(list) => matches!(list.front(), Some(ScriptValue::Function(_))),
+            value => FunctionOf::<F>::could_convert(value),
+        }
+    }
+}
+
+impl<F> IntoScript for WithDeps<F> {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        self.0.into_script(world)
+    }
+}
+
+impl<F> ArgMeta for WithDeps<F> {}
+
+impl<F: GetFunctionInfo<F>> TypedThrough for WithDeps<F> {
+    fn through_type_info() -> ThroughTypeInfo {
+        FunctionOf::<F>::through_type_info()
+    }
+}
+
+impl<F: GetFunctionTypeDependencies<F>> GetTypeDependencies for WithDeps<F> {
+    type Underlying = DynamicScriptFunction;
+
+    fn register_type_dependencies(registry: &mut TypeRegistry) {
+        F::register_type_dependencies(registry)
+    }
+}

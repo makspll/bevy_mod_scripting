@@ -1,9 +1,7 @@
 mod generics;
 
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
-use generics::{
-    erase_generics, generic_type_modules, instantiation_class_name, mentions_generic, names_generic,
-};
+use generics::{erase_generics, generic_type_modules, instantiation_class_name, names_generic};
 use std::borrow::Cow;
 
 use indexmap::{IndexMap, IndexSet};
@@ -762,22 +760,9 @@ pub fn lad_function_to_lua_function(
         });
     }
 
+    // generic functions are declared typed only: an untyped overload would be matched by typed arguments too, which
+    // widens what every call returns (`ReflectReference | Signal<T>`). A value of unknown type is cast where it is passed
     let (params, returns) = signature(&|kind| lad_instance_to_lua_type(ladfile, kind))?;
-
-    // what a generic function takes can also be passed untyped, i.e. a handle of unknown type, which LuaLS can only
-    // express as an overload, as overloads can't be generic. Not when the type itself is passed: types are their
-    // registrations (see `registration_class`), so typed ones would match the overload too, widening what it returns
-    let takes_generics = function
-        .arguments
-        .iter()
-        .any(|argument| mentions_generic(&argument.kind, &function.generics));
-    let takes_type = function.arguments.iter().any(|argument| {
-        matches!(&argument.kind, LadTypeKind::Type { of: LadNamedType::Param { param }, .. } if function.generics.contains(param))
-    });
-    let overloads = match takes_generics && !takes_type {
-        true => vec![overload(signature(&erased)?)],
-        false => vec![],
-    };
 
     Ok(FunctionSignature {
         name,
@@ -787,7 +772,7 @@ pub fn lad_function_to_lua_function(
         deprecated: false,
         nodiscard: false,
         package: false,
-        overloads,
+        overloads: vec![],
         generics: function.generics.clone(),
         documentation: function.documentation.as_ref().map(|d| d.to_string()),
         has_self: function.receiver,

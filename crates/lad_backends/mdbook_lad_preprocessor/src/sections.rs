@@ -40,6 +40,66 @@ fn print_linked_type(
     )
 }
 
+/// Lists of more names than this are folded in tables of fields, see [`print_field_type`]
+const FOLDED_NAMES: usize = 5;
+
+/// The names of a union of names, i.e. the variants of `JustifyContent` passed by name
+fn names_in(kind: &LadTypeKind) -> Option<usize> {
+    match kind {
+        LadTypeKind::Union(alternatives)
+            if alternatives
+                .iter()
+                .all(|a| matches!(a, LadTypeKind::Literal(_))) =>
+        {
+            Some(alternatives.len())
+        }
+        _ => None,
+    }
+}
+
+/// The type of a field in a table of fields: each alternative of a union on a line of its own, long lists of names
+/// folded, and whether the field is optional last.
+fn print_field_type(ladfile: &LadFile, kind: &LadTypeKind, types_directory: &str) -> String {
+    let (kind, optional) = match kind {
+        LadTypeKind::Option(inner) => (&**inner, true),
+        kind => (kind, false),
+    };
+    let alternatives = match kind {
+        LadTypeKind::Union(alternatives) if names_in(kind).is_none() => {
+            alternatives.iter().collect()
+        }
+        kind => vec![kind],
+    };
+    let mut lines = alternatives
+        .iter()
+        .enumerate()
+        .map(|(i, alternative)| match alternative {
+            LadTypeKind::Union(_) if names_in(alternative) > Some(FOLDED_NAMES) => format!(
+                "<details><summary>one of {} names</summary>{}</details>",
+                names_in(alternative).unwrap_or_default(),
+                print_linked_type(ladfile, *alternative, types_directory)
+            ),
+            // a function returning the names listed above, i.e. a property bound to a function
+            LadTypeKind::Function { params, returns }
+                if names_in(returns) > Some(FOLDED_NAMES)
+                    && alternatives[..i].contains(&&**returns) =>
+            {
+                let params = params
+                    .iter()
+                    .map(|p| print_linked_type(ladfile, p, types_directory))
+                    .collect::<Vec<_>>();
+                format!("fn({}) -\\> one of the names above", params.join(", "))
+            }
+            alternative => print_linked_type(ladfile, *alternative, types_directory),
+        })
+        .collect::<Vec<_>>();
+    if optional {
+        lines.push("*optional*".to_owned());
+    }
+    // a folded list is a block, which starts a line of its own
+    lines.join("<br>").replace("</details><br>", "</details>")
+}
+
 fn print_type(
     ladfile: &LadFile,
     type_: &impl LadVisitable,
@@ -934,7 +994,7 @@ fn layout_markdown(
 ) {
     let types_directory = types_directory.to_string_lossy();
     let types_directory = types_directory.trim_end_matches('/');
-    let print = |kind: &LadTypeKind| print_linked_type(ladfile, kind, types_directory);
+    let print = |kind: &LadTypeKind| print_field_type(ladfile, kind, types_directory);
     match layout {
         LadTypeLayout::Opaque => {
             builder.block(

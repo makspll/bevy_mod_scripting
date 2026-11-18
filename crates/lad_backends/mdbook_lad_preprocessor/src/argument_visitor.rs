@@ -249,7 +249,8 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     }
 
     fn visit_param(&mut self, param: &str) {
-        self.buffer.text(param);
+        // markers keep their path in the arguments of instantiations, i.e. `Signal<bevy_mod_scripting_bindings::..::A>`
+        self.buffer.text(param.rsplit("::").next().unwrap_or(param));
     }
 
     fn visit_type(&mut self, of: &ladfile::LadNamedType, _erased: &ladfile::LadTypeKind) {

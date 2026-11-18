@@ -740,6 +740,13 @@ impl<'t> LadFileBuilder<'t> {
                 .map(|arg| &mut arg.kind),
         );
 
+        // only types have operators, a function of a namespace named like one (`lt`) is a plain function
+        let operator = match namespace {
+            LadFunctionNamespace::Type(_) | LadFunctionNamespace::Variant { .. } => {
+                ScriptOperatorNames::parse(identifier)
+            }
+            LadFunctionNamespace::Global | LadFunctionNamespace::Namespace { .. } => None,
+        };
         let lad_function = LadFunction {
             identifier: identifier.to_owned().into(),
             overload_index,
@@ -750,7 +757,7 @@ impl<'t> LadFileBuilder<'t> {
             documentation: (!main_docstring.is_empty()).then_some(main_docstring.into()),
             namespace,
             metadata: LadFunctionMetadata {
-                operator: ScriptOperatorNames::parse(identifier),
+                operator,
                 misc: Default::default(),
             },
         };
