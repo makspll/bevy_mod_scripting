@@ -1542,26 +1542,41 @@ impl Xtasks {
         let definitions = workspace.join("assets").join("definitions");
         let luals = Self::luals_dir().join("bin").join("lua-language-server");
         let mut diagnostics: HashMap<String, Vec<serde_json::Value>> = HashMap::new();
-        // the tests against the declarations, then the declarations themselves, which are a library in the first run
-        for (name, checked, library) in [
+        // the tests against the declarations, then the declarations themselves, which are a library in the first run.
+        // The reactive UI's tests are checked again with their own, stricter config, the one editors use
+        let reactive_ui = workspace.join("assets").join("tests").join("reactive_ui");
+        for (name, checked, library, own_config) in [
             (
                 "tests",
                 workspace.join("assets").join("tests"),
                 vec![definitions.clone()],
+                None,
             ),
-            ("definitions", definitions.clone(), vec![]),
+            ("definitions", definitions.clone(), vec![], None),
+            (
+                "reactive_ui",
+                reactive_ui.clone(),
+                vec![],
+                Some(reactive_ui.join(".luarc.json")),
+            ),
         ] {
             let work = std::env::temp_dir().join("bms_luals_check").join(name);
             std::fs::create_dir_all(&work)?;
-            let config = work.join("luarc.json");
-            std::fs::write(
-                &config,
-                serde_json::to_string_pretty(&serde_json::json!({
-                    "runtime.version": "Lua 5.4",
-                    "workspace.library": library,
-                    "workspace.checkThirdParty": false,
-                }))?,
-            )?;
+            let config = match own_config {
+                Some(config) => config,
+                None => {
+                    let config = work.join("luarc.json");
+                    std::fs::write(
+                        &config,
+                        serde_json::to_string_pretty(&serde_json::json!({
+                            "runtime.version": "Lua 5.4",
+                            "workspace.library": library,
+                            "workspace.checkThirdParty": false,
+                        }))?,
+                    )?;
+                    config
+                }
+            };
             let report = work.join("report.json");
             let _ = std::fs::remove_file(&report);
 
@@ -1617,6 +1632,7 @@ impl Xtasks {
                 ));
             }
         }
+        problems.extend(Self::untyped_ui_annotations(&workspace)?);
         if !problems.is_empty() {
             problems.sort();
             bail!(
@@ -1626,6 +1642,50 @@ impl Xtasks {
             );
         }
         Ok(())
+    }
+
+    /// The `any` and `unknown` types in the annotations of the reactive UI's Lua scripts: they are fully typed,
+    /// and the language server accepts anything for those types without a diagnostic.
+    fn untyped_ui_annotations(workspace: &Path) -> Result<Vec<String>> {
+        let assets = workspace.join("assets");
+        let mut files = vec![];
+        let mut dirs = vec![assets.join("tests").join("reactive_ui")];
+        while let Some(dir) = dirs.pop() {
+            for entry in std::fs::read_dir(&dir)? {
+                let path = entry?.path();
+                if path.is_dir() {
+                    dirs.push(path);
+                } else if path.extension().is_some_and(|e| e == "lua") {
+                    files.push(path);
+                }
+            }
+        }
+        for entry in std::fs::read_dir(assets.join("scripts"))? {
+            let path = entry?.path();
+            let name = path.file_name().unwrap_or_default().to_string_lossy();
+            if name.contains("ui") && name.ends_with(".lua") {
+                files.push(path);
+            }
+        }
+        let mut problems = vec![];
+        for file in files {
+            for (i, line) in std::fs::read_to_string(&file)?.lines().enumerate() {
+                let Some((_, annotation)) = line.split_once("---@") else {
+                    continue;
+                };
+                let untyped = annotation
+                    .split(|c: char| !(c.is_alphanumeric() || c == '_' || c == '.'))
+                    .any(|word| word == "any" || word == "unknown");
+                if untyped {
+                    problems.push(format!(
+                        "{}:{}: untyped annotation, the reactive UI scripts don't use `any` or `unknown`",
+                        file.display(),
+                        i + 1
+                    ));
+                }
+            }
+        }
+        Ok(problems)
     }
 
     fn ci_matrix(app_settings: GlobalArgs, full: bool, device_tests: bool) -> Result<Vec<App>> {

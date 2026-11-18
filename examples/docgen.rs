@@ -52,6 +52,8 @@ fn main() -> std::io::Result<()> {
         ),
     ));
 
+    app.add_plugins(bevy_mod_scripting_reactive_ui::ReactiveUiPlugin);
+
     // `cargo run --example docgen --features lua_language_server_files -- testlib`
     // also includes the functions available to the script integration tests, i.e. to get completions while writing tests
     if std::env::args().skip(1).any(|arg| arg == "testlib") {
