@@ -1,0 +1,64 @@
+// #main_script inventory.lua
+// steps: on_test interacts, the ui flushes in PostUpdate, on_test_last checks the result
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin
+SetupHandler OnTest=null, Update=null
+SetupHandler OnTestLast=null, Last=null
+FinalizeApp
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptAssetLoaded name="@this_script"
+SpawnEntityWithScript name="test_entity", script="@this_script"
+RunUpdateOnce
+
+// 0: first render
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="step 0"
+
+// 1: watched component changes
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="step 1"
+
+// 2: click handler sets component state
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="step 2"
+
+// 3: global signal filters a keyed list
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="step 3"
+
+// 4: a list item's watched component changes
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="step 4"
+
+// 5: an effect clears the selection once the item is gone
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="step 5"
+
+// 6: after a reload the new code renders and the state survives
+ReloadScriptFrom script="@this_script", path="inventory.lua"
+RunUpdateOnce
+RunUpdateOnce
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script"
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTestLast", language=null, recipients="EntityScript", script="@this_script"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTestLast", script="@this_script", expect_string_value="step 6"
