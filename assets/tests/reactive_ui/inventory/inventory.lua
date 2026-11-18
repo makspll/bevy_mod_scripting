@@ -3,6 +3,7 @@ local bms = import_namespace("bms")
 local world = bms.world
 local DynamicComponent = bms.DynamicComponent
 local ui = import_namespace("reactive_ui")
+local t = import_namespace("reactive_ui_test")
 
 -- script components hold a `DynamicComponent`, which watching them gives
 ---@type bms.ScriptComponentRegistration<bms.DynamicComponent>
@@ -11,7 +12,6 @@ local Health = world.register_new_component("script.reactive_ui", "Health", true
 local Item = world.register_new_component("script.reactive_ui", "Item", true)
 
 ---@class InventoryState
----@field step integer
 ---@field player ecs.Entity
 ---@field entities table<string, ecs.Entity>
 ---@field items reactive_ui.Signal<string[]>
@@ -35,7 +35,6 @@ if State == nil then
         entities[name] = e
     end
     State = {
-        step = 0,
         player = player,
         entities = entities,
         items = ui.signal({ "Sword", "Shield", "Potion" }),
@@ -162,102 +161,105 @@ function on_script_loaded()
     State.root = ui.render("inventory", Inventory({ player = State.player }))
 end
 
--- the test steps, the same for both models
+-- the test, with `reactive_ui_test`: events and `act` run what they change before returning
 
-local function find(name) return ui.find(State.root, name) end
-local function get(name) return assert(find(name), "no element named " .. name) end
-local function text(name) return ui.describe(get(name)).text end
-local function expect(name, expected)
-    local actual = text(name)
-    assert(actual == expected, name .. ": expected `" .. expected .. "`, got `" .. tostring(actual) .. "`")
+---@param s reactive_ui.Screen
+---@param name string
+---@param expected string
+local function expect_text(s, name, expected)
+    s:expect_style(s:get_by_name(name), { text = expected })
 end
 
-local actions = {
-    [1] = function()
+---@param s reactive_ui.Screen
+local function first_load(s)
+    -- properties are checked as the script sets them
+    s:expect_style(s:get_by_name("panel"), {
+        flex_direction = "Column", justify_content = "SpaceBetween", max_width = "50%",
+        padding = { 4, 8 }, border = 1, border_color = "#ffffff", border_radius = 3,
+    })
+    s:expect_style(s:get_by_name("version"), { text = "v1", font_size = 20, color = "#ff0000" })
+    s:expect_style(s:get_by_name("icon"), { image = "icons/sword.png", width = 16, height = 16 })
+    -- laid out in a 1280x720 window
+    local icon, panel = s:rect(s:get_by_name("icon")), s:rect(s:get_by_name("panel"))
+    assert(icon.width == 16 and icon.height == 16, "the icon is " .. icon.width .. "x" .. icon.height)
+    assert(panel.x == 0 and panel.y == 0 and panel.width <= 640, "the panel is at " .. panel.x .. ", " .. panel.y)
+    expect_text(s, "title", "Inventory (3)")
+    expect_text(s, "hp", "100/100")
+    assert(s:query_by_name("low") == nil, "low hp shown at full health")
+    expect_text(s, "clicks", "clicks: 0")
+    expect_text(s, "count_Sword", "x1")
+    assert(s:get_by_text("Sword x1") == s:get_by_name("row_text_Sword"), "rows are found by their text")
+    assert(s:query_by_name("details") == nil, "details shown without a selection")
+    s:updates()
+
+    -- a watched component changes
+    s:act(function()
         local hp = assert(world.get_component(State.player, Health)) --[[@as bms.DynamicComponent]]
         hp.data = { current = 20, max = 100 }
-    end,
-    [2] = function()
-        ui.interact(get("slot_Sword"), "click")
-        -- on the text inside the row, which has no handler: the row's handler gets the event
-        ui.interact(get("row_text_Shield"), "click")
-    end,
-    [3] = function() State.search:set("sh") end,
-    [4] = function()
+    end)
+    expect_text(s, "hp", "20/100")
+    expect_text(s, "low", "LOW HP")
+    local updates = s:updates()
+    assert(updates.renders.Inventory == nil, "the component rendered again")
+    assert(updates.bindings == 1 and updates.regions == 1, "only the hp text and the low hp region run again")
+
+    -- a click handler sets component state, a click on the text inside a row reaches the row's handler
+    s:click(s:get_by_name("slot_Sword"))
+    s:click(s:get_by_name("row_text_Shield"))
+    expect_text(s, "details", "selected: Sword")
+    expect_text(s, "clicks", "clicks: 1")
+    s:expect_style(s:get_by_name("slot_Sword"), { background_color = "#ffcc00" })
+    s:expect_style(s:get_by_name("slot_Shield"), { background_color = "#333333" })
+    s:expect_style(s:get_by_name("row_Sword"), { background_color = "#ffcc00" })
+    assert(State.row_clicked == "Shield", "the row handler did not get its entity")
+    local row = s:within(s:get_by_name("row_Shield"))
+    assert(row:query_by_text("Sword x1") == nil and #row:all_by_text("Shield x1") == 1, "within finds inside the row only")
+
+    -- a global signal filters a keyed list
+    s:act(function() State.search:set("sh") end)
+    expect_text(s, "title", "Inventory (1)")
+    assert(s:query_by_name("row_Sword") == nil, "filtered out row still shown")
+    assert(s:query_by_name("slot_Sword") == nil, "filtered out slot still shown")
+    assert(s:query_by_name("slot_Shield") ~= nil, "matching slot not shown")
+    expect_text(s, "details", "selected: Sword")
+
+    -- a list item's watched component changes
+    s:act(function()
         local shield = assert(world.get_component(State.entities.Shield, Item)) --[[@as bms.DynamicComponent]]
         shield.data = { name = "Shield", count = 5 }
-    end,
-    [5] = function()
+    end)
+    expect_text(s, "count_Shield", "x5")
+    expect_text(s, "row_text_Shield", "Shield x5")
+
+    -- an effect clears the selection once the item is gone
+    s:act(function()
         world.despawn(State.entities.Sword)
         State.items:set({ "Shield", "Potion" })
-    end,
-}
+    end)
+    assert(s:query_by_name("details") == nil, "selection of a removed item was not cleared")
 
-local checks = {
-    [0] = function()
-        expect("version", "v1")
-        -- layout, colours, text style and images are plain values
-        local panel = ui.describe(get("panel"))
-        assert(string.find(panel.layout, "justify_content: SpaceBetween", 1, true), panel.layout)
-        assert(string.find(panel.layout, "max_width: Percent(50.0)", 1, true), panel.layout)
-        assert(string.lower(panel.border_color) == "#ffffff", panel.border_color)
-        local version = ui.describe(get("version"))
-        assert(version.font_size == "Px(20.0)", version.font_size)
-        assert(string.lower(version.color) == "#ff0000", version.color)
-        assert(ui.describe(get("icon")).image, "the image element has no image")
-        expect("title", "Inventory (3)")
-        expect("hp", "100/100")
-        assert(find("low") == nil, "low hp shown at full health")
-        expect("clicks", "clicks: 0")
-        expect("count_Sword", "x1")
-        expect("row_text_Sword", "Sword x1")
-        assert(find("details") == nil, "details shown without a selection")
-    end,
-    [1] = function()
-        expect("hp", "20/100")
-        expect("low", "LOW HP")
-    end,
-    [2] = function()
-        expect("details", "selected: Sword")
-        expect("clicks", "clicks: 1")
-        local sword, shield = ui.describe(get("slot_Sword")), ui.describe(get("slot_Shield"))
-        assert(sword.background_color ~= shield.background_color, "the selected slot is not highlighted")
-        local sword_row, shield_row = ui.describe(get("row_Sword")), ui.describe(get("row_Shield"))
-        assert(sword_row.background_color == sword.background_color and shield_row.background_color == shield.background_color, "the selected row is not highlighted")
-        assert(State.row_clicked == "Shield", "the row handler did not get its entity")
-    end,
-    [3] = function()
-        expect("title", "Inventory (1)")
-        assert(find("row_Sword") == nil, "filtered out row still shown")
-        assert(find("slot_Sword") == nil, "filtered out slot still shown")
-        assert(find("slot_Shield") ~= nil, "matching slot not shown")
-        expect("details", "selected: Sword")
-    end,
-    [4] = function()
-        expect("count_Shield", "x5")
-        expect("row_text_Shield", "Shield x5")
-    end,
-    [5] = function()
-        assert(find("details") == nil, "selection of a removed item was not cleared")
-    end,
-    [6] = function()
-        expect("version", "v2")
-        expect("title", "Inventory (1)")
-        expect("clicks", "clicks: 1")
-        expect("hp", "20/100")
-        expect("count_Shield", "x5")
-        expect("row_text_Shield", "Shield x5")
-    end,
-}
-
-function on_test()
-    local action = actions[State.step]
-    if action then action() end
+    -- a component rendered on its own, with a context provided
+    local d = t.render(Details({ name = "Potion" }), { t.context(Labels, { details = "given: " }) })
+    expect_text(d, "details", "given: Potion")
+    -- the whole tree as text, the same for the same ui
+    local snapshot = d:snapshot()
+    assert(snapshot == 'text name="details" text="given: Potion"\n', snapshot)
+    expect_text(t.render(Details({ name = "Potion" })), "details", "details: Potion")
 end
 
-function on_test_last()
-    checks[State.step]()
-    local done = "step " .. State.step
-    State.step = State.step + 1
-    return done
+-- after a reload the new code renders and the state survives
+---@param s reactive_ui.Screen
+local function after_reload(s)
+    expect_text(s, "version", "v2")
+    expect_text(s, "title", "Inventory (1)")
+    expect_text(s, "clicks", "clicks: 1")
+    expect_text(s, "hp", "20/100")
+    expect_text(s, "count_Shield", "x5")
+    expect_text(s, "row_text_Shield", "Shield x5")
+end
+
+function on_test()
+    local s = t.screen(State.root)
+    if Reloads == 1 then first_load(s) else after_reload(s) end
+    return "load " .. Reloads
 end

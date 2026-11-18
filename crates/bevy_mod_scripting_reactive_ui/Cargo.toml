@@ -11,6 +11,9 @@ keywords.workspace = true
 categories.workspace = true
 publish = false
 
+[features]
+# The `reactive_ui_test` script namespace, see `ReactiveUiTestPlugin`
+testing = ["dep:bevy_camera", "dep:bevy_math"]
 
 [dependencies]
 bevy_app = { workspace = true }
@@ -25,6 +28,9 @@ bevy_asset = { workspace = true }
 bevy_image = { workspace = true }
 bevy_picking = { version = "0.20", default-features = false }
 bevy_input = { version = "0.20", default-features = false }
+# laying out screens in tests, see `Screen::rect`
+bevy_camera = { version = "0.20", default-features = false, optional = true }
+bevy_math = { workspace = true, optional = true }
 bevy_mod_scripting_asset = { workspace = true }
 bevy_mod_scripting_bindings = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }

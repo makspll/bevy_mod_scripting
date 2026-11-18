@@ -2,12 +2,11 @@
 //! element which has one for the event. Handlers run in the next flush, in their script's context.
 
 use bevy_app::App;
+#[cfg(feature = "testing")]
+use bevy_ecs::{entity::Entity, hierarchy::ChildOf, world::World};
 use bevy_ecs::{
-    entity::Entity,
-    hierarchy::ChildOf,
     observer::On,
     system::{Query, Res},
-    world::World,
 };
 use bevy_input::mouse::MouseScrollUnit;
 use bevy_mod_scripting_bindings::ScriptValue;
@@ -204,7 +203,8 @@ pub(crate) fn add_observers(app: &mut App) {
 }
 
 /// Queues the handler a pointer event on the entity would reach: its own, or its nearest ancestor's.
-/// For tests and for driving a ui without a pointer.
+/// For tests, see `Screen::interact`.
+#[cfg(feature = "testing")]
 pub(crate) fn simulate(
     world: &World,
     runtime: &Mutex<Runtime>,

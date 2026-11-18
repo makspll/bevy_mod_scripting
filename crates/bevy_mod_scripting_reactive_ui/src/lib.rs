@@ -2,7 +2,7 @@
 //!
 //! Components run once (and again when their script reloads). Properties bound to functions re-run when the
 //! signals they read change, and `show` regions re-run to produce changing children.
-//! `each(items, function(item) .. end)` is the region for lists: one child per item of the list in a signal,
+//! `list(items, function(item) .. end)` is the region for lists: one child per item of the list in a signal,
 //! kept by item (items are the keys), so the function only runs for items which were not in the list before.
 //!
 //! `list_template(items, function(item) .. end)` builds the rows of large uniform lists without running
@@ -33,6 +33,8 @@
 //! end)
 //! function on_script_loaded() ui.render("counter", Counter({ start = 0 })) end
 //! ```
+//!
+//! With the `testing` feature, `ReactiveUiTestPlugin` adds `reactive_ui_test`, for testing UIs from scripts.
 
 mod element;
 mod events;
@@ -41,6 +43,10 @@ mod props;
 mod runtime;
 
 mod style;
+#[cfg(feature = "testing")]
+mod testing;
+#[cfg(feature = "testing")]
+pub use testing::{ReactiveUiTestPlugin, Screen};
 
 use std::{collections::VecDeque, marker::PhantomData};
 
@@ -55,14 +61,13 @@ use props::{Element, UiProps, parse_props};
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_ecs::{
     entity::Entity,
-    hierarchy::Children,
     message::MessageReader,
-    name::Name,
     reflect::AppTypeRegistry,
     schedule::{IntoScheduleConfigs, SystemSet},
     system::{Commands, Res},
     world::World,
 };
+use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_bindings::{
     AppScriptCallbackRunners, CurrentScriptAttachment, FunctionCallContext, InteropError,
     NamespaceMembers, ScriptComponentRegistration, ScriptValue, V, WorldAccessGuard,
@@ -72,7 +77,7 @@ use bevy_mod_scripting_core::event::ScriptLifecycleMessage;
 use bevy_mod_scripting_script::ScriptAttachment;
 use bevy_picking::Pickable;
 use bevy_reflect::Reflect;
-use bevy_ui::{BackgroundColor, Node, UiSystems, Val, widget::Text};
+use bevy_ui::{Node, UiSystems, Val};
 pub use element::{ComponentDef, UiElement};
 use element::{
     ElementData, ElementKind, Func, element_from_script, elements_from_script, new_element,
@@ -241,6 +246,8 @@ fn define(
     let mut rt = runtime.lock();
     let def = Def {
         render: render.into_inner(),
+        #[cfg(feature = "testing")]
+        name: name.clone(),
     };
     let id = if let Some(existing) = rt
         .def_index
@@ -322,7 +329,23 @@ fn region(
     namespace = "reactive_ui"
 )]
 impl NamespaceMembers {
-    /// A container, one `bevy_ui` entity with its children.
+    /// A container, one `bevy_ui` entity with its children. Layout properties are the fields of `bevy_ui`'s `Node`.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local s = import_namespace("reactive_ui_test").render(
+    ///     ui.node({ name = "row", flex_direction = "Row", column_gap = 8 }, { ui.text("a"), ui.text("b") })
+    /// )
+    /// assert(#s:children(s:get_by_name("row")) == 2)
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let s = import_namespace("reactive_ui_test").render(
+    ///     ui.node(#{ name: "row", flex_direction: "Row", column_gap: 8 }, [ui.text("a"), ui.text("b")])
+    /// );
+    /// assert!(s.children(s.get_by_name("row")).len() == 2);
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -353,7 +376,20 @@ impl NamespaceMembers {
         )))
     }
 
-    /// Text, `text("hello")` is `text({ text = "hello" })`.
+    /// Text, `text("hello")` is `text({ text = "hello" })`. Its `text` can be bound to a function or a value
+    /// computed in Rust, to show what changes.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local s = import_namespace("reactive_ui_test").render(ui.text({ name = "title", text = "Inventory", font_size = 20 }))
+    /// s:expect_style(s:get_by_name("title"), { text = "Inventory", font_size = 20 })
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let s = import_namespace("reactive_ui_test").render(ui.text(#{ name: "title", text: "Inventory", font_size: 20 }));
+    /// s.expect_style(s.get_by_name("title"), #{ text: "Inventory", font_size: 20 });
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -378,6 +414,18 @@ impl NamespaceMembers {
 
     /// A node showing the image asset at the path given as its `image`.
     ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local s = import_namespace("reactive_ui_test").render(ui.image({ name = "icon", image = "icons/sword.png", width = 16 }))
+    /// s:expect_style(s:get_by_name("icon"), { image = "icons/sword.png", width = 16 })
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let s = import_namespace("reactive_ui_test").render(ui.image(#{ name: "icon", image: "icons/sword.png", width: 16 }));
+    /// s.expect_style(s.get_by_name("icon"), #{ image: "icons/sword.png", width: 16 });
+    /// ```
+    ///
     /// Arguments:
     /// * `ctx`: The function call context.
     /// * `props`: Its properties.
@@ -400,6 +448,31 @@ impl NamespaceMembers {
     /// table, or with any arguments, which the component renders with. Defining the name again (a reload) swaps
     /// the code and re-renders its instances.
     ///
+    /// The function runs **once** per instance: state goes in signals, and what changes is bound to functions.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// ---@param props { label: string }
+    /// local Badge = ui.component("Badge", function(props)
+    ///     return ui.text({ name = "badge", text = "[" .. props.label .. "]" })
+    /// end)
+    /// local s = import_namespace("reactive_ui_test").render(Badge({ label = "new" }))
+    /// assert(s:text(s:get_by_name("badge")) == "[new]")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// fn badge(props) {
+    ///     import_namespace("reactive_ui").text(#{ name: "badge", text: `[${props.label}]` })
+    /// }
+    ///
+    /// pub fn main() {
+    ///     // components take any number of arguments, Rune calls them with `call`
+    ///     let Badge = import_namespace("reactive_ui").component("Badge", badge);
+    ///     let s = import_namespace("reactive_ui_test").render(Badge.call(#{ label: "new" }));
+    ///     assert!(s.text(s.get_by_name("badge")) == "[new]");
+    /// }
+    /// ```
+    ///
     /// Arguments:
     /// * `ctx`: The function call context.
     /// * `name`: The name of the component, unique in the script.
@@ -415,7 +488,30 @@ impl NamespaceMembers {
     }
 
     /// Shows a component under a new root entity filling the window. Called again with the key, it updates it.
-    /// Call it from `on_script_loaded`.
+    /// Call it from `on_script_loaded`. It is mounted in the next UI update, before `bevy_ui` lays out.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local Hello = ui.component("Hello", function() return ui.text({ name = "hello", text = "hello" }) end)
+    /// local root = ui.render("hello", Hello())
+    /// -- tests see it at once
+    /// local s = import_namespace("reactive_ui_test").screen(root)
+    /// assert(s:query_by_name("hello") ~= nil)
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// fn hello() {
+    ///     import_namespace("reactive_ui").text(#{ name: "hello", text: "hello" })
+    /// }
+    ///
+    /// pub fn main() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     let root = ui.render("hello", ui.component("Hello", hello).call());
+    ///     // tests see it at once
+    ///     let s = import_namespace("reactive_ui_test").screen(root);
+    ///     assert!(s.query_by_name("hello") != ());
+    /// }
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -489,6 +585,27 @@ impl NamespaceMembers {
     }
 
     /// The element with a key, which identifies it among its siblings, i.e. a component called with its arguments.
+    /// When a region runs again, children are kept or replaced by key, keeping the state of those kept.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local Slot = ui.component("Slot", function(name) return ui.text({ name = name, text = name }) end)
+    /// local s = import_namespace("reactive_ui_test").render(ui.node({}, { ui.keyed("sword", Slot("sword")) }))
+    /// assert(s:query_by_name("sword") ~= nil)
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// fn slot(name) {
+    ///     import_namespace("reactive_ui").text(#{ name: name, text: name })
+    /// }
+    ///
+    /// pub fn main() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     let Slot = ui.component("Slot", slot);
+    ///     let s = import_namespace("reactive_ui_test").render(ui.node(#{}, [ui.keyed("sword", Slot.call("sword"))]));
+    ///     assert!(s.query_by_name("sword") != ());
+    /// }
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -511,6 +628,27 @@ impl NamespaceMembers {
     }
 
     /// State: `s:get()` reads it and records the read, `s:peek()` reads it without recording, `s:set(value)` changes it.
+    /// What read it runs again when it changes. In a component it belongs to the instance, outside of one it is
+    /// plain script state any component can read.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local count = ui.signal(0)
+    /// local s = import_namespace("reactive_ui_test").render(
+    ///     ui.text({ name = "n", text = function() return "n=" .. count:get() end })
+    /// )
+    /// s:act(function() count:set(5) end)
+    /// assert(s:text(s:get_by_name("n")) == "n=5")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let count = ui.signal(0);
+    /// // Rune closures can't capture signals: functions are given them as dependencies, `[f, a, b]` calls `f(a, b)`
+    /// let s = import_namespace("reactive_ui_test").render(ui.text(#{ name: "n", text: [|count| `n=${count.get()}`, count] }));
+    /// s.act([|count| count.set(5), count]);
+    /// assert!(s.text(s.get_by_name("n")) == "n=5");
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -533,6 +671,26 @@ impl NamespaceMembers {
     }
 
     /// A value derived from others, recomputed when what `f` read changed. Its readers only update when the value did.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local items = ui.signal({ "sword", "shield" })
+    /// local count = ui.computed(function() return #items:get() end)
+    /// local s = import_namespace("reactive_ui_test").render(
+    ///     ui.text({ name = "count", text = function() return count:get() .. " items" end })
+    /// )
+    /// s:act(function() items:set({ "sword" }) end)
+    /// assert(s:text(s:get_by_name("count")) == "1 items")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let items = ui.signal(["sword", "shield"]);
+    /// let count = ui.computed([|items| items.get().len(), items]);
+    /// let s = import_namespace("reactive_ui_test").render(ui.text(#{ name: "count", text: [|count| `${count.get()} items`, count] }));
+    /// s.act([|items| items.set(["sword"]), items]);
+    /// assert!(s.text(s.get_by_name("count")) == "1 items");
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -563,6 +721,41 @@ impl NamespaceMembers {
     }
 
     /// Runs `f` now and whenever what it read changes. `f` can return a function to clean up before the next run.
+    /// For what isn't a property: writing to the world, logging, starting sounds.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local selected = ui.signal("sword")
+    /// ---@type string[]
+    /// local log = {}
+    /// local Logger = ui.component("Logger", function()
+    ///     ui.effect(function() log[#log + 1] = "selected " .. selected:get() end)
+    ///     return ui.node()
+    /// end)
+    /// local s = import_namespace("reactive_ui_test").render(Logger())
+    /// s:act(function() selected:set("shield") end)
+    /// assert(#log == 2 and log[2] == "selected shield")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// fn logger(selected, runs) {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     ui.effect([|selected, runs| {
+    ///         selected.get();
+    ///         runs.set(runs.peek() + 1);
+    ///     }, selected, runs]);
+    ///     ui.node(#{}, [])
+    /// }
+    ///
+    /// pub fn main() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     let selected = ui.signal("sword");
+    ///     let runs = ui.signal(0);
+    ///     let s = import_namespace("reactive_ui_test").render(ui.component("Logger", logger).call(selected, runs));
+    ///     s.act([|selected| selected.set("shield"), selected]);
+    ///     assert!(runs.peek() == 2);
+    /// }
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -595,7 +788,49 @@ impl NamespaceMembers {
     }
 
     /// A signal over a component of an entity, updated when the component changes, whoever changed it.
-    /// `get` returns the component, or nil when it is gone.
+    /// `get` returns the component, or nil when it is gone. Components are checked by their change tick once per
+    /// update, so Rust systems changing it update the UI too.
+    ///
+    /// ```multi-lang-example,lua
+    /// local bms = import_namespace("bms")
+    /// local ui = import_namespace("reactive_ui")
+    /// ---@type bms.ScriptComponentRegistration<bms.DynamicComponent>
+    /// local Health = bms.world.register_new_component("script.docs", "Health", true)
+    /// local player = bms.world.spawn()
+    /// bms.world.insert_component(player, Health, bms.DynamicComponent.new({ data = 100 }))
+    ///
+    /// local Bar = ui.component("Bar", function()
+    ///     local health = ui.watch(player, Health)
+    ///     return ui.text({ name = "hp", text = ui.format("hp: {}", { ui.path(health, "data") }) })
+    /// end)
+    /// local s = import_namespace("reactive_ui_test").render(Bar())
+    /// s:act(function() assert(bms.world.get_component(player, Health)).data = 50 end)
+    /// assert(s:text(s:get_by_name("hp")) == "hp: 50")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// fn bar(player) {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     let health = ui.watch(player, state()["Health"]);
+    ///     ui.text(#{ name: "hp", text: ui.format("hp: {}", [ui.path(health, "data")]) })
+    /// }
+    ///
+    /// pub fn main() {
+    ///     let bms = import_namespace("bms");
+    ///     let ui = import_namespace("reactive_ui");
+    ///     let Health = bms.world.register_new_component("script.docs", "Health", true);
+    ///     state()["Health"] = Health;
+    ///     let player = bms.world.spawn();
+    ///     bms.world.insert_component(player, Health, bms.DynamicComponent.new(#{ data: 100 }));
+    ///
+    ///     let s = import_namespace("reactive_ui_test").render(ui.component("Bar", bar).call(player));
+    ///     s.act([|player| {
+    ///         let bms = import_namespace("bms");
+    ///         bms.world.get_component(player, state()["Health"]).data = 50;
+    ///     }, player]);
+    ///     assert!(s.text(s.get_by_name("hp")) == "hp: 50");
+    /// }
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -632,97 +867,33 @@ impl NamespaceMembers {
         Ok(V(Signal::<A>::new(id)))
     }
 
-    /// The entity with the `Name` below `root`, breadth first.
+    /// A value provided to a subtree with `provide` and read with `use_context`, without passing it through the
+    /// props of every component in between. Create it once, outside of components.
     ///
-    /// Arguments:
-    /// * `ctx`: The function call context.
-    /// * `root`: Where to search from, i.e. what `render` returned.
-    /// * `name`: The name.
-    /// Returns:
-    /// * `entity`: The entity, or nil.
-    fn find(
-        ctx: FunctionCallContext,
-        root: V<Entity>,
-        name: String,
-    ) -> Result<Option<V<Entity>>, InteropError> {
-        ctx.world()?
-            .with_world_access(|w| {
-                let mut queue = VecDeque::from([*root]);
-                while let Some(e) = queue.pop_front() {
-                    if w.get::<Name>(e).is_some_and(|n| n.as_str() == name) {
-                        return Some(V(e));
-                    }
-                    if let Some(children) = w.get::<Children>(e) {
-                        queue.extend(children.iter());
-                    }
-                }
-                None
-            })
-            .map_err(InteropError::from)
-    }
-
-    /// What an element shows: its text, colours and layout, for tests.
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local Theme = ui.create_context({ accent = "#ffcc00" })
+    /// local Title = ui.component("Title", function()
+    ///     return ui.text({ name = "title", text = "hi", color = ui.use_context(Theme).accent })
+    /// end)
+    /// local s = import_namespace("reactive_ui_test").render(ui.provide(Theme, { accent = "#00ccff" }, { Title() }))
+    /// s:expect_style(s:get_by_name("title"), { color = "#00ccff" })
+    /// ```
     ///
-    /// Arguments:
-    /// * `ctx`: The function call context.
-    /// * `entity`: The entity of the element.
-    /// Returns:
-    /// * `description`: What it shows.
-    fn describe(
-        ctx: FunctionCallContext,
-        entity: V<Entity>,
-    ) -> Result<props::Description, InteropError> {
-        ctx.world()?
-            .with_world_access(|w| {
-                let entity = *entity;
-                // the rest is described as Rust prints it, which is enough to check what was set
-                props::Description {
-                    text: w.get::<Text>(entity).map(|text| text.0.clone()),
-                    name: w.get::<Name>(entity).map(|name| name.as_str().to_owned()),
-                    background_color: w
-                        .get::<BackgroundColor>(entity)
-                        .map(|bg| bg.0.to_srgba().to_hex()),
-                    layout: w.get::<Node>(entity).map(|node| format!("{node:?}")),
-                    font_size: w
-                        .get::<bevy_text::TextFont>(entity)
-                        .map(|font| format!("{:?}", font.font_size)),
-                    color: w
-                        .get::<bevy_text::TextColor>(entity)
-                        .map(|color| color.0.to_srgba().to_hex()),
-                    border_color: w
-                        .get::<bevy_ui::BorderColor>(entity)
-                        .map(|border| border.top.to_srgba().to_hex()),
-                    image: w.get::<bevy_ui::widget::ImageNode>(entity).is_some(),
-                    children: w.get::<Children>(entity).map_or(0, |c| c.len()) as i64,
-                }
-            })
-            .map_err(InteropError::from)
-    }
-
-    /// Does what a pointer event on the element would, for tests and for driving a UI without a pointer.
+    /// ```multi-lang-example,rune
+    /// fn title() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     ui.text(#{ name: "title", text: "hi", color: ui.use_context(state()["Theme"]).accent })
+    /// }
     ///
-    /// Arguments:
-    /// * `ctx`: The function call context.
-    /// * `entity`: The entity of the element.
-    /// * `event`: The event: `"click"`, `"press"`, `"release"`, `"pointer_enter"`, `"pointer_leave"`, `"hover"`, `"drag"` or `"scroll"`.
-    fn interact(
-        ctx: FunctionCallContext,
-        entity: V<Entity>,
-        event: String,
-    ) -> Result<(), InteropError> {
-        let Some((_, event)) = style::UiEvent::ALL.iter().find(|(name, _)| *name == event) else {
-            let names = style::UiEvent::ALL.map(|(name, _)| name).join(", ");
-            return Err(InteropError::string(format!(
-                "unknown event `{event}`, use one of: {names}"
-            )));
-        };
-        let runtime = runtime(&ctx)?;
-        ctx.world()?
-            .with_world_access(|w| events::simulate(w, &runtime, *entity, *event))?;
-        Ok(())
-    }
-
-    /// A value provided to a subtree with `provide` and read with `use_context`.
+    /// pub fn main() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     state()["Theme"] = ui.create_context(#{ accent: "#ffcc00" });
+    ///     let Title = ui.component("Title", title);
+    ///     let s = import_namespace("reactive_ui_test").render(ui.provide(state()["Theme"], #{ accent: "#00ccff" }, [Title.call()]));
+    ///     s.expect_style(s.get_by_name("title"), #{ color: "#00ccff" });
+    /// }
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -741,7 +912,34 @@ impl NamespaceMembers {
         )))
     }
 
-    /// The value of a context provided nearest above the component rendering, or its default.
+    /// The value of a context provided nearest above the component rendering, or its default. Read it when the
+    /// component renders, and provide a signal for a value which changes.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local Labels = ui.create_context({ greeting = "hello" })
+    /// local Greeting = ui.component("Greeting", function()
+    ///     return ui.text({ name = "greeting", text = ui.use_context(Labels).greeting })
+    /// end)
+    /// -- nothing provided: the default
+    /// local s = import_namespace("reactive_ui_test").render(Greeting())
+    /// assert(s:text(s:get_by_name("greeting")) == "hello")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// fn greeting() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     ui.text(#{ name: "greeting", text: ui.use_context(state()["Labels"]).greeting })
+    /// }
+    ///
+    /// pub fn main() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     state()["Labels"] = ui.create_context(#{ greeting: "hello" });
+    ///     // nothing provided: the default
+    ///     let s = import_namespace("reactive_ui_test").render(ui.component("Greeting", greeting).call());
+    ///     assert!(s.text(s.get_by_name("greeting")) == "hello");
+    /// }
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -762,7 +960,33 @@ impl NamespaceMembers {
             .ok_or_else(|| InteropError::str("unknown context"))
     }
 
-    /// A node providing the value of a context to what is below it.
+    /// A node providing the value of a context to what is below it, read with `use_context`. Regions mounted later
+    /// below it see it too.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local User = ui.create_context("guest")
+    /// local Name = ui.component("Name", function()
+    ///     return ui.text({ name = "user", text = ui.use_context(User) })
+    /// end)
+    /// local s = import_namespace("reactive_ui_test").render(ui.provide(User, "ada", { Name() }))
+    /// assert(s:text(s:get_by_name("user")) == "ada")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// fn name() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     ui.text(#{ name: "user", text: ui.use_context(state()["User"]) })
+    /// }
+    ///
+    /// pub fn main() {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     state()["User"] = ui.create_context("guest");
+    ///     let Name = ui.component("Name", name);
+    ///     let s = import_namespace("reactive_ui_test").render(ui.provide(state()["User"], "ada", [Name.call()]));
+    ///     assert!(s.text(s.get_by_name("user")) == "ada");
+    /// }
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -794,7 +1018,36 @@ impl NamespaceMembers {
     }
 
     /// For "which one is selected": `selector:selected(key)` only wakes the readers of the key which was and the key
-    /// which is the signal's value.
+    /// which is the signal's value. A list of a hundred rows highlighting the selected one updates two rows, not all.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// ---@type reactive_ui.Signal<string>
+    /// local selected = ui.signal("a")
+    /// local is_selected = ui.selector(selected)
+    /// local rows = {}
+    /// for _, key in ipairs({ "a", "b", "c" }) do
+    ///     rows[#rows + 1] = ui.text({ name = key, text = function() return is_selected:selected(key) and "*" or "" end })
+    /// end
+    /// local s = import_namespace("reactive_ui_test").render(ui.node({}, rows))
+    /// s:updates()
+    /// s:act(function() selected:set("b") end)
+    /// assert(s:text(s:get_by_name("b")) == "*" and s:updates().bindings == 2, "only a and b ran again")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let selected = ui.signal("a");
+    /// let is_selected = ui.selector(selected);
+    /// let rows = [];
+    /// for key in ["a", "b", "c"] {
+    ///     rows.push(ui.text(#{ name: key, text: ui.when(ui.selected(is_selected, key), "*", "") }));
+    /// }
+    /// let s = import_namespace("reactive_ui_test").render(ui.node(#{}, rows));
+    /// s.updates();
+    /// s.act([|selected| selected.set("b"), selected]);
+    /// assert!(s.text(s.get_by_name("b")) == "*" && s.updates().bindings == 2, "only a and b ran again");
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -811,7 +1064,27 @@ impl NamespaceMembers {
     }
 
     /// One child per item of the list in the signal, made by `f(item)`. Children are kept by item, `f` only runs for
-    /// items which were not in the list before.
+    /// items which were not in the list before. The last argument is the layout of the node holding them.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local items = ui.signal({ "sword", "shield" })
+    /// local s = import_namespace("reactive_ui_test").render(ui.list(items, function(item)
+    ///     return ui.text({ name = item, text = item })
+    /// end, { flex_direction = "Column" }))
+    /// s:act(function() items:set({ "shield", "potion" }) end)
+    /// assert(s:query_by_name("sword") == nil and s:query_by_name("potion") ~= nil)
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let items = ui.signal(["sword", "shield"]);
+    /// let s = import_namespace("reactive_ui_test").render(ui.list(items, |item| {
+    ///     import_namespace("reactive_ui").text(#{ name: item, text: item })
+    /// }, #{ flex_direction: "Column" }));
+    /// s.act([|items| items.set(["shield", "potion"]), items]);
+    /// assert!(s.query_by_name("sword") == () && s.query_by_name("potion") != ());
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -831,7 +1104,27 @@ impl NamespaceMembers {
     }
 
     /// As `list`, but `f` runs once with a value standing for each item, and the rows are built from what it returned
-    /// without running script code. Handlers get the row's item first.
+    /// without running script code. Properties are plain values or computed in Rust, with `item` wherever a value is
+    /// taken. Handlers get the row's item first. For long, uniform lists.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local items = ui.signal({ "sword", "shield" })
+    /// local s = import_namespace("reactive_ui_test").render(ui.list_template(items, function(item)
+    ///     return ui.text({ name = ui.format("row_{}", { item }), text = ui.format("- {}", { item }) })
+    /// end))
+    /// assert(s:text(s:get_by_name("row_shield")) == "- shield")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let items = ui.signal(["sword", "shield"]);
+    /// let s = import_namespace("reactive_ui_test").render(ui.list_template(items, |item| {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     ui.text(#{ name: ui.format("row_{}", [item]), text: ui.format("- {}", [item]) })
+    /// }));
+    /// assert!(s.text(s.get_by_name("row_shield")) == "- shield");
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -851,6 +1144,28 @@ impl NamespaceMembers {
     }
 
     /// A region showing what `f` returns, an element or nothing. Re-runs when what `f` read changes.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local open = ui.signal(false)
+    /// local s = import_namespace("reactive_ui_test").render(ui.show(function()
+    ///     if open:get() then return ui.text({ name = "menu", text = "menu" }) end
+    /// end))
+    /// assert(s:query_by_name("menu") == nil)
+    /// s:act(function() open:set(true) end)
+    /// assert(s:query_by_name("menu") ~= nil)
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let open = ui.signal(false);
+    /// let s = import_namespace("reactive_ui_test").render(ui.show([|open| {
+    ///     if open.get() { import_namespace("reactive_ui").text(#{ name: "menu", text: "menu" }) } else { () }
+    /// }, open]));
+    /// assert!(s.query_by_name("menu") == ());
+    /// s.act([|open| open.set(true), open]);
+    /// assert!(s.query_by_name("menu") != ());
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -875,6 +1190,19 @@ impl NamespaceMembers {
 impl Selector {
     /// Whether `key` is the value of the signal. Only wakes its reader when that changes.
     ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local selected = ui.signal("a")
+    /// local is_selected = ui.selector(selected)
+    /// assert(is_selected:selected("a") and not is_selected:selected("b"))
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let is_selected = ui.selector(ui.signal("a"));
+    /// assert!(is_selected.selected("a") && !is_selected.selected("b"));
+    /// ```
+    ///
     /// Arguments:
     /// * `ctx`: The function call context.
     /// * `selector`: The selector.
@@ -896,7 +1224,24 @@ impl Selector {
     name = "signal_functions"
 )]
 impl Signal {
-    /// The value, recording the read: what is reading it re-runs when it changes.
+    /// The value, recording the read: what is reading it (a bound property, a computed, an effect, a region) re-runs
+    /// when it changes.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local name = ui.signal("sword")
+    /// local upper = ui.computed(function() return string.upper(name:get()) end)
+    /// name:set("shield")
+    /// assert(upper:get() == "SHIELD")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let name = ui.signal("sword");
+    /// let upper = ui.computed([|name| name.get().to_uppercase(), name]);
+    /// name.set("shield");
+    /// assert!(upper.get() == "SHIELD");
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -910,7 +1255,27 @@ impl Signal {
         read(&*runtime(&ctx)?, &ctx, signal.into_inner().0, true).map(ValueOf::new)
     }
 
-    /// The value, without recording the read.
+    /// The value, without recording the read: for values used once, i.e. in a handler updating a counter.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local clicks = ui.signal(0)
+    /// local s = import_namespace("reactive_ui_test").render(
+    ///     ui.node({ name = "button", on_click = function() clicks:set(clicks:peek() + 1) end })
+    /// )
+    /// s:click(s:get_by_name("button"))
+    /// assert(clicks:peek() == 1)
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let clicks = ui.signal(0);
+    /// let s = import_namespace("reactive_ui_test").render(
+    ///     ui.node(#{ name: "button", on_click: [|clicks, _event| clicks.set(clicks.peek() + 1), clicks] }, [])
+    /// );
+    /// s.click(s.get_by_name("button"));
+    /// assert!(clicks.peek() == 1);
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -924,7 +1289,24 @@ impl Signal {
         read(&*runtime(&ctx)?, &ctx, signal.into_inner().0, false).map(ValueOf::new)
     }
 
-    /// Changes the value, re-running what read it.
+    /// Changes the value. What read it runs again in the next UI update, once however many times it was set, and not
+    /// at all when the value is the same.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local hp = ui.signal(100)
+    /// local s = import_namespace("reactive_ui_test").render(ui.text({ name = "hp", text = function() return "hp " .. hp:get() end }))
+    /// s:act(function() hp:set(80) end)
+    /// assert(s:text(s:get_by_name("hp")) == "hp 80")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let hp = ui.signal(100);
+    /// let s = import_namespace("reactive_ui_test").render(ui.text(#{ name: "hp", text: ui.format("hp {}", [ui.path(hp, "")]) }));
+    /// s.act([|hp| hp.set(80), hp]);
+    /// assert!(s.text(s.get_by_name("hp")) == "hp 80");
+    /// ```
     ///
     /// Arguments:
     /// * `ctx`: The function call context.
@@ -975,9 +1357,12 @@ pub fn flush_reactive_ui(world: &mut World) {
     WorldAccessGuard::with_static_guard(world, cache, |guard| {
         let _current = CurrentRuntime::set(runtime.clone());
         let runners = guard.script_callback_runners();
+        let report = |attachment: Option<&ScriptAttachment>, e| {
+            runners.report_error(guard.clone(), attachment, "running reactive ui".into(), e)
+        };
         let mut poll = false;
         for _ in 0..MAX_FLUSH_ITERATIONS {
-            match flush_pass(&runtime, &guard, &runners, poll) {
+            match flush_pass(&runtime, &guard, &runners, poll, None, &report) {
                 Pass::Idle => return,
                 // handlers and effects may have changed watched components
                 Pass::Ran { side_effects } => poll = side_effects,
@@ -992,6 +1377,38 @@ pub fn flush_reactive_ui(world: &mut World) {
     });
 }
 
+/// Runs the work queued so far now, instead of in `PostUpdate`, from a script function: the calling script's
+/// work runs in place, other scripts' in their contexts. Returns the first error the work hit.
+#[cfg(feature = "testing")]
+pub(crate) fn settle(ctx: &FunctionCallContext) -> Result<(), InteropError> {
+    let attachment = current_attachment(ctx)?;
+    let language = ctx.language();
+    let runtime = runtime(ctx)?;
+    let guard = ctx.world()?;
+    let runners = guard.script_callback_runners();
+    let _current = CurrentRuntime::set(runtime.clone());
+    let errors = std::cell::RefCell::new(Vec::new());
+    let report = |_: Option<&ScriptAttachment>, e| errors.borrow_mut().push(e);
+    let mut poll = true;
+    for _ in 0..MAX_FLUSH_ITERATIONS {
+        let pass = flush_pass(
+            &runtime,
+            &guard,
+            &runners,
+            poll,
+            Some((&attachment, &language)),
+            &report,
+        );
+        match pass {
+            Pass::Idle => return errors.into_inner().into_iter().next().map_or(Ok(()), Err),
+            Pass::Ran { side_effects } => poll = side_effects,
+        }
+    }
+    Err(InteropError::string(format!(
+        "the ui was still changing after {MAX_FLUSH_ITERATIONS} passes, do effects keep setting signals they read?"
+    )))
+}
+
 /// What a pass of [`flush_reactive_ui`] did.
 enum Pass {
     Idle,
@@ -1001,12 +1418,19 @@ enum Pass {
     },
 }
 
+/// What reports the errors of a flush, with the script they come from.
+type Report<'a> = dyn Fn(Option<&ScriptAttachment>, InteropError) + 'a;
+
 /// One pass of [`flush_reactive_ui`], `poll` checks the watched components first.
+///
+/// The work of the `current` script, the one calling, runs in place: it is already in its context.
 fn flush_pass(
     runtime: &Arc<Mutex<Runtime>>,
     guard: &WorldGuard,
     runners: &AppScriptCallbackRunners,
     poll: bool,
+    current: Option<(&ScriptAttachment, &Language)>,
+    report: &Report,
 ) -> Pass {
     let (attachments, side_effects) = {
         let mut rt = runtime.lock();
@@ -1018,12 +1442,7 @@ fn flush_pass(
         drop(rt);
         for (id, attachment) in rust_bindings {
             if let Err(e) = run_rust_binding(runtime, guard, id) {
-                runners.report_error(
-                    guard.clone(),
-                    Some(&attachment),
-                    "running reactive ui".into(),
-                    e,
-                );
+                report(Some(&attachment), e);
             }
         }
         let rt = runtime.lock();
@@ -1051,16 +1470,22 @@ fn flush_pass(
         return Pass::Idle;
     }
     for attachment in attachments {
-        let result = runners.run_in_context(guard.clone(), &attachment, &mut |world, language| {
+        let mut run = |world: WorldGuard<'_>, language: Language| {
             let cx = Cx {
                 runtime,
                 world,
                 attachment: &attachment,
                 language,
             };
-            run_script_work(&cx, runners);
+            run_script_work(&cx, report);
             Ok(())
-        });
+        };
+        let result = match current {
+            Some((current, language)) if *current == attachment => {
+                run(guard.clone(), language.clone())
+            }
+            _ => runners.run_in_context(guard.clone(), &attachment, &mut run),
+        };
         if let Err(e) = result {
             // the script is gone or busy, drop its work rather than retrying forever
             let mut rt = runtime.lock();
@@ -1077,27 +1502,15 @@ fn flush_pass(
                 rt.dirty_effects.remove(&id);
             }
             drop(rt);
-            runners.report_error(
-                guard.clone(),
-                Some(&attachment),
-                "running reactive ui".into(),
-                e,
-            );
+            report(Some(&attachment), e);
         }
     }
     Pass::Ran { side_effects }
 }
 
 /// Runs the queued handlers, then the dirty nodes, then the dirty effects of one script, inside its context.
-fn run_script_work(cx: &Cx, runners: &AppScriptCallbackRunners) {
-    let report = |e: InteropError| {
-        runners.report_error(
-            cx.world.clone(),
-            Some(cx.attachment),
-            "running reactive ui".into(),
-            e,
-        )
-    };
+fn run_script_work(cx: &Cx, report: &Report) {
+    let report = |e: InteropError| report(Some(cx.attachment), e);
     let events = {
         let mut rt = cx.runtime.lock();
         let (mine, others) = std::mem::take(&mut rt.events)

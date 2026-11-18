@@ -177,7 +177,9 @@ pub fn bench_step() {
         "mount" => s["shown"].set(!s["shown"].peek()),
         "select" => {
             let name = s["names"][n % 200];
-            ui.interact(ui.find(s["root"], `slot_${name}`), "click");
+            let screen = import_namespace("reactive_ui_test").screen(s["root"]);
+            // queued, the click runs in the timed UI update
+            screen.dispatch(screen.get_by_name(`slot_${name}`), "click");
         }
         "search" => s["search"].set(if n % 2 == 0 { "" } else { "5" }),
         "one" => {

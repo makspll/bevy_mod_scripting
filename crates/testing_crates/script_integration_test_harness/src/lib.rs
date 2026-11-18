@@ -57,6 +57,7 @@ pub fn install_test_plugin(app: &mut App, include_test_functions: bool) {
         ConstructorsPlugin::default(),
         BMSScriptingInfrastructurePlugin::default(),
         bevy_mod_scripting_reactive_ui::ReactiveUiPlugin,
+        bevy_mod_scripting_reactive_ui::ReactiveUiTestPlugin,
     ));
     // the reactive ui `image` property needs image assets, which apps get from bevy's `ImagePlugin`
     bevy_asset::AssetApp::init_asset::<bevy_image::Image>(app);

@@ -175,6 +175,20 @@ pub(crate) struct GraphNode {
 
 pub(crate) struct Def {
     pub render: Func,
+    /// The name it was defined with
+    #[cfg(feature = "testing")]
+    pub name: String,
+}
+
+/// How many times each kind of node ran, counted while tests ask for it, see `Screen::updates`.
+#[cfg(feature = "testing")]
+#[derive(Default)]
+pub(crate) struct UpdateCounts {
+    /// Renders by the name of the component
+    pub renders: HashMap<String, i64>,
+    pub bindings: i64,
+    pub regions: i64,
+    pub effects: i64,
 }
 
 pub(crate) struct Root {
@@ -231,6 +245,9 @@ pub(crate) struct Runtime {
     pub elements: crate::element::ElementArena,
     /// The default value of each context, by its id
     pub contexts: Vec<ScriptValue>,
+    /// Counted only once a test asked for them
+    #[cfg(feature = "testing")]
+    pub updates: Option<UpdateCounts>,
 }
 
 impl Runtime {
@@ -252,6 +269,16 @@ impl Runtime {
             },
         );
         id
+    }
+
+    #[cfg(feature = "testing")]
+    fn count_render(&mut self, def: ComponentDef) {
+        let Some(counts) = &mut self.updates else {
+            return;
+        };
+        if let Some(def) = self.defs.get(def.0 as usize) {
+            *counts.renders.entry(def.name.clone()).or_default() += 1;
+        }
     }
 
     pub fn instance_mut(&mut self, id: NodeId) -> Option<&mut Instance> {
@@ -851,6 +878,10 @@ pub(crate) fn run_rust_binding(
         }
         _ => return Ok(()),
     };
+    #[cfg(feature = "testing")]
+    if let Some(counts) = &mut runtime.lock().updates {
+        counts.bindings += 1;
+    }
     let value = expr.eval(runtime, world)?;
     world.with_world_mut_access(|w| match w.get_entity_mut(entity) {
         Ok(mut e) => apply_prop(&mut e, prop, &value),
@@ -1218,6 +1249,10 @@ impl Cx<'_, '_> {
             if let BindingSource::Script(_) = source {
                 rt.clear_deps(id);
             }
+            #[cfg(feature = "testing")]
+            if let Some(counts) = &mut rt.updates {
+                counts.bindings += 1;
+            }
             match rt.nodes.get_mut(&id) {
                 Some(GraphNode {
                     kind: NodeKind::Binding { entity, prop, .. },
@@ -1256,6 +1291,10 @@ impl Cx<'_, '_> {
         let (container, f, old, each, contexts) = {
             let mut rt = self.runtime.lock();
             rt.clear_deps(id);
+            #[cfg(feature = "testing")]
+            if let Some(counts) = &mut rt.updates {
+                counts.regions += 1;
+            }
             match rt.nodes.get_mut(&id) {
                 Some(GraphNode {
                     kind:
@@ -1586,6 +1625,10 @@ impl Cx<'_, '_> {
         let (f, cleanup) = {
             let mut rt = self.runtime.lock();
             rt.clear_deps(id);
+            #[cfg(feature = "testing")]
+            if let Some(counts) = &mut rt.updates {
+                counts.effects += 1;
+            }
             match rt.nodes.get_mut(&id) {
                 Some(GraphNode {
                     kind: NodeKind::Effect { f, cleanup },
@@ -1633,10 +1676,12 @@ impl Cx<'_, '_> {
                 }) => instance.def,
                 _ => return Ok(()),
             };
-            let Some(Def { render }) = rt.defs.get(def.0 as usize) else {
+            let Some(Def { render, .. }) = rt.defs.get(def.0 as usize) else {
                 return Err(InteropError::str("unknown component definition"));
             };
             let render = render.clone();
+            #[cfg(feature = "testing")]
+            rt.count_render(def);
             let Some(node) = rt.nodes.get_mut(&id) else {
                 return Ok(());
             };

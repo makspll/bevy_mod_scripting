@@ -5,8 +5,8 @@ use std::{any::TypeId, sync::Arc};
 
 use bevy_ecs::{component::ComponentId, world::World};
 use bevy_mod_scripting_bindings::{
-    InteropError, NamespaceMembers, ReflectReference, ScriptComponentRegistration, ScriptValue,
-    Lazy, Union, V, WorldGuard,
+    InteropError, Lazy, NamespaceMembers, ReflectReference, ScriptComponentRegistration,
+    ScriptValue, Union, V, WorldGuard,
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_reflect::{PartialReflect, Reflect, ReflectRef};
@@ -403,6 +403,25 @@ impl NamespaceMembers {
     /// A field of the value of a signal, computed or watched component, i.e. `path(health, "data.current")`.
     /// Struct fields are named, tuple fields and list items are numbered from 0, an empty path is the value itself.
     ///
+    /// Values computed in Rust update without running script code: for what changes every frame or exists hundreds
+    /// of times.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local player = ui.signal({ name = "ada", hp = 100 })
+    /// local s = import_namespace("reactive_ui_test").render(ui.text({ name = "name", text = ui.path(player, "name") }))
+    /// s:act(function() player:set({ name = "grace", hp = 100 }) end)
+    /// assert(s:text(s:get_by_name("name")) == "grace")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let player = ui.signal(#{ name: "ada", hp: 100 });
+    /// let s = import_namespace("reactive_ui_test").render(ui.text(#{ name: "name", text: ui.path(player, "name") }));
+    /// s.act([|player| player.set(#{ name: "grace", hp: 100 }), player]);
+    /// assert!(s.text(s.get_by_name("name")) == "grace");
+    /// ```
+    ///
     /// Arguments:
     /// * `source`: The signal, or in a row template the component of the row's item.
     /// * `path`: The path of the field.
@@ -430,6 +449,35 @@ impl NamespaceMembers {
     /// In the function given to `list_template`: the component of each row's item, which must be an entity.
     /// Read its fields with `path`, i.e. `path(watch_item(item, Item), "data.count")`.
     ///
+    /// ```multi-lang-example,lua
+    /// local bms = import_namespace("bms")
+    /// local ui = import_namespace("reactive_ui")
+    /// ---@type bms.ScriptComponentRegistration<bms.DynamicComponent>
+    /// local Item = bms.world.register_new_component("script.docs", "Item", true)
+    /// local sword = bms.world.spawn()
+    /// bms.world.insert_component(sword, Item, bms.DynamicComponent.new({ data = { count = 3 } }))
+    /// local items = ui.signal({ sword })
+    /// local s = import_namespace("reactive_ui_test").render(ui.list_template(items, function(item)
+    ///     return ui.text({ name = "count", text = ui.format("x{}", { ui.path(ui.watch_item(item, Item), "data.count") }) })
+    /// end))
+    /// assert(s:text(s:get_by_name("count")) == "x3")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let bms = import_namespace("bms");
+    /// let ui = import_namespace("reactive_ui");
+    /// let Item = bms.world.register_new_component("script.docs", "Item", true);
+    /// state()["Item"] = Item;
+    /// let sword = bms.world.spawn();
+    /// bms.world.insert_component(sword, Item, bms.DynamicComponent.new(#{ data: #{ count: 3 } }));
+    /// let items = ui.signal([sword]);
+    /// let s = import_namespace("reactive_ui_test").render(ui.list_template(items, |item| {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     ui.text(#{ name: "count", text: ui.format("x{}", [ui.path(ui.watch_item(item, state()["Item"]), "data.count")]) })
+    /// }));
+    /// assert!(s.text(s.get_by_name("count")) == "x3");
+    /// ```
+    ///
     /// Arguments:
     /// * `item`: The item given to the function.
     /// * `component`: The component type.
@@ -452,6 +500,20 @@ impl NamespaceMembers {
 
     /// Text made from a template, each `{}` is replaced by the next value, i.e. `format("{} / {}", { current, max })`.
     ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local hp = ui.signal(80)
+    /// local s = import_namespace("reactive_ui_test").render(ui.text({ name = "hp", text = ui.format("{} / {}", { ui.path(hp, ""), 100 }) }))
+    /// assert(s:text(s:get_by_name("hp")) == "80 / 100")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let hp = ui.signal(80);
+    /// let s = import_namespace("reactive_ui_test").render(ui.text(#{ name: "hp", text: ui.format("{} / {}", [ui.path(hp, ""), 100]) }));
+    /// assert!(s.text(s.get_by_name("hp")) == "80 / 100");
+    /// ```
+    ///
     /// Arguments:
     /// * `template`: The template.
     /// * `args`: The values.
@@ -466,6 +528,20 @@ impl NamespaceMembers {
 
     /// `part` as a percentage of `whole`, as a size, i.e. `width = percent(current, max)`.
     ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local hp = ui.signal(25)
+    /// local s = import_namespace("reactive_ui_test").render(ui.node({ name = "bar", width = ui.percent(ui.path(hp, ""), 100) }))
+    /// s:expect_style(s:get_by_name("bar"), { width = "25%" })
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let hp = ui.signal(25);
+    /// let s = import_namespace("reactive_ui_test").render(ui.node(#{ name: "bar", width: ui.percent(ui.path(hp, ""), 100) }, []));
+    /// s.expect_style(s.get_by_name("bar"), #{ width: "25%" });
+    /// ```
+    ///
     /// Arguments:
     /// * `part`: The part.
     /// * `whole`: The whole.
@@ -475,7 +551,23 @@ impl NamespaceMembers {
         value(Expr::Percent(Box::new(arg(part)), Box::new(arg(whole))))
     }
 
-    /// Whether `a` is less than `b`.
+    /// Whether `a` is less than `b`, for `when`.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local hp = ui.signal(20)
+    /// local low = ui.lt(ui.path(hp, ""), 30)
+    /// local s = import_namespace("reactive_ui_test").render(ui.text({ name = "hp", text = ui.when(low, "LOW", "ok") }))
+    /// assert(s:text(s:get_by_name("hp")) == "LOW")
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let hp = ui.signal(20);
+    /// let low = ui.lt(ui.path(hp, ""), 30);
+    /// let s = import_namespace("reactive_ui_test").render(ui.text(#{ name: "hp", text: ui.when(low, "LOW", "ok") }));
+    /// assert!(s.text(s.get_by_name("hp")) == "LOW");
+    /// ```
     ///
     /// Arguments:
     /// * `a`: The left side.
@@ -488,6 +580,24 @@ impl NamespaceMembers {
 
     /// `a` times `b`.
     ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local half = ui.signal(25)
+    /// local s = import_namespace("reactive_ui_test").render(
+    ///     ui.node({ name = "bar", width = ui.percent(ui.mul(ui.path(half, ""), 2), 100) })
+    /// )
+    /// s:expect_style(s:get_by_name("bar"), { width = "50%" })
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let half = ui.signal(25);
+    /// let s = import_namespace("reactive_ui_test").render(
+    ///     ui.node(#{ name: "bar", width: ui.percent(ui.mul(ui.path(half, ""), 2), 100) }, [])
+    /// );
+    /// s.expect_style(s.get_by_name("bar"), #{ width: "50%" });
+    /// ```
+    ///
     /// Arguments:
     /// * `a`: The left side.
     /// * `b`: The right side.
@@ -498,6 +608,26 @@ impl NamespaceMembers {
     }
 
     /// `if_true` if `condition` is true, otherwise `if_false`.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local on = ui.signal(true)
+    /// local s = import_namespace("reactive_ui_test").render(
+    ///     ui.node({ name = "light", background_color = ui.when(ui.path(on, ""), "#ffcc00", "#333333") })
+    /// )
+    /// s:act(function() on:set(false) end)
+    /// s:expect_style(s:get_by_name("light"), { background_color = "#333333" })
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let on = ui.signal(true);
+    /// let s = import_namespace("reactive_ui_test").render(
+    ///     ui.node(#{ name: "light", background_color: ui.when(ui.path(on, ""), "#ffcc00", "#333333") }, [])
+    /// );
+    /// s.act([|on| on.set(false), on]);
+    /// s.expect_style(s.get_by_name("light"), #{ background_color: "#333333" });
+    /// ```
     ///
     /// Arguments:
     /// * `condition`: The condition.
@@ -515,6 +645,33 @@ impl NamespaceMembers {
 
     /// Whether `key` is selected, i.e. `background_color = when(selected(selector, name), "#ffcc00", "#333333")`.
     /// In a row template the key can be a value of the row, it is read once when the row is built.
+    ///
+    /// ```multi-lang-example,lua
+    /// local ui = import_namespace("reactive_ui")
+    /// local items = ui.signal({ "sword", "shield" })
+    /// local is_selected = ui.selector(ui.signal("shield"))
+    /// local s = import_namespace("reactive_ui_test").render(ui.list_template(items, function(item)
+    ///     return ui.node({
+    ///         name = ui.format("row_{}", { item }),
+    ///         background_color = ui.when(ui.selected(is_selected, item), "#ffcc00", "#333333"),
+    ///     })
+    /// end))
+    /// s:expect_style(s:get_by_name("row_shield"), { background_color = "#ffcc00" })
+    /// ```
+    ///
+    /// ```multi-lang-example,rune
+    /// let ui = import_namespace("reactive_ui");
+    /// let items = ui.signal(["sword", "shield"]);
+    /// let is_selected = ui.selector(ui.signal("shield"));
+    /// let s = import_namespace("reactive_ui_test").render(ui.list_template(items, [|is_selected, item| {
+    ///     let ui = import_namespace("reactive_ui");
+    ///     ui.node(#{
+    ///         name: ui.format("row_{}", [item]),
+    ///         background_color: ui.when(ui.selected(is_selected, item), "#ffcc00", "#333333"),
+    ///     }, [])
+    /// }, is_selected]));
+    /// s.expect_style(s.get_by_name("row_shield"), #{ background_color: "#ffcc00" });
+    /// ```
     ///
     /// Arguments:
     /// * `selector`: The selector.

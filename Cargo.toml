@@ -254,7 +254,7 @@ bevy = { workspace = true, features = [
     # hot reloading in the examples
     "file_watcher",
 ] }
-bevy_mod_scripting_reactive_ui = { workspace = true }
+bevy_mod_scripting_reactive_ui = { workspace = true, features = ["testing"] }
 bevy_platform = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 rand = { workspace = true, features = ["thread_rng"] }

@@ -52,7 +52,10 @@ fn main() -> std::io::Result<()> {
         ),
     ));
 
-    app.add_plugins(bevy_mod_scripting_reactive_ui::ReactiveUiPlugin);
+    app.add_plugins((
+        bevy_mod_scripting_reactive_ui::ReactiveUiPlugin,
+        bevy_mod_scripting_reactive_ui::ReactiveUiTestPlugin,
+    ));
 
     // `cargo run --example docgen --features lua_language_server_files -- testlib`
     // also includes the functions available to the script integration tests, i.e. to get completions while writing tests

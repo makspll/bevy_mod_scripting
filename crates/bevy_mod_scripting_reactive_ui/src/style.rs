@@ -70,6 +70,9 @@ impl UiEvent {
 struct StyleField {
     name: &'static str,
     set: fn(&mut Node, &ScriptValue) -> Result<(), InteropError>,
+    /// Reads it back as a script would set it
+    #[cfg(feature = "testing")]
+    get: fn(&Node) -> ScriptValue,
 }
 
 /// The fields of [`Node`] scripts can set, by their name.
@@ -84,6 +87,8 @@ macro_rules! style_fields {
                 };
                 Ok(())
             },
+            #[cfg(feature = "testing")]
+            get: |node| testing::ToProp::to_prop(&node.$field),
         }),*]
     };
 }
@@ -618,4 +623,228 @@ pub(crate) fn apply_prop(
         Prop::On(_) => {}
     }
     Ok(())
+}
+
+/// Reading properties back from entities, as scripts set them, for tests.
+#[cfg(feature = "testing")]
+pub(crate) mod testing {
+    use bevy_ecs::world::{EntityRef, World};
+    use bevy_mod_scripting_bindings::{InteropError, ScriptValue};
+    use bevy_reflect::{Reflect, ReflectRef};
+
+    use super::*;
+
+    /// A `bevy_ui` value as a script sets it: the inverse of `FromProp`, in one canonical form.
+    pub(crate) trait ToProp {
+        fn to_prop(&self) -> ScriptValue;
+    }
+
+    fn text(text: String) -> ScriptValue {
+        ScriptValue::String(text.into())
+    }
+
+    impl ToProp for f32 {
+        fn to_prop(&self) -> ScriptValue {
+            ScriptValue::Float(*self as f64)
+        }
+    }
+
+    impl ToProp for Option<f32> {
+        fn to_prop(&self) -> ScriptValue {
+            self.map_or(ScriptValue::Unit, |v| v.to_prop())
+        }
+    }
+
+    /// Pixels are numbers, the rest strings: `"auto"`, `"50%"`, `"5vw"`.
+    impl ToProp for Val {
+        fn to_prop(&self) -> ScriptValue {
+            match *self {
+                Val::Auto => text("auto".into()),
+                Val::Px(px) => px.to_prop(),
+                Val::Percent(v) => text(format!("{v}%")),
+                Val::Vw(v) => text(format!("{v}vw")),
+                Val::Vh(v) => text(format!("{v}vh")),
+                Val::VMin(v) => text(format!("{v}vmin")),
+                Val::VMax(v) => text(format!("{v}vmax")),
+                Val::Em(v) => text(format!("{v}em")),
+                Val::Rem(v) => text(format!("{v}rem")),
+            }
+        }
+    }
+
+    /// One size when every side is the same, `{ vertical, horizontal }` when opposite sides are, else the sides by name.
+    impl ToProp for UiRect {
+        fn to_prop(&self) -> ScriptValue {
+            let UiRect {
+                left,
+                right,
+                top,
+                bottom,
+            } = *self;
+            if left == right && left == top && left == bottom {
+                return left.to_prop();
+            }
+            if left == right && top == bottom {
+                return ScriptValue::List([top.to_prop(), left.to_prop()].into());
+            }
+            ScriptValue::Map(
+                [
+                    ("left", left),
+                    ("right", right),
+                    ("top", top),
+                    ("bottom", bottom),
+                ]
+                .into_iter()
+                .map(|(side, v)| (side.to_owned(), v.to_prop()))
+                .collect(),
+            )
+        }
+    }
+
+    /// One size when it is round (an `auto` height is the width), else its width and height.
+    impl ToProp for bevy_ui::CornerRadius {
+        fn to_prop(&self) -> ScriptValue {
+            if self.x == self.y || self.y == Val::Auto {
+                return self.x.to_prop();
+            }
+            ScriptValue::List([self.x, self.y].iter().map(ToProp::to_prop).collect())
+        }
+    }
+
+    /// One radius when every corner is the same, else the list of corners.
+    impl ToProp for BorderRadius {
+        fn to_prop(&self) -> ScriptValue {
+            let corners = [
+                self.top_left,
+                self.top_right,
+                self.bottom_right,
+                self.bottom_left,
+            ];
+            if corners.iter().all(|c| *c == corners[0]) {
+                return corners[0].to_prop();
+            }
+            ScriptValue::List(corners.iter().map(ToProp::to_prop).collect())
+        }
+    }
+
+    /// The name of the variant, in snake case.
+    fn variant_name(value: &dyn Reflect) -> ScriptValue {
+        match value.reflect_ref() {
+            ReflectRef::Enum(e) => text(snake_case(e.variant_name())),
+            _ => ScriptValue::Unit,
+        }
+    }
+
+    macro_rules! enum_to_props {
+        ($($ty:ty),* $(,)?) => {
+            $(impl ToProp for $ty {
+                fn to_prop(&self) -> ScriptValue {
+                    variant_name(self)
+                }
+            })*
+        };
+    }
+
+    enum_to_props!(
+        Display,
+        BoxSizing,
+        PositionType,
+        AlignItems,
+        JustifyItems,
+        AlignSelf,
+        JustifySelf,
+        AlignContent,
+        JustifyContent,
+        InlineDirection,
+        FlexDirection,
+        FlexWrap,
+        GridAutoFlow,
+        OverflowAxis,
+    );
+
+    /// One behaviour when both axes have it, else `x` and `y`.
+    impl ToProp for Overflow {
+        fn to_prop(&self) -> ScriptValue {
+            if self.x == self.y {
+                return self.x.to_prop();
+            }
+            ScriptValue::Map(
+                [("x", self.x), ("y", self.y)]
+                    .into_iter()
+                    .map(|(axis, v)| (axis.to_owned(), v.to_prop()))
+                    .collect(),
+            )
+        }
+    }
+
+    fn hex(color: Color) -> ScriptValue {
+        text(color.to_srgba().to_hex())
+    }
+
+    /// The properties which can be read back, by name: all but handlers.
+    pub(crate) fn readable() -> impl Iterator<Item = (&'static str, Prop)> {
+        PROPS
+            .iter()
+            .map(|(name, prop)| (*name, *prop))
+            .filter(|(_, prop)| !matches!(prop, Prop::On(_)))
+    }
+
+    /// The value of a property of an entity as a script sets it, nil when the entity doesn't have it.
+    pub(crate) fn read_prop(entity: EntityRef, prop: Prop) -> ScriptValue {
+        let unit = ScriptValue::Unit;
+        match prop {
+            Prop::Style(index) => entity
+                .get::<Node>()
+                .map_or(unit, |node| (STYLE[index as usize].get)(node)),
+            Prop::BackgroundColor => entity.get::<BackgroundColor>().map_or(unit, |c| hex(c.0)),
+            Prop::BorderColor => entity.get::<BorderColor>().map_or(unit, |c| hex(c.top)),
+            Prop::ZIndex => entity
+                .get::<ZIndex>()
+                .map_or(unit, |z| ScriptValue::Integer(z.0 as i64)),
+            Prop::Text => entity.get::<Text>().map_or(unit, |t| text(t.0.clone())),
+            Prop::FontSize => entity
+                .get::<TextFont>()
+                .map_or(unit, |f| match f.font_size {
+                    FontSize::Px(px) => px.to_prop(),
+                    other => text(format!("{other:?}")),
+                }),
+            Prop::Color => entity.get::<TextColor>().map_or(unit, |c| hex(c.0)),
+            Prop::Image => entity
+                .get::<ImageNode>()
+                .and_then(|image| image.image.path())
+                .map_or(unit, |path| text(path.to_string())),
+            Prop::Name => entity
+                .get::<Name>()
+                .map_or(unit, |n| text(n.as_str().to_owned())),
+            Prop::On(_) => unit,
+        }
+    }
+
+    /// What each property reads back as when it is not set (set to nil), on an entity of a world of its own.
+    pub(crate) fn defaults() -> HashMap<Prop, ScriptValue> {
+        let mut world = World::new();
+        let mut entity = world.spawn((Node::default(), Text::default()));
+        readable()
+            .filter(|(_, prop)| *prop != Prop::Image)
+            .filter_map(|(_, prop)| {
+                apply_prop(&mut entity, prop, &ScriptValue::Unit).ok()?;
+                Some((prop, read_prop(entity.as_readonly(), prop)))
+            })
+            .collect()
+    }
+
+    /// A property value in the form [`read_prop`] gives it, by setting it on an entity of a world of its own.
+    pub(crate) fn normalize_prop(
+        prop: Prop,
+        value: &ScriptValue,
+    ) -> Result<ScriptValue, InteropError> {
+        if let (Prop::Image, ScriptValue::String(path)) = (prop, value) {
+            // loading images needs an asset server, the path is what is compared
+            return Ok(text(path.to_string()));
+        }
+        let mut world = World::new();
+        let mut entity = world.spawn((Node::default(), Text::default()));
+        apply_prop(&mut entity, prop, value)?;
+        Ok(read_prop(entity.as_readonly(), prop))
+    }
 }

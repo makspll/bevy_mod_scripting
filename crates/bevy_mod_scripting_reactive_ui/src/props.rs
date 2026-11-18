@@ -214,28 +214,6 @@ pub struct PointerEvent {
     delta_y: Option<f64>,
 }
 
-/// What an entity of the UI shows, for tests: the rest is described as Rust prints it.
-#[derive(ScriptData)]
-#[script_data(
-    namespace = "reactive_ui",
-    bms_bindings_path = "bevy_mod_scripting_bindings"
-)]
-pub struct Description {
-    pub text: Option<String>,
-    pub name: Option<String>,
-    /// Hex colours
-    pub background_color: Option<String>,
-    pub color: Option<String>,
-    pub border_color: Option<String>,
-    /// The `Node`, as Rust prints it
-    pub layout: Option<String>,
-    pub font_size: Option<String>,
-    /// Whether it shows an image
-    pub image: bool,
-    /// How many children it has
-    pub children: i64,
-}
-
 /// A handler of a pointer event.
 pub type Handler = WithDeps<fn(PointerEvent)>;
 

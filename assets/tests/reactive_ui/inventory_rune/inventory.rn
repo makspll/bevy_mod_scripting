@@ -142,7 +142,6 @@ pub fn main() {
         s["reloads"] = s["reloads"] + 1;
     } else {
         s["reloads"] = 1;
-        s["step"] = 0;
         let Health = world.register_new_component("script.reactive_ui", "Health", true);
         let Item = world.register_new_component("script.reactive_ui", "Item", true);
         s["Health"] = Health;
@@ -173,109 +172,112 @@ pub fn on_script_loaded() {
     s["root"] = ui.render("inventory", s["Inventory"].call(#{ player: s["player"] }));
 }
 
-// the test steps
+// the test, with `reactive_ui_test`: events and `act` run what they change before returning
 
-fn find(name) {
-    import_namespace("reactive_ui").find(state()["root"], name)
+fn expect_text(screen, name, expected) {
+    screen.expect_style(screen.get_by_name(name), #{ text: expected });
 }
 
-fn expect(name, expected) {
-    let e = find(name);
-    assert!(e != (), "no element named {}", name);
-    let actual = import_namespace("reactive_ui").describe(e).text;
-    assert!(actual == expected, "{}: expected `{}`, got `{}`", name, expected, actual);
+fn first_load(screen) {
+    let t = import_namespace("reactive_ui_test");
+    let s = state();
+    // properties are checked as the script sets them
+    screen.expect_style(screen.get_by_name("panel"), #{
+        flex_direction: "Column", justify_content: "SpaceBetween", max_width: "50%",
+        padding: [4, 8], border: 1, border_color: "#ffffff", border_radius: 3,
+    });
+    screen.expect_style(screen.get_by_name("version"), #{ text: "v1", font_size: 20, color: "#ff0000" });
+    screen.expect_style(screen.get_by_name("icon"), #{ image: "icons/sword.png", width: 16, height: 16 });
+    // laid out in a 1280x720 window
+    let icon = screen.rect(screen.get_by_name("icon"));
+    let panel = screen.rect(screen.get_by_name("panel"));
+    assert!(icon.width == 16.0 && icon.height == 16.0, "the icon is {}x{}", icon.width, icon.height);
+    assert!(panel.x == 0.0 && panel.y == 0.0 && panel.width <= 640.0, "the panel is at {}, {}", panel.x, panel.y);
+    expect_text(screen, "title", "Inventory (3)");
+    expect_text(screen, "hp", "100/100");
+    assert!(screen.query_by_name("low") == (), "low hp shown at full health");
+    expect_text(screen, "clicks", "clicks: 0");
+    expect_text(screen, "count_Sword", "x1");
+    assert!(screen.get_by_text("Sword x1") == screen.get_by_name("row_text_Sword"), "rows are found by their text");
+    assert!(screen.query_by_name("details") == (), "details shown without a selection");
+    screen.updates();
+
+    // a watched component changes
+    screen.act(|| {
+        let s = state();
+        let hp = import_namespace("bms").world.get_component(s["player"], s["Health"]);
+        hp.data = #{ current: 20, max: 100 };
+    });
+    expect_text(screen, "hp", "20/100");
+    expect_text(screen, "low", "LOW HP");
+    let updates = screen.updates();
+    assert!(updates.renders.get("Inventory") == None, "the component rendered again");
+    assert!(updates.bindings == 1 && updates.regions == 1, "only the hp text and the low hp region run again");
+
+    // a click handler sets component state, a click on the text inside a row reaches the row's handler
+    screen.click(screen.get_by_name("slot_Sword"));
+    screen.click(screen.get_by_name("row_text_Shield"));
+    expect_text(screen, "details", "selected: Sword");
+    expect_text(screen, "clicks", "clicks: 1");
+    screen.expect_style(screen.get_by_name("slot_Sword"), #{ background_color: "#ffcc00" });
+    screen.expect_style(screen.get_by_name("slot_Shield"), #{ background_color: "#333333" });
+    screen.expect_style(screen.get_by_name("row_Sword"), #{ background_color: "#ffcc00" });
+    assert!(s["row_clicked"] == "Shield", "the row handler did not get its entity");
+    let row = screen.within(screen.get_by_name("row_Shield"));
+    assert!(row.query_by_text("Sword x1") == () && row.all_by_text("Shield x1").len() == 1, "within finds inside the row only");
+
+    // a global signal filters a keyed list
+    screen.act(|| state()["search"].set("sh"));
+    expect_text(screen, "title", "Inventory (1)");
+    assert!(screen.query_by_name("row_Sword") == (), "filtered out row still shown");
+    assert!(screen.query_by_name("slot_Sword") == (), "filtered out slot still shown");
+    assert!(screen.query_by_name("slot_Shield") != (), "matching slot not shown");
+    expect_text(screen, "details", "selected: Sword");
+
+    // a list item's watched component changes
+    screen.act(|| {
+        let s = state();
+        let shield = import_namespace("bms").world.get_component(s["entities"]["Shield"], s["Item"]);
+        shield.data = #{ name: "Shield", count: 5 };
+    });
+    expect_text(screen, "count_Shield", "x5");
+    expect_text(screen, "row_text_Shield", "Shield x5");
+
+    // an effect clears the selection once the item is gone
+    screen.act(|| {
+        let s = state();
+        import_namespace("bms").world.despawn(s["entities"]["Sword"]);
+        s["items"].set(["Shield", "Potion"]);
+    });
+    assert!(screen.query_by_name("details") == (), "selection of a removed item was not cleared");
+
+    // a component rendered on its own, with a context provided
+    let d = t.render(s["Details"].call(#{ name: "Potion" }), [t.context(s["Labels"], #{ details: "given: " })]);
+    expect_text(d, "details", "given: Potion");
+    // the whole tree as text, the same for the same ui
+    let snapshot = d.snapshot();
+    assert!(snapshot == "text name=\"details\" text=\"given: Potion\"\n", "{}", snapshot);
+    expect_text(t.render(s["Details"].call(#{ name: "Potion" })), "details", "details: Potion");
+}
+
+// after a reload the new code renders and the state survives
+fn after_reload(screen) {
+    expect_text(screen, "version", "v2");
+    expect_text(screen, "title", "Inventory (1)");
+    expect_text(screen, "clicks", "clicks: 1");
+    expect_text(screen, "hp", "20/100");
+    expect_text(screen, "count_Shield", "x5");
+    expect_text(screen, "row_text_Shield", "Shield x5");
 }
 
 pub fn on_test() {
-    let world = import_namespace("bms").world;
-    let ui = import_namespace("reactive_ui");
     let s = state();
-    match s["step"] {
-        1 => {
-            let hp = world.get_component(s["player"], s["Health"]);
-            hp.data = #{ current: 20, max: 100 };
-        }
-        2 => {
-            ui.interact(find("slot_Sword"), "click");
-            ui.interact(find("row_Shield"), "click");
-        }
-        3 => s["search"].set("sh"),
-        4 => {
-            let shield = world.get_component(s["entities"]["Shield"], s["Item"]);
-            shield.data = #{ name: "Shield", count: 5 };
-        }
-        5 => {
-            world.despawn(s["entities"]["Sword"]);
-            s["items"].set(["Shield", "Potion"]);
-        }
-        _ => {}
+    let screen = import_namespace("reactive_ui_test").screen(s["root"]);
+    let reloads = s["reloads"];
+    if reloads == 1 {
+        first_load(screen);
+    } else {
+        after_reload(screen);
     }
-}
-
-pub fn on_test_last() {
-    let ui = import_namespace("reactive_ui");
-    let s = state();
-    let step = s["step"];
-    match step {
-        0 => {
-            expect("version", "v1");
-            // layout, colours, text style and images are plain values
-            let panel = ui.describe(find("panel"));
-            assert!(panel.layout.contains("justify_content: SpaceBetween"), "{}", panel.layout);
-            assert!(panel.layout.contains("max_width: Percent(50.0)"), "{}", panel.layout);
-            assert!(panel.border_color.to_lowercase() == "#ffffff", "{}", panel.border_color);
-            let version = ui.describe(find("version"));
-            assert!(version.font_size == "Px(20.0)", "{}", version.font_size);
-            assert!(version.color.to_lowercase() == "#ff0000", "{}", version.color);
-            assert!(ui.describe(find("icon")).image, "the image element has no image");
-            expect("title", "Inventory (3)");
-            expect("hp", "100/100");
-            assert!(find("low") == (), "low hp shown at full health");
-            expect("clicks", "clicks: 0");
-            expect("count_Sword", "x1");
-            expect("row_text_Sword", "Sword x1");
-            assert!(find("details") == (), "details shown without a selection");
-        }
-        1 => {
-            expect("hp", "20/100");
-            expect("low", "LOW HP");
-        }
-        2 => {
-            expect("details", "selected: Sword");
-            expect("clicks", "clicks: 1");
-            let sword = ui.describe(find("slot_Sword"));
-            let shield = ui.describe(find("slot_Shield"));
-            assert!(sword.background_color != shield.background_color, "the selected slot is not highlighted");
-            let sword_row = ui.describe(find("row_Sword"));
-            let shield_row = ui.describe(find("row_Shield"));
-            assert!(
-                sword_row.background_color == sword.background_color && shield_row.background_color == shield.background_color,
-                "the selected row is not highlighted"
-            );
-            assert!(s["row_clicked"] == "Shield", "the row handler did not get its entity");
-        }
-        3 => {
-            expect("title", "Inventory (1)");
-            assert!(find("row_Sword") == (), "filtered out row still shown");
-            assert!(find("slot_Sword") == (), "filtered out slot still shown");
-            assert!(find("slot_Shield") != (), "matching slot not shown");
-            expect("details", "selected: Sword");
-        }
-        4 => {
-            expect("count_Shield", "x5");
-            expect("row_text_Shield", "Shield x5");
-        }
-        5 => assert!(find("details") == (), "selection of a removed item was not cleared"),
-        6 => {
-            expect("version", "v2");
-            expect("title", "Inventory (1)");
-            expect("clicks", "clicks: 1");
-            expect("hp", "20/100");
-            expect("count_Shield", "x5");
-            expect("row_text_Shield", "Shield x5");
-        }
-        _ => {}
-    }
-    s["step"] = step + 1;
-    `step ${step}`
+    `load ${reloads}`
 }

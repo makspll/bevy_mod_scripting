@@ -4,6 +4,7 @@ local bms = import_namespace("bms")
 local world = bms.world
 local DynamicComponent = bms.DynamicComponent
 local ui = import_namespace("reactive_ui")
+local t = import_namespace("reactive_ui_test")
 
 local Health = world.register_new_component("script.bench", "Health", true)
 local Item = world.register_new_component("script.bench", "Item", true)
@@ -102,7 +103,9 @@ function bench_step()
     elseif BENCH == "mount" then
         shown:set(not shown:peek())
     elseif BENCH == "select" then
-        ui.interact(ui.find(root, "slot_" .. items[n % 200 + 1]), "click")
+        local s = t.screen(root)
+        -- queued, the click runs in the timed UI update
+        s:dispatch(s:get_by_name("slot_" .. items[n % 200 + 1]), "click")
     elseif BENCH == "search" then
         search:set(n % 2 == 0 and "" or "5")
     elseif BENCH == "one" then
