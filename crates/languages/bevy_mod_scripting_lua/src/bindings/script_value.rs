@@ -3,6 +3,7 @@ use std::{
     collections::VecDeque,
     ops::{Deref, DerefMut},
     os::raw::c_int,
+    sync::Arc,
 };
 
 use bevy_mod_scripting_asset::Language;
@@ -211,15 +212,22 @@ fn non_table_value(value: Value) -> mlua::Result<ScriptValue> {
         Value::Integer(i) => ScriptValue::Integer(i),
         Value::Number(n) => ScriptValue::Float(n),
         Value::String(s) => ScriptValue::String(s.to_str()?.to_owned().into()),
-        Value::Function(f) => ScriptValue::Function(
-            (move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
-                match f.call::<MultiLuaScriptValue>(MultiLuaScriptValue(args)) {
-                    Ok(v) => v.into_script_value(),
-                    Err(e) => ScriptValue::Error(InteropError::external(Box::new(e))),
-                }
-            })
-            .into(),
-        ),
+        Value::Function(f) => {
+            // kept next to the function calling it, to hand it back to Lua as it is, see `IntoLua`
+            let f = Arc::new(f);
+            let called = f.clone();
+            ScriptValue::Function(
+                DynamicScriptFunction::from(
+                    move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
+                        match called.call::<MultiLuaScriptValue>(MultiLuaScriptValue(args)) {
+                            Ok(v) => v.into_script_value(),
+                            Err(e) => ScriptValue::Error(InteropError::external(Box::new(e))),
+                        }
+                    },
+                )
+                .with_script_function(f),
+            )
+        }
         // Value::Thread(thread) => todo!(),
         Value::UserData(ud) => {
             if let Ok(type_ref) = ud.borrow::<LuaTypeRef>() {
@@ -550,11 +558,16 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
             ScriptValue::Type(type_id) => LuaTypeRef(type_id).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
-            ScriptValue::Function(function) => lua
-                .create_function(move |lua, args: MultiLuaScriptValue| {
-                    call_from_lua(lua, |context| function.call(args.0, context))
-                })?
-                .into_lua(lua)?,
+            ScriptValue::Function(function) => match function.script_function::<mlua::Function>() {
+                // a function of this Lua state is handed back as it is: the script gets the function it
+                // passed in, and calls it without going through Rust
+                Some(f) if *f.weak_lua() == lua.weak() => Value::Function(f.clone()),
+                _ => lua
+                    .create_function(move |lua, args: MultiLuaScriptValue| {
+                        call_from_lua(lua, |context| function.call(args.0, context))
+                    })?
+                    .into_lua(lua)?,
+            },
             ScriptValue::FunctionMut(function) => lua
                 .create_function(move |lua, args: MultiLuaScriptValue| {
                     call_from_lua(lua, |context| function.call(args.0, context))
@@ -737,5 +750,13 @@ mod test {
             assert_eq!(from_stack.len(), 1);
             assert_eq!(canonical(&from_stack[0]), canonical(&from_value));
         }
+        // functions come back to their Lua state as themselves, and wrapped to another
+        let function = Value::Function(lua.create_function(|_, ()| Ok(())).unwrap());
+        let converted = LuaScriptValue::from_lua(function.clone(), &lua).unwrap().0;
+        let back = LuaScriptValue(converted.clone()).into_lua(&lua).unwrap();
+        assert_eq!(back, function);
+        let other = mlua::Lua::new();
+        let wrapped = LuaScriptValue(converted).into_lua(&other).unwrap();
+        assert!(wrapped.is_function());
     }
 }
