@@ -45,12 +45,12 @@ mod style;
 use std::{collections::VecDeque, marker::PhantomData};
 
 use bevy_mod_scripting_bindings::{
-    A, ArgMeta, CallScope, FromScript, GenericTypesAppExt, GetTypeDependencies, ThroughTypeInfo,
-    TypeOf, TypedThrough, Union, ValueOf, WithDeps,
+    A, ArgMeta, CallScope, FromScript, GenericTypesAppExt, GetTypeDependencies, Lazy,
+    ThroughTypeInfo, TypeOf, TypedThrough, Union, ValueOf, WithDeps,
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_reflect::{GetTypeRegistration, TypePath, TypeRegistry, Typed};
-use props::{As, Element, UiProps, parse_props};
+use props::{Element, UiProps, parse_props};
 
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_ecs::{
@@ -300,7 +300,7 @@ fn component_element(
 fn region(
     ctx: &FunctionCallContext,
     kind: ElementKind,
-    props: Option<As<UiProps>>,
+    props: Option<Lazy<UiProps>>,
 ) -> Result<Element, InteropError> {
     let props = parse_props(props.map_or(ScriptValue::Unit, |p| p.0), &ctx.world()?)?.1;
     Ok(Element::new(new_element(
@@ -332,7 +332,7 @@ impl NamespaceMembers {
     /// * `element`: The element.
     fn node(
         ctx: FunctionCallContext,
-        props: Option<As<UiProps>>,
+        props: Option<Lazy<UiProps>>,
         children: Option<props::Children>,
     ) -> Result<Element, InteropError> {
         let world = ctx.world()?;
@@ -362,7 +362,7 @@ impl NamespaceMembers {
     /// * `element`: The element.
     fn text(
         ctx: FunctionCallContext,
-        props: As<Union<String, UiProps>>,
+        props: Lazy<Union<String, UiProps>>,
     ) -> Result<Element, InteropError> {
         let (key, props) = parse_props(props.0, &ctx.world()?)?;
         Ok(Element::new(new_element(
@@ -383,7 +383,7 @@ impl NamespaceMembers {
     /// * `props`: Its properties.
     /// Returns:
     /// * `element`: The element.
-    fn image(ctx: FunctionCallContext, props: As<UiProps>) -> Result<Element, InteropError> {
+    fn image(ctx: FunctionCallContext, props: Lazy<UiProps>) -> Result<Element, InteropError> {
         let (key, props) = parse_props(props.0, &ctx.world()?)?;
         Ok(Element::new(new_element(
             &*runtime(&ctx)?,
@@ -498,7 +498,7 @@ impl NamespaceMembers {
     /// * `element`: The element with the key.
     fn keyed(
         ctx: FunctionCallContext,
-        key: As<props::Key>,
+        key: Lazy<props::Key>,
         element: Element,
     ) -> Result<Element, InteropError> {
         let runtime = runtime(&ctx)?;
@@ -824,7 +824,7 @@ impl NamespaceMembers {
         ctx: FunctionCallContext,
         items: SignalOf<Vec<A>>,
         f: WithDeps<fn(ValueOf<A, ScriptValue>) -> Element>,
-        props: Option<As<UiProps>>,
+        props: Option<Lazy<UiProps>>,
     ) -> Result<Element, InteropError> {
         let kind = ElementKind::Each(items.0.0, f.into_inner(), false);
         region(&ctx, kind, props)
@@ -843,8 +843,8 @@ impl NamespaceMembers {
     fn list_template(
         ctx: FunctionCallContext,
         items: SignalOf<Vec<A>>,
-        f: WithDeps<fn(As<V<UiValue>>) -> Element>,
-        props: Option<As<UiProps>>,
+        f: WithDeps<fn(Lazy<V<UiValue>>) -> Element>,
+        props: Option<Lazy<UiProps>>,
     ) -> Result<Element, InteropError> {
         let kind = ElementKind::Each(items.0.0, f.into_inner(), true);
         region(&ctx, kind, props)
@@ -861,7 +861,7 @@ impl NamespaceMembers {
     fn show(
         ctx: FunctionCallContext,
         f: WithDeps<fn() -> Option<Element>>,
-        props: Option<As<UiProps>>,
+        props: Option<Lazy<UiProps>>,
     ) -> Result<Element, InteropError> {
         region(&ctx, ElementKind::Dynamic(f.into_inner()), props)
     }

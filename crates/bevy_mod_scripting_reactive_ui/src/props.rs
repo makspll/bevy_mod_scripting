@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use bevy_mod_scripting_bindings::{
-    ArgMeta, ByName, CallScope, FromScript, GetTypeDependencies, InteropError, IntoScript,
+    ArgMeta, ByName, CallScope, FromScript, GetTypeDependencies, InteropError, IntoScript, Lazy,
     ScriptValue, ThroughTypeInfo, TypedThrough, V, WithDeps, WorldGuard,
 };
 use bevy_mod_scripting_derive::ScriptData;
@@ -23,50 +23,11 @@ use crate::{
     style::Prop,
 };
 
-/// A script value documented as a `T`, kept as it is: the UI converts it when it is applied.
-pub struct As<T>(pub ScriptValue, PhantomData<fn() -> T>);
-
-impl<T> As<T> {
-    pub fn new(value: ScriptValue) -> Self {
-        As(value, PhantomData)
-    }
-}
-
-impl<T> FromScript for As<T> {
-    type This<'w> = Self;
-
-    fn from_script(value: ScriptValue, _: &CallScope) -> Result<Self, InteropError> {
-        Ok(As(value, PhantomData))
-    }
-}
-
-impl<T> IntoScript for As<T> {
-    fn into_script(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
-        Ok(self.0)
-    }
-}
-
-impl<T> ArgMeta for As<T> {}
-
-impl<T: TypedThrough> TypedThrough for As<T> {
-    fn through_type_info() -> ThroughTypeInfo {
-        T::through_type_info()
-    }
-}
-
-impl<T: GetTypeDependencies> GetTypeDependencies for As<T> {
-    type Underlying = ScriptValue;
-
-    fn register_type_dependencies(registry: &mut TypeRegistry) {
-        T::register_type_dependencies(registry)
-    }
-}
-
 /// A ui element, built by `node`, `text`, a component and so on. Scripts hold a handle to it.
-pub type Element = As<V<UiElement>>;
+pub type Element = Lazy<V<UiElement>>;
 
 /// The children of an element: a list of elements.
-pub type Children = As<Vec<V<UiElement>>>;
+pub type Children = Lazy<Vec<V<UiElement>>>;
 
 /// A property value: a `T`, a value computed in Rust ([`UiValue`]), or a function returning a `T`, re-run when
 /// what it reads changes. Functions can be given with their dependencies, see [`WithDeps`].
@@ -282,7 +243,7 @@ pub type Handler = WithDeps<fn(PointerEvent)>;
 ///
 /// Each takes a value, a value computed in Rust (`UiValue`) or a function re-run when what it reads changes.
 ///
-/// It documents what elements take: they are given an [`As<UiProps>`] parsed in one pass with [`parse_props`],
+/// It documents what elements take: they are given a [`Lazy<UiProps>`] parsed in one pass with [`parse_props`],
 /// building only the properties given (converting a struct of all of them doubled the cost of building elements).
 #[derive(ScriptData)]
 #[script_data(
@@ -291,7 +252,7 @@ pub type Handler = WithDeps<fn(PointerEvent)>;
 )]
 pub struct UiProps {
     /// Tells the element apart from its siblings, so it is kept when they change
-    key: Option<As<Key>>,
+    key: Option<Lazy<Key>>,
     display: Option<Reactive<DisplayMode>>,
     box_sizing: Option<Reactive<ByName<BoxSizing>>>,
     position_type: Option<Reactive<ByName<PositionType>>>,

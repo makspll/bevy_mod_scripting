@@ -6,7 +6,7 @@ use std::{any::TypeId, sync::Arc};
 use bevy_ecs::{component::ComponentId, world::World};
 use bevy_mod_scripting_bindings::{
     InteropError, NamespaceMembers, ReflectReference, ScriptComponentRegistration, ScriptValue,
-    Union, V, WorldGuard,
+    Lazy, Union, V, WorldGuard,
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_reflect::{PartialReflect, Reflect, ReflectRef};
@@ -14,7 +14,7 @@ use parking_lot::Mutex;
 
 use crate::{
     Selector, Signal,
-    props::{As, Constant},
+    props::Constant,
     runtime::{GraphNode, NodeId, NodeKind, Runtime, selector_key},
 };
 
@@ -75,7 +75,7 @@ pub struct ItemWatch {
 }
 
 /// What a script passes where a [`UiValue`] is expected: one, or a plain value.
-type ValueArg = Union<V<UiValue>, As<Constant>>;
+type ValueArg = Union<V<UiValue>, Lazy<Constant>>;
 
 fn arg(value: ValueArg) -> Expr {
     match value.into_left() {
