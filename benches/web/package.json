@@ -1,0 +1,19 @@
+{
+  "name": "bms-reactive-ui-web-comparison",
+  "private": true,
+  "type": "module",
+  "description": "The reactive_ui benchmark scenarios in React and Solid, timed in headless Chromium",
+  "scripts": {
+    "build": "node build.mjs",
+    "bench": "node build.mjs && node run.mjs"
+  },
+  "devDependencies": {
+    "@babel/core": "7.27.4",
+    "babel-preset-solid": "1.9.6",
+    "esbuild": "0.25.5",
+    "playwright-core": "1.53.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "solid-js": "1.9.7"
+  }
+}

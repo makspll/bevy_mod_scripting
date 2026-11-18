@@ -193,6 +193,13 @@ pub fn bench_step() {
             let item = world.get_component(s["entities"][n % 200], s["Item"]);
             item.data = #{ name: "x", count: n };
         }
+        "all" => {
+            // every slot's count changes in the same frame (timers, cooldowns)
+            for i in 0..200 {
+                let item = world.get_component(s["entities"][i], s["Item"]);
+                item.data = #{ name: s["names"][i], count: n };
+            }
+        }
         _ => {}
     }
 }

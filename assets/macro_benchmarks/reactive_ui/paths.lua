@@ -115,5 +115,10 @@ function bench_step()
         removed:set(n % 2 == 1 and "item 100" or nil)
     elseif BENCH == "count" then
         world.get_component(entities[items[n % 200 + 1]], Item).data = { name = "x", count = n }
+    elseif BENCH == "all" then
+        -- every slot's count changes in the same frame (timers, cooldowns)
+        for _, name in ipairs(items) do
+            world.get_component(entities[name], Item).data = { name = name, count = n }
+        end
     end
 end

@@ -337,6 +337,7 @@ fn reactive_ui_benchmarks(criterion: &mut Criterion) {
         ("search", "inventory search"),
         ("one", "inventory add or remove one"),
         ("count", "inventory item count"),
+        ("all", "inventory all counts"),
         ("idle", "idle"),
     ];
     for (bench, name) in scenarios {
