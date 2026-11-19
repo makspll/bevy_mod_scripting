@@ -66,4 +66,18 @@ pub fn main() {
     assert!(v.as_ivec3() == IVec3.new(1, 2, 3), "as_ivec3");
     assert!(v.to_vec3a().to_vec3() == v, "vec3a round trip");
     assert!(DVec3.new(1, 2, 3).as_vec3() == v, "dvec3");
+
+    // Vec3 is stored natively, it mixes with references to vectors in the world
+    let w = Vec3.new(1, 2, 3);
+    w.y = 5.0;
+    w.z += 1.0;
+    assert!(w.y == 5.0 && w.z == 4.0 && v.y == 2.0, "set a field of a native value");
+    assert!(catch(|| { w.y = "a"; }).is_err(), "fields keep their type");
+    let Transform = import_namespace("transform").Transform;
+    let t = Transform.from_translation(w);
+    assert!(w == t.translation, "compared with a reference");
+    assert!(w.dot(t.translation) == 42.0, "a reference as an argument");
+    t.translation = Vec3.new(7, 8, 9);
+    assert!(t.translation.x == 7.0, "assigned to a field");
+    assert!(format!("{}", w) == "Vec3 { x: 1.0, y: 5.0, z: 4.0 }", "display");
 }

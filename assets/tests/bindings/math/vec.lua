@@ -64,3 +64,17 @@ assert(approx(Vec2.from_angle(0):to_angle(), 0), "from_angle/to_angle")
 assert(v:as_ivec3() == IVec3.new(1, 2, 3), "as_ivec3")
 assert(v:to_vec3a():to_vec3() == v, "vec3a round trip")
 assert(DVec3.new(1, 2, 3):as_vec3() == v, "dvec3")
+
+-- Vec3 is stored natively, it mixes with references to vectors in the world
+local w = Vec3.new(1, 2, 3)
+w.y = 5
+assert(w.y == 5 and v.y == 2, "set a field of a native value")
+assert(not pcall(function() w.y = "a" end), "fields keep their type")
+assert(not pcall(function() w.w = 1 end), "unknown fields can't be set")
+local Transform = import_namespace("transform").Transform
+local t = Transform.from_translation(w)
+assert(t.translation == w and w == t.translation, "compared with a reference")
+assert(w:dot(t.translation) == 35, "a reference as an argument")
+t.translation = Vec3.new(7, 8, 9)
+assert(t.translation.x == 7, "assigned to a field")
+assert(tostring(w) == "Vec3 { x: 1.0, y: 5.0, z: 3.0 }", "display")

@@ -2,6 +2,7 @@
 
 use crate::function::bound::BoundFields;
 use crate::function::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
+use crate::native::{ArgSource, NativeStorage};
 use crate::{
     EnumVariantRef, ReflectReference, ScriptValue, construct::construct_reference,
     error::InteropError, script_value::VariadicTuple,
@@ -46,6 +47,49 @@ pub trait FromScript {
     {
         true
     }
+
+    /// Converts argument `index` of a typed call (see [`crate::native`]), which may be given in its native form.
+    ///
+    /// The default converts the argument to a [`ScriptValue`] and calls [`Self::from_script`], so every type works in typed calls,
+    /// types with a faster way override it.
+    fn from_arg<'s>(
+        args: &dyn ArgSource,
+        index: usize,
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError>
+    where
+        Self: Sized,
+    {
+        Self::from_script(args.script_value(index)?, scope)
+    }
+}
+
+/// The native value of `T` at argument `index`, borrowed for the call, if the argument is one.
+///
+/// Errors if the value is already borrowed in a conflicting way by another argument.
+fn native_arg<T: 'static>(
+    args: &dyn ArgSource,
+    index: usize,
+    scope: &CallScope<'_>,
+    exclusive: bool,
+) -> Result<Option<(*mut u8, *mut T)>, InteropError> {
+    let Some(base) = args.native(index) else {
+        return Ok(None);
+    };
+    // Safety: `ArgSource` gives initialised storage, alive until the call returns, which outlives the scope
+    let header = unsafe { NativeStorage::header(base) };
+    if header.vtable.type_id != TypeId::of::<T>() {
+        return Ok(None);
+    }
+    // Safety: see above
+    if !unsafe { scope.borrow(&header.borrow, exclusive) } {
+        return Err(InteropError::string(format!(
+            "a {} is passed to a function in a way which conflicts with another argument",
+            header.vtable.type_name
+        )));
+    }
+    // Safety: see above, the value is a T
+    Ok(Some((base, unsafe { NativeStorage::value(base) } as *mut T)))
 }
 
 #[profiling::all_functions]
@@ -112,6 +156,16 @@ macro_rules! impl_from_with_downcast {
                         value,
                         ScriptValue::Integer(_) | ScriptValue::Float(_) | ScriptValue::Bool(_) | ScriptValue::Reference(_)
                     )
+                }
+
+                fn from_arg(args: &dyn ArgSource, index: usize, scope: &CallScope<'_>) -> Result<Self, InteropError> {
+                    if let Some(i) = args.integer(index) {
+                        return Ok(i as $ty);
+                    }
+                    if let Some(n) = args.number(index) {
+                        return Ok(n as $ty);
+                    }
+                    Self::from_script(args.script_value(index)?, scope)
                 }
             }
         )*
@@ -326,6 +380,22 @@ impl<T: FromReflect> FromScript for V<T> {
     fn could_convert(value: &ScriptValue) -> bool {
         matches!(value, ScriptValue::Reference(_))
     }
+
+    fn from_arg<'s>(
+        args: &dyn ArgSource,
+        index: usize,
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self, InteropError> {
+        if let Some((base, _)) = native_arg::<T>(args, index, scope, false)? {
+            let mut value = std::mem::MaybeUninit::<T>::uninit();
+            // Safety: the storage holds a T, borrowed so no argument changes it while it's copied
+            unsafe {
+                NativeStorage::clone_value(base, value.as_mut_ptr() as *mut u8);
+                return Ok(V(value.assume_init()));
+            }
+        }
+        Self::from_script(args.script_value(index)?, scope)
+    }
 }
 
 /// A wrapper around a reference to a value of type `T`.
@@ -387,6 +457,18 @@ impl<T: FromReflect> FromScript for R<'_, T> {
 
     fn could_convert(value: &ScriptValue) -> bool {
         matches!(value, ScriptValue::Reference(_))
+    }
+
+    fn from_arg<'s>(
+        args: &dyn ArgSource,
+        index: usize,
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
+        if let Some((_, value)) = native_arg::<T>(args, index, scope, false)? {
+            // Safety: the storage holds a T which lives until the call returns, borrowed shared until the scope ends
+            return Ok(R(unsafe { &*value }));
+        }
+        Self::from_script(args.script_value(index)?, scope)
     }
 }
 
@@ -474,6 +556,18 @@ impl<T: FromReflect> FromScript for M<'_, T> {
 
     fn could_convert(value: &ScriptValue) -> bool {
         matches!(value, ScriptValue::Reference(_))
+    }
+
+    fn from_arg<'s>(
+        args: &dyn ArgSource,
+        index: usize,
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
+        if let Some((_, value)) = native_arg::<T>(args, index, scope, true)? {
+            // Safety: the storage holds a T which lives until the call returns, borrowed exclusively until the scope ends
+            return Ok(M(unsafe { &mut *value }));
+        }
+        Self::from_script(args.script_value(index)?, scope)
     }
 }
 

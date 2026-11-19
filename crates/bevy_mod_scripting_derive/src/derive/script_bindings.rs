@@ -13,22 +13,30 @@ pub fn script_bindings(
     let mut args = Args::default();
     let parser = syn::meta::parser(|meta| args.apply_nested_meta(&meta));
     syn::parse_macro_input!(args_stream with parser);
-    let impl_block = syn::parse_macro_input!(input as ItemImpl);
+    let mut impl_block = syn::parse_macro_input!(input as ItemImpl);
     let impl_span = impl_block.span();
     // let (impl_generics, ty_generics, where_clause) = impl_block.generics.split_for_impl();
 
-    let type_ident_with_generics = &impl_block.self_ty;
+    let bms_bindings_path = args.shared_args.bms_bindings_path.clone();
     let impl_block_self_ty = impl_block.self_ty.clone();
     let mut function_registrations = Vec::with_capacity(impl_block.items.len());
-    for i in &impl_block.items {
+    for i in &mut impl_block.items {
         match i {
             syn::ImplItem::Fn(impl_item_fn) => {
-                let fun = impl_fn_to_namespace_builder_registration(impl_item_fn);
+                // `#[native]` functions, or all of them with `native`, get a typed entry; the attribute isn't kept
+                let attrs = impl_item_fn.attrs.len();
+                impl_item_fn
+                    .attrs
+                    .retain(|attr| !attr.path().is_ident("native"));
+                let native = args.native || impl_item_fn.attrs.len() != attrs;
+                let wrapper = native.then(|| quote::quote! { #bms_bindings_path::native::Native });
+                let fun = impl_fn_to_namespace_builder_registration(impl_item_fn, wrapper);
                 function_registrations.push(fun);
             }
             _ => continue,
         }
     }
+    let type_ident_with_generics = &impl_block.self_ty;
 
     let visibility = match is_public_impl(&impl_block) {
         true => quote_spanned! {impl_span=>
@@ -150,6 +158,8 @@ struct Args {
     pub name: syn::Ident,
     /// If true the original impl block will be ignored, and only the function registrations will be generated
     pub remote: bool,
+    /// If true every function gets a typed entry (`Native`), otherwise only the ones marked `#[native]`
+    pub native: bool,
     /// If true will use `new_unregistered` instead of `new` for the namespace builder
     pub unregistered: bool,
     /// If true registers a marker type against the type registry to state that the type is generated (if unregistered is not set)
@@ -169,6 +179,7 @@ impl Default for Args {
         Self {
             name: syn::Ident::new("functions", Span::call_site()),
             remote: Default::default(),
+            native: Default::default(),
             unregistered: Default::default(),
             generated: Default::default(),
             core: Default::default(),
@@ -190,6 +201,11 @@ impl Args {
 
         if meta.path.is_ident("remote") {
             self.remote = true;
+            return Ok(());
+        }
+
+        if meta.path.is_ident("native") {
+            self.native = true;
             return Ok(());
         }
 

@@ -31,6 +31,14 @@ pub trait ScriptFunction<'env, Marker> {
     fn into_dynamic_script_function(self) -> DynamicScriptFunction;
 }
 
+/// A function which also has a typed entry, see [`crate::native::Native`].
+///
+/// Implemented for the same functions as [`ScriptFunction`], except `FnMut` ones.
+pub trait NativeScriptFunction<'env, Marker> {
+    /// The typed entry of the function.
+    fn into_native_thunk(self) -> Arc<crate::native::NativeThunk>;
+}
+
 #[diagnostic::on_unimplemented(
     message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetTypeDependencies",
     note = "If you're trying to use a non-primitive type, you might need to use V<T> R<T> or M<T> wrappers"
@@ -145,6 +153,9 @@ pub struct DynamicScriptFunction {
     func: Arc<
         dyn Fn(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
     >,
+    /// The typed entry of the function, see [`DynamicScriptFunction::call_native`]
+    #[debug_with_type_info(skip)]
+    native: Option<Arc<crate::native::NativeThunk>>,
     /// The script's own function this one calls, see [`DynamicScriptFunction::with_script_function`]
     #[debug_with_type_info(skip)]
     script_function: Option<Arc<dyn Any + Send + Sync>>,
@@ -241,6 +252,33 @@ impl DynamicScriptFunction {
         &self.info.name
     }
 
+    /// Calls the function's typed entry, if it has one (see [`crate::native::Native`]), `None` if it doesn't.
+    ///
+    /// Errors are wrapped like [`DynamicScriptFunction::call`]'s.
+    pub fn call_native(
+        &self,
+        args: &dyn crate::native::ArgSource,
+        ret: &mut dyn crate::native::ReturnSink,
+        context: FunctionCallContext,
+    ) -> Option<Result<(), InteropError>> {
+        let native = self.native.as_ref()?;
+        profiling::scope!("Native Call ", self.name().deref());
+        Some(native(context.clone(), args, ret).map_err(|e| {
+            InteropError::function_interop_error(self.name(), self.info.namespace, e, Some(context))
+        }))
+    }
+
+    /// Whether the function has a typed entry, see [`DynamicScriptFunction::call_native`].
+    pub fn is_native(&self) -> bool {
+        self.native.is_some()
+    }
+
+    /// Gives the function a typed entry, see [`crate::native::Native`].
+    pub(crate) fn with_native(mut self, native: Arc<crate::native::NativeThunk>) -> Self {
+        self.native = Some(native);
+        self
+    }
+
     /// An id shared by the clones of this function, valid while one of them is alive.
     ///
     /// Languages can use it to cache their own wrappers of registered functions.
@@ -278,6 +316,7 @@ impl DynamicScriptFunction {
         let inner = self.func.clone();
         DynamicScriptFunction {
             script_function: None,
+            native: None,
             info: self.info.clone(),
             func: Arc::new(move |context, mut args| {
                 args.push_front(first.clone());
@@ -355,6 +394,7 @@ where
                 .with_name(std::any::type_name::<F>())
                 .into(),
             func: Arc::new(fn_),
+            native: None,
             script_function: None,
         }
     }
@@ -455,6 +495,9 @@ pub struct ScriptFunctionRegistry {
     /// Cleared whenever the functions change.
     #[debug_with_type_info(skip)]
     bound_to_type: Mutex<HashMap<(TypeId, Cow<'static, str>), DynamicScriptFunction>>,
+    /// The types languages store natively, see [`crate::native`]
+    #[debug_with_type_info(skip)]
+    native_types: HashMap<TypeId, crate::native::NativeType>,
     /// A registry of magic functions
     pub magic_functions: MagicFunctions,
 }
@@ -613,6 +656,16 @@ impl ScriptFunctionRegistry {
     fn functions_mut(&mut self) -> &mut HashMap<FunctionKey, DynamicScriptFunction> {
         self.bound_to_type.get_mut().clear();
         &mut self.functions
+    }
+
+    /// Registers a type languages store natively, see [`crate::native`].
+    pub fn register_native_type(&mut self, native: crate::native::NativeType) {
+        self.native_types.insert(native.vtable.type_id, native);
+    }
+
+    /// The native type of `type_id`, if it is one, see [`crate::native`].
+    pub fn native_type(&self, type_id: TypeId) -> Option<&crate::native::NativeType> {
+        self.native_types.get(&type_id)
     }
 
     /// Iterates over all functions
@@ -774,6 +827,85 @@ macro_rules! impl_script_function {
 }
 
 variadics_please::all_tuples!(impl_script_function, 0, 13, T);
+
+/// The typed entries of the `Fn` functions [`impl_script_function`] covers: arguments come from an [`crate::native::ArgSource`]
+/// through [`FromScript::from_arg`], the result goes to a [`crate::native::ReturnSink`] through [`IntoScript::into_ret`].
+///
+/// Argument counts, variadic and default arguments behave as in the dynamic entry.
+macro_rules! impl_native_function {
+    ($( $param:ident ),* ) => {
+        impl_native_function!(@ $( $param ),* : -> O => O);
+        impl_native_function!(@ $( $param ),* : (context: FunctionCallContext) -> O => O);
+        impl_native_function!(@ $( $param ),* : -> O => Result<O, InteropError> where s);
+        impl_native_function!(@ $( $param ),* : (context: FunctionCallContext) -> O => Result<O, InteropError> where s);
+    };
+
+    (@ $( $param:ident ),* : $(($context:ident: $contextty:ty))? -> O => $res:ty $(where $out:ident)?) => {
+        #[allow(non_snake_case)]
+        impl<
+            'env,
+            $( $param: FromScript + ArgMeta,)*
+            O,
+            F
+        > NativeScriptFunction<'env,
+            fn( $($contextty,)? $($param ),* ) -> $res
+        > for F
+        where
+            O: IntoScript,
+            F: Fn(  $($contextty,)? $($param ),* ) -> $res + Send + Sync + 'static,
+            // the arguments borrow from the call scope, so the function can't keep them
+            F: for<'s> Fn(  $($contextty,)? $($param::This<'s> ),* ) -> $res,
+        {
+            #[allow(unused_mut, unused_variables, unused_assignments)]
+            fn into_native_thunk(self) -> Arc<crate::native::NativeThunk> {
+                Arc::new(move |
+                    caller_context: FunctionCallContext,
+                    args: &dyn crate::native::ArgSource,
+                    ret: &mut dyn crate::native::ReturnSink,
+                | -> Result<(), InteropError> {
+                    let received_args_len = args.len();
+                    let expected_arg_count = count!($($param )*);
+                    $( let $context = caller_context.clone(); )?
+                    let world = caller_context.world()?;
+                    // the accesses and borrows made for the arguments are released once the call ends
+                    world.with_call_scope(|scope| {
+                        let mut current_arg = 0usize;
+                        $(let $param = {
+                            let index = current_arg;
+                            current_arg += 1;
+                            let converted = if <$param as ArgMeta>::variadic() && index < received_args_len {
+                                let rest = (index..received_args_len)
+                                    .map(|i| args.script_value(i))
+                                    .collect::<Result<VecDeque<_>, _>>()?;
+                                <$param>::from_script(ScriptValue::Tuple(VariadicTuple(rest)), scope)
+                            } else if index < received_args_len {
+                                <$param>::from_arg(args, index, scope)
+                            } else {
+                                match <$param as ArgMeta>::default_value() {
+                                    Some(default) => <$param>::from_script(default, scope),
+                                    None => {
+                                        return Err(InteropError::argument_count_mismatch(expected_arg_count, received_args_len));
+                                    }
+                                }
+                            };
+                            converted.map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?
+                        };)*
+
+                        let out = self( $( $context,)? $( $param, )* );
+                        $(
+                            let $out = out?;
+                            let out = $out;
+                        )?
+                        out.into_ret(ret, world.clone())
+                            .map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
+                    })
+                })
+            }
+        }
+    };
+}
+
+variadics_please::all_tuples!(impl_native_function, 0, 13, T);
 
 #[cfg(test)]
 mod test {

@@ -13,9 +13,10 @@ use bevy_mod_scripting_derive::script_bindings;
 // rustfmt keeps indenting the attribute inside the macro further on every run
 #[rustfmt::skip]
 macro_rules! float_vector_functions {
-    ($ty:ty, $name:literal) => {
+    ($ty:ty, $name:literal $(, $native:ident)?) => {
         #[script_bindings(
             remote,
+            $($native,)?
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
             namespace = "math",
@@ -238,7 +239,8 @@ macro_rules! float_vector_functions {
 }
 
 float_vector_functions!(Vec2, "vec2_shared_functions");
-float_vector_functions!(Vec3, "vec3_shared_functions");
+// Vec3 is stored natively by the languages, its functions are typed
+float_vector_functions!(Vec3, "vec3_shared_functions", native);
 float_vector_functions!(Vec4, "vec4_shared_functions");
 
 #[script_bindings(
@@ -329,6 +331,7 @@ impl Vec2 {
 
 #[script_bindings(
     remote,
+    native,
     name = "vec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -496,6 +499,14 @@ pub(crate) fn register(world: &mut World) {
     register_vec4_shared_functions(world);
     register_vec2_functions(world);
     register_vec3_functions(world);
+    bevy_mod_scripting_bindings::script_native!(
+        world,
+        Vec3 {
+            x: f32,
+            y: f32,
+            z: f32
+        }
+    );
     register_vec4_functions(world);
     register_vec3a_functions(world);
     register_dvec2_functions(world);

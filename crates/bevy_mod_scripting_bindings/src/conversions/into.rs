@@ -2,6 +2,7 @@
 
 use super::{Union, V};
 use crate::function::{DynamicScriptFunction, DynamicScriptFunctionMut};
+use crate::native::{ReturnSink, native_vtable};
 use crate::{ReflectReference, ScriptValue, VariadicTuple, error::InteropError};
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
@@ -20,6 +21,16 @@ pub trait IntoScript {
     {
         self.into_script(world).unwrap_or_else(ScriptValue::Error)
     }
+
+    /// Returns this value from a typed call (see [`crate::native`]), in its native form if it has one.
+    ///
+    /// The default converts it with [`Self::into_script`], types with a faster way override it.
+    fn into_ret(self, ret: &mut dyn ReturnSink, world: WorldGuard) -> Result<(), InteropError>
+    where
+        Self: Sized,
+    {
+        ret.script_value(self.into_script(world)?)
+    }
 }
 
 impl IntoScript for ScriptValue {
@@ -32,6 +43,11 @@ impl IntoScript for ScriptValue {
 impl IntoScript for () {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Unit)
+    }
+
+    fn into_ret(self, ret: &mut dyn ReturnSink, _world: WorldGuard) -> Result<(), InteropError> {
+        ret.unit();
+        Ok(())
     }
 }
 
@@ -54,15 +70,25 @@ impl IntoScript for bool {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Bool(self))
     }
+
+    fn into_ret(self, ret: &mut dyn ReturnSink, _world: WorldGuard) -> Result<(), InteropError> {
+        ret.boolean(self);
+        Ok(())
+    }
 }
 
 macro_rules! impl_into_with_downcast {
-    ($variant:tt as $cast:ty [$($ty:ty),*]) => {
+    ($variant:tt as $cast:ty, $ret:ident [$($ty:ty),*]) => {
         $(
             #[profiling::all_functions]
             impl IntoScript for $ty {
                 fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
                     Ok(ScriptValue::$variant(self as $cast))
+                }
+
+                fn into_ret(self, ret: &mut dyn ReturnSink, _world: WorldGuard) -> Result<(), InteropError> {
+                    ret.$ret(self as $cast);
+                    Ok(())
                 }
             }
         )*
@@ -70,8 +96,8 @@ macro_rules! impl_into_with_downcast {
 
 }
 
-impl_into_with_downcast!(Integer as i64 [i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, isize]);
-impl_into_with_downcast!(Float as f64 [f32, f64]);
+impl_into_with_downcast!(Integer as i64, integer [i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, isize]);
+impl_into_with_downcast!(Float as f64, number [f32, f64]);
 
 macro_rules! impl_into_stringlike {
     ($id:ident,[ $(($ty:ty => $conversion:expr)),*]) => {
@@ -120,6 +146,29 @@ impl<T: Reflect> IntoScript for V<T> {
             self.0,
         )))
     }
+
+    fn into_ret(self, ret: &mut dyn ReturnSink, world: WorldGuard) -> Result<(), InteropError> {
+        // types stored natively are moved into the language's storage, others are allocated as usual
+        if let Some(vtable) = native_vtable(&world, std::any::TypeId::of::<T>()) {
+            let mut value = Some(self.0);
+            let written = ret.native(vtable, &mut |slot| {
+                if let Some(value) = value.take() {
+                    // Safety: the slot is memory for a value of the vtable's type, which is T
+                    unsafe { (slot as *mut T).write(value) }
+                }
+            });
+            match value {
+                // not written: the language has no native form for it
+                Some(value) if !written => {
+                    return V(value)
+                        .into_script(world)
+                        .and_then(|v| ret.script_value(v));
+                }
+                _ => return Ok(()),
+            }
+        }
+        ret.script_value(self.into_script(world)?)
+    }
 }
 
 #[profiling::all_functions]
@@ -128,6 +177,16 @@ impl<T: IntoScript> IntoScript for Option<T> {
         match self {
             Some(val) => val.into_script(world),
             None => Ok(ScriptValue::Unit),
+        }
+    }
+
+    fn into_ret(self, ret: &mut dyn ReturnSink, world: WorldGuard) -> Result<(), InteropError> {
+        match self {
+            Some(val) => val.into_ret(ret, world),
+            None => {
+                ret.unit();
+                Ok(())
+            }
         }
     }
 }
@@ -171,6 +230,13 @@ impl<T1: IntoScript, T2: IntoScript> IntoScript for Union<T1, T2> {
         match self.into_left() {
             Ok(left) => left.into_script(world),
             Err(right) => right.into_script(world),
+        }
+    }
+
+    fn into_ret(self, ret: &mut dyn ReturnSink, world: WorldGuard) -> Result<(), InteropError> {
+        match self.into_left() {
+            Ok(left) => left.into_ret(ret, world),
+            Err(right) => right.into_ret(ret, world),
         }
     }
 }

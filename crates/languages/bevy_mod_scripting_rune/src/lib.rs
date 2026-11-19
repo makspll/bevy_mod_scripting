@@ -43,6 +43,7 @@ use rune::{
 pub mod error;
 pub mod modules;
 pub mod names;
+pub mod native;
 pub mod types;
 pub mod value;
 

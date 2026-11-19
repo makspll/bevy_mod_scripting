@@ -18,6 +18,14 @@ for (name, function) in builtins() {
 
 Script handlers, loaders etc. must be implemented such that the `ThreadWorldContainer` is set for every interaction with script contexts, or anywhere else it might be needed.
 
+## Typed calls and native values
+
+Functions registered as `Native` have a typed entry, `DynamicScriptFunction::call_native`, next to the dynamic one (see `bevy_mod_scripting_bindings::native`). A language calls it with:
+- an `ArgSource` over its own values: numbers, booleans, native values, and any argument converted to a `ScriptValue` (the slow path)
+- a `ReturnSink`, which receives numbers, booleans, new native values or `ScriptValue`s
+
+Native values are stored by the language as `NativeStorage` (`[NativeHeader][value]`): in memory it owns which never moves (a Lua userdata), or in a `NativeBox`. The language reaches their fields through the `NativeType`'s accessors and their methods through the functions registered on the type; anything else goes through `NativeStorage::to_script_value`, a reference to a copy. Languages without typed calls still work: everything native has a dynamic entry too.
+
 ## Dispatching to Rust
 
 All lookup rules live in `bevy_mod_scripting_bindings::dispatch`; a language maps its operators and metamethods onto it, and converts the values:

@@ -11,6 +11,7 @@ use bevy_mod_scripting_bindings::{
     LocationContext, VariadicTuple,
     error::InteropError,
     function::script_function::{DynamicScriptFunction, FunctionCallContext},
+    native::NativeStorage,
     script_value::ScriptValue,
 };
 use bevy_platform::collections::HashMap;
@@ -167,6 +168,15 @@ impl Drop for TableDepth {
 impl FromLua for LuaScriptValue {
     fn from_lua(value: mlua::Value, lua: &mlua::Lua) -> mlua::Result<Self> {
         let Value::Table(table) = value else {
+            // native values are copied into a reference, see `super::native`
+            if let Value::UserData(ud) = &value
+                && let Some(base) = super::native::native_value_base(lua, ud)
+            {
+                // Safety: the userdata is a native value, alive while `value` is
+                return unsafe { NativeStorage::to_script_value(base) }
+                    .map(LuaScriptValue)
+                    .map_err(IntoMluaError::to_lua_error);
+            }
             return non_table_value(value).map(LuaScriptValue);
         };
         // released when the table is converted, nested tables are converted inside `pairs`
@@ -197,6 +207,13 @@ impl FromLua for LuaScriptValue {
                     String::from_stack(idx, lua)?.into(),
                 ))),
                 ffi::LUA_TTABLE => table_from_stack(idx, lua).map(LuaScriptValue),
+                ffi::LUA_TUSERDATA => match super::native::native_base(state, idx) {
+                    // native values are copied into a reference, see `super::native`
+                    Some(base) => NativeStorage::to_script_value(base)
+                        .map(LuaScriptValue)
+                        .map_err(IntoMluaError::to_lua_error),
+                    None => non_table_value(Value::from_stack(idx, lua)?).map(LuaScriptValue),
+                },
                 _ => non_table_value(Value::from_stack(idx, lua)?).map(LuaScriptValue),
             }
         }
@@ -475,7 +492,7 @@ unsafe fn entry_from_stack(builder: &mut TableBuilder, lua: &RawLua) -> mlua::Re
 pub const LUA_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext::new(Language::Lua);
 
 /// The value returned by a function called from Lua, a tuple is returned as multiple values.
-struct LuaFunctionReturn(ScriptValue);
+pub(crate) struct LuaFunctionReturn(pub(crate) ScriptValue);
 
 impl IntoLuaMulti for LuaFunctionReturn {
     fn into_lua_multi(self, lua: &mlua::Lua) -> mlua::Result<MultiValue> {
@@ -488,7 +505,6 @@ impl IntoLuaMulti for LuaFunctionReturn {
     }
 }
 
-/// Calls a function from Lua, the location of the call is only looked up for errors.
 fn call_from_lua(
     lua: &mlua::Lua,
     call: impl FnOnce(FunctionCallContext) -> Result<ScriptValue, InteropError>,
@@ -496,22 +512,27 @@ fn call_from_lua(
     match call(LUA_CALLER_CONTEXT) {
         Ok(out) => Ok(LuaFunctionReturn(out)),
         Err(mut error) => {
-            if let InteropError::FunctionInteropError { context, .. } = &mut error
-                && let Some(context) = &mut **context
-            {
-                profiling::scope!("function call context");
-                context.set_location(lua.inspect_stack(1, |debug| {
-                    LocationContext {
-                        line: debug.current_line().unwrap_or_default() as u32,
-                        col: None,
-                        script_name: lua.app_data_ref::<LuaContextAppData>().and_then(|v| {
-                            v.last_loaded_script_name.as_ref().map(|n| n.to_string())
-                        }),
-                    }
-                }));
-            }
+            add_call_location(lua, &mut error);
             Err(error.to_lua_error())
         }
+    }
+}
+
+/// Fills in where in the script a function call failed, it's only looked up for errors.
+pub(crate) fn add_call_location(lua: &mlua::Lua, error: &mut InteropError) {
+    if let InteropError::FunctionInteropError { context, .. } = error
+        && let Some(context) = &mut **context
+    {
+        profiling::scope!("function call context");
+        context.set_location(lua.inspect_stack(1, |debug| {
+            LocationContext {
+                line: debug.current_line().unwrap_or_default() as u32,
+                col: None,
+                script_name: lua
+                    .app_data_ref::<LuaContextAppData>()
+                    .and_then(|v| v.last_loaded_script_name.as_ref().map(|n| n.to_string())),
+            }
+        }));
     }
 }
 
@@ -521,9 +542,6 @@ fn call_from_lua(
 #[derive(Default)]
 pub(crate) struct LuaFunctionCache(HashMap<usize, (DynamicScriptFunction, mlua::Function)>);
 
-/// Converts a registered function to a Lua function, reusing the one created the last time.
-///
-/// Only for functions which live in the registry, others would fill the cache.
 pub(crate) fn registered_function_into_lua(
     lua: &mlua::Lua,
     function: DynamicScriptFunction,
@@ -534,12 +552,17 @@ pub(crate) fn registered_function_into_lua(
     {
         return Ok(Value::Function(lua_function.clone()));
     }
-    let lua_function = lua.create_function({
-        let function = function.clone();
-        move |lua, args: MultiLuaScriptValue| {
-            call_from_lua(lua, |context| function.call(args.0, context))
-        }
-    })?;
+    let lua_function = if function.is_native() {
+        // typed functions read their arguments off the stack, see `super::native`
+        super::native::native_function(lua, function.clone())?
+    } else {
+        lua.create_function({
+            let function = function.clone();
+            move |lua, args: MultiLuaScriptValue| {
+                call_from_lua(lua, |context| function.call(args.0, context))
+            }
+        })?
+    };
     // the cache is created with the context, inserting app data here could panic if any is borrowed
     if let Some(mut cache) = lua.app_data_mut::<LuaFunctionCache>() {
         cache.0.insert(key, (function, lua_function.clone()));
@@ -562,6 +585,10 @@ impl IntoLua for LuaScriptValue {
                 // a function of this Lua state is handed back as it is: the script gets the function it
                 // passed in, and calls it without going through Rust
                 Some(f) if *f.weak_lua() == lua.weak() => Value::Function(f.clone()),
+                // typed functions read their arguments off the stack, see `super::native`
+                _ if function.is_native() => {
+                    Value::Function(super::native::native_function(lua, function)?)
+                }
                 _ => lua
                     .create_function(move |lua, args: MultiLuaScriptValue| {
                         call_from_lua(lua, |context| function.call(args.0, context))
