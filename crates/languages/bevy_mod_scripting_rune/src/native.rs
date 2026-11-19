@@ -20,6 +20,13 @@ use crate::{
     value::{RUNE_CALLER_CONTEXT, from_rune, new_value, to_rune},
 };
 
+/// Whether typed functions return native values to Rune.
+///
+/// Off: Rune's own dispatch costs more than native storage saves (measured 5-14% slower on value-heavy code), so values
+/// come back as references, while typed calls still read native and primitive arguments without conversions.
+/// Everything native keeps working if it's turned on.
+pub const NATIVE_VALUES: bool = false;
+
 /// A value BMS stores natively, see [`bevy_mod_scripting_bindings::native`].
 #[derive(Any)]
 #[rune(item = ::bms, name = Native)]
@@ -160,6 +167,9 @@ impl ReturnSink for RuneReturn {
     }
 
     fn native(&mut self, vtable: &'static NativeVTable, write: &mut dyn FnMut(*mut u8)) -> bool {
+        if !NATIVE_VALUES {
+            return false;
+        }
         match NativeBox::new(vtable, write) {
             Ok(native) => {
                 self.set(new_value(RuneNative::new(native)));

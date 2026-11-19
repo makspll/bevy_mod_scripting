@@ -496,14 +496,20 @@ impl DVec3 {
     }
 }
 
-/// Registers the functions of all float vectors.
+/// Registers the functions of all float vectors, which are stored natively by the languages.
 pub(crate) fn register(world: &mut World) {
+    use bevy_mod_scripting_bindings::script_native;
     register_vec2_shared_functions(world);
     register_vec3_shared_functions(world);
     register_vec4_shared_functions(world);
     register_vec2_functions(world);
     register_vec3_functions(world);
-    bevy_mod_scripting_bindings::script_native!(
+    register_vec4_functions(world);
+    register_vec3a_functions(world);
+    register_dvec2_functions(world);
+    register_dvec3_functions(world);
+    script_native!(world, Vec2 { x: f32, y: f32 });
+    script_native!(
         world,
         Vec3 {
             x: f32,
@@ -511,8 +517,30 @@ pub(crate) fn register(world: &mut World) {
             z: f32
         }
     );
-    register_vec4_functions(world);
-    register_vec3a_functions(world);
-    register_dvec2_functions(world);
-    register_dvec3_functions(world);
+    script_native!(
+        world,
+        Vec4 {
+            x: f32,
+            y: f32,
+            z: f32,
+            w: f32
+        }
+    );
+    script_native!(
+        world,
+        Vec3A {
+            x: f32,
+            y: f32,
+            z: f32
+        }
+    );
+    script_native!(world, DVec2 { x: f64, y: f64 });
+    script_native!(
+        world,
+        DVec3 {
+            x: f64,
+            y: f64,
+            z: f64
+        }
+    );
 }

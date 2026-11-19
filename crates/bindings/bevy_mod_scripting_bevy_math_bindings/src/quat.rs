@@ -157,7 +157,16 @@ impl Quat {
     }
 }
 
-/// Registers the functions of quaternions.
+/// Registers the functions of quaternions, which are stored natively by the languages.
 pub(crate) fn register(world: &mut World) {
     register_quat_functions(world);
+    bevy_mod_scripting_bindings::script_native!(
+        world,
+        Quat {
+            x: f32,
+            y: f32,
+            z: f32,
+            w: f32
+        }
+    );
 }

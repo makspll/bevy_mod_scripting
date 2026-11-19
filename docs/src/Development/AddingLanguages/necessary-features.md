@@ -24,7 +24,7 @@ Functions registered as `Native` have a typed entry, `DynamicScriptFunction::cal
 - an `ArgSource` over its own values: numbers, booleans, native values, and any argument converted to a `ScriptValue` (the slow path)
 - a `ReturnSink`, which receives numbers, booleans, new native values or `ScriptValue`s
 
-Native values are stored by the language as `NativeStorage` (`[NativeHeader][value]`): in memory it owns which never moves (a Lua userdata), or in a `NativeBox`. The language reaches their fields through the `NativeType`'s accessors and their methods through the functions registered on the type; anything else goes through `NativeStorage::to_script_value`, a reference to a copy. Languages without typed calls still work: everything native has a dynamic entry too.
+Native values are stored by the language as `NativeStorage` (`[NativeHeader][value]`): in memory it owns which never moves (a Lua userdata), or in a `NativeBox`. The language reaches their fields through the `NativeType`'s accessors and their methods through the functions registered on the type; anything else goes through `NativeStorage::to_script_value`, a reference to a copy. Languages without typed calls still work: everything native has a dynamic entry too. A language can also take typed calls but decline native values (`ReturnSink::native` returning false), which then come back as references, as Rune does.
 
 ## Dispatching to Rust
 
