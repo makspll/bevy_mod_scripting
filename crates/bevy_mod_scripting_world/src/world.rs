@@ -136,9 +136,9 @@ impl BorrowFlag {
         }
     }
 
-    /// Whether the value is borrowed at all.
-    pub fn is_borrowed(&self) -> bool {
-        self.0.load(std::sync::atomic::Ordering::Relaxed) != 0
+    /// Whether the value is borrowed exclusively, so it can't be read.
+    pub fn is_borrowed_mut(&self) -> bool {
+        self.0.load(std::sync::atomic::Ordering::Relaxed) < 0
     }
 }
 

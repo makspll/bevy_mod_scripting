@@ -62,6 +62,23 @@ pub trait FromScript {
     {
         Self::from_script(args.script_value(index)?, scope)
     }
+
+    /// Whether [`Self::from_arg`] takes argument `index` as it is, without converting it to a [`ScriptValue`], i.e. a native value
+    /// of the type. Used by [`Union`] to pick a type without converting.
+    fn accepts_arg(_args: &dyn ArgSource, _index: usize) -> bool
+    where
+        Self: Sized,
+    {
+        false
+    }
+}
+
+/// Whether argument `index` is a native value of `T`.
+fn is_native_arg<T: 'static>(args: &dyn ArgSource, index: usize) -> bool {
+    // Safety: `ArgSource` gives initialised storage, alive until the call returns
+    args.native(index).is_some_and(
+        |base| unsafe { NativeStorage::header(base) }.vtable.type_id == TypeId::of::<T>(),
+    )
 }
 
 /// The native value of `T` at argument `index`, borrowed for the call, if the argument is one.
@@ -166,6 +183,10 @@ macro_rules! impl_from_with_downcast {
                         return Ok(n as $ty);
                     }
                     Self::from_script(args.script_value(index)?, scope)
+                }
+
+                fn accepts_arg(args: &dyn ArgSource, index: usize) -> bool {
+                    args.integer(index).is_some() || args.number(index).is_some()
                 }
             }
         )*
@@ -396,6 +417,10 @@ impl<T: FromReflect> FromScript for V<T> {
         }
         Self::from_script(args.script_value(index)?, scope)
     }
+
+    fn accepts_arg(args: &dyn ArgSource, index: usize) -> bool {
+        is_native_arg::<T>(args, index)
+    }
 }
 
 /// A wrapper around a reference to a value of type `T`.
@@ -469,6 +494,10 @@ impl<T: FromReflect> FromScript for R<'_, T> {
             return Ok(R(unsafe { &*value }));
         }
         Self::from_script(args.script_value(index)?, scope)
+    }
+
+    fn accepts_arg(args: &dyn ArgSource, index: usize) -> bool {
+        is_native_arg::<T>(args, index)
     }
 }
 
@@ -568,6 +597,10 @@ impl<T: FromReflect> FromScript for M<'_, T> {
             return Ok(M(unsafe { &mut *value }));
         }
         Self::from_script(args.script_value(index)?, scope)
+    }
+
+    fn accepts_arg(args: &dyn ArgSource, index: usize) -> bool {
+        is_native_arg::<T>(args, index)
     }
 }
 
@@ -885,6 +918,25 @@ impl<T1: FromScript, T2: FromScript> FromScript for Union<T1, T2> {
 
     fn could_convert(value: &ScriptValue) -> bool {
         T1::could_convert(value) || T2::could_convert(value)
+    }
+
+    fn from_arg<'s>(
+        args: &dyn ArgSource,
+        index: usize,
+        scope: &'s CallScope<'_>,
+    ) -> Result<Self::This<'s>, InteropError> {
+        // a type which takes the argument as it is, i.e. a native value or a number, without converting it
+        if T1::accepts_arg(args, index) {
+            return T1::from_arg(args, index, scope).map(|v| Union(Ok(v)));
+        }
+        if T2::accepts_arg(args, index) {
+            return T2::from_arg(args, index, scope).map(|v| Union(Err(v)));
+        }
+        Self::from_script(args.script_value(index)?, scope)
+    }
+
+    fn accepts_arg(args: &dyn ArgSource, index: usize) -> bool {
+        T1::accepts_arg(args, index) || T2::accepts_arg(args, index)
     }
 }
 

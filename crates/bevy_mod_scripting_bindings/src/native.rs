@@ -111,7 +111,7 @@ pub struct NativeVTable {
     /// Drops a value in place, `None` if the type needs no drop
     pub drop: Option<unsafe fn(*mut u8)>,
     clone_into: unsafe fn(*const u8, *mut u8),
-    to_reflect: unsafe fn(*const u8) -> Box<dyn Reflect>,
+    to_reference: unsafe fn(*const u8) -> ReflectReference,
 }
 
 impl NativeVTable {
@@ -125,9 +125,9 @@ impl NativeVTable {
             // Safety: called with a pointer to an initialised T, and one to memory for a T
             unsafe { (dst as *mut T).write((*(src as *const T)).clone()) }
         }
-        unsafe fn to_reflect<T: Reflect + Clone>(src: *const u8) -> Box<dyn Reflect> {
+        unsafe fn to_reference<T: Reflect + Clone>(src: *const u8) -> ReflectReference {
             // Safety: called with a pointer to an initialised T
-            Box::new(unsafe { (*(src as *const T)).clone() })
+            ReflectReference::new_allocated(unsafe { (*(src as *const T)).clone() })
         }
         Box::leak(Box::new(Self {
             type_id: TypeId::of::<T>(),
@@ -135,7 +135,7 @@ impl NativeVTable {
             layout: Layout::new::<T>(),
             drop: std::mem::needs_drop::<T>().then_some(drop_value::<T> as unsafe fn(*mut u8)),
             clone_into: clone_into::<T>,
-            to_reflect: to_reflect::<T>,
+            to_reference: to_reference::<T>,
         }))
     }
 }
@@ -235,16 +235,16 @@ impl NativeStorage {
     pub unsafe fn to_script_value(base: *mut u8) -> Result<ScriptValue, InteropError> {
         // Safety: see the function's contract
         let header = unsafe { Self::header(base) };
-        if header.borrow.is_borrowed() {
+        if header.borrow.is_borrowed_mut() {
             return Err(InteropError::string(format!(
-                "a {} is borrowed by a call",
+                "a {} is borrowed mutably by a call",
                 header.vtable.type_name
             )));
         }
-        let copy = unsafe { (header.vtable.to_reflect)(Self::value(base)) };
-        Ok(ScriptValue::Reference(
-            ReflectReference::new_allocated_boxed(copy),
-        ))
+        // one allocation holding the copy
+        Ok(ScriptValue::Reference(unsafe {
+            (header.vtable.to_reference)(Self::value(base))
+        }))
     }
 
     /// Copies the value of initialised storage into memory for a value of its type.
@@ -318,6 +318,8 @@ pub struct NativeType {
     pub vtable: &'static NativeVTable,
     /// The fields, by name
     pub fields: HashMap<Cow<'static, str>, NativeField>,
+    /// The functions registered on the type, kept up to date by the registry so languages can look them up without cloning
+    pub methods: HashMap<Cow<'static, str>, DynamicScriptFunction>,
 }
 
 impl NativeType {
@@ -326,6 +328,7 @@ impl NativeType {
         Self {
             vtable: NativeVTable::new::<T>(),
             fields: Default::default(),
+            methods: Default::default(),
         }
     }
 

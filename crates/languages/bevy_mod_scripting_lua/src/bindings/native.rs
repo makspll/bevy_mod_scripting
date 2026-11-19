@@ -454,6 +454,21 @@ unsafe fn push_native_metatable(l: *mut ffi::lua_State, vtable: &'static NativeV
             push_holder(l, get.clone());
             set_field(l, name);
         }
+        // the typed functions of the operators, i.e. `add` and the reflected `mul` for `2 * v`
+        let typed = |name: &str| {
+            methods
+                .iter()
+                .find(|(n, f)| n == name && f.is_native())
+                .map(|(_, f)| f.clone())
+        };
+        let operators = OPERATORS.map(|(meta, operator)| {
+            (
+                meta,
+                operator,
+                typed(operator.script_function_name()),
+                operator.reflected_script_function_name().and_then(typed),
+            )
+        });
         ffi::lua_createtable(l, 0, methods.len() as c_int);
         for (name, function) in methods {
             push_function(l, function);
@@ -473,21 +488,16 @@ unsafe fn push_native_metatable(l: *mut ffi::lua_State, vtable: &'static NativeV
         ffi::lua_pushcclosure(l, native_newindex, 1);
         ffi::lua_setfield(l, -2, c"__newindex".as_ptr());
 
-        for (name, operator) in [
-            (c"__add", ScriptOperatorNames::Addition),
-            (c"__sub", ScriptOperatorNames::Subtraction),
-            (c"__mul", ScriptOperatorNames::Multiplication),
-            (c"__div", ScriptOperatorNames::Division),
-            (c"__mod", ScriptOperatorNames::Remainder),
-            (c"__pow", ScriptOperatorNames::Exponentiation),
-            (c"__eq", ScriptOperatorNames::Equality),
-            (c"__lt", ScriptOperatorNames::LessThanComparison),
-            (c"__unm", ScriptOperatorNames::Negation),
-            (c"__len", ScriptOperatorNames::Length),
-            (c"__tostring", ScriptOperatorNames::DisplayPrint),
-        ] {
+        // upvalues: the operator, its typed function and its typed reflected function, if any
+        for (name, operator, forward, reflected) in operators {
             ffi::lua_pushinteger(l, operator as ffi::lua_Integer);
-            ffi::lua_pushcclosure(l, native_operator, 1);
+            for function in [forward, reflected] {
+                match function {
+                    Some(function) => push_holder(l, function),
+                    None => ffi::lua_pushnil(l),
+                }
+            }
+            ffi::lua_pushcclosure(l, native_operator, 3);
             ffi::lua_setfield(l, -2, name.as_ptr());
         }
         ffi::lua_pushstring(l, c"BMS native value".as_ptr());
@@ -598,9 +608,42 @@ unsafe extern "C-unwind" fn native_newindex(l: *mut ffi::lua_State) -> c_int {
 }
 
 /// Operators and other metamethods: the operator's function of the native operand, see [`dispatch::binary`].
+///
+/// Typed functions are in upvalues 2 (the operator's) and 3 (its reflected one, for a native value on the right).
 unsafe extern "C-unwind" fn native_operator(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         let operator = ffi::lua_tointeger(l, ffi::lua_upvalueindex(1));
+        let typed = |upvalue: c_int| {
+            (ffi::lua_type(l, ffi::lua_upvalueindex(upvalue)) == ffi::LUA_TUSERDATA).then(|| {
+                &*holder_function(ffi::lua_touserdata(l, ffi::lua_upvalueindex(upvalue)) as *mut u8)
+            })
+        };
+        match operator_from_index(operator) {
+            Ok(ScriptOperatorNames::DisplayPrint) | Err(_) => {}
+            Ok(ScriptOperatorNames::Negation | ScriptOperatorNames::Length) => {
+                if native_base(l, 1).is_some()
+                    && let Some(function) = typed(2)
+                {
+                    ffi::lua_settop(l, 1);
+                    return call_holder(l, function, 1, 1);
+                }
+            }
+            Ok(_) => {
+                if native_base(l, 1).is_some() {
+                    if let Some(function) = typed(2) {
+                        ffi::lua_settop(l, 2);
+                        return call_holder(l, function, 1, 2);
+                    }
+                } else if native_base(l, 2).is_some()
+                    && let Some(function) = typed(3)
+                {
+                    // the native value is the receiver of the reflected function
+                    ffi::lua_settop(l, 2);
+                    ffi::lua_insert(l, 1);
+                    return call_holder(l, function, 1, 2);
+                }
+            }
+        }
         slow_path(l, |l| {
             let operator = operator_from_index(operator)?;
             let world = ThreadWorldContainer::try_get_context()?.world;
@@ -629,6 +672,21 @@ unsafe extern "C-unwind" fn native_operator(l: *mut ffi::lua_State) -> c_int {
         })
     }
 }
+
+/// The metamethods of native values and their operators.
+const OPERATORS: [(&std::ffi::CStr, ScriptOperatorNames); 11] = [
+    (c"__add", ScriptOperatorNames::Addition),
+    (c"__sub", ScriptOperatorNames::Subtraction),
+    (c"__mul", ScriptOperatorNames::Multiplication),
+    (c"__div", ScriptOperatorNames::Division),
+    (c"__mod", ScriptOperatorNames::Remainder),
+    (c"__pow", ScriptOperatorNames::Exponentiation),
+    (c"__eq", ScriptOperatorNames::Equality),
+    (c"__lt", ScriptOperatorNames::LessThanComparison),
+    (c"__unm", ScriptOperatorNames::Negation),
+    (c"__len", ScriptOperatorNames::Length),
+    (c"__tostring", ScriptOperatorNames::DisplayPrint),
+];
 
 fn operator_from_index(index: ffi::lua_Integer) -> Result<ScriptOperatorNames, InteropError> {
     [

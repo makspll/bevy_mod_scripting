@@ -168,16 +168,7 @@ impl Drop for TableDepth {
 impl FromLua for LuaScriptValue {
     fn from_lua(value: mlua::Value, lua: &mlua::Lua) -> mlua::Result<Self> {
         let Value::Table(table) = value else {
-            // native values are copied into a reference, see `super::native`
-            if let Value::UserData(ud) = &value
-                && let Some(base) = super::native::native_value_base(lua, ud)
-            {
-                // Safety: the userdata is a native value, alive while `value` is
-                return unsafe { NativeStorage::to_script_value(base) }
-                    .map(LuaScriptValue)
-                    .map_err(IntoMluaError::to_lua_error);
-            }
-            return non_table_value(value).map(LuaScriptValue);
+            return non_table_value(value, Some(lua)).map(LuaScriptValue);
         };
         // released when the table is converted, nested tables are converted inside `pairs`
         let _depth = TableDepth::enter()?;
@@ -212,16 +203,16 @@ impl FromLua for LuaScriptValue {
                     Some(base) => NativeStorage::to_script_value(base)
                         .map(LuaScriptValue)
                         .map_err(IntoMluaError::to_lua_error),
-                    None => non_table_value(Value::from_stack(idx, lua)?).map(LuaScriptValue),
+                    None => non_table_value(Value::from_stack(idx, lua)?, None).map(LuaScriptValue),
                 },
-                _ => non_table_value(Value::from_stack(idx, lua)?).map(LuaScriptValue),
+                _ => non_table_value(Value::from_stack(idx, lua)?, None).map(LuaScriptValue),
             }
         }
     }
 }
 
-/// Converts any value but a table.
-fn non_table_value(value: Value) -> mlua::Result<ScriptValue> {
+/// Converts any value but a table, with `lua` native values too (otherwise they're converted before).
+fn non_table_value(value: Value, lua: Option<&mlua::Lua>) -> mlua::Result<ScriptValue> {
     Ok(match value {
         Value::Nil => ScriptValue::Unit,
         Value::Boolean(b) => ScriptValue::Bool(b),
@@ -250,14 +241,25 @@ fn non_table_value(value: Value) -> mlua::Result<ScriptValue> {
             if let Ok(type_ref) = ud.borrow::<LuaTypeRef>() {
                 return Ok(ScriptValue::Type(type_ref.0));
             }
-            let ud = ud.borrow::<LuaReflectReference>().map_err(|e| {
-                mlua::Error::FromLuaConversionError {
-                    from: "UserData",
-                    to: "LuaReflectReference".to_owned(),
-                    message: Some(e.to_string()),
+            let reference = match ud.borrow::<LuaReflectReference>() {
+                Ok(reference) => reference,
+                Err(e) => {
+                    // native values are copied into a reference, see `super::native`, only checked when it's no reference
+                    if let Some(lua) = lua
+                        && let Some(base) = super::native::native_value_base(lua, &ud)
+                    {
+                        // Safety: the userdata is a native value, alive while `ud` is
+                        return unsafe { NativeStorage::to_script_value(base) }
+                            .map_err(IntoMluaError::to_lua_error);
+                    }
+                    return Err(mlua::Error::FromLuaConversionError {
+                        from: "UserData",
+                        to: "LuaReflectReference".to_owned(),
+                        message: Some(e.to_string()),
+                    });
                 }
-            })?;
-            ScriptValue::Reference(ud.clone().into())
+            };
+            ScriptValue::Reference(reference.clone().into())
         }
         _ => {
             return Err(mlua::Error::FromLuaConversionError {

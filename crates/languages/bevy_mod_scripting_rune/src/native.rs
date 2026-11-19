@@ -5,11 +5,11 @@
 //! Everything else goes through a reference to a copy of the value, like any other value BMS doesn't know natively.
 #![allow(unsafe_code)]
 
-use std::any::TypeId;
+use std::{any::TypeId, sync::Arc};
 
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, InteropError, ReflectReference, ScriptValue, WorldExtensions, dispatch,
-    native::{ArgSource, NativeBox, NativeField, NativeStorage, NativeVTable, ReturnSink},
+    native::{ArgSource, NativeBox, NativeStorage, NativeType, NativeVTable, ReturnSink},
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use rune::{Any, TypeHash, runtime::Value};
@@ -23,14 +23,23 @@ use crate::{
 /// A value BMS stores natively, see [`bevy_mod_scripting_bindings::native`].
 #[derive(Any)]
 #[rune(item = ::bms, name = Native)]
-pub struct RuneNative(pub NativeBox);
+pub struct RuneNative(pub NativeBox, Option<Arc<NativeType>>);
 
 impl RuneNative {
-    fn type_id(&self) -> TypeId {
+    /// The value, with its type's fields and methods looked up once.
+    pub fn new(storage: NativeBox) -> Self {
         // Safety: the box holds initialised storage
-        unsafe { NativeStorage::header(self.0.base()) }
+        let type_id = unsafe { NativeStorage::header(storage.base()) }
             .vtable
-            .type_id
+            .type_id;
+        let native = world().ok().and_then(|world| {
+            world
+                .script_function_registry()
+                .read()
+                .native_type(type_id)
+                .cloned()
+        });
+        Self(storage, native)
     }
 
     /// A copy of the value, as a reference.
@@ -153,7 +162,7 @@ impl ReturnSink for RuneReturn {
     fn native(&mut self, vtable: &'static NativeVTable, write: &mut dyn FnMut(*mut u8)) -> bool {
         match NativeBox::new(vtable, write) {
             Ok(native) => {
-                self.set(new_value(RuneNative(native)));
+                self.set(new_value(RuneNative::new(native)));
                 true
             }
             Err(_) => false,
@@ -184,29 +193,49 @@ pub(crate) fn call(
     }
 }
 
-/// The field `name` of the native value's type, if it has one.
-fn field(this: &RuneNative, name: &str) -> Result<Option<NativeField>, InteropError> {
-    let world = world()?;
-    let registry = world.script_function_registry();
-    let registry = registry.read();
-    Ok(registry
-        .native_type(this.type_id())
-        .and_then(|native| native.fields.get(name).cloned()))
+/// The native type of the value: its fields and methods, looked up when the value was made.
+fn native_type(this: &RuneNative) -> Result<Option<&NativeType>, InteropError> {
+    Ok(this.1.as_deref())
 }
 
-/// The function `name` called on the native value: its type's, then the ones shared by all references.
-fn method(this: &RuneNative, name: &str) -> Result<Option<DynamicScriptFunction>, InteropError> {
-    let world = world()?;
-    let registry = world.script_function_registry();
-    let registry = registry.read();
-    Ok([this.type_id(), TypeId::of::<ReflectReference>()]
-        .into_iter()
-        .find_map(|type_id| registry.get_function(type_id, name).ok().cloned()))
+/// Calls the function `name` on the native value with the rest of `args`: its type's, then the ones shared by all references.
+///
+/// `None` if there is no such function.
+fn call_method_named(
+    this: &RuneNative,
+    name: &str,
+    args: &[RuneArg],
+) -> Option<Result<Value, InteropError>> {
+    let native = match native_type(this) {
+        Ok(native) => native,
+        Err(e) => return Some(Err(e)),
+    };
+    if let Some(function) = native.as_ref().and_then(|native| native.methods.get(name)) {
+        return Some(call(function, args));
+    }
+    let shared = (|| {
+        let world = world()?;
+        let registry = world.script_function_registry();
+        let registry = registry.read();
+        Ok::<_, InteropError>(
+            registry
+                .get_function(TypeId::of::<ReflectReference>(), name)
+                .ok()
+                .cloned(),
+        )
+    })();
+    match shared {
+        Ok(Some(function)) => Some(call(&function, args)),
+        Ok(None) => None,
+        Err(e) => Some(Err(e)),
+    }
 }
 
 /// `v.name`
 pub(crate) fn get(this: &RuneNative, name: &str) -> Result<Value, InteropError> {
-    if let Some(field) = field(this, name)? {
+    if let Some(native) = native_type(this)?
+        && let Some(field) = native.fields.get(name)
+    {
         return call(&field.get, &[RuneArg::Native(this)]);
     }
     // methods as values and anything else, through a copy
@@ -215,8 +244,12 @@ pub(crate) fn get(this: &RuneNative, name: &str) -> Result<Value, InteropError> 
 
 /// `v.name = x`
 pub(crate) fn set(this: &RuneNative, name: &str, value: &Value) -> Result<(), InteropError> {
-    match field(this, name)?.and_then(|field| field.set) {
-        Some(set) => call(&set, &[RuneArg::Native(this), RuneArg::Value(value)]).map(|_| ()),
+    let native = native_type(this)?;
+    match native
+        .as_ref()
+        .and_then(|native| native.fields.get(name)?.set.as_ref())
+    {
+        Some(set) => call(set, &[RuneArg::Native(this), RuneArg::Value(value)]).map(|_| ()),
         None => Err(InteropError::string(format!(
             "`{name}` is not a field which can be set on a native value"
         ))),
@@ -247,11 +280,24 @@ pub(crate) fn call_method(
     let this = receiver
         .borrow_ref::<RuneNative>()
         .map_err(IntoInteropError::to_bms_error)?;
-    if let Some(function) = method(&this, name)? {
-        let mut args = Vec::with_capacity(values.len());
-        args.push(RuneArg::Native(&this));
-        args.extend(rest.iter().map(RuneArg::Value));
-        return call(&function, &args);
+    // the arguments of short calls stay on the stack
+    let result = match rest {
+        [] => call_method_named(&this, name, &[RuneArg::Native(&this)]),
+        [a] => call_method_named(&this, name, &[RuneArg::Native(&this), RuneArg::Value(a)]),
+        [a, b] => call_method_named(
+            &this,
+            name,
+            &[RuneArg::Native(&this), RuneArg::Value(a), RuneArg::Value(b)],
+        ),
+        _ => {
+            let mut args = Vec::with_capacity(values.len());
+            args.push(RuneArg::Native(&this));
+            args.extend(rest.iter().map(RuneArg::Value));
+            call_method_named(&this, name, &args)
+        }
+    };
+    if let Some(result) = result {
+        return result;
     }
     // anything else, i.e. a function stored in a field, through a copy
     let mut values = values.to_vec();
@@ -285,8 +331,12 @@ pub(crate) fn binary(
     this: &RuneNative,
     other: &Value,
 ) -> Result<Value, InteropError> {
-    if let Some(function) = method(this, operator.script_function_name())? {
-        return call(&function, &[RuneArg::Native(this), RuneArg::Value(other)]);
+    if let Some(result) = call_method_named(
+        this,
+        operator.script_function_name(),
+        &[RuneArg::Native(this), RuneArg::Value(other)],
+    ) {
+        return result;
     }
     let out = dispatch::binary(
         world()?,

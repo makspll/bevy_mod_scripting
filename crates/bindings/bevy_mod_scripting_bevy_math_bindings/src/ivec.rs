@@ -16,6 +16,7 @@ macro_rules! int_vector_functions {
     ($ty:ty, $scalar:ty, $name:literal) => {
         #[script_bindings(
             remote,
+            native,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
             namespace = "math",
@@ -152,6 +153,7 @@ int_vector_functions!(UVec3, u32, "uvec3_shared_functions");
 
 #[script_bindings(
     remote,
+    native,
     name = "ivec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -191,6 +193,7 @@ impl IVec2 {
 
 #[script_bindings(
     remote,
+    native,
     name = "ivec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -235,6 +238,7 @@ impl IVec3 {
 
 #[script_bindings(
     remote,
+    native,
     name = "uvec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -264,6 +268,7 @@ impl UVec2 {
 
 #[script_bindings(
     remote,
+    native,
     name = "uvec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",

@@ -497,7 +497,7 @@ pub struct ScriptFunctionRegistry {
     bound_to_type: Mutex<HashMap<(TypeId, Cow<'static, str>), DynamicScriptFunction>>,
     /// The types languages store natively, see [`crate::native`]
     #[debug_with_type_info(skip)]
-    native_types: HashMap<TypeId, crate::native::NativeType>,
+    native_types: HashMap<TypeId, Arc<crate::native::NativeType>>,
     /// A registry of magic functions
     pub magic_functions: MagicFunctions,
 }
@@ -575,6 +575,7 @@ impl ScriptFunctionRegistry {
         name: impl Into<Cow<'static, str>>,
     ) -> Option<DynamicScriptFunction> {
         let name = name.into();
+        self.update_native_methods(type_id, &name, None);
         self.functions_mut().remove(&FunctionKey { name, type_id })
     }
 
@@ -597,6 +598,7 @@ impl ScriptFunctionRegistry {
             docs,
             arg_names,
         );
+        self.update_native_methods(type_id, &name, Some(&func));
         self.functions_mut()
             .insert(FunctionKey { name, type_id }, func);
     }
@@ -659,13 +661,34 @@ impl ScriptFunctionRegistry {
     }
 
     /// Registers a type languages store natively, see [`crate::native`].
-    pub fn register_native_type(&mut self, native: crate::native::NativeType) {
-        self.native_types.insert(native.vtable.type_id, native);
+    pub fn register_native_type(&mut self, mut native: crate::native::NativeType) {
+        let type_id = native.vtable.type_id;
+        native.methods = self
+            .iter_type(type_id)
+            .map(|(key, function)| (key.name.clone(), function.clone()))
+            .collect();
+        self.native_types.insert(type_id, Arc::new(native));
     }
 
     /// The native type of `type_id`, if it is one, see [`crate::native`].
-    pub fn native_type(&self, type_id: TypeId) -> Option<&crate::native::NativeType> {
+    pub fn native_type(&self, type_id: TypeId) -> Option<&Arc<crate::native::NativeType>> {
         self.native_types.get(&type_id)
+    }
+
+    /// Keeps the methods of a native type in step with the functions registered on it.
+    fn update_native_methods(
+        &mut self,
+        type_id: TypeId,
+        name: &str,
+        function: Option<&DynamicScriptFunction>,
+    ) {
+        if let Some(native) = self.native_types.get_mut(&type_id) {
+            let methods = &mut Arc::make_mut(native).methods;
+            match function {
+                Some(function) => methods.insert(Cow::Owned(name.to_owned()), function.clone()),
+                None => methods.remove(name),
+            };
+        }
     }
 
     /// Iterates over all functions
@@ -691,13 +714,10 @@ impl ScriptFunctionRegistry {
         name: impl Into<Cow<'static, str>>,
         func: DynamicScriptFunction,
     ) {
-        self.functions_mut().insert(
-            FunctionKey {
-                name: name.into(),
-                type_id,
-            },
-            func,
-        );
+        let name = name.into();
+        self.update_native_methods(type_id, &name, Some(&func));
+        self.functions_mut()
+            .insert(FunctionKey { name, type_id }, func);
     }
 }
 

@@ -14,6 +14,7 @@ use bevy_shape::{
 
 #[script_bindings(
     remote,
+    native,
     name = "circle_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -28,6 +29,7 @@ impl Circle {
 
 #[script_bindings(
     remote,
+    native,
     name = "sphere_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -42,6 +44,7 @@ impl Sphere {
 
 #[script_bindings(
     remote,
+    native,
     name = "rectangle_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -61,6 +64,7 @@ impl Rectangle {
 
 #[script_bindings(
     remote,
+    native,
     name = "cuboid_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -80,6 +84,7 @@ impl Cuboid {
 
 #[script_bindings(
     remote,
+    native,
     name = "capsule3d_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -94,6 +99,7 @@ impl Capsule3d {
 
 #[script_bindings(
     remote,
+    native,
     name = "cylinder_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -108,6 +114,7 @@ impl Cylinder {
 
 #[script_bindings(
     remote,
+    native,
     name = "plane3d_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -127,6 +134,7 @@ impl Plane3d {
 
 #[script_bindings(
     remote,
+    native,
     name = "annulus_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -141,6 +149,7 @@ impl Annulus {
 
 #[script_bindings(
     remote,
+    native,
     name = "regular_polygon_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -155,6 +164,7 @@ impl RegularPolygon {
 
 #[script_bindings(
     remote,
+    native,
     name = "torus_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",

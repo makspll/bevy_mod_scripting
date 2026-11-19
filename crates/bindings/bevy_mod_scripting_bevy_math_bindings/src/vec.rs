@@ -13,10 +13,10 @@ use bevy_mod_scripting_derive::script_bindings;
 // rustfmt keeps indenting the attribute inside the macro further on every run
 #[rustfmt::skip]
 macro_rules! float_vector_functions {
-    ($ty:ty, $name:literal $(, $native:ident)?) => {
+    ($ty:ty, $name:literal) => {
         #[script_bindings(
             remote,
-            $($native,)?
+            native,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
             namespace = "math",
@@ -239,12 +239,12 @@ macro_rules! float_vector_functions {
 }
 
 float_vector_functions!(Vec2, "vec2_shared_functions");
-// Vec3 is stored natively by the languages, its functions are typed
-float_vector_functions!(Vec3, "vec3_shared_functions", native);
+float_vector_functions!(Vec3, "vec3_shared_functions");
 float_vector_functions!(Vec4, "vec4_shared_functions");
 
 #[script_bindings(
     remote,
+    native,
     name = "vec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -418,6 +418,7 @@ impl Vec3 {
 
 #[script_bindings(
     remote,
+    native,
     name = "vec4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -437,6 +438,7 @@ impl Vec4 {
 
 #[script_bindings(
     remote,
+    native,
     name = "vec3a_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -456,6 +458,7 @@ impl Vec3A {
 
 #[script_bindings(
     remote,
+    native,
     name = "dvec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -475,6 +478,7 @@ impl DVec2 {
 
 #[script_bindings(
     remote,
+    native,
     name = "dvec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
