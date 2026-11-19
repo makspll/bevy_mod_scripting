@@ -590,8 +590,6 @@ macro_rules! script_native {
 
 #[cfg(test)]
 mod test {
-    use std::sync::atomic::{AtomicUsize, Ordering};
-
     use bevy_mod_scripting_asset::Language;
     use bevy_mod_scripting_world::WorldAccessGuard;
 
@@ -600,7 +598,10 @@ mod test {
 
     use crate::{CurrentScriptAttachment, FunctionCallContext, M, R, V, WorldExtensions};
 
-    static DROPS: AtomicUsize = AtomicUsize::new(0);
+    std::thread_local! {
+        /// Per thread, tests running in parallel drop their own values
+        static DROPS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    }
 
     #[derive(Reflect, Clone, Debug, PartialEq)]
     struct Tracked {
@@ -609,7 +610,7 @@ mod test {
 
     impl Drop for Tracked {
         fn drop(&mut self) {
-            DROPS.fetch_add(1, Ordering::SeqCst);
+            DROPS.set(DROPS.get() + 1);
         }
     }
 
@@ -796,7 +797,7 @@ mod test {
         let mut drops = 0;
         with_native_world(|| {
             let native = tracked(1.0);
-            let before = DROPS.load(Ordering::SeqCst);
+            let before = DROPS.get();
             let (result, ret) = call(
                 &copy,
                 Args {
@@ -807,7 +808,7 @@ mod test {
             result.unwrap();
             drop(ret);
             drop(native);
-            drops = DROPS.load(Ordering::SeqCst) - before;
+            drops = DROPS.get() - before;
         });
         // the argument and the copy it returned
         assert_eq!(drops, 2);
