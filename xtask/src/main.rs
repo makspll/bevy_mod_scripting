@@ -211,6 +211,13 @@ impl App {
                     cmd.arg("--publish");
                 }
             }
+            Xtasks::BencherMigrate { dry_run } => {
+                cmd.arg("bencher-migrate");
+
+                if dry_run {
+                    cmd.arg("--dry-run");
+                }
+            }
             Xtasks::Bench {
                 name,
                 enable_profiling: profile,
@@ -572,6 +579,15 @@ enum Xtasks {
         #[clap(long, default_value = "false", help = "Publish the benchmarks")]
         publish: bool,
     },
+    /// Renames benchmarks on bencher.dev as listed in `benches/bencher_renames.txt`, so their history follows them.
+    ///
+    /// Only renames which are still needed are done: the old name exists and the new one doesn't yet.
+    /// Runs on main before publishing, see `cargo xtask bencher --publish`.
+    BencherMigrate {
+        /// Only print what would be renamed
+        #[clap(long, default_value = "false")]
+        dry_run: bool,
+    },
     /// Runs criterion benchmarks generates json required to be published by bencher and generates html performance report
     Bench {
         /// Whether or not to enable tracy profiling
@@ -727,6 +743,7 @@ impl Xtasks {
             }
             Xtasks::Install { binary } => Self::install(app_settings, binary),
             Xtasks::Bencher { publish } => Self::bencher(app_settings, publish),
+            Xtasks::BencherMigrate { dry_run } => Self::bencher_migrate(&app_settings, dry_run),
             Xtasks::Bench {
                 name,
                 enable_profiling,
@@ -1233,6 +1250,11 @@ impl Xtasks {
 
         let token = std::env::var("BENCHER_API_TOKEN").ok();
 
+        // renamed benchmarks keep their history if they are renamed before their results are published
+        if is_main && publish && token.is_some() {
+            Self::bencher_migrate(&app_settings, false)?;
+        }
+
         // first of all run bench, and save output to a file
 
         let result = Self::bench(app_settings, false, None, None, true)?;
@@ -1283,6 +1305,83 @@ impl Xtasks {
             Self::synch_bencher_graphs()?;
         }
 
+        Ok(())
+    }
+
+    /// The uuid of the benchmark with exactly this name on bencher.dev, if there is one.
+    fn bencher_benchmark_uuid(name: &str, token: &str) -> Result<Option<String>> {
+        let output = Command::new("bencher")
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::inherit())
+            .args(["benchmark", "list", "bms"])
+            .args(["--name", name])
+            .args(["--token", token])
+            .output()
+            .with_context(|| "Could not list benchmarks")?;
+        if !output.status.success() {
+            bail!("Failed to list benchmarks named `{name}`: {output:?}");
+        }
+        let benchmarks: Vec<HashMap<String, serde_json::Value>> =
+            serde_json::from_slice(&output.stdout).with_context(|| "Reading benchmarks")?;
+        Ok(benchmarks
+            .into_iter()
+            .find(|b| b.get("name").and_then(|n| n.as_str()) == Some(name))
+            .and_then(|b| b.get("uuid").and_then(|u| u.as_str()).map(str::to_owned)))
+    }
+
+    /// See [`Xtasks::BencherMigrate`].
+    fn bencher_migrate(app_settings: &GlobalArgs, dry_run: bool) -> Result<()> {
+        let renames_path = workspace_dir(app_settings)?.join("benches/bencher_renames.txt");
+        let renames = std::fs::read_to_string(&renames_path)
+            .with_context(|| format!("Reading {renames_path:?}"))?;
+        let token = std::env::var("BENCHER_API_TOKEN").unwrap_or_default();
+
+        for line in renames.lines().map(str::trim) {
+            if line.is_empty() || line.starts_with('#') {
+                continue;
+            }
+            let Some((from, to)) = line.split_once("->").map(|(f, t)| (f.trim(), t.trim())) else {
+                bail!("Invalid rename `{line}`, expected `old name -> new name`");
+            };
+
+            let old = Self::bencher_benchmark_uuid(from, &token)?;
+            let new = Self::bencher_benchmark_uuid(to, &token)?;
+            let uuid = match (old, new) {
+                (Some(_), Some(_)) => {
+                    log::warn!(
+                        "Both `{from}` and `{to}` exist on bencher, their histories can't be merged, archive one of them by hand"
+                    );
+                    continue;
+                }
+                (None, Some(_)) => {
+                    log::info!("`{from}` was already renamed to `{to}`");
+                    continue;
+                }
+                (None, None) => {
+                    log::info!("`{from}` doesn't exist on bencher, nothing to rename");
+                    continue;
+                }
+                (Some(uuid), None) => uuid,
+            };
+
+            if dry_run {
+                log::info!("Would rename `{from}` to `{to}`");
+                continue;
+            }
+            log::info!("Renaming `{from}` to `{to}`");
+            let output = Command::new("bencher")
+                .stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit())
+                .args(["benchmark", "update", "bms", &uuid])
+                .args(["--name", to])
+                .args(["--token", &token])
+                .output()
+                .with_context(|| "Could not rename benchmark")?;
+            // another job (each OS publishes on main) may have renamed it meanwhile
+            if !output.status.success() && Self::bencher_benchmark_uuid(to, &token)?.is_none() {
+                bail!("Failed to rename `{from}` to `{to}`: {output:?}");
+            }
+        }
         Ok(())
     }
 
@@ -1388,8 +1487,15 @@ impl Xtasks {
             benchmarks
                 .iter()
                 .fold(HashMap::new(), |mut acc, (name, uuid)| {
+                    // one plot per group and language (the last word of script benchmarks' names), i.e. `interop Lua`
                     let group = name.split('/').next().unwrap_or_default();
-                    acc.entry(group.to_owned()).or_default().push(uuid.clone());
+                    let key = match name.rsplit(' ').next() {
+                        Some(language @ ("Lua" | "Rune")) => format!("{group} {language}"),
+                        _ => group.to_owned(),
+                    };
+                    acc.entry(key)
+                        .or_default()
+                        .push((name.clone(), uuid.clone()));
                     acc
                 });
 
@@ -1399,18 +1505,21 @@ impl Xtasks {
         // bencher rejects plots with more than this many benchmarks
         const MAX_BENCHMARKS_PER_PLOT: usize = 8;
 
-        for (group, uuids) in group_to_benchmark_map.iter().sorted() {
-            if uuids.len() > MAX_BENCHMARKS_PER_PLOT {
-                log::warn!(
-                    "Skipping plots for benchmark group `{group}`: {} benchmarks, bencher allows at most {MAX_BENCHMARKS_PER_PLOT} per plot",
-                    uuids.len()
-                );
-                continue;
-            }
-
-            for (testbed_name, testbed_uuid) in testbeds.iter() {
+        // groups with more benchmarks are split into several plots, so every benchmark gets one
+        for (group, benchmarks) in group_to_benchmark_map.iter().sorted() {
+            let names_and_uuids = benchmarks.iter().sorted().collect::<Vec<_>>();
+            let chunks = names_and_uuids
+                .chunks(MAX_BENCHMARKS_PER_PLOT)
+                .collect::<Vec<_>>();
+            for ((testbed_name, testbed_uuid), (i, chunk)) in
+                testbeds.iter().cartesian_product(chunks.iter().enumerate())
+            {
+                let uuids = chunk.iter().map(|(_, uuid)| uuid).collect::<Vec<_>>();
                 let without_gha = testbed_name.replace("-gha", "");
-                let plot_name = format!("{without_gha} {group}");
+                let plot_name = match chunks.len() {
+                    1 => format!("{without_gha} {group}"),
+                    n => format!("{without_gha} {group} ({}/{n})", i + 1),
+                };
 
                 let window_months = 12;
                 let window_seconds = window_months * 30 * 24 * 60 * 60;
