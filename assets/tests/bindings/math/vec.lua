@@ -69,7 +69,9 @@ assert(DVec3.new(1, 2, 3):as_vec3() == v, "dvec3")
 local w = Vec3.new(1, 2, 3)
 w.y = 5
 assert(w.y == 5 and v.y == 2, "set a field of a native value")
+---@diagnostic disable-next-line: assign-type-mismatch
 assert(not pcall(function() w.y = "a" end), "fields keep their type")
+---@diagnostic disable-next-line: inject-field
 assert(not pcall(function() w.w = 1 end), "unknown fields can't be set")
 local Transform = import_namespace("transform").Transform
 local t = Transform.from_translation(w)
