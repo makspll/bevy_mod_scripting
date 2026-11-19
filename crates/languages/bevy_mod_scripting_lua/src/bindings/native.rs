@@ -156,8 +156,8 @@ pub(crate) struct LuaArgs<'a> {
     l: *mut ffi::lua_State,
     first: c_int,
     len: usize,
-    /// mlua, locked once for the call, for the arguments converted the slow way
-    raw: &'a RawLua,
+    /// mlua, locked once for the call when an argument goes the slow way (else locked if one does anyway)
+    raw: Option<&'a RawLua>,
     /// whether the first arguments are native values, looked up once per call (`Union` and `R` both ask)
     natives: [std::cell::Cell<Option<Option<*mut u8>>>; 4],
 }
@@ -226,7 +226,12 @@ unsafe impl ArgSource for LuaArgs<'_> {
             return unsafe { NativeStorage::to_script_value(base) };
         }
         // Safety: the index is on the stack
-        unsafe { value_at(self.raw, self.l, self.idx(i)) }
+        unsafe {
+            match self.raw {
+                Some(raw) => value_at(raw, self.l, self.idx(i)),
+                None => with_raw(self.l, |_, raw| value_at(raw, self.l, self.idx(i))),
+            }
+        }
     }
 }
 
@@ -702,27 +707,53 @@ unsafe fn call(
     first: c_int,
     len: usize,
 ) -> Result<Ready, InteropError> {
-    // mlua is locked once for the whole call (the lock is reentrant, callbacks into Lua lock it again)
-    // Safety: `l` is the state of the call
-    unsafe {
-        with_raw(l, |lua, raw| {
-            let args = LuaArgs {
-                l,
-                first,
-                len,
-                raw,
-                natives: Default::default(),
-            };
-            let mut ret = LuaReturn::new();
-            let result = function.call_with(&args, &mut ret, LUA_CALLER_CONTEXT);
-            match result {
-                Ok(()) => ret.prepare_with(l, lua),
-                Err(error) => {
-                    ret.discard();
-                    Err(error)
+    let natives: [std::cell::Cell<Option<Option<*mut u8>>>; 4] = Default::default();
+    // whether an argument goes the slow way (anything but numbers, booleans, nil and natives): mlua is then locked once
+    // for the whole call instead of once per argument (the lock is reentrant, callbacks into Lua lock it again)
+    let needs_mlua = (0..len).any(|i| {
+        let idx = first + i as c_int;
+        // Safety: the index is on the stack
+        match unsafe { ffi::lua_type(l, idx) } {
+            ffi::LUA_TNUMBER | ffi::LUA_TBOOLEAN | ffi::LUA_TNIL => false,
+            ffi::LUA_TUSERDATA => {
+                // Safety: see above
+                let native = unsafe { native_base(l, idx) };
+                if let Some(cached) = natives.get(i) {
+                    cached.set(Some(native));
                 }
+                native.is_none()
             }
-        })
+            _ => true,
+        }
+    });
+    let run = |lua: Option<&Lua>, raw: Option<&RawLua>| {
+        let args = LuaArgs {
+            l,
+            first,
+            len,
+            raw,
+            natives,
+        };
+        let mut ret = LuaReturn::new();
+        let result = function.call_with(&args, &mut ret, LUA_CALLER_CONTEXT);
+        match result {
+            // Safety: `l` is the state of the call
+            Ok(()) => unsafe {
+                match lua {
+                    Some(lua) => ret.prepare_with(l, lua),
+                    None => ret.prepare(l),
+                }
+            },
+            Err(error) => {
+                ret.discard();
+                Err(error)
+            }
+        }
+    };
+    match needs_mlua {
+        // Safety: `l` is the state of the call
+        true => unsafe { with_raw(l, |lua, raw| run(Some(lua), Some(raw))) },
+        false => run(None, None),
     }
 }
 
