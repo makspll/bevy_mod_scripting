@@ -116,21 +116,31 @@ unsafe fn value_at(
     l: *mut ffi::lua_State,
     idx: c_int,
 ) -> Result<ScriptValue, InteropError> {
+    unsafe { at_index::<LuaScriptValue>(raw, l, idx) }
+        .map(|v| v.0)
+        .map_err(IntoInteropError::to_bms_error)
+}
+
+/// The value at `idx` of `l` converted by mlua, which works on the stack of `raw`'s state.
+unsafe fn at_index<T: FromLua>(
+    raw: &RawLua,
+    l: *mut ffi::lua_State,
+    idx: c_int,
+) -> mlua::Result<T> {
     unsafe {
         let idx = ffi::lua_absindex(l, idx);
         let state = raw.state();
-        let value = if state == l {
-            LuaScriptValue::from_stack(idx, raw)
+        if state == l {
+            T::from_stack(idx, raw)
         } else if ffi::lua_checkstack(state, 1) == 0 {
             Err(mlua::Error::StackError)
         } else {
             ffi::lua_pushvalue(l, idx);
             ffi::lua_xmove(l, state, 1);
-            let value = LuaScriptValue::from_stack(-1, raw);
+            let value = T::from_stack(-1, raw);
             ffi::lua_pop(state, 1);
             value
-        };
-        value.map(|v| v.0).map_err(IntoInteropError::to_bms_error)
+        }
     }
 }
 
@@ -1106,6 +1116,69 @@ unsafe extern "C-unwind" fn native_operator(l: *mut ffi::lua_State) -> c_int {
             let mut ret = LuaReturn::new();
             ret.script_value(result)?;
             ret.prepare(l)
+        })
+    }
+}
+
+/// The metamethod of a binary operator of references, see [`reference_operator`].
+pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi::lua_CFunction {
+    use ScriptOperatorNames::*;
+    macro_rules! of {
+        ($($op:ident),*) => {
+            match operator {
+                $($op => reference_operator::<{ $op as ffi::lua_Integer }>,)*
+                _ => reference_operator::<{ Addition as ffi::lua_Integer }>,
+            }
+        };
+    }
+    of!(
+        Addition,
+        Subtraction,
+        Multiplication,
+        Division,
+        Remainder,
+        Exponentiation,
+        Equality,
+        LessThanComparison
+    )
+}
+
+/// Binary operators of references, i.e. `t.translation + v`: the operator's function of the reference operand (see
+/// [`dispatch::binary_function`]) is called with the operands as they are on the stack, the reference first.
+unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>(
+    l: *mut ffi::lua_State,
+) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 2);
+        run(l, || {
+            let operator = operator_from_index(OPERATOR)?;
+            let world = ThreadWorldContainer::try_get_context()?.world;
+            let (function, on_left) = with_raw(l, |_, raw| {
+                let reference = |idx| {
+                    at_index::<mlua::UserDataRef<super::reference::LuaReflectReference>>(
+                        raw, l, idx,
+                    )
+                    .ok()
+                };
+                let (receiver, on_left) = match reference(1) {
+                    Some(receiver) => (receiver, true),
+                    None => match reference(2) {
+                        Some(receiver) => (receiver, false),
+                        None => {
+                            return Err(InteropError::str(
+                                "neither operand of this operator is a value",
+                            ));
+                        }
+                    },
+                };
+                dispatch::binary_function(world, operator, &receiver.0, on_left, LUA_CALLER_CONTEXT)
+                    .map(|function| (function, on_left))
+            })?;
+            if !on_left {
+                // the reference is the receiver, the first argument
+                ffi::lua_insert(l, 1);
+            }
+            call(l, &function, 1, 2)
         })
     }
 }

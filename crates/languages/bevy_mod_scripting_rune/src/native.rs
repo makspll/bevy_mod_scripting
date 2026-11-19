@@ -54,6 +54,7 @@ impl RuneNative {
 pub(crate) enum RuneArg<'a> {
     Value(&'a Value),
     Native(&'a RuneNative),
+    Ref(&'a crate::types::RuneRef),
 }
 
 /// The arguments of a typed call, holding a borrow of every native value among them for the call, so nothing the call
@@ -76,8 +77,7 @@ impl<'a> RuneArgs<'a> {
             RuneArg::Value(value) if value.type_hash() == <RuneNative as TypeHash>::HASH => {
                 value.borrow_ref::<RuneNative>().ok()
             }
-            RuneArg::Value(_) => None,
-            RuneArg::Native(_) => None,
+            RuneArg::Value(_) | RuneArg::Native(_) | RuneArg::Ref(_) => None,
         };
         let guards = if args.len() <= 4 {
             let mut inline = [None, None, None, None];
@@ -101,7 +101,7 @@ impl<'a> RuneArgs<'a> {
     fn value(&self, i: usize) -> Option<&Value> {
         match self.args.get(i)? {
             RuneArg::Value(value) => Some(value),
-            RuneArg::Native(_) => None,
+            RuneArg::Native(_) | RuneArg::Ref(_) => None,
         }
     }
 }
@@ -145,6 +145,7 @@ unsafe impl ArgSource for RuneArgs<'_> {
         match self.args.get(i)? {
             RuneArg::Native(native) => Some(native.0.base()),
             RuneArg::Value(_) => self.guard(i).map(|n| n.0.base()),
+            RuneArg::Ref(_) => None,
         }
     }
 
@@ -152,6 +153,7 @@ unsafe impl ArgSource for RuneArgs<'_> {
         match self.args.get(i) {
             Some(RuneArg::Native(native)) => native.to_script(),
             Some(RuneArg::Value(value)) => from_rune(value),
+            Some(RuneArg::Ref(reference)) => Ok(ScriptValue::Reference(reference.0.clone())),
             None => Ok(ScriptValue::Unit),
         }
     }

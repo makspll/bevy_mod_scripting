@@ -291,15 +291,10 @@ const TUPLE_FIELDS: usize = 16;
 
 fn binary(operator: ScriptOperatorNames, this: &RuneRef, other: &Value) -> VmResult<Value> {
     vm((|| {
-        let rhs = from_rune(other)?;
-        let out = dispatch::binary(
-            world()?,
-            operator,
-            ScriptValue::Reference(this.0.clone()),
-            rhs,
-            RUNE_CALLER_CONTEXT,
-        )?;
-        to_rune(out)
+        // the operator's function gets the values as they are, see `crate::native`
+        let function =
+            dispatch::binary_function(world()?, operator, &this.0, true, RUNE_CALLER_CONTEXT)?;
+        crate::native::call(&function, &[RuneArg::Ref(this), RuneArg::Value(other)])
     })())
 }
 
