@@ -72,7 +72,11 @@ enum Guards<'a> {
 impl<'a> RuneArgs<'a> {
     fn new(args: &'a [RuneArg<'a>]) -> Self {
         let guard = |arg: &'a RuneArg<'a>| match arg {
-            RuneArg::Value(value) => value.borrow_ref::<RuneNative>().ok(),
+            // only natives are borrowed: a failed borrow builds an error
+            RuneArg::Value(value) if value.type_hash() == <RuneNative as TypeHash>::HASH => {
+                value.borrow_ref::<RuneNative>().ok()
+            }
+            RuneArg::Value(_) => None,
             RuneArg::Native(_) => None,
         };
         let guards = if args.len() <= 4 {
