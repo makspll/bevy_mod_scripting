@@ -106,23 +106,31 @@ unsafe fn script_value_at(l: *mut ffi::lua_State, idx: c_int) -> Result<ScriptVa
         if let Some(base) = native_base(l, idx) {
             return NativeStorage::to_script_value(base);
         }
+        with_raw(l, |_, raw| value_at(raw, l, idx))
+    }
+}
+
+/// The value at `idx` of `l` as a script value through mlua, which looks for native values too (after references).
+unsafe fn value_at(
+    raw: &RawLua,
+    l: *mut ffi::lua_State,
+    idx: c_int,
+) -> Result<ScriptValue, InteropError> {
+    unsafe {
         let idx = ffi::lua_absindex(l, idx);
-        with_raw(l, |_, raw| {
-            let state = raw.state();
-            if state == l {
-                return LuaScriptValue::from_stack(idx, raw);
-            }
-            if ffi::lua_checkstack(state, 1) == 0 {
-                return Err(mlua::Error::StackError);
-            }
+        let state = raw.state();
+        let value = if state == l {
+            LuaScriptValue::from_stack(idx, raw)
+        } else if ffi::lua_checkstack(state, 1) == 0 {
+            Err(mlua::Error::StackError)
+        } else {
             ffi::lua_pushvalue(l, idx);
             ffi::lua_xmove(l, state, 1);
             let value = LuaScriptValue::from_stack(-1, raw);
             ffi::lua_pop(state, 1);
             value
-        })
-        .map(|v| v.0)
-        .map_err(IntoInteropError::to_bms_error)
+        };
+        value.map(|v| v.0).map_err(IntoInteropError::to_bms_error)
     }
 }
 
@@ -144,15 +152,17 @@ unsafe fn push_with_mlua(
 }
 
 /// The arguments of a typed call: the stack of the C function from `first`.
-pub(crate) struct LuaArgs {
+pub(crate) struct LuaArgs<'a> {
     l: *mut ffi::lua_State,
     first: c_int,
     len: usize,
+    /// mlua, locked once for the call, for the arguments converted the slow way
+    raw: &'a RawLua,
     /// whether the first arguments are native values, looked up once per call (`Union` and `R` both ask)
     natives: [std::cell::Cell<Option<Option<*mut u8>>>; 4],
 }
 
-impl LuaArgs {
+impl LuaArgs<'_> {
     fn idx(&self, i: usize) -> c_int {
         self.first + i as c_int
     }
@@ -160,7 +170,7 @@ impl LuaArgs {
 
 // Safety: native bases are only handed out for userdata with a native metatable, which were initialised before getting it
 // (see `push_ready`) and stay on the stack for the call
-unsafe impl ArgSource for LuaArgs {
+unsafe impl ArgSource for LuaArgs<'_> {
     fn len(&self) -> usize {
         self.len
     }
@@ -210,8 +220,13 @@ unsafe impl ArgSource for LuaArgs {
     }
 
     fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError> {
+        // a native value found by a typed argument, else mlua, which finds natives after references (the common case)
+        if let Some(Some(Some(base))) = self.natives.get(i).map(std::cell::Cell::get) {
+            // Safety: a native base handed out above, on the stack for the call
+            return unsafe { NativeStorage::to_script_value(base) };
+        }
         // Safety: the index is on the stack
-        unsafe { script_value_at(self.l, self.idx(i)) }
+        unsafe { value_at(self.raw, self.l, self.idx(i)) }
     }
 }
 
@@ -282,6 +297,12 @@ impl LuaReturn {
 
     /// Makes what pushing the result needs (mlua values, the native metatable), while Rust values may still be around.
     unsafe fn prepare(self, l: *mut ffi::lua_State) -> Result<Ready, InteropError> {
+        // Safety: `l` is the state of the call
+        unsafe { with_raw(l, |lua, _| self.prepare_with(l, lua)) }
+    }
+
+    /// [`Self::prepare`] with mlua already at hand.
+    unsafe fn prepare_with(self, l: *mut ffi::lua_State, lua: &Lua) -> Result<Ready, InteropError> {
         Ok(match self.pending {
             Pending::Nothing => Ready::Nothing,
             Pending::Number(n) => Ready::Number(n),
@@ -297,9 +318,15 @@ impl LuaReturn {
                 }
                 Ready::Native(native)
             }
-            Pending::Value(value) => Ready::Values(
-                // Safety: `l` is the state of the call
-                unsafe { with_raw(l, |lua, _| LuaFunctionReturn(value).into_lua_multi(lua)) }
+            // a tuple is several values, anything else one, without a `MultiValue`
+            Pending::Value(value @ ScriptValue::Tuple(_)) => Ready::Values(
+                LuaFunctionReturn(value)
+                    .into_lua_multi(lua)
+                    .map_err(IntoInteropError::to_bms_error)?,
+            ),
+            Pending::Value(value) => Ready::Value(
+                LuaScriptValue(value)
+                    .into_lua(lua)
                     .map_err(IntoInteropError::to_bms_error)?,
             ),
         })
@@ -376,6 +403,7 @@ enum Ready {
     Integer(i64),
     Boolean(bool),
     Native(PendingNative),
+    Value(mlua::Value),
     Values(MultiValue),
 }
 
@@ -420,6 +448,20 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
                 ffi::lua_insert(l, -2);
                 ffi::lua_setmetatable(l, -2);
                 Ok(1)
+            }
+            Ready::Value(value) => {
+                if ffi::lua_checkstack(l, 1) == 0 {
+                    return Err("stack overflow");
+                }
+                push_with_mlua(l, move |_, raw| {
+                    if ffi::lua_checkstack(raw.state(), 1) == 0 {
+                        return Err(mlua::Error::StackError);
+                    }
+                    // an existing value: pushing it doesn't allocate
+                    value.push_into_stack(raw)?;
+                    Ok(1)
+                })
+                .map_err(|_| "pushing the result failed")
             }
             Ready::Values(values) => {
                 let n = values.len() as c_int;
@@ -660,29 +702,35 @@ unsafe fn call(
     first: c_int,
     len: usize,
 ) -> Result<Ready, InteropError> {
-    let args = LuaArgs {
-        l,
-        first,
-        len,
-        natives: Default::default(),
-    };
-    let mut ret = LuaReturn::new();
-    let result = match function.call_native(&args, &mut ret, LUA_CALLER_CONTEXT) {
-        Some(result) => result,
-        // a function without a typed entry, i.e. a method of a native type which isn't typed
-        None => (0..len)
-            .map(|i| args.script_value(i))
-            .collect::<Result<Vec<_>, _>>()
-            .and_then(|values| function.call(values, LUA_CALLER_CONTEXT))
-            .and_then(|out| ret.script_value(out)),
-    };
-    match result {
-        // Safety: `l` is the state of the call
-        Ok(()) => unsafe { ret.prepare(l) },
-        Err(error) => {
-            ret.discard();
-            Err(error)
-        }
+    // mlua is locked once for the whole call (the lock is reentrant, callbacks into Lua lock it again)
+    // Safety: `l` is the state of the call
+    unsafe {
+        with_raw(l, |lua, raw| {
+            let args = LuaArgs {
+                l,
+                first,
+                len,
+                raw,
+                natives: Default::default(),
+            };
+            let mut ret = LuaReturn::new();
+            let result = match function.call_native(&args, &mut ret, LUA_CALLER_CONTEXT) {
+                Some(result) => result,
+                // a function without a typed entry, i.e. a method of a native type which isn't typed
+                None => (0..len)
+                    .map(|i| args.script_value(i))
+                    .collect::<Result<Vec<_>, _>>()
+                    .and_then(|values| function.call(values, LUA_CALLER_CONTEXT))
+                    .and_then(|out| ret.script_value(out)),
+            };
+            match result {
+                Ok(()) => ret.prepare_with(l, lua),
+                Err(error) => {
+                    ret.discard();
+                    Err(error)
+                }
+            }
+        })
     }
 }
 
