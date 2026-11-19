@@ -115,7 +115,7 @@ pub struct NativeVTable {
 }
 
 impl NativeVTable {
-    /// The vtable of `T`, made once per registration.
+    /// The vtable of `T`, made once per type and kept for the program's lifetime, so native values can outlive their app.
     fn new<T: Reflect + Clone>() -> &'static Self {
         unsafe fn drop_value<T>(p: *mut u8) {
             // Safety: called with a pointer to an initialised T, which isn't used afterwards
@@ -129,14 +129,23 @@ impl NativeVTable {
             // Safety: called with a pointer to an initialised T
             ReflectReference::new_allocated(unsafe { (*(src as *const T)).clone() })
         }
-        Box::leak(Box::new(Self {
-            type_id: TypeId::of::<T>(),
-            type_name: std::any::type_name::<T>(),
-            layout: Layout::new::<T>(),
-            drop: std::mem::needs_drop::<T>().then_some(drop_value::<T> as unsafe fn(*mut u8)),
-            clone_into: clone_into::<T>,
-            to_reference: to_reference::<T>,
-        }))
+        static VTABLES: std::sync::OnceLock<
+            std::sync::Mutex<HashMap<TypeId, &'static NativeVTable>>,
+        > = std::sync::OnceLock::new();
+        let mut vtables = VTABLES
+            .get_or_init(Default::default)
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        vtables.entry(TypeId::of::<T>()).or_insert_with(|| {
+            Box::leak(Box::new(Self {
+                type_id: TypeId::of::<T>(),
+                type_name: std::any::type_name::<T>(),
+                layout: Layout::new::<T>(),
+                drop: std::mem::needs_drop::<T>().then_some(drop_value::<T> as unsafe fn(*mut u8)),
+                clone_into: clone_into::<T>,
+                to_reference: to_reference::<T>,
+            }))
+        })
     }
 }
 
@@ -618,5 +627,214 @@ mod test {
         });
         // the argument and the copy it returned
         assert_eq!(drops, 2);
+    }
+
+    /// Not Copy: dropping and cloning go through the vtable
+    #[derive(Reflect, Clone, Debug, PartialEq)]
+    struct Labelled {
+        value: f32,
+        label: String,
+    }
+
+    /// Needs more alignment than the storage's header gives
+    #[derive(Reflect, Clone, Copy, Debug, PartialEq)]
+    #[repr(C, align(16))]
+    struct Aligned {
+        values: [f32; 4],
+    }
+
+    fn native_of<T: Reflect + Clone>(value: T) -> NativeBox {
+        let vtable = native_vtable(
+            &ThreadWorldContainer::try_get_context().unwrap().world,
+            TypeId::of::<T>(),
+        )
+        .unwrap();
+        let mut value = Some(value);
+        NativeBox::new(vtable, &mut |slot| {
+            if let Some(value) = value.take() {
+                // Safety: the slot is for a T
+                unsafe { (slot as *mut T).write(value) }
+            }
+        })
+        .unwrap()
+    }
+
+    fn value_in<T>(native: &NativeBox) -> &T {
+        // Safety: the box holds a T
+        unsafe { &*(NativeStorage::value(native.base()) as *const T) }
+    }
+
+    /// The whole chain a language goes through: registering a native type with `script_native!`, making values with typed
+    /// functions, fields, a value passed twice, non native arguments (the slow path), and copies into references.
+    #[test]
+    fn native_values_through_the_whole_chain() {
+        let make = Native(|value: f32| {
+            V(Labelled {
+                value,
+                label: "made".to_owned(),
+            })
+        })
+        .into_dynamic_script_function();
+        // `Union` takes a native value as it is, also the receiver passed again
+        let add = Native(|a: R<Labelled>, b: crate::Union<R<Labelled>, f32>| {
+            V(Labelled {
+                value: a.value
+                    + match b.into_left() {
+                        Ok(b) => b.value,
+                        Err(n) => n,
+                    },
+                label: a.label.clone(),
+            })
+        })
+        .into_dynamic_script_function();
+
+        let mut world = World::default();
+        crate::script_native!(
+            &mut world,
+            Labelled {
+                value: f32,
+                label: String
+            }
+        );
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        WorldAccessGuard::with_static_guard(&mut world, cache, |world| {
+            // a native value returned by a typed call
+            let (result, made) = call(
+                &make,
+                Args {
+                    natives: &[],
+                    numbers: &[2.0],
+                },
+            );
+            result.unwrap();
+            let made = made.native.unwrap();
+            assert_eq!(value_in::<Labelled>(&made).label, "made");
+
+            // fields, through the accessors `script_native!` registered
+            let fields = {
+                let registry = world.script_function_registry();
+                let registry = registry.read();
+                registry
+                    .native_type(TypeId::of::<Labelled>())
+                    .unwrap()
+                    .fields
+                    .clone()
+            };
+            let (result, got) = call(
+                &fields["value"].get,
+                Args {
+                    natives: &[&made],
+                    numbers: &[],
+                },
+            );
+            result.unwrap();
+            assert_eq!(got.value, Some(ScriptValue::Float(2.0)));
+            let (result, _) = call(
+                fields["value"].set.as_ref().unwrap(),
+                Args {
+                    natives: &[&made],
+                    numbers: &[5.0],
+                },
+            );
+            result.unwrap();
+            assert_eq!(value_in::<Labelled>(&made).value, 5.0);
+
+            // the same value twice, and a number for the union
+            let (result, sum) = call(
+                &add,
+                Args {
+                    natives: &[&made, &made],
+                    numbers: &[],
+                },
+            );
+            result.unwrap();
+            assert_eq!(
+                value_in::<Labelled>(sum.native.as_ref().unwrap()).value,
+                10.0
+            );
+            let (result, sum) = call(
+                &add,
+                Args {
+                    natives: &[&made],
+                    numbers: &[1.0],
+                },
+            );
+            result.unwrap();
+            assert_eq!(
+                value_in::<Labelled>(sum.native.as_ref().unwrap()).value,
+                6.0
+            );
+
+            // a copy, as everything which isn't typed sees it, goes back in through the slow path
+            let copy = unsafe { NativeStorage::to_script_value(made.base()) }.unwrap();
+            struct Slow(ScriptValue);
+            // Safety: no native values
+            unsafe impl ArgSource for Slow {
+                fn len(&self) -> usize {
+                    2
+                }
+                fn number(&self, _: usize) -> Option<f64> {
+                    None
+                }
+                fn integer(&self, _: usize) -> Option<i64> {
+                    None
+                }
+                fn boolean(&self, _: usize) -> Option<bool> {
+                    None
+                }
+                fn native(&self, _: usize) -> Option<*mut u8> {
+                    None
+                }
+                fn script_value(&self, _: usize) -> Result<ScriptValue, InteropError> {
+                    Ok(self.0.clone())
+                }
+            }
+            let mut ret = Return::default();
+            add.call_native(
+                &Slow(copy),
+                &mut ret,
+                FunctionCallContext::new(Language::Lua),
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(
+                value_in::<Labelled>(ret.native.as_ref().unwrap()).value,
+                10.0
+            );
+        });
+    }
+
+    #[test]
+    fn values_needing_more_alignment_than_the_header() {
+        let double = Native(|v: R<Aligned>| {
+            V(Aligned {
+                values: v.values.map(|x| x * 2.0),
+            })
+        })
+        .into_dynamic_script_function();
+        let mut world = World::default();
+        NativeType::new::<Aligned>().register(&mut world);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
+            let native = native_of(Aligned {
+                values: [1.0, 2.0, 3.0, 4.0],
+            });
+            let value = unsafe { NativeStorage::value(native.base()) };
+            assert_eq!(value as usize % 16, 0, "the value is aligned");
+            let (result, ret) = call(
+                &double,
+                Args {
+                    natives: &[&native],
+                    numbers: &[],
+                },
+            );
+            result.unwrap();
+            assert_eq!(
+                *value_in::<Aligned>(ret.native.as_ref().unwrap()),
+                Aligned {
+                    values: [2.0, 4.0, 6.0, 8.0]
+                }
+            );
+        });
     }
 }

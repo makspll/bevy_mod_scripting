@@ -366,3 +366,121 @@ pub(crate) fn display(this: &RuneNative, debug: bool) -> Result<String, InteropE
         false => dispatch::display(world()?, reference, RUNE_CALLER_CONTEXT),
     }
 }
+
+#[cfg(test)]
+mod test {
+    use bevy_ecs::world::World;
+    use bevy_mod_scripting_bindings::{
+        CurrentScriptAttachment, Native, R, Union, V, WorldAccessGuard,
+        function::namespace::NamespaceBuilder, script_native,
+    };
+    use bevy_reflect::Reflect;
+
+    use super::*;
+
+    /// Not Copy: dropping and cloning go through the vtable
+    #[derive(Reflect, Clone, Debug, PartialEq)]
+    struct Labelled {
+        value: f64,
+        label: String,
+    }
+
+    fn number(value: f64) -> Value {
+        rune::to_value(value).unwrap()
+    }
+
+    fn as_number(value: Result<Value, InteropError>) -> f64 {
+        rune::from_value::<f64>(value.unwrap()).unwrap()
+    }
+
+    /// The chain Rune goes through without its VM: typed calls making native values, fields, operators with the value
+    /// passed twice, compound assignment, equality, and a copy of the value coming back as a reference.
+    #[test]
+    fn native_values_in_rune() {
+        let mut world = World::default();
+        NamespaceBuilder::<Labelled>::new(&mut world)
+            .register(
+                "new",
+                Native(|value: f64| {
+                    V(Labelled {
+                        value,
+                        label: "made".to_owned(),
+                    })
+                }),
+            )
+            .register(
+                "add",
+                Native(|a: R<Labelled>, b: Union<R<Labelled>, f64>| {
+                    V(Labelled {
+                        value: a.value
+                            + match b.into_left() {
+                                Ok(b) => b.value,
+                                Err(n) => n,
+                            },
+                        label: a.label.clone(),
+                    })
+                }),
+            )
+            .register(
+                "eq",
+                Native(|a: R<Labelled>, b: R<Labelled>| a.value == b.value),
+            );
+        script_native!(
+            &mut world,
+            Labelled {
+                value: f64,
+                label: String
+            }
+        );
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        WorldAccessGuard::with_static_guard(&mut world, cache, |world| {
+            let function = |name: &str| {
+                world
+                    .script_function_registry()
+                    .read()
+                    .get_function(TypeId::of::<Labelled>(), name)
+                    .unwrap()
+                    .clone()
+            };
+
+            let made = call(&function("new"), &[RuneArg::Value(&number(2.0))]).unwrap();
+            let this = made.borrow_ref::<RuneNative>().unwrap();
+            assert_eq!(as_number(get(&this, "value")), 2.0);
+
+            set(&this, "value", &number(5.0)).unwrap();
+            assert_eq!(as_number(get(&this, "value")), 5.0);
+            assign(ScriptOperatorNames::Addition, &this, "value", &number(1.0)).unwrap();
+            assert_eq!(as_number(get(&this, "value")), 6.0);
+            assert!(set(&this, "missing", &number(1.0)).is_err());
+
+            // the value on both sides, and a number
+            let sum = binary(ScriptOperatorNames::Addition, &this, &made).unwrap();
+            assert_eq!(
+                as_number(get(&sum.borrow_ref::<RuneNative>().unwrap(), "value")),
+                12.0
+            );
+            let sum = binary(ScriptOperatorNames::Addition, &this, &number(1.0)).unwrap();
+            assert_eq!(
+                as_number(get(&sum.borrow_ref::<RuneNative>().unwrap(), "value")),
+                7.0
+            );
+            assert!(eq(&this, &made).unwrap());
+            assert!(
+                !eq(&this, &number(6.0)).unwrap(),
+                "different kinds are unequal"
+            );
+
+            // a copy, as a reference, goes back in through the slow path
+            let reference = new_value(RuneRef(this.to_reference().unwrap())).unwrap();
+            let sum = call(
+                &function("add"),
+                &[RuneArg::Value(&reference), RuneArg::Native(&this)],
+            )
+            .unwrap();
+            assert_eq!(
+                as_number(get(&sum.borrow_ref::<RuneNative>().unwrap(), "value")),
+                12.0
+            );
+        });
+    }
+}

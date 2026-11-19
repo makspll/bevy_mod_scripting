@@ -30,6 +30,8 @@ Multi-language scripting for Bevy (Lua, Rune). Scripts are Bevy assets; they acc
 ## Working here
 * Builds are heavy; scope cargo to one crate (`-p`) and use `xtask` for anything broader.
 * Lints are strict (see `clippy.toml`); `unwrap`/`expect` need justified `allow`s.
+* The unsafe native value paths have Miri tests (`native::` tests of the bindings and Rune crates), run with `cargo xtask miri` and in CI; extend them when changing `native.rs` code. Lua's side is C and can't run under Miri.
+* Benchmarks renamed on bencher.dev are listed in `benches/bencher_renames.txt`, applied on main by `cargo xtask bencher-migrate` before publishing, which fails if a rename can't be done.
 * Prefer direct names that say what a method does over short ambiguous ones, especially for side effects: `make_or_get_generic_layout` (caches), not `generic_layout`.
 
 ## Keeping notes in sync

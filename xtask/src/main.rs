@@ -211,6 +211,9 @@ impl App {
                     cmd.arg("--publish");
                 }
             }
+            Xtasks::Miri => {
+                cmd.arg("miri");
+            }
             Xtasks::BencherMigrate { dry_run } => {
                 cmd.arg("bencher-migrate");
 
@@ -579,6 +582,9 @@ enum Xtasks {
         #[clap(long, default_value = "false", help = "Publish the benchmarks")]
         publish: bool,
     },
+    /// Runs the tests of the unsafe native value paths (typed calls, native storage) under Miri, with a nightly toolchain
+    /// (installing the `miri` component). Lua is C, so only the language agnostic and Rune paths can run under Miri.
+    Miri,
     /// Renames benchmarks on bencher.dev as listed in `benches/bencher_renames.txt`, so their history follows them.
     ///
     /// Only renames which are still needed are done: the old name exists and the new one doesn't yet.
@@ -723,6 +729,7 @@ impl Xtasks {
                             Xtasks::Build { .. }
                                 | Xtasks::Docs { .. }
                                 | Xtasks::CheckLuaTypes { .. }
+                                | Xtasks::Miri
                         );
 
                         if !os.is_main_os() && step_should_run_on_main_os {
@@ -744,6 +751,7 @@ impl Xtasks {
             Xtasks::Install { binary } => Self::install(app_settings, binary),
             Xtasks::Bencher { publish } => Self::bencher(app_settings, publish),
             Xtasks::BencherMigrate { dry_run } => Self::bencher_migrate(&app_settings, dry_run),
+            Xtasks::Miri => Self::miri(&app_settings),
             Xtasks::Bench {
                 name,
                 enable_profiling,
@@ -1308,6 +1316,50 @@ impl Xtasks {
         Ok(())
     }
 
+    /// See [`Xtasks::Miri`].
+    fn miri(app_settings: &GlobalArgs) -> Result<()> {
+        let workspace_dir = workspace_dir(app_settings)?;
+        let run = |program: &str, args: &[&str]| -> Result<()> {
+            log::info!("Running {program} {}", args.join(" "));
+            let status = Command::new(program)
+                .args(args)
+                .current_dir(&workspace_dir)
+                .status()
+                .with_context(|| format!("Could not run {program}"))?;
+            if !status.success() {
+                bail!("{program} {} failed: {status}", args.join(" "));
+            }
+            Ok(())
+        };
+        run(
+            "rustup",
+            &[
+                "toolchain",
+                "install",
+                "nightly",
+                "--profile",
+                "minimal",
+                "--component",
+                "miri,rust-src",
+            ],
+        )?;
+        // the tests of the native paths in the crates whose code Miri can run
+        run(
+            "cargo",
+            &[
+                "+nightly",
+                "miri",
+                "test",
+                "-p",
+                "bevy_mod_scripting_bindings",
+                "-p",
+                "bevy_mod_scripting_rune",
+                "--lib",
+                "native::",
+            ],
+        )
+    }
+
     /// The uuid of the benchmark with exactly this name on bencher.dev, if there is one.
     fn bencher_benchmark_uuid(name: &str, token: &str) -> Result<Option<String>> {
         let output = Command::new("bencher")
@@ -1347,21 +1399,18 @@ impl Xtasks {
             let old = Self::bencher_benchmark_uuid(from, &token)?;
             let new = Self::bencher_benchmark_uuid(to, &token)?;
             let uuid = match (old, new) {
-                (Some(_), Some(_)) => {
-                    log::warn!(
-                        "Both `{from}` and `{to}` exist on bencher, their histories can't be merged, archive one of them by hand"
-                    );
-                    continue;
-                }
+                (Some(uuid), None) => uuid,
                 (None, Some(_)) => {
                     log::info!("`{from}` was already renamed to `{to}`");
                     continue;
                 }
-                (None, None) => {
-                    log::info!("`{from}` doesn't exist on bencher, nothing to rename");
-                    continue;
-                }
-                (Some(uuid), None) => uuid,
+                // results under both names, i.e. the new one was published before the rename ran: histories can't be merged
+                (Some(_), Some(_)) => bail!(
+                    "Both `{from}` and `{to}` exist on bencher, their histories can't be merged: archive or delete one of them on bencher.dev, or fix the rename in benches/bencher_renames.txt"
+                ),
+                (None, None) => bail!(
+                    "Neither `{from}` nor `{to}` exist on bencher: fix the rename in benches/bencher_renames.txt"
+                ),
             };
 
             if dry_run {
@@ -1874,6 +1923,12 @@ impl Xtasks {
         output.push(App {
             global_args: default_args.clone(),
             subcmd: Xtasks::CheckLuaTypes,
+        });
+
+        // the unsafe native value paths, under Miri
+        output.push(App {
+            global_args: default_args.clone(),
+            subcmd: Xtasks::Miri,
         });
 
         // benchmarks publish to bencher, so they only run for the full matrix. Pull requests run them on demand,
