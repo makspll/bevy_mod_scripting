@@ -878,6 +878,7 @@ macro_rules! impl_native_function {
         {
             #[allow(unused_mut, unused_variables, unused_assignments)]
             fn into_native_thunk(self) -> Arc<crate::native::NativeThunk> {
+                let native_return = crate::native::NativeReturnType::default();
                 Arc::new(move |
                     caller_context: FunctionCallContext,
                     args: &dyn crate::native::ArgSource,
@@ -916,7 +917,7 @@ macro_rules! impl_native_function {
                             let $out = out?;
                             let out = $out;
                         )?
-                        out.into_ret(ret, world.clone())
+                        out.into_ret(ret, world.clone(), &native_return)
                             .map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
                     })
                 })

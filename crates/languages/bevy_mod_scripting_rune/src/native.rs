@@ -9,7 +9,7 @@ use std::{any::TypeId, sync::Arc};
 
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, InteropError, ReflectReference, ScriptValue, WorldExtensions, dispatch,
-    native::{ArgSource, NativeBox, NativeStorage, NativeType, NativeVTable, ReturnSink},
+    native::{ArgSource, NativeBox, NativeStorage, NativeType, ReturnSink},
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use rune::{
@@ -26,22 +26,11 @@ use crate::{
 /// A value BMS stores natively, see [`bevy_mod_scripting_bindings::native`].
 #[derive(Any)]
 #[rune(item = ::bms, name = Native)]
-pub struct RuneNative(pub NativeBox, Option<Arc<NativeType>>);
+pub struct RuneNative(pub NativeBox, Arc<NativeType>);
 
 impl RuneNative {
-    /// The value, with its type's fields and methods looked up once.
-    pub fn new(storage: NativeBox) -> Self {
-        // Safety: the box holds initialised storage
-        let type_id = unsafe { NativeStorage::header(storage.base()) }
-            .vtable
-            .type_id;
-        let native = world().ok().and_then(|world| {
-            world
-                .script_function_registry()
-                .read()
-                .native_type(type_id)
-                .cloned()
-        });
+    /// The value, with its type's fields and methods, as the typed function returning it looked them up.
+    pub fn new(storage: NativeBox, native: Arc<NativeType>) -> Self {
         Self(storage, native)
     }
 
@@ -199,15 +188,11 @@ unsafe impl ReturnSink for RuneReturn {
         self.set(rune::to_value(b).map_err(IntoInteropError::to_bms_error));
     }
 
-    unsafe fn native(
-        &mut self,
-        vtable: &'static NativeVTable,
-        write: &mut dyn FnMut(*mut u8),
-    ) -> bool {
+    unsafe fn native(&mut self, native: &Arc<NativeType>, write: &mut dyn FnMut(*mut u8)) -> bool {
         // Safety: `write` writes a value of the vtable's type, see the method's contract
-        match unsafe { NativeBox::new(vtable, write) } {
-            Ok(native) => {
-                self.set(new_value(RuneNative::new(native)));
+        match unsafe { NativeBox::new(native.vtable, write) } {
+            Ok(storage) => {
+                self.set(new_value(RuneNative::new(storage, native.clone())));
                 true
             }
             Err(_) => false,
@@ -238,9 +223,9 @@ pub(crate) fn call(
     }
 }
 
-/// The native type of the value: its fields and methods, looked up when the value was made.
+/// The native type of the value: its fields and methods, as the typed function which made it looked them up.
 fn native_type(this: &RuneNative) -> Result<Option<&NativeType>, InteropError> {
-    Ok(this.1.as_deref())
+    Ok(Some(&this.1))
 }
 
 /// Calls the function `name` on the native value with the rest of `args`: its type's, then the ones shared by all references.

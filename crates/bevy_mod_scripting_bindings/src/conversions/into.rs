@@ -2,7 +2,7 @@
 
 use super::{Union, V};
 use crate::function::{DynamicScriptFunction, DynamicScriptFunctionMut};
-use crate::native::{ReturnSink, native_vtable};
+use crate::native::{NativeReturnType, ReturnSink};
 use crate::{ReflectReference, ScriptValue, VariadicTuple, error::InteropError};
 use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
@@ -24,8 +24,14 @@ pub trait IntoScript {
 
     /// Returns this value from a typed call (see [`crate::native`]), in its native form if it has one.
     ///
-    /// The default converts it with [`Self::into_script`], types with a faster way override it.
-    fn into_ret(self, ret: &mut dyn ReturnSink, world: WorldGuard) -> Result<(), InteropError>
+    /// The default converts it with [`Self::into_script`], types with a faster way override it. `native` is the calling
+    /// thunk's cache of the result's native type.
+    fn into_ret(
+        self,
+        ret: &mut dyn ReturnSink,
+        world: WorldGuard,
+        _native: &NativeReturnType,
+    ) -> Result<(), InteropError>
     where
         Self: Sized,
     {
@@ -45,7 +51,12 @@ impl IntoScript for () {
         Ok(ScriptValue::Unit)
     }
 
-    fn into_ret(self, ret: &mut dyn ReturnSink, _world: WorldGuard) -> Result<(), InteropError> {
+    fn into_ret(
+        self,
+        ret: &mut dyn ReturnSink,
+        _world: WorldGuard,
+        _native: &NativeReturnType,
+    ) -> Result<(), InteropError> {
         ret.unit();
         Ok(())
     }
@@ -71,7 +82,12 @@ impl IntoScript for bool {
         Ok(ScriptValue::Bool(self))
     }
 
-    fn into_ret(self, ret: &mut dyn ReturnSink, _world: WorldGuard) -> Result<(), InteropError> {
+    fn into_ret(
+        self,
+        ret: &mut dyn ReturnSink,
+        _world: WorldGuard,
+        _native: &NativeReturnType,
+    ) -> Result<(), InteropError> {
         ret.boolean(self);
         Ok(())
     }
@@ -86,7 +102,7 @@ macro_rules! impl_into_with_downcast {
                     Ok(ScriptValue::$variant(self as $cast))
                 }
 
-                fn into_ret(self, ret: &mut dyn ReturnSink, _world: WorldGuard) -> Result<(), InteropError> {
+                fn into_ret(self, ret: &mut dyn ReturnSink, _world: WorldGuard, _native: &NativeReturnType) -> Result<(), InteropError> {
                     ret.$ret(self as $cast);
                     Ok(())
                 }
@@ -147,13 +163,18 @@ impl<T: Reflect> IntoScript for V<T> {
         )))
     }
 
-    fn into_ret(self, ret: &mut dyn ReturnSink, world: WorldGuard) -> Result<(), InteropError> {
+    fn into_ret(
+        self,
+        ret: &mut dyn ReturnSink,
+        world: WorldGuard,
+        native: &NativeReturnType,
+    ) -> Result<(), InteropError> {
         // types stored natively are moved into the language's storage, others are allocated as usual
-        if let Some(vtable) = native_vtable(&world, std::any::TypeId::of::<T>()) {
+        if let Some(native) = native.get(&world, std::any::TypeId::of::<T>()) {
             let mut value = Some(self.0);
-            // Safety: the vtable is T's, `write` is called once by the sink, which writes the T
+            // Safety: the native type is T's, `write` is called once by the sink, which writes the T
             let written = unsafe {
-                ret.native(vtable, &mut |slot| {
+                ret.native(&native, &mut |slot| {
                     if let Some(value) = value.take() {
                         // Safety: the slot is memory for a value of the vtable's type, which is T
                         (slot as *mut T).write(value)
@@ -183,9 +204,14 @@ impl<T: IntoScript> IntoScript for Option<T> {
         }
     }
 
-    fn into_ret(self, ret: &mut dyn ReturnSink, world: WorldGuard) -> Result<(), InteropError> {
+    fn into_ret(
+        self,
+        ret: &mut dyn ReturnSink,
+        world: WorldGuard,
+        native: &NativeReturnType,
+    ) -> Result<(), InteropError> {
         match self {
-            Some(val) => val.into_ret(ret, world),
+            Some(val) => val.into_ret(ret, world, native),
             None => {
                 ret.unit();
                 Ok(())
@@ -236,10 +262,15 @@ impl<T1: IntoScript, T2: IntoScript> IntoScript for Union<T1, T2> {
         }
     }
 
-    fn into_ret(self, ret: &mut dyn ReturnSink, world: WorldGuard) -> Result<(), InteropError> {
+    fn into_ret(
+        self,
+        ret: &mut dyn ReturnSink,
+        world: WorldGuard,
+        native: &NativeReturnType,
+    ) -> Result<(), InteropError> {
         match self.into_left() {
-            Ok(left) => left.into_ret(ret, world),
-            Err(right) => right.into_ret(ret, world),
+            Ok(left) => left.into_ret(ret, world, native),
+            Err(right) => right.into_ret(ret, world, native),
         }
     }
 }

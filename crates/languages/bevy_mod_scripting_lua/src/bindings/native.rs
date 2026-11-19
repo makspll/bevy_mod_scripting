@@ -26,7 +26,7 @@ use std::{
 
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, InteropError, ScriptValue, WorldExtensions, dispatch,
-    native::{ArgSource, NativeStorage, NativeVTable, ReturnSink},
+    native::{ArgSource, NativeStorage, NativeType, NativeVTable, ReturnSink},
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
@@ -332,9 +332,10 @@ unsafe impl ReturnSink for LuaReturn {
 
     unsafe fn native(
         &mut self,
-        vtable: &'static NativeVTable,
+        native: &std::sync::Arc<NativeType>,
         write: &mut dyn FnMut(*mut u8),
     ) -> bool {
+        let vtable = native.vtable;
         let layout = vtable.layout;
         let heap = if layout.size() <= size_of::<InlineBuffer>()
             && layout.align() <= align_of::<InlineBuffer>()

@@ -56,7 +56,7 @@ pub unsafe trait ArgSource {
 ///
 /// # Safety
 /// [`ReturnSink::native`] returns true only if it called `write` exactly once, with a pointer to writable memory with the
-/// size and alignment of the vtable's layout, which it then keeps as the native value (dropping it with the vtable). It
+/// size and alignment of the type's vtable layout, which it then keeps as the native value (dropping it with the vtable). It
 /// returns false without calling `write` otherwise.
 pub unsafe trait ReturnSink {
     /// Returns nothing.
@@ -67,22 +67,23 @@ pub unsafe trait ReturnSink {
     fn integer(&mut self, i: i64);
     /// Returns a boolean.
     fn boolean(&mut self, b: bool);
-    /// Returns a new native value: makes [`NativeStorage`] for it and initialises it with `write`.
+    /// Returns a new native value of type `native`: makes [`NativeStorage`] for it and initialises it with `write`.
     ///
     /// Returns false, without calling `write`, if the language has no native form for the type.
     ///
     /// # Safety
-    /// `write` writes a valid value of the vtable's type to the pointer it's given.
+    /// `write` writes a valid value of the type's vtable to the pointer it's given.
     unsafe fn native(
         &mut self,
-        vtable: &'static NativeVTable,
+        native: &std::sync::Arc<NativeType>,
         write: &mut dyn FnMut(*mut u8),
     ) -> bool;
     /// Returns any value, the slow path.
     fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError>;
 }
 
-/// The typed entry of a function, see [`DynamicScriptFunction::call_native`].
+/// The typed entry of a function, see [`DynamicScriptFunction::call_native`]. Its result's native type is cached in it, see
+/// [`NativeReturnType`].
 pub type NativeThunk = dyn Fn(crate::FunctionCallContext, &dyn ArgSource, &mut dyn ReturnSink) -> Result<(), InteropError>
     + Send
     + Sync;
@@ -401,6 +402,37 @@ impl NativeType {
     }
 }
 
+/// The native type of a typed function's result, looked up in the registry on its first return and kept by its thunk, so
+/// returning a native value takes no lock.
+///
+/// Kept weakly: the native type holds its functions, which hold their thunks. If the registry replaced the type since
+/// (functions registered on it after the first return), it's looked up again.
+#[derive(Default)]
+pub struct NativeReturnType(std::sync::OnceLock<(TypeId, Option<std::sync::Weak<NativeType>>)>);
+
+impl NativeReturnType {
+    /// The native type of `type_id`, if it is one: cached for the first type asked for, looked up for others (i.e. the
+    /// other side of a `Union`).
+    pub fn get(&self, world: &WorldGuard, type_id: TypeId) -> Option<std::sync::Arc<NativeType>> {
+        use crate::WorldExtensions;
+        let look_up = || {
+            world
+                .script_function_registry()
+                .read()
+                .native_type(type_id)
+                .cloned()
+        };
+        let (cached_id, cached) = self
+            .0
+            .get_or_init(|| (type_id, look_up().as_ref().map(std::sync::Arc::downgrade)));
+        if *cached_id != type_id {
+            return look_up();
+        }
+        // not native, the common case: no lookup
+        cached.as_ref()?.upgrade().or_else(look_up)
+    }
+}
+
 /// The native type of `type_id`, if it is one.
 pub fn native_vtable(world: &WorldGuard, type_id: TypeId) -> Option<&'static NativeVTable> {
     use crate::WorldExtensions;
@@ -514,11 +546,11 @@ mod test {
         }
         unsafe fn native(
             &mut self,
-            vtable: &'static NativeVTable,
+            native: &std::sync::Arc<NativeType>,
             write: &mut dyn FnMut(*mut u8),
         ) -> bool {
             // Safety: `write` writes a value of the vtable's type, see the method's contract
-            self.native = unsafe { NativeBox::new(vtable, write) }.ok();
+            self.native = unsafe { NativeBox::new(native.vtable, write) }.ok();
             self.native.is_some()
         }
         fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError> {
