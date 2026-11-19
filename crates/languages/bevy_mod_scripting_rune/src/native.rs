@@ -12,7 +12,10 @@ use bevy_mod_scripting_bindings::{
     native::{ArgSource, NativeBox, NativeStorage, NativeType, NativeVTable, ReturnSink},
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
-use rune::{Any, TypeHash, runtime::Value};
+use rune::{
+    Any, TypeHash,
+    runtime::{BorrowRef, Value},
+};
 
 use crate::{
     error::IntoInteropError,
@@ -64,21 +67,57 @@ pub(crate) enum RuneArg<'a> {
     Native(&'a RuneNative),
 }
 
-struct RuneArgs<'a>(&'a [RuneArg<'a>]);
+/// The arguments of a typed call, holding a borrow of every native value among them for the call, so nothing the call
+/// runs (i.e. a callback back into the VM) can take or drop them while their values are borrowed.
+struct RuneArgs<'a> {
+    args: &'a [RuneArg<'a>],
+    guards: Guards<'a>,
+}
 
-impl RuneArgs<'_> {
+/// The borrows of native values held by [`RuneArgs`], without a heap allocation for short calls.
+enum Guards<'a> {
+    Inline([Option<BorrowRef<'a, RuneNative>>; 4]),
+    Heap(Vec<Option<BorrowRef<'a, RuneNative>>>),
+}
+
+impl<'a> RuneArgs<'a> {
+    fn new(args: &'a [RuneArg<'a>]) -> Self {
+        let guard = |arg: &'a RuneArg<'a>| match arg {
+            RuneArg::Value(value) => value.borrow_ref::<RuneNative>().ok(),
+            RuneArg::Native(_) => None,
+        };
+        let guards = if args.len() <= 4 {
+            let mut inline = [None, None, None, None];
+            for (slot, arg) in inline.iter_mut().zip(args) {
+                *slot = guard(arg);
+            }
+            Guards::Inline(inline)
+        } else {
+            Guards::Heap(args.iter().map(guard).collect())
+        };
+        Self { args, guards }
+    }
+
+    fn guard(&self, i: usize) -> Option<&BorrowRef<'a, RuneNative>> {
+        match &self.guards {
+            Guards::Inline(guards) => guards.get(i)?.as_ref(),
+            Guards::Heap(guards) => guards.get(i)?.as_ref(),
+        }
+    }
+
     fn value(&self, i: usize) -> Option<&Value> {
-        match self.0.get(i)? {
+        match self.args.get(i)? {
             RuneArg::Value(value) => Some(value),
             RuneArg::Native(_) => None,
         }
     }
 }
 
-// Safety: native bases come from `NativeBox`es of `RuneNative`s, which the arguments keep alive for the call
+// Safety: native bases come from `NativeBox`es of `RuneNative`s, which are borrowed for the call: either by the caller
+// (`RuneArg::Native`) or by the guards held here
 unsafe impl ArgSource for RuneArgs<'_> {
     fn len(&self) -> usize {
-        self.0.len()
+        self.args.len()
     }
 
     fn number(&self, i: usize) -> Option<f64> {
@@ -110,14 +149,14 @@ unsafe impl ArgSource for RuneArgs<'_> {
     }
 
     fn native(&self, i: usize) -> Option<*mut u8> {
-        match self.0.get(i)? {
+        match self.args.get(i)? {
             RuneArg::Native(native) => Some(native.0.base()),
-            RuneArg::Value(value) => value.borrow_ref::<RuneNative>().ok().map(|n| n.0.base()),
+            RuneArg::Value(_) => self.guard(i).map(|n| n.0.base()),
         }
     }
 
     fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError> {
-        match self.0.get(i) {
+        match self.args.get(i) {
             Some(RuneArg::Native(native)) => native.to_script(),
             Some(RuneArg::Value(value)) => from_rune(value),
             None => Ok(ScriptValue::Unit),
@@ -144,7 +183,8 @@ impl RuneReturn {
     }
 }
 
-impl ReturnSink for RuneReturn {
+// Safety: `native` keeps the value in a `NativeBox`, which calls `write` once when it's made, and doesn't call it otherwise
+unsafe impl ReturnSink for RuneReturn {
     fn unit(&mut self) {}
 
     fn number(&mut self, n: f64) {
@@ -160,7 +200,8 @@ impl ReturnSink for RuneReturn {
     }
 
     fn native(&mut self, vtable: &'static NativeVTable, write: &mut dyn FnMut(*mut u8)) -> bool {
-        match NativeBox::new(vtable, write) {
+        // Safety: `write` comes from the caller of this `unsafe` trait's method, which writes a value of the vtable's type
+        match unsafe { NativeBox::new(vtable, write) } {
             Ok(native) => {
                 self.set(new_value(RuneNative::new(native)));
                 true
@@ -181,10 +222,10 @@ pub(crate) fn call(
     args: &[RuneArg],
 ) -> Result<Value, InteropError> {
     let mut ret = RuneReturn::default();
-    match function.call_native(&RuneArgs(args), &mut ret, RUNE_CALLER_CONTEXT) {
+    let args = RuneArgs::new(args);
+    match function.call_native(&args, &mut ret, RUNE_CALLER_CONTEXT) {
         Some(result) => result.and_then(|()| ret.finish()),
         None => {
-            let args = RuneArgs(args);
             let values = (0..args.len())
                 .map(|i| args.script_value(i))
                 .collect::<Result<Vec<_>, _>>()?;

@@ -80,3 +80,19 @@ assert(w:dot(t.translation) == 35, "a reference as an argument")
 t.translation = Vec3.new(7, 8, 9)
 assert(t.translation.x == 7, "assigned to a field")
 assert(tostring(w) == "Vec3 { x: 1.0, y: 5.0, z: 3.0 }", "display")
+assert(getmetatable(w) == false, "the metatable of native values is hidden")
+
+-- a finalizer marked before a native value which needs dropping runs after it: the value it brings back was dropped,
+-- using it errors
+local world = import_namespace("bms").world
+local label = world._make_native_test_value("label")
+assert(label.label == "label" and getmetatable(label) == false, "a native value which needs dropping")
+local resurrected
+do
+    local holder = setmetatable({}, { __gc = function(self) resurrected = self.v end })
+    holder.v = world._make_native_test_value("collected")
+end
+collectgarbage()
+collectgarbage()
+assert(resurrected ~= nil, "the finalizer ran")
+assert(not pcall(function() return resurrected.label end), "a dropped native value can't be used")

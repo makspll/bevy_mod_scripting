@@ -6,6 +6,14 @@
 //!   way ([`FromScript::from_arg`](crate::FromScript::from_arg)'s slow arm), so a typed call accepts everything the dynamic one does.
 //! - A [`NativeType`] is stored by the language itself, i.e. in a Lua userdata, as `[NativeHeader][value]`, see [`NativeStorage`].
 //!   Its fields are read and written through typed accessor functions, see [`crate::script_native`].
+//!
+//! Everything which isn't typed sees a copy of a native value (a reference to an allocation, see
+//! [`crate::ReflectAllocationId::is_native_copy`]); functions without a typed entry can't change such a copy in place
+//! (`M<T>` errors), so changes are never silently lost.
+//!
+//! Languages look up a native type's fields and methods when they first need them (a Lua state makes the metatable once, a
+//! Rune value keeps its type from when it was made): register native types and their functions before scripts run. Methods
+//! registered later are still found through the slow path, on a copy.
 
 use std::{alloc::Layout, any::TypeId, borrow::Cow, ptr::NonNull};
 
@@ -45,7 +53,12 @@ pub unsafe trait ArgSource {
 }
 
 /// Where the result of a typed call goes, implemented by each language.
-pub trait ReturnSink {
+///
+/// # Safety
+/// [`ReturnSink::native`] returns true only if it called `write` exactly once, with a pointer to writable memory with the
+/// size and alignment of the vtable's layout, which it then keeps as the native value (dropping it with the vtable). It
+/// returns false without calling `write` otherwise.
+pub unsafe trait ReturnSink {
     /// Returns nothing.
     fn unit(&mut self);
     /// Returns a number.
@@ -127,7 +140,12 @@ impl NativeVTable {
         }
         unsafe fn to_reference<T: Reflect + Clone>(src: *const u8) -> ReflectReference {
             // Safety: called with a pointer to an initialised T
-            ReflectReference::new_allocated(unsafe { (*(src as *const T)).clone() })
+            ReflectReference::new_allocated_raw(
+                TypeId::of::<T>(),
+                crate::ReflectAllocationId::new_native_copy(unsafe {
+                    (*(src as *const T)).clone()
+                }),
+            )
         }
         static VTABLES: std::sync::OnceLock<
             std::sync::Mutex<HashMap<TypeId, &'static NativeVTable>>,
@@ -181,9 +199,11 @@ impl NativeStorage {
     }
 
     fn value_ptr(base: *mut u8, vtable: &NativeVTable) -> *mut u8 {
-        // Safety (of the arithmetic): the storage has room for the header, the padding and the value, see `size`
+        // the storage has room for the header, the padding and the value, see `size`
         let start = base.wrapping_add(size_of::<NativeHeader>());
-        start.wrapping_add(start.align_offset(vtable.layout.align()))
+        let align = vtable.layout.align();
+        let padding = (align - (start as usize & (align - 1))) & (align - 1);
+        start.wrapping_add(padding)
     }
 
     /// Initialises the storage: the value is written by `write`, which is given a pointer to memory for it.
@@ -274,7 +294,10 @@ pub struct NativeBox {
 
 impl NativeBox {
     /// Makes storage for a value with this vtable, initialised by `write`, see [`NativeStorage::init`].
-    pub fn new(
+    ///
+    /// # Safety
+    /// `write` writes a valid value of the vtable's type to the pointer it's given.
+    pub unsafe fn new(
         vtable: &'static NativeVTable,
         write: &mut dyn FnMut(*mut u8),
     ) -> Result<Self, InteropError> {
@@ -283,7 +306,7 @@ impl NativeBox {
         // Safety: the layout isn't zero sized, it has a header
         let base = NonNull::new(unsafe { std::alloc::alloc(layout) })
             .ok_or_else(|| InteropError::str("out of memory"))?;
-        // Safety: freshly allocated with the size and alignment storage needs
+        // Safety: freshly allocated with the size and alignment storage needs, `write` writes a valid value
         unsafe { NativeStorage::init(base.as_ptr(), vtable, write) };
         Ok(Self { base, layout })
     }
@@ -471,7 +494,8 @@ mod test {
         value: Option<ScriptValue>,
     }
 
-    impl ReturnSink for Return {
+    // Safety: `native` keeps the value in a `NativeBox`, which calls `write` once when it's made
+    unsafe impl ReturnSink for Return {
         fn unit(&mut self) {}
         fn number(&mut self, n: f64) {
             self.value = Some(ScriptValue::Float(n));
@@ -487,7 +511,8 @@ mod test {
             vtable: &'static NativeVTable,
             write: &mut dyn FnMut(*mut u8),
         ) -> bool {
-            self.native = NativeBox::new(vtable, write).ok();
+            // Safety: `write` comes from the caller, which writes a value of the vtable's type
+            self.native = unsafe { NativeBox::new(vtable, write) }.ok();
             self.native.is_some()
         }
         fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError> {
@@ -503,12 +528,14 @@ mod test {
         )
         .unwrap();
         let mut value = Some(Tracked { value });
-        NativeBox::new(vtable, &mut |slot| {
-            if let Some(value) = value.take() {
-                // Safety: the slot is for a Tracked
-                unsafe { (slot as *mut Tracked).write(value) }
-            }
-        })
+        // Safety: writes the Tracked, `NativeBox::new` calls it once
+        unsafe {
+            NativeBox::new(vtable, &mut |slot| {
+                if let Some(value) = value.take() {
+                    (slot as *mut Tracked).write(value)
+                }
+            })
+        }
         .unwrap()
     }
 
@@ -650,12 +677,14 @@ mod test {
         )
         .unwrap();
         let mut value = Some(value);
-        NativeBox::new(vtable, &mut |slot| {
-            if let Some(value) = value.take() {
-                // Safety: the slot is for a T
-                unsafe { (slot as *mut T).write(value) }
-            }
-        })
+        // Safety: writes the T, `NativeBox::new` calls it once
+        unsafe {
+            NativeBox::new(vtable, &mut |slot| {
+                if let Some(value) = value.take() {
+                    (slot as *mut T).write(value)
+                }
+            })
+        }
         .unwrap()
     }
 
@@ -791,7 +820,7 @@ mod test {
             }
             let mut ret = Return::default();
             add.call_native(
-                &Slow(copy),
+                &Slow(copy.clone()),
                 &mut ret,
                 FunctionCallContext::new(Language::Lua),
             )
@@ -801,6 +830,15 @@ mod test {
                 value_in::<Labelled>(ret.native.as_ref().unwrap()).value,
                 10.0
             );
+
+            // a function without a typed entry can't change a copy in place, the change would be lost
+            let set = (|mut v: crate::M<Labelled>| v.value = 1.0).into_dynamic_script_function();
+            assert!(
+                set.call(vec![copy], FunctionCallContext::new(Language::Lua))
+                    .is_err(),
+                "changing a copy errors"
+            );
+            assert_eq!(value_in::<Labelled>(&made).value, 5.0);
         });
     }
 

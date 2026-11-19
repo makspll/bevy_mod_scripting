@@ -558,6 +558,15 @@ impl<T: FromReflect> FromScript for M<'_, T> {
     ) -> Result<Self::This<'s>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
+                // a function without a typed entry gets copies of native values, a change would be lost with the copy
+                if let crate::ReflectBase::Owned(id) = &reflect_reference.base.base_id
+                    && id.is_native_copy()
+                {
+                    return Err(InteropError::string(format!(
+                        "a {} stored natively can't be changed by a function without a typed entry, register it as `Native`",
+                        std::any::type_name::<T>()
+                    )));
+                }
                 // the claim keeps an allocated value alive, the borrow outlives `reflect_reference`
                 // and is released when `scope` ends, which the borrow can't outlive
                 if scope.claim_write_access(&reflect_reference.base.base_id) {
