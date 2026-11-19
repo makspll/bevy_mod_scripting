@@ -11,7 +11,6 @@ use bevy_mod_scripting_derive::script_bindings;
 
 #[script_bindings(
     remote,
-    native,
     name = "mat3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -135,7 +134,6 @@ impl Mat3 {
 
 #[script_bindings(
     remote,
-    native,
     name = "mat4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",

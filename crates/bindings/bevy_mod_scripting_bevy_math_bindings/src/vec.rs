@@ -16,7 +16,6 @@ macro_rules! float_vector_functions {
     ($ty:ty, $name:literal) => {
         #[script_bindings(
             remote,
-            native,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
             namespace = "math",
@@ -244,7 +243,6 @@ float_vector_functions!(Vec4, "vec4_shared_functions");
 
 #[script_bindings(
     remote,
-    native,
     name = "vec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -331,7 +329,6 @@ impl Vec2 {
 
 #[script_bindings(
     remote,
-    native,
     name = "vec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -418,7 +415,6 @@ impl Vec3 {
 
 #[script_bindings(
     remote,
-    native,
     name = "vec4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -438,7 +434,6 @@ impl Vec4 {
 
 #[script_bindings(
     remote,
-    native,
     name = "vec3a_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -458,7 +453,6 @@ impl Vec3A {
 
 #[script_bindings(
     remote,
-    native,
     name = "dvec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -478,7 +472,6 @@ impl DVec2 {
 
 #[script_bindings(
     remote,
-    native,
     name = "dvec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",

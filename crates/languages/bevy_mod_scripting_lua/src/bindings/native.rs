@@ -667,15 +667,7 @@ unsafe fn call(
         natives: Default::default(),
     };
     let mut ret = LuaReturn::new();
-    let result = match function.call_native(&args, &mut ret, LUA_CALLER_CONTEXT) {
-        Some(result) => result,
-        // a function without a typed entry, i.e. a method of a native type which isn't typed
-        None => (0..len)
-            .map(|i| args.script_value(i))
-            .collect::<Result<Vec<_>, _>>()
-            .and_then(|values| function.call(values, LUA_CALLER_CONTEXT))
-            .and_then(|out| ret.script_value(out)),
-    };
+    let result = function.call_with(&args, &mut ret, LUA_CALLER_CONTEXT);
     match result {
         // Safety: `l` is the state of the call
         Ok(()) => unsafe { ret.prepare(l) },
@@ -800,13 +792,8 @@ unsafe fn build_native_metatable(
         ffi::lua_pushboolean(l, 0);
         ffi::lua_setfield(l, -2, c"__metatable".as_ptr());
 
-        // the typed functions of the operators, i.e. `add` and the reflected `mul` for `2 * v`
-        let typed = |name: &str| {
-            methods
-                .iter()
-                .find(|(n, f)| n == name && f.is_native())
-                .map(|(_, f)| f)
-        };
+        // the functions of the operators, i.e. `add` and the reflected `mul` for `2 * v`
+        let typed = |name: &str| methods.iter().find(|(n, _)| n == name).map(|(_, f)| f);
         let operators = OPERATORS.map(|(meta, operator)| {
             (
                 meta,
@@ -873,25 +860,12 @@ unsafe fn set_field(l: *mut ffi::lua_State, name: &str) {
     }
 }
 
-/// Pushes a registered function as Lua sees it: typed ones call their typed entry, others go through mlua.
+/// Pushes a registered function as Lua sees it.
 /// Raises: protected mode only.
 unsafe fn push_function(l: *mut ffi::lua_State, function: &DynamicScriptFunction) {
     unsafe {
-        if function.is_native() {
-            push_holder(l, function);
-            ffi::lua_pushcclosure(l, native_entry, 1);
-            return;
-        }
-        // mlua's calls are protected, its values are gone once it returns
-        let failed = push_with_mlua(l, |lua, raw| {
-            super::script_value::registered_function_into_lua(lua, function.clone())?
-                .push_into_stack(raw)?;
-            Ok(1)
-        })
-        .is_err();
-        if failed {
-            ffi::lua_pushnil(l);
-        }
+        push_holder(l, function);
+        ffi::lua_pushcclosure(l, native_entry, 1);
     }
 }
 
@@ -903,10 +877,7 @@ unsafe fn function_value(
     // Safety: `l` is the state of the call
     unsafe {
         with_raw(l, |lua, _| {
-            let value = match function.is_native() {
-                true => mlua::Value::Function(native_function(lua, function)?),
-                false => super::script_value::registered_function_into_lua(lua, function)?,
-            };
+            let value = super::script_value::registered_function_into_lua(lua, function)?;
             Ok::<_, mlua::Error>(MultiValue::from_vec(vec![value]))
         })
     }
@@ -1092,7 +1063,7 @@ pub(crate) fn native_value_base(lua: &Lua, value: &mlua::AnyUserData) -> Option<
 #[cfg(test)]
 mod test {
     use bevy_ecs::world::World;
-    use bevy_mod_scripting_bindings::{CurrentScriptAttachment, Native, ScriptFunction};
+    use bevy_mod_scripting_bindings::{CurrentScriptAttachment, ScriptFunction};
     use bevy_mod_scripting_world::WorldAccessGuard;
 
     use super::*;
@@ -1105,7 +1076,7 @@ mod test {
         WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
             let lua = Lua::new();
             let function =
-                Native(|| -> bool { std::panic::panic_any("boom") }).into_dynamic_script_function();
+                (|| -> bool { std::panic::panic_any("boom") }).into_dynamic_script_function();
             let function = native_function(&lua, function).unwrap();
             lua.globals().set("f", function).unwrap();
             let payload = catch_unwind(AssertUnwindSafe(|| lua.load("f()").exec()))

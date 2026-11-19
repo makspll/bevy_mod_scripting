@@ -41,20 +41,14 @@ Do not write getters or setters for public fields.
 
 ### Native types
 
-Hot value types, i.e. `Vec3`, can be stored by the languages themselves instead of being referenced through the world. Their functions are then called without converting to `ScriptValue`s:
+Hot value types, i.e. `Vec3`, can be stored by the languages themselves instead of being referenced through the world. Functions read them without converting to `ScriptValue`s:
 
 ```rust,ignore
 // fields are read and written with typed accessors
 script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
-
-// every function of the block gets a typed entry, or mark single functions with `#[native]`
-#[script_bindings(remote, native, name = "vec3_functions")]
-impl Vec3 {
-    fn length(_self: R<Vec3>) -> f32 { _self.length() }
-}
 ```
 
-Typed functions accept everything the dynamic ones do: arguments which aren't native, i.e. references to vectors in components, are converted as usual. Functions of a native type which take `M<Self>` must be typed: a function without a typed entry gets a copy of a native value.
+Arguments which aren't native, i.e. references to vectors in components, are converted as usual.
 
 ## Documentation
 

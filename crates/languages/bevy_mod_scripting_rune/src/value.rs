@@ -282,26 +282,12 @@ pub fn function_to_rune(
 }
 
 fn call_values(function: &ScriptFunction, args: &[&Value]) -> VmResult<Value> {
-    crate::error::vm((|| {
-        // typed functions get the values as they are, see `crate::native`
-        if let ScriptFunction::Plain(plain) = function
-            && plain.is_native()
-        {
-            let args = args
-                .iter()
-                .map(|arg| crate::native::RuneArg::Value(arg))
-                .collect::<Vec<_>>();
-            return crate::native::call(plain, &args);
-        }
-        let args = args
-            .iter()
-            .map(|arg| from_rune(arg))
-            .collect::<Result<Vec<_>, _>>()?;
-        match function.call(args)? {
-            ScriptValue::Error(error) => Err(error),
-            result => to_rune(result),
-        }
-    })())
+    // functions get the values as they are, see `crate::native`
+    let args = args
+        .iter()
+        .map(|arg| crate::native::RuneArg::Value(arg))
+        .collect::<Vec<_>>();
+    crate::error::vm(function.call(&args, to_rune))
 }
 
 /// Makes a Rune function which takes the given number of arguments, which Rune needs to know, from a function.

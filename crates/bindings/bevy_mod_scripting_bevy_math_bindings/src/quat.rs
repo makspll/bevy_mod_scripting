@@ -17,7 +17,6 @@ fn direction(v: Vec3) -> Result<Vec3, InteropError> {
 
 #[script_bindings(
     remote,
-    native,
     name = "quat_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",

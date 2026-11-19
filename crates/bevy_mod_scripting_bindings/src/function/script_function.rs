@@ -5,6 +5,10 @@ use super::namespace::FunctionScope;
 use crate::conversions::{from::FromScript, into::IntoScript};
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::function::arg_meta::ArgMeta;
+use crate::native::{
+    ArgSource, CurriedArgs, NativeThunk, NativeThunkMut, ReturnSink, ScriptValueArgs,
+    ScriptValueReturn,
+};
 use crate::{ScriptValue, error::InteropError};
 use crate::{StaticTypeRef, VariadicTuple};
 use bevy_ecs::prelude::Resource;
@@ -29,14 +33,6 @@ use std::sync::Arc;
 pub trait ScriptFunction<'env, Marker> {
     /// Convert this function into a [`DynamicScriptFunction`]
     fn into_dynamic_script_function(self) -> DynamicScriptFunction;
-}
-
-/// A function which also has a typed entry, see [`crate::native::Native`].
-///
-/// Implemented for the same functions as [`ScriptFunction`], except `FnMut` ones.
-pub trait NativeScriptFunction<'env, Marker> {
-    /// The typed entry of the function.
-    fn into_native_thunk(self) -> Arc<crate::native::NativeThunk>;
 }
 
 #[diagnostic::on_unimplemented(
@@ -148,14 +144,9 @@ impl FunctionCallContext {
 pub struct DynamicScriptFunction {
     /// The meta information about the function
     pub info: Arc<FunctionInfo>,
-    // TODO: info about the function, this is hard right now because of non 'static lifetimes in wrappers, we can't use TypePath etc
+    /// Reads the arguments and writes the result, see [`DynamicScriptFunction::call_with`]
     #[debug_with_type_info(skip)]
-    func: Arc<
-        dyn Fn(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
-    >,
-    /// The typed entry of the function, see [`DynamicScriptFunction::call_native`]
-    #[debug_with_type_info(skip)]
-    native: Option<Arc<crate::native::NativeThunk>>,
+    func: Arc<NativeThunk>,
     /// The script's own function this one calls, see [`DynamicScriptFunction::with_script_function`]
     #[debug_with_type_info(skip)]
     script_function: Option<Arc<dyn Any + Send + Sync>>,
@@ -169,15 +160,7 @@ pub struct DynamicScriptFunctionMut {
     /// The meta information about the function
     pub info: Arc<FunctionInfo>,
     #[debug_with_type_info(skip)]
-    func: Arc<
-        RwLock<
-            // I'd rather consume an option or something instead of having the RWLock but I just wanna get this release out
-            dyn FnMut(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue
-                + Send
-                + Sync
-                + 'static,
-        >,
-    >,
+    func: Arc<RwLock<NativeThunkMut>>,
 }
 
 impl DisplayWithTypeInfo for DynamicScriptFunction {
@@ -232,19 +215,9 @@ impl DynamicScriptFunction {
         args: I,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
-        profiling::scope!("Dynamic Call ", self.name().deref());
-        let args = args.into_iter().collect::<VecDeque<_>>();
-        // should we be inlining call errors into the return value?
-        let return_val = (self.func)(context.clone(), args);
-        match return_val {
-            ScriptValue::Error(e) => Err(InteropError::function_interop_error(
-                self.name(),
-                self.info.namespace,
-                e,
-                Some(context),
-            )),
-            v => Ok(v),
-        }
+        let mut ret = ScriptValueReturn::default();
+        self.call_with(&ScriptValueArgs::new(args), &mut ret, context)?;
+        Ok(ret.into_value())
     }
 
     /// Get the name of the function
@@ -252,31 +225,39 @@ impl DynamicScriptFunction {
         &self.info.name
     }
 
-    /// Calls the function's typed entry, if it has one (see [`crate::native::Native`]), `None` if it doesn't.
+    /// Calls the function with arguments read from `args`, writing its result to `ret`, see [`crate::native`].
     ///
     /// Errors are wrapped like [`DynamicScriptFunction::call`]'s.
-    pub fn call_native(
+    pub fn call_with(
         &self,
-        args: &dyn crate::native::ArgSource,
-        ret: &mut dyn crate::native::ReturnSink,
+        args: &dyn ArgSource,
+        ret: &mut dyn ReturnSink,
         context: FunctionCallContext,
-    ) -> Option<Result<(), InteropError>> {
-        let native = self.native.as_ref()?;
-        profiling::scope!("Native Call ", self.name().deref());
-        Some(native(context.clone(), args, ret).map_err(|e| {
+    ) -> Result<(), InteropError> {
+        profiling::scope!("Call ", self.name().deref());
+        (self.func)(context.clone(), args, ret).map_err(|e| {
             InteropError::function_interop_error(self.name(), self.info.namespace, e, Some(context))
-        }))
+        })
     }
 
-    /// Whether the function has a typed entry, see [`DynamicScriptFunction::call_native`].
-    pub fn is_native(&self) -> bool {
-        self.native.is_some()
-    }
-
-    /// Gives the function a typed entry, see [`crate::native::Native`].
-    pub(crate) fn with_native(mut self, native: Arc<crate::native::NativeThunk>) -> Self {
-        self.native = Some(native);
-        self
+    /// A function calling `thunk`, named after `F`.
+    pub(crate) fn from_thunk<F>(
+        thunk: impl Fn(
+            FunctionCallContext,
+            &dyn ArgSource,
+            &mut dyn ReturnSink,
+        ) -> Result<(), InteropError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> Self {
+        DynamicScriptFunction {
+            info: FunctionInfo::default()
+                .with_name(std::any::type_name::<F>())
+                .into(),
+            func: Arc::new(thunk),
+            script_function: None,
+        }
     }
 
     /// An id shared by the clones of this function, valid while one of them is alive.
@@ -316,11 +297,9 @@ impl DynamicScriptFunction {
         let inner = self.func.clone();
         DynamicScriptFunction {
             script_function: None,
-            native: None,
             info: self.info.clone(),
-            func: Arc::new(move |context, mut args| {
-                args.push_front(first.clone());
-                inner(context, args)
+            func: Arc::new(move |context, args, ret| {
+                inner(context, &CurriedArgs::new(&first, args), ret)
             }),
         }
     }
@@ -342,19 +321,40 @@ impl DynamicScriptFunctionMut {
         args: I,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
-        profiling::scope!("Dynamic Call Mut", self.name().deref());
-        let args = args.into_iter().collect::<VecDeque<_>>();
-        // should we be inlining call errors into the return value?
-        let mut write = self.func.write();
-        let return_val = (write)(context.clone(), args);
-        match return_val {
-            ScriptValue::Error(e) => Err(InteropError::function_interop_error(
-                self.name(),
-                self.info.namespace,
-                e,
-                Some(context),
-            )),
-            v => Ok(v),
+        let mut ret = ScriptValueReturn::default();
+        self.call_with(&ScriptValueArgs::new(args), &mut ret, context)?;
+        Ok(ret.into_value())
+    }
+
+    /// Calls the function like [`DynamicScriptFunction::call_with`].
+    pub fn call_with(
+        &self,
+        args: &dyn ArgSource,
+        ret: &mut dyn ReturnSink,
+        context: FunctionCallContext,
+    ) -> Result<(), InteropError> {
+        profiling::scope!("Call Mut", self.name().deref());
+        (self.func.write())(context.clone(), args, ret).map_err(|e| {
+            InteropError::function_interop_error(self.name(), self.info.namespace, e, Some(context))
+        })
+    }
+
+    /// A function calling `thunk`, named after `F`.
+    pub(crate) fn from_thunk<F>(
+        thunk: impl FnMut(
+            FunctionCallContext,
+            &dyn ArgSource,
+            &mut dyn ReturnSink,
+        ) -> Result<(), InteropError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> Self {
+        DynamicScriptFunctionMut {
+            info: FunctionInfo::default()
+                .with_name(std::any::type_name::<F>())
+                .into(),
+            func: Arc::new(RwLock::new(thunk)),
         }
     }
 
@@ -389,14 +389,12 @@ where
     F: Fn(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
 {
     fn from(fn_: F) -> Self {
-        DynamicScriptFunction {
-            info: FunctionInfo::default()
-                .with_name(std::any::type_name::<F>())
-                .into(),
-            func: Arc::new(fn_),
-            native: None,
-            script_function: None,
-        }
+        DynamicScriptFunction::from_thunk::<F>(move |context, args, ret| {
+            match fn_(context, script_value_args(args)?) {
+                ScriptValue::Error(e) => Err(e),
+                value => ret.script_value(value),
+            }
+        })
     }
 }
 
@@ -404,14 +402,30 @@ impl<F> From<F> for DynamicScriptFunctionMut
 where
     F: FnMut(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
 {
-    fn from(fn_: F) -> Self {
-        DynamicScriptFunctionMut {
-            info: FunctionInfo::default()
-                .with_name(std::any::type_name::<F>())
-                .into(),
-            func: Arc::new(RwLock::new(fn_)),
+    fn from(mut fn_: F) -> Self {
+        DynamicScriptFunctionMut::from_thunk::<F>(move |context, args, ret| {
+            match fn_(context, script_value_args(args)?) {
+                ScriptValue::Error(e) => Err(e),
+                value => ret.script_value(value),
+            }
+        })
+    }
+}
+
+/// Calls the mutable function, one call at a time, so languages handle both kinds of functions alike.
+impl From<DynamicScriptFunctionMut> for DynamicScriptFunction {
+    fn from(function: DynamicScriptFunctionMut) -> Self {
+        DynamicScriptFunction {
+            info: function.info.clone(),
+            func: Arc::new(move |context, args, ret| (function.func.write())(context, args, ret)),
+            script_function: None,
         }
     }
+}
+
+/// All the arguments as [`ScriptValue`]s, for functions which take them so.
+fn script_value_args(args: &dyn ArgSource) -> Result<VecDeque<ScriptValue>, InteropError> {
+    (0..args.len()).map(|i| args.script_value(i)).collect()
 }
 
 /// Equivalent to [`AppScriptFunctionRegistry`] but stores functions with a more convenient signature for scripting to avoid boxing every argument.
@@ -726,21 +740,10 @@ macro_rules! count {
         ( $x:tt $($xs:tt)* ) => (1usize + $crate::function::script_function::count!($($xs)*));
 }
 
-/// Pops the stack of args depending on how many are requested by the current argument.
-/// If failed to find argument, returns None
-fn pop_args_stack_for_arg<A: ArgMeta>(args: &mut VecDeque<ScriptValue>) -> Option<ScriptValue> {
-    if A::variadic() {
-        // just absorb the rest, tuplify it
-        if !args.is_empty() {
-            return Some(ScriptValue::Tuple(VariadicTuple(std::mem::take(args))));
-        }
-    }
-
-    args.pop_front().or_else(A::default_value)
-}
-
 pub(crate) use count;
 
+/// Arguments come from an [`ArgSource`] through [`FromScript::from_arg`], the result goes to a [`ReturnSink`] through
+/// [`IntoScript::into_ret`]. A variadic argument takes the rest of the arguments, missing ones take their default.
 macro_rules! impl_script_function {
 
     ($( $param:ident ),* ) => {
@@ -766,8 +769,6 @@ macro_rules! impl_script_function {
         impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : (context: FunctionCallContext)-> O => Result<O, InteropError> where s);
         // FnMut(FunctionCallContext, WorldGuard<'w>, T1...Tn) -> Result<O, InteropError>
         impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : (context: FunctionCallContext) -> O => Result<O, InteropError> where s);
-
-
     };
 
     (@ $trait_type:ident $fn_type:ident $dynamic_type:ident $trait_fn_name:ident $( $param:ident ),* :  $(($context:ident: $contextty:ty))? -> O => $res:ty $(where $out:ident)?) => {
@@ -786,103 +787,13 @@ macro_rules! impl_script_function {
             // the arguments borrow from the call scope, so the function can't keep them
             F: for<'s> $fn_type(  $($contextty,)? $($param::This<'s> ),* ) -> $res,
         {
-            #[allow(unused_mut,unused_variables)]
-            #[profiling::function]
-            fn $trait_fn_name(mut self) -> $dynamic_type {
-
-                let func = (move |caller_context: FunctionCallContext, mut args: VecDeque<ScriptValue> | {
-                    let res: Result<ScriptValue, InteropError> = (|| {
-                        profiling::scope!("script function call mechanism");
-                        let received_args_len = args.len();
-                        let expected_arg_count = count!($($param )*);
-
-                        $( let $context = caller_context.clone(); )?
-                        let world = caller_context.world()?;
-                        // the accesses claimed for the arguments are released once the call ends
-                        let ret: Result<ScriptValue, InteropError> = {
-                            world.with_call_scope(|scope| {
-                                let mut current_arg = 0;
-
-                                $(let $param = {
-                                        profiling::scope!("argument conversion", &format!("argument #{}", current_arg));
-                                        current_arg += 1;
-                                        let $param = match pop_args_stack_for_arg::<$param>(&mut args) {
-                                            Some($param) => $param,
-                                            None => {
-                                                return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
-                                            }
-                                        };
-                                        let $param = <$param>::from_script($param, scope)
-                                            .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
-                                        $param
-                                    };
-                                )*
-
-                                let ret = {
-                                    let out = {
-                                        profiling::scope!("function call");
-                                        self( $( $context,)?  $( $param, )* )
-                                    };
-
-                                    $(
-                                        let $out = out?;
-                                        let out = $out;
-                                    )?
-                                    profiling::scope!("return type conversion");
-                                    out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
-                                };
-                                ret
-                            })
-                        };
-                        ret
-                    })();
-                    let script_value: ScriptValue = res.into();
-                    script_value
-                });
-
-                func.into()
-            }
-        }
-    };
-}
-
-variadics_please::all_tuples!(impl_script_function, 0, 13, T);
-
-/// The typed entries of the `Fn` functions [`impl_script_function`] covers: arguments come from an [`crate::native::ArgSource`]
-/// through [`FromScript::from_arg`], the result goes to a [`crate::native::ReturnSink`] through [`IntoScript::into_ret`].
-///
-/// Argument counts, variadic and default arguments behave as in the dynamic entry.
-macro_rules! impl_native_function {
-    ($( $param:ident ),* ) => {
-        impl_native_function!(@ $( $param ),* : -> O => O);
-        impl_native_function!(@ $( $param ),* : (context: FunctionCallContext) -> O => O);
-        impl_native_function!(@ $( $param ),* : -> O => Result<O, InteropError> where s);
-        impl_native_function!(@ $( $param ),* : (context: FunctionCallContext) -> O => Result<O, InteropError> where s);
-    };
-
-    (@ $( $param:ident ),* : $(($context:ident: $contextty:ty))? -> O => $res:ty $(where $out:ident)?) => {
-        #[allow(non_snake_case)]
-        impl<
-            'env,
-            $( $param: FromScript + ArgMeta,)*
-            O,
-            F
-        > NativeScriptFunction<'env,
-            fn( $($contextty,)? $($param ),* ) -> $res
-        > for F
-        where
-            O: IntoScript,
-            F: Fn(  $($contextty,)? $($param ),* ) -> $res + Send + Sync + 'static,
-            // the arguments borrow from the call scope, so the function can't keep them
-            F: for<'s> Fn(  $($contextty,)? $($param::This<'s> ),* ) -> $res,
-        {
             #[allow(unused_mut, unused_variables, unused_assignments)]
-            fn into_native_thunk(self) -> Arc<crate::native::NativeThunk> {
+            fn $trait_fn_name(mut self) -> $dynamic_type {
                 let native_return = crate::native::NativeReturnType::default();
-                Arc::new(move |
+                $dynamic_type::from_thunk::<F>(move |
                     caller_context: FunctionCallContext,
-                    args: &dyn crate::native::ArgSource,
-                    ret: &mut dyn crate::native::ReturnSink,
+                    args: &dyn ArgSource,
+                    ret: &mut dyn ReturnSink,
                 | -> Result<(), InteropError> {
                     let received_args_len = args.len();
                     let expected_arg_count = count!($($param )*);
@@ -926,7 +837,7 @@ macro_rules! impl_native_function {
     };
 }
 
-variadics_please::all_tuples!(impl_native_function, 0, 13, T);
+variadics_please::all_tuples!(impl_script_function, 0, 13, T);
 
 #[cfg(test)]
 mod test {
@@ -992,7 +903,7 @@ mod test {
             assert!(out.is_err());
 
             let gotten = out.unwrap_err();
-            let expected_function_name = "<bevy_mod_scripting_bindings::function::script_function::test::test_invalid_amount_of_args_errors_nicely::{{closure}} as bevy_mod_scripting_bindings::function::script_function::ScriptFunction<'_, fn(usize, usize) -> usize>>::into_dynamic_script_function::{{closure}}";
+            let expected_function_name = "bevy_mod_scripting_bindings::function::script_function::test::test_invalid_amount_of_args_errors_nicely::{{closure}}";
             let expected_namespace = FunctionScope::Member;
 
             if let InteropError::FunctionInteropError {

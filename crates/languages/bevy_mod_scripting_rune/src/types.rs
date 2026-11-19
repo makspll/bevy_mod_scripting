@@ -22,6 +22,7 @@ use rune::{
 
 use crate::{
     error::vm,
+    native::RuneArg,
     value::{RUNE_CALLER_CONTEXT, from_rune, function_to_rune, namespace_to_rune, to_rune},
 };
 
@@ -35,11 +36,28 @@ pub enum ScriptFunction {
 }
 
 impl ScriptFunction {
-    /// Calls the function
-    pub fn call(&self, args: Vec<ScriptValue>) -> Result<ScriptValue, InteropError> {
-        match self {
-            ScriptFunction::Plain(f) => f.call(args, RUNE_CALLER_CONTEXT),
-            ScriptFunction::Mut(f) => f.call(args, RUNE_CALLER_CONTEXT),
+    /// Calls the function with the arguments as they are, a [`ScriptValue`] result is converted with `convert`.
+    pub(crate) fn call(
+        &self,
+        args: &[RuneArg],
+        convert: fn(ScriptValue) -> Result<Value, InteropError>,
+    ) -> Result<Value, InteropError> {
+        crate::native::call_with(
+            |args, ret| match self {
+                ScriptFunction::Plain(f) => f.call_with(args, ret, RUNE_CALLER_CONTEXT),
+                ScriptFunction::Mut(f) => f.call_with(args, ret, RUNE_CALLER_CONTEXT),
+            },
+            args,
+            convert,
+        )
+    }
+
+    /// The function of a member, if it is one.
+    fn of_member(member: ScriptValue) -> Result<Self, InteropError> {
+        match member {
+            ScriptValue::Function(f) => Ok(ScriptFunction::Plain(f)),
+            ScriptValue::FunctionMut(f) => Ok(ScriptFunction::Mut(f)),
+            _ => Err(InteropError::str("the member is not a function")),
         }
     }
 }
@@ -120,14 +138,6 @@ fn get_namespace_member(this: &RuneNamespace, name: &str) -> Result<Value, Inter
     }
 }
 
-fn call_value(value: ScriptValue, args: Vec<ScriptValue>) -> Result<ScriptValue, InteropError> {
-    match value {
-        ScriptValue::Function(f) => ScriptFunction::Plain(f).call(args),
-        ScriptValue::FunctionMut(f) => ScriptFunction::Mut(f).call(args),
-        _ => Err(InteropError::str("the member is not a function")),
-    }
-}
-
 /// Makes a raw Rune function from one which takes the values on the stack, the first of which is the receiver of a method.
 pub fn call_raw<F>(
     f: F,
@@ -154,25 +164,17 @@ pub(crate) fn call_member_inner(
     let (receiver, rest) = values
         .split_first()
         .ok_or_else(|| InteropError::str("a method needs a receiver"))?;
-    // typed functions get the values as they are, see `crate::native`; `with_receiver` passes the receiver first
-    let typed =
-        |function: &ScriptValue, with_receiver: bool| -> Option<Result<Value, InteropError>> {
-            let ScriptValue::Function(function) = function else {
-                return None;
-            };
-            if !function.is_native() {
-                return None;
-            }
-            let args = with_receiver
-                .then_some(receiver)
-                .into_iter()
-                .chain(rest)
-                .map(crate::native::RuneArg::Value)
-                .collect::<Vec<_>>();
-            Some(crate::native::call(function, &args))
-        };
-    let args = || rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>();
-    let result = if let Ok(this) = receiver.borrow_ref::<RuneRef>() {
+    // functions get the values as they are, see `crate::native`; `with_receiver` passes the receiver first
+    let call = |member: ScriptValue, with_receiver: bool| {
+        let args = with_receiver
+            .then_some(receiver)
+            .into_iter()
+            .chain(rest)
+            .map(RuneArg::Value)
+            .collect::<Vec<_>>();
+        ScriptFunction::of_member(member)?.call(&args, convert)
+    };
+    if let Ok(this) = receiver.borrow_ref::<RuneRef>() {
         let member = dispatch::index_name(
             world()?,
             Cow::Borrowed(&this.0),
@@ -180,18 +182,8 @@ pub(crate) fn call_member_inner(
             RUNE_CALLER_CONTEXT,
         )?;
         match member {
-            Member::Method(func) => {
-                if let Some(result) = typed(&ScriptValue::Function(func.clone()), true) {
-                    return result;
-                }
-                let mut with_receiver = vec![ScriptValue::Reference(this.0.clone())];
-                with_receiver.extend(args()?);
-                func.call(with_receiver, RUNE_CALLER_CONTEXT)?
-            }
-            Member::Static(value) => match typed(&value, false) {
-                Some(result) => return result,
-                None => call_value(value, args()?)?,
-            },
+            Member::Method(func) => call(ScriptValue::Function(func), true),
+            Member::Static(value) => call(value, false),
         }
     } else if let Ok(this) = receiver.borrow_ref::<RuneType>() {
         let member = dispatch::static_index(
@@ -200,24 +192,17 @@ pub(crate) fn call_member_inner(
             ScriptValue::String(name.to_owned().into()),
             RUNE_CALLER_CONTEXT,
         )?;
-        match typed(&member, false) {
-            Some(result) => return result,
-            None => call_value(member, args()?)?,
-        }
+        call(member, false)
     } else if let Ok(this) = receiver.borrow_ref::<RuneNamespace>() {
         let member = this.0.get(name).cloned().ok_or_else(|| {
             InteropError::external(crate::error::RuneError(format!(
                 "the namespace has no member `{name}`"
             )))
         })?;
-        match typed(&member, false) {
-            Some(result) => return result,
-            None => call_value(member, args()?)?,
-        }
+        call(member, false)
     } else {
-        return Err(InteropError::str("unsupported receiver"));
-    };
-    convert(result)
+        Err(InteropError::str("unsupported receiver"))
+    }
 }
 
 /// How the result of the function `name` is converted, the namespaces `import_namespace` returns can call their functions with the method syntax.
@@ -480,10 +465,11 @@ pub fn register_types(
         )
     })?;
     module.associated_function(&Protocol::NEXT, |this: &mut RuneIter| {
-        vm((|| match this.0.call(Vec::new())? {
-            ScriptValue::Unit => Ok(None),
-            value => Ok(Some(to_rune(value)?)),
-        })())
+        // the iterator returns nothing once it's done
+        vm(this
+            .0
+            .call(&[], to_rune)
+            .map(|value| (value.type_hash() != <() as rune::TypeHash>::HASH).then_some(value)))
     })?;
 
     module.associated_function(
@@ -526,18 +512,9 @@ pub fn register_types(
                         .into_result()
                         .map_err(crate::error::IntoInteropError::to_bms_error);
                 }
-                // typed functions get the values as they are, see `crate::native`
-                if let ScriptFunction::Plain(plain) = &function.0
-                    && plain.is_native()
-                {
-                    let args = rest
-                        .iter()
-                        .map(crate::native::RuneArg::Value)
-                        .collect::<Vec<_>>();
-                    return crate::native::call(plain, &args);
-                }
-                let args = rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>()?;
-                to_rune(function.0.call(args)?)
+                // functions of BMS get the values as they are, see `crate::native`
+                let args = rest.iter().map(RuneArg::Value).collect::<Vec<_>>();
+                function.0.call(&args, to_rune)
             }),
         )
         .build_associated::<RuneFunction>()?;

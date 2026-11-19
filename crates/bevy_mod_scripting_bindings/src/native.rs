@@ -1,9 +1,10 @@
 //! Typed calls and native values: the fast path next to [`ScriptValue`] conversions.
 //!
-//! - A function registered as [`Native`] also gets a typed entry (see [`DynamicScriptFunction::call_native`]), which reads its
-//!   arguments from an [`ArgSource`] and writes its result to a [`ReturnSink`], both implemented by each language over its own
-//!   values, without building [`ScriptValue`]s. Arguments the language can't give in their native form are converted the usual
-//!   way ([`FromScript::from_arg`](crate::FromScript::from_arg)'s slow arm), so a typed call accepts everything the dynamic one does.
+//! - Every function reads its arguments from an [`ArgSource`] and writes its result to a [`ReturnSink`] (see
+//!   [`DynamicScriptFunction::call_with`]), both implemented by each language over its own values, without building
+//!   [`ScriptValue`]s. Arguments the language can't give in their native form are converted the usual way
+//!   ([`FromScript::from_arg`](crate::FromScript::from_arg)'s slow arm). Rust callers use [`ScriptValueArgs`] and
+//!   [`ScriptValueReturn`] (see [`DynamicScriptFunction::call`]).
 //! - A [`NativeType`] is stored by the language itself, i.e. in a Lua userdata, as `[NativeHeader][value]`, see [`NativeStorage`].
 //!   Its fields are read and written through typed accessor functions, see [`crate::script_native`].
 //!
@@ -24,8 +25,7 @@ use bevy_reflect::Reflect;
 
 use crate::{
     AppScriptFunctionRegistry, DynamicScriptFunction, FunctionScope, GetFunctionInfo, InteropError,
-    ReflectReference, ScriptFunction, ScriptValue,
-    function::script_function::{NativeScriptFunction, documented_function},
+    ReflectReference, ScriptFunction, ScriptValue, function::script_function::documented_function,
 };
 
 /// The arguments of a typed call, implemented by each language over its own values.
@@ -82,42 +82,163 @@ pub unsafe trait ReturnSink {
     fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError>;
 }
 
-/// The typed entry of a function, see [`DynamicScriptFunction::call_native`]. Its result's native type is cached in it, see
+/// What every function runs, see [`DynamicScriptFunction::call_with`]. Its result's native type is cached in it, see
 /// [`NativeReturnType`].
 pub type NativeThunk = dyn Fn(crate::FunctionCallContext, &dyn ArgSource, &mut dyn ReturnSink) -> Result<(), InteropError>
     + Send
     + Sync;
 
-/// Registers a function with a typed entry next to its dynamic one, see the [module docs](self).
+/// [`NativeThunk`] of a [`crate::DynamicScriptFunctionMut`].
+pub type NativeThunkMut = dyn FnMut(
+        crate::FunctionCallContext,
+        &dyn ArgSource,
+        &mut dyn ReturnSink,
+    ) -> Result<(), InteropError>
+    + Send
+    + Sync;
+
+/// Arguments given as [`ScriptValue`]s, i.e. by Rust callers, see [`DynamicScriptFunction::call`].
 ///
-/// ```rust,ignore
-/// NamespaceBuilder::<Vec3>::new(world).register("length", Native(|v: R<Vec3>| v.length()));
-/// ```
-pub struct Native<F>(pub F);
+/// Each argument is converted to a [`ScriptValue`] at most once ([`FromScript::from_arg`](crate::FromScript::from_arg)), so
+/// [`ArgSource::script_value`] moves it out instead of cloning it.
+pub struct ScriptValueArgs(Vec<std::cell::Cell<ScriptValue>>);
 
-impl<'env, M, F> ScriptFunction<'env, M> for Native<F>
-where
-    F: ScriptFunction<'env, M> + NativeScriptFunction<'env, M> + Clone,
-{
-    fn into_dynamic_script_function(self) -> DynamicScriptFunction {
+impl ScriptValueArgs {
+    /// The arguments, in order.
+    pub fn new(args: impl IntoIterator<Item = ScriptValue>) -> Self {
+        Self(args.into_iter().map(std::cell::Cell::new).collect())
+    }
+
+    /// Runs `f` with argument `i`, if there is one.
+    fn with<O>(&self, i: usize, f: impl FnOnce(&ScriptValue) -> Option<O>) -> Option<O> {
+        let cell = self.0.get(i)?;
+        let value = cell.take();
+        let out = f(&value);
+        cell.set(value);
+        out
+    }
+}
+
+/// The argument as a number, see [`ArgSource::number`].
+fn number_of(value: &ScriptValue) -> Option<f64> {
+    match value {
+        ScriptValue::Float(f) => Some(*f),
+        ScriptValue::Integer(i) => Some(*i as f64),
+        _ => None,
+    }
+}
+
+// Safety: never gives native values
+unsafe impl ArgSource for ScriptValueArgs {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+    fn number(&self, i: usize) -> Option<f64> {
+        self.with(i, number_of)
+    }
+    fn integer(&self, i: usize) -> Option<i64> {
+        self.with(i, |v| match v {
+            ScriptValue::Integer(i) => Some(*i),
+            _ => None,
+        })
+    }
+    fn boolean(&self, i: usize) -> Option<bool> {
+        self.with(i, |v| match v {
+            ScriptValue::Bool(b) => Some(*b),
+            _ => None,
+        })
+    }
+    fn native(&self, _: usize) -> Option<*mut u8> {
+        None
+    }
+    fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError> {
+        Ok(self.0.get(i).map(std::cell::Cell::take).unwrap_or_default())
+    }
+}
+
+/// The arguments of a curried function, see [`DynamicScriptFunction::curry`]: `first`, then `rest`.
+pub(crate) struct CurriedArgs<'a> {
+    first: &'a ScriptValue,
+    rest: &'a dyn ArgSource,
+}
+
+impl<'a> CurriedArgs<'a> {
+    pub(crate) fn new(first: &'a ScriptValue, rest: &'a dyn ArgSource) -> Self {
+        Self { first, rest }
+    }
+}
+
+// Safety: native values come from `rest`, an `ArgSource`
+unsafe impl ArgSource for CurriedArgs<'_> {
+    fn len(&self) -> usize {
+        self.rest.len() + 1
+    }
+    fn number(&self, i: usize) -> Option<f64> {
+        match i {
+            0 => number_of(self.first),
+            i => self.rest.number(i - 1),
+        }
+    }
+    fn integer(&self, i: usize) -> Option<i64> {
+        match (i, self.first) {
+            (0, ScriptValue::Integer(i)) => Some(*i),
+            (0, _) => None,
+            (i, _) => self.rest.integer(i - 1),
+        }
+    }
+    fn boolean(&self, i: usize) -> Option<bool> {
+        match (i, self.first) {
+            (0, ScriptValue::Bool(b)) => Some(*b),
+            (0, _) => None,
+            (i, _) => self.rest.boolean(i - 1),
+        }
+    }
+    fn native(&self, i: usize) -> Option<*mut u8> {
+        self.rest.native(i.checked_sub(1)?)
+    }
+    fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError> {
+        match i {
+            0 => Ok(self.first.clone()),
+            i => self.rest.script_value(i - 1),
+        }
+    }
+}
+
+/// Takes the result as a [`ScriptValue`], i.e. for Rust callers, see [`DynamicScriptFunction::call`].
+#[derive(Default)]
+pub struct ScriptValueReturn(ScriptValue);
+
+impl ScriptValueReturn {
+    /// The result, [`ScriptValue::Unit`] if there was none.
+    pub fn into_value(self) -> ScriptValue {
         self.0
-            .clone()
-            .into_dynamic_script_function()
-            .with_native(self.0.into_native_thunk())
     }
 }
 
-impl<M, F: GetFunctionInfo<M>> GetFunctionInfo<M> for Native<F> {
-    fn function_info(name: Cow<'static, str>, namespace: FunctionScope) -> crate::FunctionInfo {
-        F::function_info(name, namespace)
+// Safety: never makes native values
+unsafe impl ReturnSink for ScriptValueReturn {
+    fn unit(&mut self) {
+        self.0 = ScriptValue::Unit;
     }
-}
-
-impl<M, F: crate::GetFunctionTypeDependencies<M>> crate::GetFunctionTypeDependencies<M>
-    for Native<F>
-{
-    fn register_type_dependencies(registry: &mut bevy_reflect::TypeRegistry) {
-        F::register_type_dependencies(registry)
+    fn number(&mut self, n: f64) {
+        self.0 = ScriptValue::Float(n);
+    }
+    fn integer(&mut self, i: i64) {
+        self.0 = ScriptValue::Integer(i);
+    }
+    fn boolean(&mut self, b: bool) {
+        self.0 = ScriptValue::Bool(b);
+    }
+    unsafe fn native(
+        &mut self,
+        _: &std::sync::Arc<NativeType>,
+        _: &mut dyn FnMut(*mut u8),
+    ) -> bool {
+        false
+    }
+    fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError> {
+        self.0 = value;
+        Ok(())
     }
 }
 
@@ -350,7 +471,7 @@ pub struct NativeField {
 
 /// A type whose values the languages store natively, see the [module docs](self).
 ///
-/// Its methods are the functions registered on the type; those which are [`Native`] are called without conversions.
+/// Its methods are the functions registered on the type.
 #[derive(Clone)]
 pub struct NativeType {
     /// How to store, copy and drop the values
@@ -374,16 +495,16 @@ impl NativeType {
     /// Adds a field with a getter and a setter, both typed.
     pub fn with_field<'env, G, GM, S, SM>(mut self, name: &'static str, get: G, set: S) -> Self
     where
-        G: ScriptFunction<'env, GM> + NativeScriptFunction<'env, GM> + GetFunctionInfo<GM> + Clone,
-        S: ScriptFunction<'env, SM> + NativeScriptFunction<'env, SM> + GetFunctionInfo<SM> + Clone,
+        G: ScriptFunction<'env, GM> + GetFunctionInfo<GM>,
+        S: ScriptFunction<'env, SM> + GetFunctionInfo<SM>,
     {
         let scope = FunctionScope::OnType(self.vtable.type_id);
         let field = NativeField {
-            get: documented_function(scope, name.into(), Native(get), None::<&'static str>, None),
+            get: documented_function(scope, name.into(), get, None::<&'static str>, None),
             set: Some(documented_function(
                 scope,
                 name.into(),
-                Native(set),
+                set,
                 None::<&'static str>,
                 None,
             )),
@@ -591,21 +712,19 @@ mod test {
 
     fn call(function: &DynamicScriptFunction, args: Args) -> (Result<(), InteropError>, Return) {
         let mut ret = Return::default();
-        let result = function
-            .call_native(&args, &mut ret, FunctionCallContext::new(Language::Lua))
-            .expect("the function is native");
+        let result = function.call_with(&args, &mut ret, FunctionCallContext::new(Language::Lua));
         (result, ret)
     }
 
     #[test]
     fn typed_calls_read_and_return_native_values() {
-        let scale = Native(|v: R<Tracked>, by: f32| {
+        let scale = (|v: R<Tracked>, by: f32| {
             V(Tracked {
                 value: v.value * by,
             })
         })
         .into_dynamic_script_function();
-        let set = Native(|mut v: M<Tracked>, to: f32| v.value = to).into_dynamic_script_function();
+        let set = (|mut v: M<Tracked>, to: f32| v.value = to).into_dynamic_script_function();
         with_native_world(|| {
             let native = tracked(2.0);
             let (result, ret) = call(
@@ -645,8 +764,8 @@ mod test {
 
     #[test]
     fn conflicting_borrows_of_one_value_error() {
-        let both = Native(|_a: M<Tracked>, _b: R<Tracked>| ()).into_dynamic_script_function();
-        let shared = Native(|_a: R<Tracked>, _b: R<Tracked>| ()).into_dynamic_script_function();
+        let both = (|_a: M<Tracked>, _b: R<Tracked>| ()).into_dynamic_script_function();
+        let shared = (|_a: R<Tracked>, _b: R<Tracked>| ()).into_dynamic_script_function();
         with_native_world(|| {
             let native = tracked(1.0);
             let (result, _) = call(
@@ -673,7 +792,7 @@ mod test {
 
     #[test]
     fn native_values_are_dropped_once() {
-        let copy = Native(|v: V<Tracked>| v).into_dynamic_script_function();
+        let copy = (|v: V<Tracked>| v).into_dynamic_script_function();
         let mut drops = 0;
         with_native_world(|| {
             let native = tracked(1.0);
@@ -735,7 +854,7 @@ mod test {
     /// functions, fields, a value passed twice, non native arguments (the slow path), and copies into references.
     #[test]
     fn native_values_through_the_whole_chain() {
-        let make = Native(|value: f32| {
+        let make = (|value: f32| {
             V(Labelled {
                 value,
                 label: "made".to_owned(),
@@ -743,7 +862,7 @@ mod test {
         })
         .into_dynamic_script_function();
         // `Union` takes a native value as it is, also the receiver passed again
-        let add = Native(|a: R<Labelled>, b: crate::Union<R<Labelled>, f32>| {
+        let add = (|a: R<Labelled>, b: crate::Union<R<Labelled>, f32>| {
             V(Labelled {
                 value: a.value
                     + match b.into_left() {
@@ -834,35 +953,12 @@ mod test {
 
             // a copy, as everything which isn't typed sees it, goes back in through the slow path
             let copy = unsafe { NativeStorage::to_script_value(made.base()) }.unwrap();
-            struct Slow(ScriptValue);
-            // Safety: no native values
-            unsafe impl ArgSource for Slow {
-                fn len(&self) -> usize {
-                    2
-                }
-                fn number(&self, _: usize) -> Option<f64> {
-                    None
-                }
-                fn integer(&self, _: usize) -> Option<i64> {
-                    None
-                }
-                fn boolean(&self, _: usize) -> Option<bool> {
-                    None
-                }
-                fn native(&self, _: usize) -> Option<*mut u8> {
-                    None
-                }
-                fn script_value(&self, _: usize) -> Result<ScriptValue, InteropError> {
-                    Ok(self.0.clone())
-                }
-            }
             let mut ret = Return::default();
-            add.call_native(
-                &Slow(copy.clone()),
+            add.call_with(
+                &ScriptValueArgs::new([copy.clone(), copy.clone()]),
                 &mut ret,
                 FunctionCallContext::new(Language::Lua),
             )
-            .unwrap()
             .unwrap();
             assert_eq!(
                 value_in::<Labelled>(ret.native.as_ref().unwrap()).value,
@@ -894,7 +990,7 @@ mod test {
 
     #[test]
     fn values_needing_more_alignment_than_the_header() {
-        let double = Native(|v: R<Aligned>| {
+        let double = (|v: R<Aligned>| {
             V(Aligned {
                 values: v.values.map(|x| x * 2.0),
             })

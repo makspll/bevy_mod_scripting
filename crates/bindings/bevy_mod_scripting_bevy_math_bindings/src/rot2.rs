@@ -8,7 +8,6 @@ use bevy_mod_scripting_derive::script_bindings;
 
 #[script_bindings(
     remote,
-    native,
     name = "rot2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",

@@ -86,16 +86,11 @@ impl SharedArgs {
     }
 }
 
-/// `wrapper` wraps the function before it's registered, i.e. `Native` to give it a typed entry.
-pub(crate) fn impl_fn_to_namespace_builder_registration(
-    fun: &ImplItemFn,
-    wrapper: Option<TokenStream>,
-) -> TokenStream {
+pub(crate) fn impl_fn_to_namespace_builder_registration(fun: &ImplItemFn) -> TokenStream {
     process_impl_fn(
         fun,
         Ident::new("register_documented", Span::call_site()),
         true,
-        wrapper,
     )
 }
 
@@ -121,7 +116,6 @@ fn process_impl_fn(
     fun: &ImplItemFn,
     generated_name: Ident,
     include_arg_names: bool,
-    wrapper: Option<TokenStream>,
 ) -> TokenStream {
     let args = &fun.sig.inputs;
     let fun_span = fun.sig.ident.span();
@@ -155,20 +149,13 @@ fn process_impl_fn(
             #ty
         },
     };
-    let function = quote_spanned! {fun_span=>
-        |#args| {
-            let output: #out_type = {#body};
-            output
-        }
-    };
-    let function = match wrapper {
-        Some(wrapper) => quote_spanned! {fun_span=> #wrapper(#function) },
-        None => function,
-    };
     quote_spanned! {fun_span=>
         .#generated_name(
             #fun_name,
-            #function,
+            |#args| {
+                let output: #out_type = {#body};
+                output
+            },
             #docstring,
             #args_names
         )

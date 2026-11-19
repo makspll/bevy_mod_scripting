@@ -46,10 +46,9 @@ pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
     bevy_mod_scripting_bindings::script_native!(world, NativeTestValue { label: String });
     NamespaceBuilder::<World>::new_unregistered(world)
-        .register(
-            "_make_native_test_value",
-            bevy_mod_scripting_bindings::Native(|label: String| V(NativeTestValue { label })),
-        )
+        .register("_make_native_test_value", |label: String| {
+            V(NativeTestValue { label })
+        })
         .register("_get_mock_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;

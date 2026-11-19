@@ -8,7 +8,6 @@ use bevy_mod_scripting_derive::script_bindings;
 
 #[script_bindings(
     remote,
-    native,
     name = "dir2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -68,7 +67,6 @@ impl Dir2 {
 
 #[script_bindings(
     remote,
-    native,
     name = "dir3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",

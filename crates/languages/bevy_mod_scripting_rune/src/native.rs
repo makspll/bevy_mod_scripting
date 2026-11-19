@@ -158,9 +158,10 @@ unsafe impl ArgSource for RuneArgs<'_> {
 }
 
 /// The result of a typed call.
-#[derive(Default)]
 struct RuneReturn {
     value: Option<Result<Value, InteropError>>,
+    /// How a [`ScriptValue`] result is converted, see [`crate::types::converter`]
+    convert: fn(ScriptValue) -> Result<Value, InteropError>,
 }
 
 impl RuneReturn {
@@ -204,27 +205,35 @@ unsafe impl ReturnSink for RuneReturn {
     }
 
     fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError> {
-        self.set(to_rune(value));
+        self.set((self.convert)(value));
         Ok(())
     }
 }
 
-/// Calls `function`: its typed entry with the arguments as they are, or its dynamic one with them converted.
+/// Calls `function` with the arguments as they are.
 pub(crate) fn call(
     function: &DynamicScriptFunction,
     args: &[RuneArg],
 ) -> Result<Value, InteropError> {
-    let mut ret = RuneReturn::default();
-    let args = RuneArgs::new(args);
-    match function.call_native(&args, &mut ret, RUNE_CALLER_CONTEXT) {
-        Some(result) => result.and_then(|()| ret.finish()),
-        None => {
-            let values = (0..args.len())
-                .map(|i| args.script_value(i))
-                .collect::<Result<Vec<_>, _>>()?;
-            to_rune(function.call(values, RUNE_CALLER_CONTEXT)?)
-        }
-    }
+    call_with(
+        |args, ret| function.call_with(args, ret, RUNE_CALLER_CONTEXT),
+        args,
+        to_rune,
+    )
+}
+
+/// Runs `call` with the arguments as they are, a [`ScriptValue`] result is converted with `convert`.
+pub(crate) fn call_with(
+    call: impl FnOnce(&dyn ArgSource, &mut dyn ReturnSink) -> Result<(), InteropError>,
+    args: &[RuneArg],
+    convert: fn(ScriptValue) -> Result<Value, InteropError>,
+) -> Result<Value, InteropError> {
+    let mut ret = RuneReturn {
+        value: None,
+        convert,
+    };
+    call(&RuneArgs::new(args), &mut ret)?;
+    ret.finish()
 }
 
 /// The native type of the value: its fields and methods, as the typed function which made it looked them up.
@@ -405,7 +414,7 @@ pub(crate) fn display(this: &RuneNative, debug: bool) -> Result<String, InteropE
 mod test {
     use bevy_ecs::world::World;
     use bevy_mod_scripting_bindings::{
-        CurrentScriptAttachment, Native, R, Union, V, WorldAccessGuard,
+        CurrentScriptAttachment, R, Union, V, WorldAccessGuard,
         function::namespace::NamespaceBuilder, script_native,
     };
     use bevy_reflect::Reflect;
@@ -433,32 +442,23 @@ mod test {
     fn native_values_in_rune() {
         let mut world = World::default();
         NamespaceBuilder::<Labelled>::new(&mut world)
-            .register(
-                "new",
-                Native(|value: f64| {
-                    V(Labelled {
-                        value,
-                        label: "made".to_owned(),
-                    })
-                }),
-            )
-            .register(
-                "add",
-                Native(|a: R<Labelled>, b: Union<R<Labelled>, f64>| {
-                    V(Labelled {
-                        value: a.value
-                            + match b.into_left() {
-                                Ok(b) => b.value,
-                                Err(n) => n,
-                            },
-                        label: a.label.clone(),
-                    })
-                }),
-            )
-            .register(
-                "eq",
-                Native(|a: R<Labelled>, b: R<Labelled>| a.value == b.value),
-            );
+            .register("new", |value: f64| {
+                V(Labelled {
+                    value,
+                    label: "made".to_owned(),
+                })
+            })
+            .register("add", |a: R<Labelled>, b: Union<R<Labelled>, f64>| {
+                V(Labelled {
+                    value: a.value
+                        + match b.into_left() {
+                            Ok(b) => b.value,
+                            Err(n) => n,
+                        },
+                    label: a.label.clone(),
+                })
+            })
+            .register("eq", |a: R<Labelled>, b: R<Labelled>| a.value == b.value);
         script_native!(
             &mut world,
             Labelled {

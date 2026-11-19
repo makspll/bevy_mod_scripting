@@ -510,22 +510,6 @@ impl IntoLuaMulti for LuaFunctionReturn {
     }
 }
 
-/// Calls a function from Lua, the location of the call is only looked up for errors.
-fn call_from_lua(
-    lua: &mlua::Lua,
-    call: impl FnOnce(FunctionCallContext) -> Result<ScriptValue, InteropError>,
-) -> mlua::Result<LuaFunctionReturn> {
-    match call(LUA_CALLER_CONTEXT) {
-        Ok(out) => Ok(LuaFunctionReturn(out)),
-        Err(mut error) => {
-            add_call_location(lua, &mut error, || {
-                lua.inspect_stack(1, |debug| debug.current_line().unwrap_or_default() as u32)
-            });
-            Err(error.to_lua_error())
-        }
-    }
-}
-
 /// Fills in where in the script a function call failed, from the `line` of the call; it's only looked up for errors.
 pub(crate) fn add_call_location(
     lua: &mlua::Lua,
@@ -567,17 +551,8 @@ pub(crate) fn registered_function_into_lua(
     {
         return Ok(Value::Function(lua_function.clone()));
     }
-    let lua_function = if function.is_native() {
-        // typed functions read their arguments off the stack, see `super::native`
-        super::native::native_function(lua, function.clone())?
-    } else {
-        lua.create_function({
-            let function = function.clone();
-            move |lua, args: MultiLuaScriptValue| {
-                call_from_lua(lua, |context| function.call(args.0, context))
-            }
-        })?
-    };
+    // functions read their arguments off the stack, see `super::native`
+    let lua_function = super::native::native_function(lua, function.clone())?;
     // the cache is created with the context, inserting app data here could panic if any is borrowed
     if let Some(mut cache) = lua.app_data_mut::<LuaFunctionCache>() {
         cache.0.insert(key, (function, lua_function.clone()));
@@ -600,21 +575,12 @@ impl IntoLua for LuaScriptValue {
                 // a function of this Lua state is handed back as it is: the script gets the function it
                 // passed in, and calls it without going through Rust
                 Some(f) if *f.weak_lua() == lua.weak() => Value::Function(f.clone()),
-                // typed functions read their arguments off the stack, see `super::native`
-                _ if function.is_native() => {
-                    Value::Function(super::native::native_function(lua, function)?)
-                }
-                _ => lua
-                    .create_function(move |lua, args: MultiLuaScriptValue| {
-                        call_from_lua(lua, |context| function.call(args.0, context))
-                    })?
-                    .into_lua(lua)?,
+                // functions read their arguments off the stack, see `super::native`
+                _ => Value::Function(super::native::native_function(lua, function)?),
             },
-            ScriptValue::FunctionMut(function) => lua
-                .create_function(move |lua, args: MultiLuaScriptValue| {
-                    call_from_lua(lua, |context| function.call(args.0, context))
-                })?
-                .into_lua(lua)?,
+            ScriptValue::FunctionMut(function) => {
+                Value::Function(super::native::native_function(lua, function.into())?)
+            }
             // when we encounter a tuple here, we can't convert to many args, so just return a table
             ScriptValue::List(vec) | ScriptValue::Tuple(VariadicTuple(vec)) => {
                 // NOTE: `create_table_from` with integer keys puts them in the table's hash part, where
