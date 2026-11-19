@@ -303,13 +303,19 @@ impl LuaReturn {
     /// Makes what pushing the result needs (mlua values, the native metatable), while Rust values may still be around.
     unsafe fn prepare(self, l: *mut ffi::lua_State) -> Result<Ready, InteropError> {
         // Safety: `l` is the state of the call
-        unsafe { with_raw(l, |lua, _| self.prepare_with(l, lua)) }
+        unsafe {
+            match self.pending {
+                // only script values need mlua
+                Pending::Value(_) => with_raw(l, |lua, _| self.prepare_with(l, lua)),
+                _ => self.prepare_plain(l),
+            }
+        }
     }
 
-    /// [`Self::prepare`] with mlua already at hand.
-    unsafe fn prepare_with(self, l: *mut ffi::lua_State, lua: &Lua) -> Result<Ready, InteropError> {
+    /// [`Self::prepare`] of results which aren't script values: no mlua needed.
+    unsafe fn prepare_plain(self, l: *mut ffi::lua_State) -> Result<Ready, InteropError> {
         Ok(match self.pending {
-            Pending::Nothing => Ready::Nothing,
+            Pending::Nothing | Pending::Value(_) => Ready::Nothing,
             Pending::Number(n) => Ready::Number(n),
             Pending::Integer(i) => Ready::Integer(i),
             Pending::Boolean(b) => Ready::Boolean(b),
@@ -323,6 +329,12 @@ impl LuaReturn {
                 }
                 Ready::Native(native)
             }
+        })
+    }
+
+    /// [`Self::prepare`] with mlua already at hand.
+    unsafe fn prepare_with(self, l: *mut ffi::lua_State, lua: &Lua) -> Result<Ready, InteropError> {
+        Ok(match self.pending {
             // a tuple is several values, anything else one, without a `MultiValue`
             Pending::Value(value @ ScriptValue::Tuple(_)) => Ready::Values(
                 LuaFunctionReturn(value)
@@ -334,6 +346,8 @@ impl LuaReturn {
                     .into_lua(lua)
                     .map_err(IntoInteropError::to_bms_error)?,
             ),
+            // Safety: `l` is the state of the call
+            _ => return unsafe { self.prepare_plain(l) },
         })
     }
 
