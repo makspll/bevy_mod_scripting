@@ -625,21 +625,26 @@ unsafe fn run(l: *mut ffi::lua_State, f: impl FnOnce() -> Result<Ready, InteropE
     }
 }
 
-/// Raises a panic the way mlua does for its callbacks: by panicking in one, so scripts can't catch it (mlua's `pcall`
-/// rethrows it) and it's resumed once it reaches Rust.
+/// Raises a panic the way mlua does for its callbacks: by panicking in one, so it's resumed once it reaches Rust (a
+/// script's `pcall` catches it, as it does mlua's).
 unsafe fn resume_panic(l: *mut ffi::lua_State, payload: Box<dyn std::any::Any + Send>) -> ! {
-    let payload = std::cell::Cell::new(Some(payload));
     unsafe {
-        let failed = ffi::lua_checkstack(l, 1) == 0
-            || push_with_mlua(l, move |lua, raw| {
-                lua.create_function(move |_, ()| match payload.take() {
-                    Some(payload) => std::panic::resume_unwind(payload),
-                    None => Ok(()),
-                })?
-                .push_into_stack(raw)?;
-                Ok(1)
-            })
-            .is_err();
+        if ffi::lua_checkstack(l, 1) == 0 {
+            // nothing may be left to drop when raising
+            drop(payload);
+            raise_str(l, c"a native function panicked")
+        }
+        let payload = std::cell::Cell::new(Some(payload));
+        // the closure takes the payload, it's dropped by mlua either way
+        let failed = push_with_mlua(l, move |lua, raw| {
+            lua.create_function(move |_, ()| match payload.take() {
+                Some(payload) => std::panic::resume_unwind(payload),
+                None => Ok(()),
+            })?
+            .push_into_stack(raw)?;
+            Ok(1)
+        })
+        .is_err();
         if !failed {
             // raises the panic, only plain values are alive in this frame
             ffi::lua_call(l, 0, 0);
@@ -1067,9 +1072,15 @@ fn operator_from_index(index: ffi::lua_Integer) -> Result<ScriptOperatorNames, I
 pub(crate) fn native_value_base(lua: &Lua, value: &mlua::AnyUserData) -> Option<*mut u8> {
     // Safety: the value is pushed and popped by `exec_raw`'s stack guard
     unsafe {
-        lua.exec_raw::<Option<mlua::LightUserData>>(value, |l| match native_base(l, -1) {
-            Some(base) => ffi::lua_pushlightuserdata(l, base as *mut c_void),
-            None => ffi::lua_pushnil(l),
+        lua.exec_raw::<Option<mlua::LightUserData>>(value, |l| {
+            // the lookup pushes two values, the result one; protected mode, so failing raises
+            if ffi::lua_checkstack(l, 2) == 0 {
+                raise_str(l, c"stack overflow");
+            }
+            match native_base(l, -1) {
+                Some(base) => ffi::lua_pushlightuserdata(l, base as *mut c_void),
+                None => ffi::lua_pushnil(l),
+            }
         })
     }
     .ok()

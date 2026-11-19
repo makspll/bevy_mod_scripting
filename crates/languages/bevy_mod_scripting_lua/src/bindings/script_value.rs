@@ -201,6 +201,10 @@ impl FromLua for LuaScriptValue {
                 ffi::LUA_TTABLE => table_from_stack(idx, lua).map(LuaScriptValue),
                 // native values are copied into a reference, see `super::native`, only looked for when it's no reference
                 _ => non_table_value(Value::from_stack(idx, lua)?, |_| {
+                    // looking it up pushes two values, nothing guarantees room for them here (i.e. deep in a table)
+                    if ffi::lua_checkstack(state, 2) == 0 {
+                        return None;
+                    }
                     super::native::native_base(state, idx)
                 })
                 .map(LuaScriptValue),
