@@ -146,9 +146,6 @@ where
     }
 }
 
-/// Calls the member `name` of the receiver, which is the first value on the stack, with the rest as arguments.
-///
-/// `convert` converts the result, see [`converter`].
 pub(crate) fn call_member_inner(
     name: &str,
     convert: fn(ScriptValue) -> Result<Value, InteropError>,
@@ -157,7 +154,24 @@ pub(crate) fn call_member_inner(
     let (receiver, rest) = values
         .split_first()
         .ok_or_else(|| InteropError::str("a method needs a receiver"))?;
-    let args = rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>()?;
+    // typed functions get the values as they are, see `crate::native`; `with_receiver` passes the receiver first
+    let typed =
+        |function: &ScriptValue, with_receiver: bool| -> Option<Result<Value, InteropError>> {
+            let ScriptValue::Function(function) = function else {
+                return None;
+            };
+            if !function.is_native() {
+                return None;
+            }
+            let args = with_receiver
+                .then_some(receiver)
+                .into_iter()
+                .chain(rest)
+                .map(crate::native::RuneArg::Value)
+                .collect::<Vec<_>>();
+            Some(crate::native::call(function, &args))
+        };
+    let args = || rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>();
     let result = if let Ok(this) = receiver.borrow_ref::<RuneRef>() {
         let member = dispatch::index_name(
             world()?,
@@ -167,12 +181,17 @@ pub(crate) fn call_member_inner(
         )?;
         match member {
             Member::Method(func) => {
-                let mut with_receiver = Vec::with_capacity(args.len() + 1);
-                with_receiver.push(ScriptValue::Reference(this.0.clone()));
-                with_receiver.extend(args);
+                if let Some(result) = typed(&ScriptValue::Function(func.clone()), true) {
+                    return result;
+                }
+                let mut with_receiver = vec![ScriptValue::Reference(this.0.clone())];
+                with_receiver.extend(args()?);
                 func.call(with_receiver, RUNE_CALLER_CONTEXT)?
             }
-            Member::Static(value) => call_value(value, args)?,
+            Member::Static(value) => match typed(&value, false) {
+                Some(result) => return result,
+                None => call_value(value, args()?)?,
+            },
         }
     } else if let Ok(this) = receiver.borrow_ref::<RuneType>() {
         let member = dispatch::static_index(
@@ -181,14 +200,20 @@ pub(crate) fn call_member_inner(
             ScriptValue::String(name.to_owned().into()),
             RUNE_CALLER_CONTEXT,
         )?;
-        call_value(member, args)?
+        match typed(&member, false) {
+            Some(result) => return result,
+            None => call_value(member, args()?)?,
+        }
     } else if let Ok(this) = receiver.borrow_ref::<RuneNamespace>() {
         let member = this.0.get(name).cloned().ok_or_else(|| {
             InteropError::external(crate::error::RuneError(format!(
                 "the namespace has no member `{name}`"
             )))
         })?;
-        call_value(member, args)?
+        match typed(&member, false) {
+            Some(result) => return result,
+            None => call_value(member, args()?)?,
+        }
     } else {
         return Err(InteropError::str("unsupported receiver"));
     };
@@ -294,8 +319,10 @@ fn binary(operator: ScriptOperatorNames, this: &RuneRef, other: &Value) -> VmRes
 }
 
 fn same_reference(this: &RuneRef, other: &Value) -> Result<Option<bool>, InteropError> {
-    // like in Lua, values of different kinds are never equal
-    if other.borrow_ref::<RuneRef>().is_err() {
+    // like in Lua, values of different kinds are never equal; native values are references BMS stores natively
+    if other.borrow_ref::<RuneRef>().is_err()
+        && other.borrow_ref::<crate::native::RuneNative>().is_err()
+    {
         return Ok(Some(false));
     }
     let rhs = from_rune(other)?;
