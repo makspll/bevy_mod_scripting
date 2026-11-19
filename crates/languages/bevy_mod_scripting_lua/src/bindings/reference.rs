@@ -1,6 +1,8 @@
 use std::{any::TypeId, borrow::Cow};
 
-use bevy_mod_scripting_bindings::{ReflectReference, WorldGuard, dispatch, error::InteropError};
+use bevy_mod_scripting_bindings::{
+    ReflectReference, ScriptValue, WorldGuard, dispatch, error::InteropError,
+};
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
 use mlua::{FromLua, IntoLua, MetaMethod, UserData, UserDataMethods};
@@ -166,12 +168,17 @@ impl UserData for LuaTypeRef {
     fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
         m.add_meta_function(
             MetaMethod::Index,
-            |_, (self_, key): (LuaTypeRef, LuaScriptValue)| {
+            |lua, (self_, key): (LuaTypeRef, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Index");
-                with_world(|world| {
+                let member = with_world(|world| {
                     dispatch::static_index(world, self_.0, key.into(), LUA_CALLER_CONTEXT)
-                })
-                .map(LuaScriptValue)
+                })?;
+                match member {
+                    // functions of types live in the registry (bound ones are cached there too): their Lua functions
+                    // are made once, not on every `Type.name`
+                    ScriptValue::Function(function) => registered_function_into_lua(lua, function),
+                    member => LuaScriptValue(member).into_lua(lua),
+                }
             },
         );
     }
