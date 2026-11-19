@@ -199,8 +199,12 @@ unsafe impl ReturnSink for RuneReturn {
         self.set(rune::to_value(b).map_err(IntoInteropError::to_bms_error));
     }
 
-    fn native(&mut self, vtable: &'static NativeVTable, write: &mut dyn FnMut(*mut u8)) -> bool {
-        // Safety: `write` comes from the caller of this `unsafe` trait's method, which writes a value of the vtable's type
+    unsafe fn native(
+        &mut self,
+        vtable: &'static NativeVTable,
+        write: &mut dyn FnMut(*mut u8),
+    ) -> bool {
+        // Safety: `write` writes a value of the vtable's type, see the method's contract
         match unsafe { NativeBox::new(vtable, write) } {
             Ok(native) => {
                 self.set(new_value(RuneNative::new(native)));

@@ -96,12 +96,12 @@ impl ReflectAllocationId {
         }
     }
 
-    /// Allocates a copy of a native value (see [`crate::native`]), which functions can't change in place: the change would
-    /// be lost with the copy.
+    /// Allocates a copy of a native value (see [`crate::native`]), which nothing can change in place (write claims fail):
+    /// the change would be lost with the copy.
     pub fn new_native_copy<T: PartialReflect>(value: T) -> Self {
         Self {
             value: Arc::new(Inline {
-                claims: SharedClaims::default(),
+                claims: SharedClaims::read_only(),
                 native_copy: true,
                 value: UnsafeCell::new(value),
             }),

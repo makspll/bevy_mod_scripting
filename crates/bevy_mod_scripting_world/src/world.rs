@@ -99,46 +99,32 @@ pub struct CallScope<'w> {
 
 /// Tracks the borrows of a value outside the world, i.e. one stored natively by a script language, like a `RefCell`.
 ///
-/// Positive counts are shared borrows, -1 is an exclusive one.
+/// Positive counts are shared borrows, -1 is an exclusive one. Not thread safe: script values belong to one thread.
 #[derive(Debug, Default)]
-pub struct BorrowFlag(std::sync::atomic::AtomicIsize);
+pub struct BorrowFlag(std::cell::Cell<isize>);
 
 impl BorrowFlag {
     fn try_borrow(&self, exclusive: bool) -> bool {
-        use std::sync::atomic::Ordering;
-        if exclusive {
-            return self
-                .0
-                .compare_exchange(0, -1, Ordering::Acquire, Ordering::Relaxed)
-                .is_ok();
-        }
-        let mut current = self.0.load(Ordering::Relaxed);
-        while current >= 0 {
-            match self.0.compare_exchange_weak(
-                current,
-                current + 1,
-                Ordering::Acquire,
-                Ordering::Relaxed,
-            ) {
-                Ok(_) => return true,
-                Err(actual) => current = actual,
-            }
-        }
-        false
+        let current = self.0.get();
+        let next = match exclusive {
+            true if current == 0 => -1,
+            false if (0..isize::MAX).contains(&current) => current + 1,
+            _ => return false,
+        };
+        self.0.set(next);
+        true
     }
 
     fn release(&self, exclusive: bool) {
-        use std::sync::atomic::Ordering;
-        if exclusive {
-            self.0.store(0, Ordering::Release);
-        } else {
-            self.0.fetch_sub(1, Ordering::Release);
+        match exclusive {
+            true => self.0.set(0),
+            false => self.0.set(self.0.get() - 1),
         }
     }
 
     /// Whether the value is borrowed exclusively, so it can't be read.
     pub fn is_borrowed_mut(&self) -> bool {
-        self.0.load(std::sync::atomic::Ordering::Relaxed) < 0
+        self.0.get() < 0
     }
 }
 

@@ -47,6 +47,11 @@ pub struct SharedClaims(AtomicU32);
 impl SharedClaims {
     const WRITE: u32 = u32::MAX;
 
+    /// Claims which never allow writing: one read claim is held for the value's lifetime.
+    pub fn read_only() -> Self {
+        Self(AtomicU32::new(1))
+    }
+
     /// Claims read or write access, returns whether it was claimed
     pub fn try_claim(&self, write: bool) -> bool {
         if write {

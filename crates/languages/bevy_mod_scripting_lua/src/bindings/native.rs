@@ -8,8 +8,9 @@
 //!   which scripts can't reach (`__metatable` is `false`), see [`native_base`].
 //!
 //! Lua errors are `longjmp`s (C++ exceptions on Luau), which must not skip Rust destructors. So every Lua API call which can
-//! raise either runs in protected mode (making metatables and function holders, through mlua's `exec_raw`), or after every
-//! Rust value of the call is gone: results are kept as plain values ([`Ready`]) and pushed last, errors are raised last.
+//! raise runs while no Rust value with a destructor is alive in the frames it would skip: in protected mode (making
+//! metatables and function holders, through mlua's `exec_raw`, which only borrow what they push), or after every Rust value
+//! of the call is gone: results are kept as plain values ([`Ready`]) and pushed last, errors are raised last.
 //!
 //! Finalizers leave tombstones: a collected function holder is marked dead and a collected native value loses its metatable,
 //! so a script finalizer running afterwards gets an error instead of a freed value.
@@ -239,7 +240,7 @@ impl PendingNative {
 
     /// Frees the heap memory, the value having been moved out of it.
     unsafe fn free(&mut self) {
-        if !self.heap.is_null() {
+        if !self.heap.is_null() && self.vtable.layout.size() != 0 {
             // Safety: allocated in `LuaReturn::native` with this layout
             unsafe { std::alloc::dealloc(self.heap, self.vtable.layout) };
             self.heap = std::ptr::null_mut();
@@ -329,14 +330,21 @@ unsafe impl ReturnSink for LuaReturn {
         self.pending = Pending::Boolean(b);
     }
 
-    fn native(&mut self, vtable: &'static NativeVTable, write: &mut dyn FnMut(*mut u8)) -> bool {
+    unsafe fn native(
+        &mut self,
+        vtable: &'static NativeVTable,
+        write: &mut dyn FnMut(*mut u8),
+    ) -> bool {
         let layout = vtable.layout;
         let heap = if layout.size() <= size_of::<InlineBuffer>()
             && layout.align() <= align_of::<InlineBuffer>()
         {
             std::ptr::null_mut()
+        } else if layout.size() == 0 {
+            // zero sized and aligned more than the buffer: any aligned pointer, never freed (see `free`)
+            std::ptr::without_provenance_mut(layout.align())
         } else {
-            // Safety: not zero sized, those fit inline
+            // Safety: not zero sized
             let heap = unsafe { std::alloc::alloc(layout) };
             if heap.is_null() {
                 return false;
@@ -513,6 +521,9 @@ struct Holder {
     function: ManuallyDrop<DynamicScriptFunction>,
 }
 
+// holders are written at `align_up(block)`
+const _: () = assert!(align_of::<Holder>() <= ALIGN);
+
 /// The function of a holder, `None` once it was collected.
 unsafe fn holder_function<'a>(block: *mut c_void) -> Option<&'a DynamicScriptFunction> {
     // Safety: holders are `Holder`s, initialised when they're made
@@ -532,13 +543,16 @@ unsafe fn drop_holder(base: *mut u8) {
     }
 }
 
-/// Pushes a holder of the function. Can raise: protected mode only.
-unsafe fn push_holder(l: *mut ffi::lua_State, function: DynamicScriptFunction) {
+/// Pushes a holder of a clone of the function. Can raise: protected mode only.
+///
+/// Callers keep their Rust values outside of protected mode: a raise skips the destructors of this frame and its callers'.
+unsafe fn push_holder(l: *mut ffi::lua_State, function: &DynamicScriptFunction) {
     unsafe {
         let block = new_userdata(l, size_of::<Holder>() + ALIGN - 1, Some(Dtor::Holder));
+        // cloned once the userdata exists, nothing to drop if making it raises
         (align_up(block) as *mut Holder).write(Holder {
             state: HOLDER_ALIVE,
-            function: ManuallyDrop::new(function),
+            function: ManuallyDrop::new(function.clone()),
         });
         if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&HOLDER_METATABLE)) == ffi::LUA_TNIL {
             ffi::lua_pop(l, 1);
@@ -562,10 +576,10 @@ pub(crate) fn native_function(
     lua: &Lua,
     function: DynamicScriptFunction,
 ) -> mlua::Result<mlua::Function> {
-    // Safety: protected mode, the stack guard of `exec_raw` keeps the stack balanced
+    // Safety: protected mode, the stack guard of `exec_raw` keeps the stack balanced, `function` is dropped outside of it
     unsafe {
         lua.exec_raw((), |l| {
-            push_holder(l, function);
+            push_holder(l, &function);
             ffi::lua_pushcclosure(l, native_entry, 1);
         })
     }
@@ -600,17 +614,37 @@ unsafe fn run(l: *mut ffi::lua_State, f: impl FnOnce() -> Result<Ready, InteropE
         Ok(Ok(ready)) => ready,
         // Safety: the error is moved into the raised value
         Ok(Err(error)) => unsafe { raise(l, error) },
-        Err(payload) => {
-            drop(payload);
-            // Safety: nothing left to drop
-            unsafe { raise(l, InteropError::str("a native function panicked")) }
-        }
+        // Safety: the payload is moved into the raised value
+        Err(payload) => unsafe { resume_panic(l, payload) },
     };
     // Safety: only the result is left, it's plain values
     match unsafe { push_ready(l, ready) } {
         Ok(n) => n,
         // Safety: nothing left to drop
         Err(_) => unsafe { raise_str(l, c"failed to push the results of a native function") },
+    }
+}
+
+/// Raises a panic the way mlua does for its callbacks: by panicking in one, so scripts can't catch it (mlua's `pcall`
+/// rethrows it) and it's resumed once it reaches Rust.
+unsafe fn resume_panic(l: *mut ffi::lua_State, payload: Box<dyn std::any::Any + Send>) -> ! {
+    let payload = std::cell::Cell::new(Some(payload));
+    unsafe {
+        let failed = ffi::lua_checkstack(l, 1) == 0
+            || push_with_mlua(l, move |lua, raw| {
+                lua.create_function(move |_, ()| match payload.take() {
+                    Some(payload) => std::panic::resume_unwind(payload),
+                    None => Ok(()),
+                })?
+                .push_into_stack(raw)?;
+                Ok(1)
+            })
+            .is_err();
+        if !failed {
+            // raises the panic, only plain values are alive in this frame
+            ffi::lua_call(l, 0, 0);
+        }
+        raise_str(l, c"a native function panicked")
     }
 }
 
@@ -648,13 +682,14 @@ unsafe fn call(
 
 unsafe fn raise(l: *mut ffi::lua_State, mut error: InteropError) -> ! {
     unsafe {
-        let pushed = push_with_mlua(l, move |lua, raw| {
-            add_call_location(lua, &mut error);
+        let line = caller_line(l);
+        let failed = push_with_mlua(l, move |lua, raw| {
+            add_call_location(lua, &mut error, || line);
             error.to_lua_error().push_into_stack(raw)?;
             Ok(1)
-        });
-        if pushed.is_err() {
-            drop(pushed);
+        })
+        .is_err();
+        if failed {
             raise_str(l, c"failed to raise an error of a native function")
         }
         ffi::lua_error(l)
@@ -665,6 +700,19 @@ unsafe fn raise_str(l: *mut ffi::lua_State, message: &'static std::ffi::CStr) ->
     unsafe {
         ffi::lua_pushstring(l, message.as_ptr());
         ffi::lua_error(l)
+    }
+}
+
+/// The line of the script calling the C function running on `l`, which may be a coroutine mlua isn't on.
+unsafe fn caller_line(l: *mut ffi::lua_State) -> Option<u32> {
+    unsafe {
+        let mut ar: ffi::lua_Debug = std::mem::zeroed();
+        #[cfg(feature = "luau")]
+        let found = ffi::lua_getinfo(l, 1, c"l".as_ptr(), &mut ar) != 0;
+        #[cfg(not(feature = "luau"))]
+        let found = ffi::lua_getstack(l, 1, &mut ar) != 0
+            && ffi::lua_getinfo(l, c"l".as_ptr(), &mut ar) != 0;
+        found.then_some(ar.currentline.max(0) as u32)
     }
 }
 
@@ -702,11 +750,11 @@ unsafe fn push_native_metatable(
             .collect::<Vec<_>>();
         (fields, methods)
     };
-    // Safety: protected mode, the stack guard of `exec_raw` keeps the stack balanced
+    // Safety: protected mode, the stack guard of `exec_raw` keeps the stack balanced, the functions are dropped outside of it
     unsafe {
         with_raw(l, |lua, _| {
-            lua.exec_raw::<()>((), move |state| {
-                build_native_metatable(state, vtable_key, needs_drop, fields, methods)
+            lua.exec_raw::<()>((), |state| {
+                build_native_metatable(state, vtable_key, needs_drop, &fields, &methods)
             })
         })
     }
@@ -722,13 +770,13 @@ type Fields = Vec<(
     Option<DynamicScriptFunction>,
 )>;
 
-/// Makes the metatable of a native type and keeps it in the registry. Raises: protected mode only.
+/// Makes the metatable of a native type and keeps it in the registry. Raises: protected mode only, so it owns no Rust value.
 unsafe fn build_native_metatable(
     l: *mut ffi::lua_State,
     vtable_key: *mut c_void,
     needs_drop: bool,
-    fields: Fields,
-    methods: Vec<(Cow<'static, str>, DynamicScriptFunction)>,
+    fields: &Fields,
+    methods: &[(Cow<'static, str>, DynamicScriptFunction)],
 ) {
     unsafe {
         ffi::lua_createtable(l, 0, 16);
@@ -751,7 +799,7 @@ unsafe fn build_native_metatable(
             methods
                 .iter()
                 .find(|(n, f)| n == name && f.is_native())
-                .map(|(_, f)| f.clone())
+                .map(|(_, f)| f)
         };
         let operators = OPERATORS.map(|(meta, operator)| {
             (
@@ -764,14 +812,14 @@ unsafe fn build_native_metatable(
 
         // __index: getters, then methods, then the slow path
         ffi::lua_createtable(l, 0, fields.len() as c_int);
-        for (name, get, _) in &fields {
-            push_holder(l, get.clone());
+        for (name, get, _) in fields {
+            push_holder(l, get);
             set_field(l, name);
         }
         ffi::lua_createtable(l, 0, methods.len() as c_int);
         for (name, function) in methods {
             push_function(l, function);
-            set_field(l, &name);
+            set_field(l, name);
         }
         ffi::lua_pushcclosure(l, native_index, 2);
         ffi::lua_setfield(l, -2, c"__index".as_ptr());
@@ -781,7 +829,7 @@ unsafe fn build_native_metatable(
         for (name, _, set) in fields {
             if let Some(set) = set {
                 push_holder(l, set);
-                set_field(l, &name);
+                set_field(l, name);
             }
         }
         ffi::lua_pushcclosure(l, native_newindex, 1);
@@ -821,19 +869,21 @@ unsafe fn set_field(l: *mut ffi::lua_State, name: &str) {
 
 /// Pushes a registered function as Lua sees it: typed ones call their typed entry, others go through mlua.
 /// Raises: protected mode only.
-unsafe fn push_function(l: *mut ffi::lua_State, function: DynamicScriptFunction) {
+unsafe fn push_function(l: *mut ffi::lua_State, function: &DynamicScriptFunction) {
     unsafe {
         if function.is_native() {
             push_holder(l, function);
             ffi::lua_pushcclosure(l, native_entry, 1);
             return;
         }
-        let pushed = push_with_mlua(l, |lua, raw| {
-            super::script_value::registered_function_into_lua(lua, function)?
+        // mlua's calls are protected, its values are gone once it returns
+        let failed = push_with_mlua(l, |lua, raw| {
+            super::script_value::registered_function_into_lua(lua, function.clone())?
                 .push_into_stack(raw)?;
             Ok(1)
-        });
-        if pushed.is_err() {
+        })
+        .is_err();
+        if failed {
             ffi::lua_pushnil(l);
         }
     }
@@ -1025,4 +1075,32 @@ pub(crate) fn native_value_base(lua: &Lua, value: &mlua::AnyUserData) -> Option<
     .ok()
     .flatten()
     .map(|p| p.0 as *mut u8)
+}
+
+#[cfg(test)]
+mod test {
+    use bevy_ecs::world::World;
+    use bevy_mod_scripting_bindings::{CurrentScriptAttachment, Native, ScriptFunction};
+    use bevy_mod_scripting_world::WorldAccessGuard;
+
+    use super::*;
+
+    /// A typed function's panic is resumed in Rust, a script's `pcall` catches it: like the panics of mlua's callbacks.
+    #[test]
+    fn panics_behave_like_mlua_callbacks() {
+        let mut world = World::default();
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
+            let lua = Lua::new();
+            let function =
+                Native(|| -> bool { std::panic::panic_any("boom") }).into_dynamic_script_function();
+            let function = native_function(&lua, function).unwrap();
+            lua.globals().set("f", function).unwrap();
+            let payload = catch_unwind(AssertUnwindSafe(|| lua.load("f()").exec()))
+                .expect_err("the panic is resumed");
+            assert_eq!(payload.downcast_ref::<&str>(), Some(&"boom"));
+            let caught: bool = lua.load("return pcall(f)").eval().unwrap();
+            assert!(!caught, "pcall catches it");
+        });
+    }
 }

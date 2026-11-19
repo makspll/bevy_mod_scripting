@@ -151,12 +151,15 @@ impl<T: Reflect> IntoScript for V<T> {
         // types stored natively are moved into the language's storage, others are allocated as usual
         if let Some(vtable) = native_vtable(&world, std::any::TypeId::of::<T>()) {
             let mut value = Some(self.0);
-            let written = ret.native(vtable, &mut |slot| {
-                if let Some(value) = value.take() {
-                    // Safety: the slot is memory for a value of the vtable's type, which is T
-                    unsafe { (slot as *mut T).write(value) }
-                }
-            });
+            // Safety: the vtable is T's, `write` is called once by the sink, which writes the T
+            let written = unsafe {
+                ret.native(vtable, &mut |slot| {
+                    if let Some(value) = value.take() {
+                        // Safety: the slot is memory for a value of the vtable's type, which is T
+                        (slot as *mut T).write(value)
+                    }
+                })
+            };
             match value {
                 // not written: the language has no native form for it
                 Some(value) if !written => {

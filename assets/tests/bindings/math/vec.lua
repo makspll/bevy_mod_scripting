@@ -81,6 +81,11 @@ t.translation = Vec3.new(7, 8, 9)
 assert(t.translation.x == 7, "assigned to a field")
 assert(tostring(w) == "Vec3 { x: 1.0, y: 5.0, z: 3.0 }", "display")
 assert(getmetatable(w) == false, "the metatable of native values is hidden")
+local function fail() w:dot("a") end
+local _, outside = pcall(fail)
+local _, inside = coroutine.resume(coroutine.create(fail))
+local at = tostring(outside):match("at line: %d+")
+assert(at and tostring(inside):match("at line: %d+") == at, "errors in coroutines point at their line")
 
 -- a finalizer marked before a native value which needs dropping runs after it: the value it brings back was dropped,
 -- using it errors

@@ -168,7 +168,8 @@ impl Drop for TableDepth {
 impl FromLua for LuaScriptValue {
     fn from_lua(value: mlua::Value, lua: &mlua::Lua) -> mlua::Result<Self> {
         let Value::Table(table) = value else {
-            return non_table_value(value, Some(lua)).map(LuaScriptValue);
+            return non_table_value(value, |ud| super::native::native_value_base(lua, ud))
+                .map(LuaScriptValue);
         };
         // released when the table is converted, nested tables are converted inside `pairs`
         let _depth = TableDepth::enter()?;
@@ -198,21 +199,21 @@ impl FromLua for LuaScriptValue {
                     String::from_stack(idx, lua)?.into(),
                 ))),
                 ffi::LUA_TTABLE => table_from_stack(idx, lua).map(LuaScriptValue),
-                ffi::LUA_TUSERDATA => match super::native::native_base(state, idx) {
-                    // native values are copied into a reference, see `super::native`
-                    Some(base) => NativeStorage::to_script_value(base)
-                        .map(LuaScriptValue)
-                        .map_err(IntoMluaError::to_lua_error),
-                    None => non_table_value(Value::from_stack(idx, lua)?, None).map(LuaScriptValue),
-                },
-                _ => non_table_value(Value::from_stack(idx, lua)?, None).map(LuaScriptValue),
+                // native values are copied into a reference, see `super::native`, only looked for when it's no reference
+                _ => non_table_value(Value::from_stack(idx, lua)?, |_| {
+                    super::native::native_base(state, idx)
+                })
+                .map(LuaScriptValue),
             }
         }
     }
 }
 
-/// Converts any value but a table, with `lua` native values too (otherwise they're converted before).
-fn non_table_value(value: Value, lua: Option<&mlua::Lua>) -> mlua::Result<ScriptValue> {
+/// Converts any value but a table, `native_base` gives the base of a userdata which is a native value (checked last).
+fn non_table_value(
+    value: Value,
+    native_base: impl FnOnce(&mlua::AnyUserData) -> Option<*mut u8>,
+) -> mlua::Result<ScriptValue> {
     Ok(match value {
         Value::Nil => ScriptValue::Unit,
         Value::Boolean(b) => ScriptValue::Bool(b),
@@ -245,9 +246,7 @@ fn non_table_value(value: Value, lua: Option<&mlua::Lua>) -> mlua::Result<Script
                 Ok(reference) => reference,
                 Err(e) => {
                     // native values are copied into a reference, see `super::native`, only checked when it's no reference
-                    if let Some(lua) = lua
-                        && let Some(base) = super::native::native_value_base(lua, &ud)
-                    {
+                    if let Some(base) = native_base(&ud) {
                         // Safety: the userdata is a native value, alive while `ud` is
                         return unsafe { NativeStorage::to_script_value(base) }
                             .map_err(IntoMluaError::to_lua_error);
@@ -507,6 +506,7 @@ impl IntoLuaMulti for LuaFunctionReturn {
     }
 }
 
+/// Calls a function from Lua, the location of the call is only looked up for errors.
 fn call_from_lua(
     lua: &mlua::Lua,
     call: impl FnOnce(FunctionCallContext) -> Result<ScriptValue, InteropError>,
@@ -514,21 +514,27 @@ fn call_from_lua(
     match call(LUA_CALLER_CONTEXT) {
         Ok(out) => Ok(LuaFunctionReturn(out)),
         Err(mut error) => {
-            add_call_location(lua, &mut error);
+            add_call_location(lua, &mut error, || {
+                lua.inspect_stack(1, |debug| debug.current_line().unwrap_or_default() as u32)
+            });
             Err(error.to_lua_error())
         }
     }
 }
 
-/// Fills in where in the script a function call failed, it's only looked up for errors.
-pub(crate) fn add_call_location(lua: &mlua::Lua, error: &mut InteropError) {
+/// Fills in where in the script a function call failed, from the `line` of the call; it's only looked up for errors.
+pub(crate) fn add_call_location(
+    lua: &mlua::Lua,
+    error: &mut InteropError,
+    line: impl FnOnce() -> Option<u32>,
+) {
     if let InteropError::FunctionInteropError { context, .. } = error
         && let Some(context) = &mut **context
     {
         profiling::scope!("function call context");
-        context.set_location(lua.inspect_stack(1, |debug| {
+        context.set_location(line().map(|line| {
             LocationContext {
-                line: debug.current_line().unwrap_or_default() as u32,
+                line,
                 col: None,
                 script_name: lua
                     .app_data_ref::<LuaContextAppData>()
@@ -544,6 +550,9 @@ pub(crate) fn add_call_location(lua: &mlua::Lua, error: &mut InteropError) {
 #[derive(Default)]
 pub(crate) struct LuaFunctionCache(HashMap<usize, (DynamicScriptFunction, mlua::Function)>);
 
+/// Converts a registered function to a Lua function, reusing the one created the last time.
+///
+/// Only for functions which live in the registry, others would fill the cache.
 pub(crate) fn registered_function_into_lua(
     lua: &mlua::Lua,
     function: DynamicScriptFunction,

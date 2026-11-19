@@ -8,8 +8,8 @@
 //!   Its fields are read and written through typed accessor functions, see [`crate::script_native`].
 //!
 //! Everything which isn't typed sees a copy of a native value (a reference to an allocation, see
-//! [`crate::ReflectAllocationId::is_native_copy`]); functions without a typed entry can't change such a copy in place
-//! (`M<T>` errors), so changes are never silently lost.
+//! [`crate::ReflectAllocationId::is_native_copy`]), which nothing can change in place (write access to it is refused, `M<T>`
+//! errors), so changes are never silently lost.
 //!
 //! Languages look up a native type's fields and methods when they first need them (a Lua state makes the metatable once, a
 //! Rune value keeps its type from when it was made): register native types and their functions before scripts run. Methods
@@ -70,7 +70,14 @@ pub unsafe trait ReturnSink {
     /// Returns a new native value: makes [`NativeStorage`] for it and initialises it with `write`.
     ///
     /// Returns false, without calling `write`, if the language has no native form for the type.
-    fn native(&mut self, vtable: &'static NativeVTable, write: &mut dyn FnMut(*mut u8)) -> bool;
+    ///
+    /// # Safety
+    /// `write` writes a valid value of the vtable's type to the pointer it's given.
+    unsafe fn native(
+        &mut self,
+        vtable: &'static NativeVTable,
+        write: &mut dyn FnMut(*mut u8),
+    ) -> bool;
     /// Returns any value, the slow path.
     fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError>;
 }
@@ -327,10 +334,9 @@ impl Drop for NativeBox {
     }
 }
 
-// Safety: native values are `Reflect`, so `Send + Sync`, the header's borrow flag is atomic
+// Safety: native values are `Reflect`, so `Send`, and the box owns its storage, header included. It isn't `Sync`: the
+// header's borrow flag isn't atomic, values are only used by the thread of their script.
 unsafe impl Send for NativeBox {}
-// Safety: see above
-unsafe impl Sync for NativeBox {}
 
 /// A field of a [`NativeType`]: typed accessor functions.
 #[derive(Clone)]
@@ -506,12 +512,12 @@ mod test {
         fn boolean(&mut self, b: bool) {
             self.value = Some(ScriptValue::Bool(b));
         }
-        fn native(
+        unsafe fn native(
             &mut self,
             vtable: &'static NativeVTable,
             write: &mut dyn FnMut(*mut u8),
         ) -> bool {
-            // Safety: `write` comes from the caller, which writes a value of the vtable's type
+            // Safety: `write` writes a value of the vtable's type, see the method's contract
             self.native = unsafe { NativeBox::new(vtable, write) }.ok();
             self.native.is_some()
         }
@@ -834,9 +840,21 @@ mod test {
             // a function without a typed entry can't change a copy in place, the change would be lost
             let set = (|mut v: crate::M<Labelled>| v.value = 1.0).into_dynamic_script_function();
             assert!(
-                set.call(vec![copy], FunctionCallContext::new(Language::Lua))
+                set.call(vec![copy.clone()], FunctionCallContext::new(Language::Lua))
                     .is_err(),
                 "changing a copy errors"
+            );
+            // nor through the reference itself, i.e. by the generic `set`
+            let ScriptValue::Reference(copy) = copy else {
+                panic!("a copy is a reference")
+            };
+            assert!(
+                copy.with_reflect_mut(world.clone(), |_| ()).is_err(),
+                "write access to a copy is refused"
+            );
+            assert!(
+                copy.with_reflect(world.clone(), |_| ()).is_ok(),
+                "reads work"
             );
             assert_eq!(value_in::<Labelled>(&made).value, 5.0);
         });
