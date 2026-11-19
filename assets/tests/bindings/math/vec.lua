@@ -81,6 +81,7 @@ t.translation = Vec3.new(7, 8, 9)
 assert(t.translation.x == 7, "assigned to a field")
 assert(tostring(w) == "Vec3 { x: 1.0, y: 5.0, z: 3.0 }", "display")
 assert(getmetatable(w) == false, "the metatable of native values is hidden")
+---@diagnostic disable-next-line: param-type-mismatch
 local function fail() w:dot("a") end
 local _, outside = pcall(fail)
 local _, inside = coroutine.resume(coroutine.create(fail))
