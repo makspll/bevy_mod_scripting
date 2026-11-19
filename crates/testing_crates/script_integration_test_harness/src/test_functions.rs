@@ -184,10 +184,12 @@ pub fn register_test_functions(world: &mut App) {
         .register("make_vec_i64", |vec: Vec<i64>| vec)
         .register("make_vec_string", |vec: Vec<String>| vec)
         .register("make_vec_entity", |vec: Vec<V<Entity>>| vec)
-        .register("noop", || {})
+        .register("noop", bevy_mod_scripting_bindings::Native(|| {}))
         .register(
             "noop_4_args",
-            |_a: ScriptValue, _b: ScriptValue, _c: ScriptValue, _d: ScriptValue| {},
+            bevy_mod_scripting_bindings::Native(
+                |_a: ScriptValue, _b: ScriptValue, _c: ScriptValue, _d: ScriptValue| {},
+            ),
         )
         .register("into_script_function", |f: DynamicScriptFunction| f)
         .register(

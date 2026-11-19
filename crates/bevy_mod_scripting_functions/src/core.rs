@@ -86,6 +86,7 @@ pub fn register_bevy_bindings(app: &mut App) {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "world_functions",
+    native,
     unregistered
 )]
 impl World {
@@ -1439,6 +1440,7 @@ impl ScriptEventRegistration {
     remote,
     bms_bindings_path = "bevy_mod_scripting_bindings",
     name = "script_query_builder_functions",
+    native,
     core,
     namespace = "bms"
 )]
