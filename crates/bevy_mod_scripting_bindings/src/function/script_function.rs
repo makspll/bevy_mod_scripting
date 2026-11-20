@@ -682,6 +682,12 @@ impl ScriptFunctionRegistry {
             .map(|(key, function)| (key.name.clone(), function.clone()))
             .collect();
         self.native_types.insert(type_id, Arc::new(native));
+        Self::native_types_changed();
+    }
+
+    /// Makes caches of native types look them up again, see [`crate::native::NativeReturnType`].
+    fn native_types_changed() {
+        crate::native::NATIVE_TYPES_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
     }
 
     /// The native type of `type_id`, if it is one, see [`crate::native`].
@@ -702,6 +708,7 @@ impl ScriptFunctionRegistry {
                 Some(function) => methods.insert(Cow::Owned(name.to_owned()), function.clone()),
                 None => methods.remove(name),
             };
+            Self::native_types_changed();
         }
     }
 
