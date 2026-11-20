@@ -588,7 +588,7 @@ enum Xtasks {
     /// Renames benchmarks on bencher.dev as listed in `benches/bencher_renames.txt`, so their history follows them.
     ///
     /// Only renames which are still needed are done: the old name exists and the new one doesn't yet, or has
-    /// no results on main (PR runs publish it before the rename), in which case it is deleted first.
+    /// no results on main (PR runs publish it before the rename), in which case it is archived under another name first.
     /// Runs on main before publishing, see `cargo xtask bencher --publish`.
     BencherMigrate {
         /// Only print what would be renamed
@@ -1445,7 +1445,7 @@ impl Xtasks {
                 (Some(uuid), Some(new)) => {
                     match Self::bencher_has_main_results(&new, &token)? {
                         Some(false) => {}
-                        // deleted by another job (each OS publishes on main), which renames too
+                        // gone, i.e. archived by another job (each OS publishes on main), which renames too
                         None if Self::bencher_benchmark_uuid(to, &token)?.as_deref()
                             != Some(new.as_str()) =>
                         {
@@ -1456,22 +1456,26 @@ impl Xtasks {
                             "Both `{from}` and `{to}` have results on main, their histories can't be merged: archive or delete one of them on bencher.dev, or fix the rename in benches/bencher_renames.txt"
                         ),
                     }
+                    // its PR results keep it from being deleted: it's archived under another name, freeing the name
+                    let aside = format!("{to} (PR runs {})", &new[..8.min(new.len())]);
                     if dry_run {
-                        log::info!("Would delete `{to}` (no results on main)");
+                        log::info!("Would archive `{to}` as `{aside}` (no results on main)");
                     } else {
-                        log::info!("Deleting `{to}`, it has no results on main");
+                        log::info!("Archiving `{to}` as `{aside}`, it has no results on main");
                         let output = Command::new("bencher")
                             .stdout(std::process::Stdio::inherit())
                             .stderr(std::process::Stdio::inherit())
-                            .args(["benchmark", "delete", "bms", &new])
+                            .args(["benchmark", "update", "bms", &new])
+                            .args(["--name", &aside])
+                            .arg("--archive")
                             .args(["--token", &token])
                             .output()
-                            .with_context(|| "Could not delete benchmark")?;
+                            .with_context(|| "Could not archive benchmark")?;
                         if !output.status.success()
                             && Self::bencher_benchmark_uuid(to, &token)?.as_deref()
                                 == Some(new.as_str())
                         {
-                            bail!("Failed to delete `{to}`: {output:?}");
+                            bail!("Failed to archive `{to}`: {output:?}");
                         }
                     }
                     uuid
