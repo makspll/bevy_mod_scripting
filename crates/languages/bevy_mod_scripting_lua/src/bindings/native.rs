@@ -941,6 +941,16 @@ unsafe fn build_native_metatable(
                 }
             }
             ffi::lua_pushcclosure(l, native_operator, 3);
+            // comparisons are shared by every metatable, which call the type's own, see `push_comparison`
+            let name = match operator {
+                ScriptOperatorNames::Equality => OWN_EQ,
+                ScriptOperatorNames::LessThanComparison => OWN_LT,
+                _ => name,
+            };
+            ffi::lua_setfield(l, -2, name.as_ptr());
+        }
+        for (name, op) in [(c"__eq", EQ), (c"__lt", LT), (c"__le", LE)] {
+            push_comparison(l, op);
             ffi::lua_setfield(l, -2, name.as_ptr());
         }
         ffi::lua_pushstring(l, c"BMS native value".as_ptr());
@@ -1203,6 +1213,76 @@ unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>
     }
 }
 
+/// Its addresses key the comparison functions in the registry, see [`push_comparison`].
+static COMPARISON_KEYS: [u8; 3] = [0; 3];
+/// `==`, see [`push_comparison`]
+pub(crate) const EQ: usize = 0;
+/// `<`
+pub(crate) const LT: usize = 1;
+/// `<=`
+pub(crate) const LE: usize = 2;
+/// Where a native type's own comparisons are in its metatable, `__eq` and `__lt` are the shared ones.
+const OWN_EQ: &std::ffi::CStr = c"bms_eq";
+const OWN_LT: &std::ffi::CStr = c"bms_lt";
+
+/// Pushes the comparison `op` (`EQ`, `LT`, `LE`): one function per Lua state, the `__eq`, `__lt` and `__le` of every native
+/// metatable and of references. Lua 5.1, 5.2, LuaJIT and Luau only call them when both operands have the same one, i.e.
+/// a component's handle and a value of its type, which have different metatables.
+/// Raises: protected mode only.
+pub(crate) unsafe fn push_comparison(l: *mut ffi::lua_State, op: usize) {
+    unsafe {
+        let key = key(&COMPARISON_KEYS[op.min(LE)]);
+        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key) == ffi::LUA_TFUNCTION {
+            return;
+        }
+        ffi::lua_pop(l, 1);
+        let function: ffi::lua_CFunction = match op {
+            EQ => comparison::<EQ>,
+            LT => comparison::<LT>,
+            _ => comparison::<LE>,
+        };
+        ffi::lua_pushcfunction(l, function);
+        ffi::lua_pushvalue(l, -1);
+        raw_set_p(l, ffi::LUA_REGISTRYINDEX, key);
+    }
+}
+
+/// Compares with the native operand's own comparison (the first operand's, as Lua 5.4 would), or as references when neither
+/// operand is native. `a <= b` is `not (b < a)`.
+unsafe extern "C-unwind" fn comparison<const OP: usize>(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 2);
+        if OP == LE {
+            ffi::lua_insert(l, 1);
+        }
+        match [1, 2].into_iter().find(|i| native_base(l, *i).is_some()) {
+            Some(native) => {
+                // its metatable has the type's comparisons
+                ffi::lua_getmetatable(l, native);
+                ffi::lua_pushstring(l, if OP == EQ { OWN_EQ } else { OWN_LT }.as_ptr());
+                ffi::lua_rawget(l, -2);
+                ffi::lua_remove(l, -2);
+                ffi::lua_pushvalue(l, 1);
+                ffi::lua_pushvalue(l, 2);
+                ffi::lua_call(l, 2, 1);
+            }
+            None if OP == EQ => {
+                reference_operator::<{ ScriptOperatorNames::Equality as ffi::lua_Integer }>(l);
+            }
+            None => {
+                reference_operator::<{ ScriptOperatorNames::LessThanComparison as ffi::lua_Integer }>(
+                    l,
+                );
+            }
+        }
+        if OP == LE {
+            let less = ffi::lua_toboolean(l, -1);
+            ffi::lua_pushboolean(l, (less == 0) as c_int);
+        }
+        1
+    }
+}
+
 /// The metamethods of native values and their operators.
 const OPERATORS: [(&std::ffi::CStr, ScriptOperatorNames); 11] = [
     (c"__add", ScriptOperatorNames::Addition),
@@ -1270,6 +1350,78 @@ mod test {
             assert_eq!(payload.downcast_ref::<&str>(), Some(&"boom"));
             let caught: bool = lua.load("return pcall(f)").eval().unwrap();
             assert!(!caught, "pcall catches it");
+        });
+    }
+
+    #[derive(bevy_reflect::Reflect, Clone, Default)]
+    struct P {
+        x: f32,
+    }
+
+    /// Comparisons across metatables (native values, references, both), which Lua 5.1, 5.2, LuaJIT and Luau only call when
+    /// both operands share the metamethod, and a typed function holding a native argument calling back into Lua from a
+    /// coroutine.
+    #[test]
+    fn comparisons_and_callbacks() {
+        use bevy_mod_scripting_bindings::{
+            FunctionCallContext, R, ReflectReference, V, function::namespace::NamespaceBuilder,
+        };
+        let mut world = World::default();
+        world
+            .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
+            .write()
+            .register::<P>();
+        bevy_mod_scripting_bindings::script_native!(&mut world, P { x: f32 });
+        NamespaceBuilder::<P>::new(&mut world)
+            .register("eq", |a: R<P>, b: R<P>| a.x == b.x)
+            .register("lt", |a: R<P>, b: R<P>| a.x < b.x);
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
+            let lua = Lua::new();
+            let globals = [
+                (
+                    "value",
+                    (|x: f32| V(P { x })).into_dynamic_script_function(),
+                ),
+                (
+                    "reference",
+                    (|x: f32| ReflectReference::new_allocated(P { x }))
+                        .into_dynamic_script_function(),
+                ),
+                (
+                    "call_back",
+                    (|ctx: FunctionCallContext,
+                      v: R<P>,
+                      f: DynamicScriptFunction|
+                     -> Result<f32, InteropError> {
+                        f.call([], ctx)?;
+                        Ok(v.x)
+                    })
+                    .into_dynamic_script_function(),
+                ),
+            ];
+            for (name, function) in globals {
+                let function = native_function(&lua, function).unwrap();
+                lua.globals().set(name, function).unwrap();
+            }
+            lua.load(
+                r#"
+                local a, b, r = value(1), value(2), reference(1)
+                assert(a == value(1) and a ~= b and a < b and a <= value(1) and not (b <= a), "values")
+                assert(a == r and r == a and r <= b and a <= r and not (b < r), "a value and a reference")
+                assert(r == reference(1) and r < reference(2), "references")
+                local x = coroutine.wrap(function()
+                    return call_back(a, function() return a.x + b.x end)
+                end)()
+                assert(x == 1, "a callback into Lua from a coroutine, the argument still borrowed")
+                "#,
+            )
+            .exec()
+            .unwrap();
+            // closing a LuaJIT state holding mlua userdata (the reference) crashes in LuaJIT's GC in some build modes, a
+            // known runtime issue unrelated to native values: https://github.com/mlua-rs/mlua/issues/757
+            #[cfg(feature = "luajit")]
+            std::mem::forget(lua);
         });
     }
 }

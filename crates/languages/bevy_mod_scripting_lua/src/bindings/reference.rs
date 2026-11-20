@@ -56,8 +56,6 @@ impl UserData for LuaReflectReference {
             (MetaMethod::Div, ScriptOperatorNames::Division),
             (MetaMethod::Mod, ScriptOperatorNames::Remainder),
             (MetaMethod::Pow, ScriptOperatorNames::Exponentiation),
-            (MetaMethod::Eq, ScriptOperatorNames::Equality),
-            (MetaMethod::Lt, ScriptOperatorNames::LessThanComparison),
             (MetaMethod::Unm, ScriptOperatorNames::Negation),
             (MetaMethod::Len, ScriptOperatorNames::Length),
         ] {
@@ -65,6 +63,19 @@ impl UserData for LuaReflectReference {
             // Safety: the function follows the Lua C API, see `reference_operator`
             f.add_meta_field_with(metamethod, move |lua| unsafe {
                 lua.create_c_function(function)
+            });
+        }
+        // comparisons are the functions native values share, which also compare references
+        for (metamethod, op) in [
+            (MetaMethod::Eq, super::native::EQ),
+            (MetaMethod::Lt, super::native::LT),
+            (MetaMethod::Le, super::native::LE),
+        ] {
+            // Safety: pushes the function, raising only in the protected mode `exec_raw` runs it in
+            f.add_meta_field_with(metamethod, move |lua| unsafe {
+                lua.exec_raw::<mlua::Function>((), |state| {
+                    super::native::push_comparison(state, op)
+                })
             });
         }
     }

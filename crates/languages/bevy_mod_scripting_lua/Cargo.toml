@@ -18,7 +18,8 @@ features = ["lua54"]
 enable-features = ["lua54"]
 
 [features]
-# enables loading possibly unsafe lua modules by lua scripts
+# enables loading possibly unsafe lua modules by lua scripts. With `debug` (`debug.setmetatable`, `debug.setupvalue`) a
+# script can make one native value pass for another: memory unsafe, only for trusted scripts
 unsafe_lua_modules = []
 
 lua51 = ["mlua/lua51"]
@@ -51,6 +52,9 @@ bevy_mod_scripting_script = { workspace = true }
 bevy_mod_scripting_world = { workspace = true }
 mlua = { workspace = true, features = ["vendored", "send", "macros"] }
 profiling = { workspace = true }
+
+[dev-dependencies]
+bevy_reflect = { workspace = true, default-features = false, features = [] }
 
 [lints]
 workspace = true
