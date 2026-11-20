@@ -890,20 +890,30 @@ impl NativeReturnType {
     pub fn get(&self, world: &WorldGuard, type_id: TypeId) -> Option<std::sync::Arc<NativeType>> {
         use crate::WorldExtensions;
         let generation = NATIVE_TYPES_GENERATION.load(std::sync::atomic::Ordering::Acquire);
-        if let Some(cached) = self.0.read().iter().find(|c| c.type_id == type_id)
-            && cached.generation == generation
-        {
-            // not native, the common case: no lookup
-            let native = cached.native.as_ref()?;
-            if let Some(native) = native.upgrade() {
-                return Some(native);
+        // whether there's room for the type, if it needs looking up
+        let cacheable = {
+            let cache = self.0.read();
+            match cache.iter().find(|c| c.type_id == type_id) {
+                Some(cached) if cached.generation == generation => {
+                    // not native, the common case: no lookup
+                    let native = cached.native.as_ref()?;
+                    if let Some(native) = native.upgrade() {
+                        return Some(native);
+                    }
+                    true
+                }
+                Some(_) => true,
+                None => cache.len() < Self::CAPACITY,
             }
-        }
+        };
         let native = world
             .script_function_registry()
             .read()
             .native_type(type_id)
             .cloned();
+        if !cacheable {
+            return native;
+        }
         let mut cache = self.0.write();
         let entry = CachedNativeType {
             type_id,
