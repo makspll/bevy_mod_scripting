@@ -14,6 +14,25 @@
 //!
 //! Finalizers leave tombstones: a collected function holder is marked dead and a collected native value loses its metatable,
 //! so a script finalizer running afterwards gets an error instead of a freed value.
+//!
+//! # Reading the stack code
+//!
+//! - **Bottom and top**: the bottom of a C function's stack is its first argument, index `1`. The top is the last value
+//!   pushed. Diagrams list the stack bottom → top, left to right, `..` being values below which the code doesn't touch:
+//!   ```text
+//!   [v, key, mt]   v at 1 (the bottom), mt at 3 = -1 (the top)
+//!   ```
+//! - **Absolute indices** are positive, counted up from the bottom: they keep pointing at the same value when values are
+//!   pushed or popped above it. **Relative indices** are negative, counted down from the top (`-1` = the top, `-2` = just
+//!   below it): they move with every push and pop. Helpers taking an index and pushing before using it turn it absolute
+//!   first (`lua_absindex`).
+//! - **Pseudo-indices** aren't on the stack: `LUA_REGISTRYINDEX` (the registry table) and `lua_upvalueindex(n)` (upvalue
+//!   `n` of the running C closure).
+//! - **Effects** are written like the Lua manual's: `[-o, +p, x]` pops `o` values, pushes `p`, and `x` is `-` (never
+//!   raises), `m` (raises on memory errors only) or `e` (raises any error). Every function which can raise must be called
+//!   where raising skips no Rust destructor, see above.
+//! - **Room**: a C function starts with `LUA_MINSTACK` (20) free slots. Code which may push more, or runs on a stack it
+//!   didn't get called on, calls `lua_checkstack` first.
 #![allow(unsafe_code)]
 
 use std::{
@@ -46,7 +65,12 @@ fn key(p: &'static u8) -> *mut c_void {
     p as *const u8 as *mut c_void
 }
 
-/// `t[p]` where `t` is at `idx`, pushed. Raw gets don't raise.
+/// Pushes `t[p]`, `t` being the table at `idx` (any index, pseudo-indices included), and returns its type.
+/// `[-0, +1, -]`: raw gets don't raise.
+///
+/// ```text
+/// [.., t, ..]  ->  [.., t, .., t[p]]
+/// ```
 unsafe fn raw_get_p(l: *mut ffi::lua_State, idx: c_int, p: *mut c_void) -> c_int {
     unsafe {
         let idx = ffi::lua_absindex(l, idx);
@@ -55,13 +79,18 @@ unsafe fn raw_get_p(l: *mut ffi::lua_State, idx: c_int, p: *mut c_void) -> c_int
     }
 }
 
-/// `t[p] = v` where `t` is at `idx` and `v` on top, popped. Can raise: protected mode only.
+/// `t[p] = v`, `t` being the table at `idx` and `v` the top, which is popped. `[-1, +0, m]`: protected mode only.
+///
+/// ```text
+/// [.., t, .., v]  ->  [.., t, ..]
+/// ```
 unsafe fn raw_set_p(l: *mut ffi::lua_State, idx: c_int, p: *mut c_void) {
     unsafe {
+        // absolute: the push below would shift a relative index
         let idx = ffi::lua_absindex(l, idx);
-        ffi::lua_pushlightuserdata(l, p);
-        ffi::lua_insert(l, -2);
-        ffi::lua_rawset(l, idx);
+        ffi::lua_pushlightuserdata(l, p); // [.., t, .., v, p]
+        ffi::lua_insert(l, -2); // [.., t, .., p, v]
+        ffi::lua_rawset(l, idx); // [.., t, ..]
     }
 }
 
@@ -78,22 +107,30 @@ fn align_up(block: *mut u8) -> *mut u8 {
 ///
 /// The marker's key is a light userdata, which Lua code can't make, and scripts can't reach the metatables of native values
 /// (`__metatable` is `false`) to copy it, so only BMS' metatables hold it. (The `debug` library reaches everything anyway.)
+///
+/// `[-0, +0, -]`, but needs 2 free slots, see `lua_checkstack` at callers which aren't plain C function entries.
 pub(crate) unsafe fn native_base(l: *mut ffi::lua_State, idx: c_int) -> Option<*mut u8> {
     unsafe {
         if ffi::lua_type(l, idx) != ffi::LUA_TUSERDATA {
             return None;
         }
         let block = ffi::lua_touserdata(l, idx) as *mut u8;
+        // [.., v, ..] -> [.., v, .., mt], nothing pushed without a metatable
         if block.is_null() || ffi::lua_getmetatable(l, idx) == 0 {
             return None;
         }
+        // [.., v, .., mt, mt[marker]]
         let native = raw_get_p(l, -1, key(&NATIVE_MARKER)) != ffi::LUA_TNIL;
+        // [.., v, ..]
         ffi::lua_pop(l, 2);
         native.then(|| align_up(block))
     }
 }
 
 /// Runs `f` with mlua's view of the state and the stack it works on, which may be another thread than `l`'s.
+///
+/// mlua's stack (`raw.state()`) is NOT `l`'s when `l` is a coroutine: indices of `l` must not be used on it, values are
+/// moved between the two with `lua_xmove`, see [`at_index`] and [`push_with_mlua`].
 unsafe fn with_raw<R>(l: *mut ffi::lua_State, f: impl FnOnce(&Lua, &RawLua) -> R) -> R {
     // Safety: every state BMS calls into is made by mlua, which outlives the call
     let lua = unsafe { Lua::get_or_init_from_ptr(l) };
@@ -121,13 +158,20 @@ unsafe fn value_at(
         .map_err(IntoInteropError::to_bms_error)
 }
 
-/// The value at `idx` of `l` converted by mlua, which works on the stack of `raw`'s state.
+/// The value at `idx` of `l` converted by mlua, which works on the stack of `raw`'s state. `[-0, +0, m]` on `l`.
+///
+/// When mlua's stack isn't `l`'s, the value is copied over for the conversion:
+/// ```text
+/// l:     [.., v, ..]  -> pushvalue -> [.., v, .., v]  -> xmove -> [.., v, ..]
+/// state: [..]                                         -> xmove -> [.., v]  -> converted, popped -> [..]
+/// ```
 unsafe fn at_index<T: FromLua>(
     raw: &RawLua,
     l: *mut ffi::lua_State,
     idx: c_int,
 ) -> mlua::Result<T> {
     unsafe {
+        // absolute: `l`'s top changes below
         let idx = ffi::lua_absindex(l, idx);
         let state = raw.state();
         if state == l {
@@ -137,6 +181,7 @@ unsafe fn at_index<T: FromLua>(
         } else {
             ffi::lua_pushvalue(l, idx);
             ffi::lua_xmove(l, state, 1);
+            // the top of mlua's stack
             let value = T::from_stack(-1, raw);
             ffi::lua_pop(state, 1);
             value
@@ -144,7 +189,12 @@ unsafe fn at_index<T: FromLua>(
     }
 }
 
-/// Pushes values made by mlua onto `l`, returns how many.
+/// Pushes the `n` values `push` pushes on mlua's stack onto `l`, returns `n`. `[-0, +n, m]` on `l`.
+///
+/// ```text
+/// state: [..] -> push -> [.., r1 .. rn]  -> xmove (if another stack) -> [..]
+/// l:     [..]                            -> xmove (if another stack) -> [.., r1 .. rn]
+/// ```
 unsafe fn push_with_mlua(
     l: *mut ffi::lua_State,
     push: impl FnOnce(&Lua, &RawLua) -> mlua::Result<c_int>,
@@ -161,9 +211,16 @@ unsafe fn push_with_mlua(
     }
 }
 
-/// The arguments of a typed call: the stack of the C function from `first`.
+/// The arguments of a typed call: `len` values of the C function's stack from the absolute index `first` up.
+///
+/// ```text
+/// [.., arg 0 (first), arg 1 (first + 1), .., arg len-1 (first + len - 1)]
+/// ```
+/// Argument `i` (0-based, as [`ArgSource`] counts) is at absolute index `first + i`, see [`LuaArgs::idx`]. Nothing is pushed
+/// or popped below them during the call, so the indices stay valid.
 pub(crate) struct LuaArgs<'a> {
     l: *mut ffi::lua_State,
+    /// absolute index of argument 0
     first: c_int,
     len: usize,
     /// mlua, locked once for the call when an argument goes the slow way (else locked if one does anyway)
@@ -173,6 +230,7 @@ pub(crate) struct LuaArgs<'a> {
 }
 
 impl LuaArgs<'_> {
+    /// The absolute stack index of argument `i` (0-based).
     fn idx(&self, i: usize) -> c_int {
         self.first + i as c_int
     }
@@ -311,6 +369,9 @@ impl LuaReturn {
     }
 
     /// Makes what pushing the result needs (mlua values, the native metatable), while Rust values may still be around.
+    ///
+    /// `[-0, +(0|1), -]`: a native result leaves its metatable on the top for [`push_ready`] (`[..] -> [.., mt]`), others
+    /// push nothing. Raising is avoided: the metatable is made in protected mode.
     unsafe fn prepare(self, l: *mut ffi::lua_State) -> Result<Ready, InteropError> {
         // Safety: `l` is the state of the call
         unsafe {
@@ -437,6 +498,12 @@ enum Ready {
 }
 
 /// Pushes a result, after every other Rust value of the call is gone: allocating the userdata of a native value can raise.
+///
+/// `[-0, +n, m]`, returns `n`, the number of results. A native result expects its metatable on the top (see
+/// [`LuaReturn::prepare`]), which it takes:
+/// ```text
+/// [.., mt] -> new_userdata -> [.., mt, v] -> insert(-2) -> [.., v, mt] -> setmetatable(-2) -> [.., v]
+/// ```
 unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'static str> {
     unsafe {
         match ready {
@@ -473,8 +540,9 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
                     std::ptr::copy_nonoverlapping(source, slot, size)
                 });
                 native.free();
-                // the metatable `LuaReturn::prepare` left below the value
+                // the metatable `LuaReturn::prepare` left below the value: [.., mt, v] -> [.., v, mt]
                 ffi::lua_insert(l, -2);
+                // pops mt into v's metatable: [.., v]
                 ffi::lua_setmetatable(l, -2);
                 Ok(1)
             }
@@ -520,7 +588,7 @@ enum Dtor {
     Holder,
 }
 
-/// A userdata of `size` bytes, pushed. Can raise.
+/// Pushes a new userdata of `size` bytes and returns its block. `[-0, +1, m]`.
 unsafe fn new_userdata(l: *mut ffi::lua_State, size: usize, dtor: Option<Dtor>) -> *mut u8 {
     #[cfg(feature = "luau")]
     unsafe {
@@ -551,12 +619,15 @@ unsafe extern "C" fn luau_holder_dtor(_l: *mut ffi::lua_State, block: *mut c_voi
 }
 
 /// `__gc` of native values: drops the value and takes its metatable, so it's no native value anymore.
+///
+/// Called with the collected value as the only argument: `[v]`.
 #[cfg(not(feature = "luau"))]
 unsafe extern "C-unwind" fn native_gc(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         if let Some(base) = native_base(l, 1) {
             // a panicking drop must not unwind through the collector
             let _ = catch_unwind(|| NativeStorage::drop_value(base));
+            // [v, nil] -> setmetatable pops nil -> [v], without a metatable
             ffi::lua_pushnil(l);
             ffi::lua_setmetatable(l, 1);
         }
@@ -565,14 +636,19 @@ unsafe extern "C-unwind" fn native_gc(l: *mut ffi::lua_State) -> c_int {
 }
 
 /// `__gc` of function holders: drops the function and marks the holder dead.
+///
+/// Called with the collected holder as the only argument: `[h]`.
 #[cfg(not(feature = "luau"))]
 unsafe extern "C-unwind" fn holder_gc(l: *mut ffi::lua_State) -> c_int {
     unsafe {
+        // [h] -> [h, mt]
         if ffi::lua_type(l, 1) != ffi::LUA_TUSERDATA || ffi::lua_getmetatable(l, 1) == 0 {
             return 0;
         }
+        // [h, mt, holder_mt]: only BMS' holders have the registry's holder metatable
         raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&HOLDER_METATABLE));
         let holder = ffi::lua_rawequal(l, -1, -2) != 0;
+        // [h]
         ffi::lua_pop(l, 2);
         if holder {
             drop_holder(align_up(ffi::lua_touserdata(l, 1) as *mut u8));
@@ -615,18 +691,21 @@ unsafe fn drop_holder(base: *mut u8) {
     }
 }
 
-/// Pushes a holder of a clone of the function. Can raise: protected mode only.
+/// Pushes a holder of a clone of the function. `[-0, +1, m]`: protected mode only.
 ///
 /// Callers keep their Rust values outside of protected mode: a raise skips the destructors of this frame and its callers'.
 unsafe fn push_holder(l: *mut ffi::lua_State, function: &DynamicScriptFunction) {
     unsafe {
+        // [.., h]
         let block = new_userdata(l, size_of::<Holder>() + ALIGN - 1, Some(Dtor::Holder));
         // cloned once the userdata exists, nothing to drop if making it raises
         (align_up(block) as *mut Holder).write(Holder {
             state: HOLDER_ALIVE,
             function: ManuallyDrop::new(function.clone()),
         });
+        // [.., h, holder_mt | nil]
         if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&HOLDER_METATABLE)) == ffi::LUA_TNIL {
+            // first holder of this state: [.., h] -> [.., h, holder_mt]
             ffi::lua_pop(l, 1);
             ffi::lua_createtable(l, 0, 2);
             #[cfg(not(feature = "luau"))]
@@ -636,14 +715,17 @@ unsafe fn push_holder(l: *mut ffi::lua_State, function: &DynamicScriptFunction) 
             }
             ffi::lua_pushboolean(l, 0);
             ffi::lua_setfield(l, -2, c"__metatable".as_ptr());
+            // [.., h, holder_mt, holder_mt] -> the copy goes to the registry -> [.., h, holder_mt]
             ffi::lua_pushvalue(l, -1);
             raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&HOLDER_METATABLE));
         }
+        // pops holder_mt into h's metatable: [.., h]
         ffi::lua_setmetatable(l, -2);
     }
 }
 
-/// A Lua function calling the typed entry of `function`, see the [module docs](self).
+/// A Lua function calling the typed entry of `function`, see the [module docs](self): a C closure of [`native_entry`] whose
+/// upvalue 1 is the holder of `function`.
 pub(crate) fn native_function(
     lua: &Lua,
     function: DynamicScriptFunction,
@@ -651,25 +733,33 @@ pub(crate) fn native_function(
     // Safety: protected mode, the stack guard of `exec_raw` keeps the stack balanced, `function` is dropped outside of it
     unsafe {
         lua.exec_raw((), |l| {
+            // [h]
             push_holder(l, &function);
+            // pops h into upvalue 1: [f]
             ffi::lua_pushcclosure(l, native_entry, 1);
         })
     }
 }
 
-/// Calls the function held by the upvalue with the stack as arguments.
+/// Calls the function held by upvalue 1 with the whole stack as arguments: `[a1 (1), .., an (n = top)]`.
 unsafe extern "C-unwind" fn native_entry(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         let Some(function) = holder_function(ffi::lua_touserdata(l, ffi::lua_upvalueindex(1)))
         else {
             raise_str(l, c"the function was collected")
         };
+        // the index of the top is the number of values
         let len = ffi::lua_gettop(l) as usize;
         call_holder(l, function, 1, len)
     }
 }
 
-/// Calls `function` with the `len` values from `first` as arguments, pushes its results and returns how many, raises its errors.
+/// Calls `function` with the `len` values from the absolute index `first` up as arguments, pushes its results and returns
+/// how many, raises its errors. `[-0, +n, e]`, for C functions to return directly: Lua takes the top `n` values as results.
+///
+/// ```text
+/// [.., a1 (first), .., alen]  ->  [.., a1, .., alen, r1 .. rn]
+/// ```
 unsafe fn call_holder(
     l: *mut ffi::lua_State,
     function: &DynamicScriptFunction,
@@ -680,7 +770,7 @@ unsafe fn call_holder(
     unsafe { run(l, || call(l, function, first, len)) }
 }
 
-/// Runs `f`, then pushes its result or raises its error, once nothing of it is left to drop.
+/// Runs `f`, then pushes its result or raises its error, once nothing of it is left to drop. `[-0, +n, e]`, returns `n`.
 unsafe fn run(l: *mut ffi::lua_State, f: impl FnOnce() -> Result<Ready, InteropError>) -> c_int {
     let ready = match catch_unwind(AssertUnwindSafe(f)) {
         Ok(Ok(ready)) => ready,
@@ -698,7 +788,7 @@ unsafe fn run(l: *mut ffi::lua_State, f: impl FnOnce() -> Result<Ready, InteropE
 }
 
 /// Raises a panic the way mlua does for its callbacks: by panicking in one, so it's resumed once it reaches Rust (a
-/// script's `pcall` catches it, as it does mlua's).
+/// script's `pcall` catches it, as it does mlua's). `[-0, +1, e]`, never returns: `[..] -> [.., callback]`, called.
 unsafe fn resume_panic(l: *mut ffi::lua_State, payload: Box<dyn std::any::Any + Send>) -> ! {
     unsafe {
         if ffi::lua_checkstack(l, 1) == 0 {
@@ -725,6 +815,10 @@ unsafe fn resume_panic(l: *mut ffi::lua_State, payload: Box<dyn std::any::Any + 
     }
 }
 
+/// Calls `function` with the `len` values from the absolute index `first` up as arguments (see [`LuaArgs`]).
+///
+/// `[-0, +(0|1), -]`: returns the result to push; a native result's metatable is left on the top, see
+/// [`LuaReturn::prepare`]. The arguments stay where they are.
 unsafe fn call(
     l: *mut ffi::lua_State,
     function: &DynamicScriptFunction,
@@ -781,6 +875,7 @@ unsafe fn call(
     }
 }
 
+/// Raises `error` as a Lua error. `[-0, +1, e]`, never returns: `[..] -> [.., error]`, raised.
 unsafe fn raise(l: *mut ffi::lua_State, mut error: InteropError) -> ! {
     unsafe {
         let line = caller_line(l);
@@ -797,6 +892,7 @@ unsafe fn raise(l: *mut ffi::lua_State, mut error: InteropError) -> ! {
     }
 }
 
+/// Raises `message` as a Lua error. `[-0, +1, e]`, never returns: `[..] -> [.., message]`, raised.
 unsafe fn raise_str(l: *mut ffi::lua_State, message: &'static std::ffi::CStr) -> ! {
     unsafe {
         ffi::lua_pushstring(l, message.as_ptr());
@@ -820,15 +916,20 @@ unsafe fn caller_line(l: *mut ffi::lua_State) -> Option<u32> {
 // ---------------------------------------------------------------- native values
 
 /// Pushes the metatable of native values of `vtable`'s type, made in protected mode if this Lua state has none yet.
+///
+/// `[-0, +1, -]` on success (`[..] -> [.., mt]`), `[-0, +0, -]` on error. Metatables live in the registry, keyed by the
+/// vtable's address.
 unsafe fn push_native_metatable(
     l: *mut ffi::lua_State,
     vtable: &'static NativeVTable,
 ) -> Result<(), InteropError> {
     let vtable_key = vtable as *const NativeVTable as *mut c_void;
     unsafe {
+        // [.., mt | nil]
         if raw_get_p(l, ffi::LUA_REGISTRYINDEX, vtable_key) != ffi::LUA_TNIL {
             return Ok(());
         }
+        // [..]
         ffi::lua_pop(l, 1);
     }
     let needs_drop = vtable.drop.is_some();
@@ -860,6 +961,7 @@ unsafe fn push_native_metatable(
         })
     }
     .map_err(IntoInteropError::to_bms_error)?;
+    // [.., mt]
     // Safety: a raw get, made above
     unsafe { raw_get_p(l, ffi::LUA_REGISTRYINDEX, vtable_key) };
     Ok(())
@@ -871,7 +973,10 @@ type Fields = Vec<(
     Option<DynamicScriptFunction>,
 )>;
 
-/// Makes the metatable of a native type and keeps it in the registry. Raises: protected mode only, so it owns no Rust value.
+/// Makes the metatable of a native type and keeps it in the registry (`registry[vtable_key] = mt`).
+/// `[-0, +0, m]`: protected mode only, so it owns no Rust value.
+///
+/// Every step below leaves the stack as `[.., mt]`, `mt` on the top, so `-2` is `mt` after pushing a value to set in it.
 unsafe fn build_native_metatable(
     l: *mut ffi::lua_State,
     vtable_key: *mut c_void,
@@ -880,6 +985,7 @@ unsafe fn build_native_metatable(
     methods: &[(Cow<'static, str>, DynamicScriptFunction)],
 ) {
     unsafe {
+        // [.., mt]
         ffi::lua_createtable(l, 0, 16);
         // Luau drops through the userdata's destructor instead
         #[cfg(feature = "luau")]
@@ -907,20 +1013,25 @@ unsafe fn build_native_metatable(
         });
 
         // __index: getters, then methods, then the slow path
+        // [.., mt, getters], each `getters[name] = holder`
         ffi::lua_createtable(l, 0, fields.len() as c_int);
         for (name, get, _) in fields {
             push_holder(l, get);
             set_field(l, name);
         }
+        // [.., mt, getters, methods], each `methods[name] = function`
         ffi::lua_createtable(l, 0, methods.len() as c_int);
         for (name, function) in methods {
             push_function(l, function);
             set_field(l, name);
         }
+        // pops both into upvalues 1 and 2: [.., mt, __index]
         ffi::lua_pushcclosure(l, native_index, 2);
+        // [.., mt]
         ffi::lua_setfield(l, -2, c"__index".as_ptr());
 
         // __newindex: setters
+        // [.., mt, setters] -> pushcclosure -> [.., mt, __newindex] -> setfield -> [.., mt]
         ffi::lua_createtable(l, 0, fields.len() as c_int);
         for (name, _, set) in fields {
             if let Some(set) = set {
@@ -933,6 +1044,7 @@ unsafe fn build_native_metatable(
 
         // upvalues: the operator, its typed function and its typed reflected function, if any
         for (name, operator, forward, reflected) in operators {
+            // [.., mt, operator, forward | nil, reflected | nil]
             ffi::lua_pushinteger(l, operator as ffi::lua_Integer);
             for function in [forward, reflected] {
                 match function {
@@ -940,6 +1052,7 @@ unsafe fn build_native_metatable(
                     None => ffi::lua_pushnil(l),
                 }
             }
+            // pops the three into upvalues 1, 2, 3: [.., mt, metamethod] -> setfield -> [.., mt]
             ffi::lua_pushcclosure(l, native_operator, 3);
             // comparisons are shared by every metatable, which call the type's own, see `push_comparison`
             let name = match operator {
@@ -956,25 +1069,33 @@ unsafe fn build_native_metatable(
         ffi::lua_pushstring(l, c"BMS native value".as_ptr());
         ffi::lua_setfield(l, -2, c"__name".as_ptr());
 
-        // tells native values apart, see `native_base`
+        // tells native values apart, see `native_base`: [.., mt, true] -> [.., mt]
         ffi::lua_pushboolean(l, 1);
         raw_set_p(l, -2, key(&NATIVE_MARKER));
 
+        // pops mt into the registry: [..]
         raw_set_p(l, ffi::LUA_REGISTRYINDEX, vtable_key);
     }
 }
 
-/// `t[name] = v` where `t` is below `v` on top, popped. Raises: protected mode only.
+/// `t[name] = v`, `v` being the top and `t` just below it; `v` is popped. `[-1, +0, m]`: protected mode only.
+///
+/// ```text
+/// [.., t, v]  ->  [.., t]
+/// ```
 unsafe fn set_field(l: *mut ffi::lua_State, name: &str) {
     unsafe {
+        // [.., t, v, name]
         ffi::lua_pushlstring(l, name.as_ptr() as *const c_char, name.len());
+        // [.., t, name, v]
         ffi::lua_insert(l, -2);
+        // [.., t]
         ffi::lua_rawset(l, -3);
     }
 }
 
-/// Pushes a registered function as Lua sees it.
-/// Raises: protected mode only.
+/// Pushes a registered function as Lua sees it: a [`native_entry`] closure over its holder. `[-0, +1, m]`: protected mode
+/// only.
 unsafe fn push_function(l: *mut ffi::lua_State, function: &DynamicScriptFunction) {
     unsafe {
         push_holder(l, function);
@@ -998,24 +1119,31 @@ unsafe fn function_value(
     .map_err(IntoInteropError::to_bms_error)
 }
 
-/// `v.name`: the getter in upvalue 1, else the method in upvalue 2, else the slow path.
+/// `__index`, `v.name`: the getter in upvalue 1 (`getters`), else the method in upvalue 2 (`methods`), else the slow path.
+///
+/// Called with `[v (1), name (2)]`.
 unsafe extern "C-unwind" fn native_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
+        // [v, name, name] -> rawget pops the key -> [v, name, getters[name]]
         ffi::lua_pushvalue(l, 2);
         if ffi::lua_rawget(l, ffi::lua_upvalueindex(1)) == ffi::LUA_TUSERDATA {
             // kept alive by the table in the upvalue
             let getter = holder_function(ffi::lua_touserdata(l, -1));
+            // [v]: the getter's only argument
             ffi::lua_settop(l, 1);
             let Some(getter) = getter else {
                 raise_str(l, c"the getter was collected")
             };
             return call_holder(l, getter, 1, 1);
         }
+        // [v, name] -> [v, name, methods[name]]
         ffi::lua_pop(l, 1);
         ffi::lua_pushvalue(l, 2);
         if ffi::lua_rawget(l, ffi::lua_upvalueindex(2)) != ffi::LUA_TNIL {
+            // the method on the top is the result
             return 1;
         }
+        // [v, name]
         ffi::lua_pop(l, 1);
         run(l, || {
             let receiver = script_value_at(l, 1)?;
@@ -1038,19 +1166,26 @@ unsafe extern "C-unwind" fn native_index(l: *mut ffi::lua_State) -> c_int {
     }
 }
 
-/// `v.name = x`: the setter in upvalue 1, called with `(v, x)`.
+/// `__newindex`, `v.name = x`: the setter in upvalue 1 (`setters`), called with `(v, x)`.
+///
+/// Called with `[v (1), name (2), x (3)]`.
 unsafe extern "C-unwind" fn native_newindex(l: *mut ffi::lua_State) -> c_int {
     unsafe {
+        // [v, name, x, name] -> rawget pops the key -> [v, name, x, setters[name]]
         ffi::lua_pushvalue(l, 2);
         if ffi::lua_rawget(l, ffi::lua_upvalueindex(1)) == ffi::LUA_TUSERDATA {
+            // kept alive by the table in the upvalue
             let setter = holder_function(ffi::lua_touserdata(l, -1));
+            // [v, name, x]
             ffi::lua_pop(l, 1);
             let Some(setter) = setter else {
                 raise_str(l, c"the setter was collected")
             };
+            // [v, x]: the setter's arguments
             ffi::lua_remove(l, 2);
             return call_holder(l, setter, 1, 2);
         }
+        // [v, name, x]
         ffi::lua_pop(l, 1);
         run(l, || {
             let name = match script_value_at(l, 2)? {
@@ -1066,7 +1201,10 @@ unsafe extern "C-unwind" fn native_newindex(l: *mut ffi::lua_State) -> c_int {
 
 /// Operators and other metamethods: the operator's function of the native operand, see [`dispatch::binary`].
 ///
-/// Typed functions are in upvalues 2 (the operator's) and 3 (its reflected one, for a native value on the right).
+/// Upvalue 1 is the operator (its index in [`OPERATORS`]), typed functions are in upvalues 2 (the operator's) and 3 (its
+/// reflected one, for a native value on the right), each a holder or nil.
+///
+/// Called with `[a (1), b (2)]` for binary operators, `[a (1), ..]` for unary ones (some Lua versions pass `a` twice).
 unsafe extern "C-unwind" fn native_operator(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         let operator = ffi::lua_tointeger(l, ffi::lua_upvalueindex(1));
@@ -1081,6 +1219,7 @@ unsafe extern "C-unwind" fn native_operator(l: *mut ffi::lua_State) -> c_int {
                 if native_base(l, 1).is_some()
                     && let Some(function) = typed(2)
                 {
+                    // [a]
                     ffi::lua_settop(l, 1);
                     return call_holder(l, function, 1, 1);
                 }
@@ -1088,13 +1227,15 @@ unsafe extern "C-unwind" fn native_operator(l: *mut ffi::lua_State) -> c_int {
             Ok(_) => {
                 if native_base(l, 1).is_some() {
                     if let Some(function) = typed(2) {
+                        // [a, b] -> f(a, b)
                         ffi::lua_settop(l, 2);
                         return call_holder(l, function, 1, 2);
                     }
                 } else if native_base(l, 2).is_some()
                     && let Some(function) = typed(3)
                 {
-                    // the native value is the receiver of the reflected function
+                    // the native value is the receiver of the reflected function:
+                    // [a, b] -> insert(1) moves the top to the bottom -> [b, a] -> reflected(b, a)
                     ffi::lua_settop(l, 2);
                     ffi::lua_insert(l, 1);
                     return call_holder(l, function, 1, 2);
@@ -1158,6 +1299,9 @@ pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi:
 
 /// Operators of references, i.e. `t.translation + v` or `-t.translation`: the operator's function of the reference operand
 /// (see [`dispatch::binary_function`]) is called with the operands as they are on the stack, the reference first.
+///
+/// Called with `[a (1), b (2)]` for binary operators, `[b, a]` when the reference is `b`; `[a (1), ..]` for unary ones.
+/// Also called by [`comparison`] on its own stack.
 unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>(
     l: *mut ffi::lua_State,
 ) -> c_int {
@@ -1166,7 +1310,7 @@ unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>
             operator_from_index(OPERATOR),
             Ok(ScriptOperatorNames::Negation | ScriptOperatorNames::Length)
         );
-        // Lua passes the operand twice to unary metamethods
+        // Lua passes the operand twice to unary metamethods: [a] for unary operators, [a, b] for binary ones
         let len = if unary { 1 } else { 2 };
         ffi::lua_settop(l, len);
         run(l, || {
@@ -1205,7 +1349,7 @@ unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>
                     .map(|function| (function, on_left))
             })?;
             if !on_left {
-                // the reference is the receiver, the first argument
+                // the reference is the receiver, the first argument: [a, b] -> [b, a]
                 ffi::lua_insert(l, 1);
             }
             call(l, &function, 1, len as usize)
@@ -1228,13 +1372,15 @@ const OWN_LT: &std::ffi::CStr = c"bms_lt";
 /// Pushes the comparison `op` (`EQ`, `LT`, `LE`): one function per Lua state, the `__eq`, `__lt` and `__le` of every native
 /// metatable and of references. Lua 5.1, 5.2, LuaJIT and Luau only call them when both operands have the same one, i.e.
 /// a component's handle and a value of its type, which have different metatables.
-/// Raises: protected mode only.
+/// `[-0, +1, m]`: protected mode only.
 pub(crate) unsafe fn push_comparison(l: *mut ffi::lua_State, op: usize) {
     unsafe {
         let key = key(&COMPARISON_KEYS[op.min(LE)]);
+        // [.., f | nil]
         if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key) == ffi::LUA_TFUNCTION {
             return;
         }
+        // first use in this state: [..] -> [.., f, f] -> the copy goes to the registry -> [.., f]
         ffi::lua_pop(l, 1);
         let function: ffi::lua_CFunction = match op {
             EQ => comparison::<EQ>,
@@ -1249,19 +1395,25 @@ pub(crate) unsafe fn push_comparison(l: *mut ffi::lua_State, op: usize) {
 
 /// Compares with the native operand's own comparison (the first operand's, as Lua 5.4 would), or as references when neither
 /// operand is native. `a <= b` is `not (b < a)`.
+///
+/// Called with `[a (1), b (2)]`, returns the top: `[x, y, .., result]`.
 unsafe extern "C-unwind" fn comparison<const OP: usize>(l: *mut ffi::lua_State) -> c_int {
     unsafe {
+        // [a, b]; below, `x` and `y` are the operands as compared: `a`, `b`, swapped for `<=`
         ffi::lua_settop(l, 2);
         if OP == LE {
+            // `b < a`: [a, b] -> [b, a]
             ffi::lua_insert(l, 1);
         }
         match [1, 2].into_iter().find(|i| native_base(l, *i).is_some()) {
             Some(native) => {
-                // its metatable has the type's comparisons
+                // its metatable has the type's comparisons: [x, y, mt]
                 ffi::lua_getmetatable(l, native);
+                // [x, y, mt, own_key] -> rawget -> [x, y, mt, own] -> remove(-2) -> [x, y, own]
                 ffi::lua_pushstring(l, if OP == EQ { OWN_EQ } else { OWN_LT }.as_ptr());
                 ffi::lua_rawget(l, -2);
                 ffi::lua_remove(l, -2);
+                // [x, y, own, x, y] -> call pops the function and arguments -> [x, y, result]
                 ffi::lua_pushvalue(l, 1);
                 ffi::lua_pushvalue(l, 2);
                 ffi::lua_call(l, 2, 1);
@@ -1276,9 +1428,11 @@ unsafe extern "C-unwind" fn comparison<const OP: usize>(l: *mut ffi::lua_State) 
             }
         }
         if OP == LE {
+            // [x, y, b < a, not (b < a)]
             let less = ffi::lua_toboolean(l, -1);
             ffi::lua_pushboolean(l, (less == 0) as c_int);
         }
+        // the top is the result
         1
     }
 }
@@ -1310,6 +1464,7 @@ fn operator_from_index(index: ffi::lua_Integer) -> Result<ScriptOperatorNames, I
 pub(crate) fn native_value_base(lua: &Lua, value: &mlua::AnyUserData) -> Option<*mut u8> {
     // Safety: the value is pushed and popped by `exec_raw`'s stack guard
     unsafe {
+        // `exec_raw` pushes `value` and takes the top as the result: [value] -> [value, base | nil]
         lua.exec_raw::<Option<mlua::LightUserData>>(value, |l| {
             // the lookup pushes two values, the result one; protected mode, so failing raises
             if ffi::lua_checkstack(l, 2) == 0 {
