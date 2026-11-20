@@ -126,6 +126,11 @@ impl BorrowFlag {
     pub fn is_borrowed_mut(&self) -> bool {
         self.0.get() < 0
     }
+
+    /// Whether the value is borrowed at all, so it can't be written.
+    pub fn is_borrowed(&self) -> bool {
+        self.0.get() != 0
+    }
 }
 
 impl<'w> CallScope<'w> {
