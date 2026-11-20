@@ -158,5 +158,5 @@ local proxy = fetched.translation
 proxy.y = 1
 assert(rawequal(proxy, fetched.translation) and fetched.translation.y == 1, "field places are kept and write through")
 world.despawn(entity)
-assert(not pcall(function() return proxy.x end), "a kept field place of a despawned entity errors")
+assert(not pcall(function(p) return p.x end, proxy), "a kept field place of a despawned entity errors")
 assert(not pcall(function() return fetched.translation.x end), "a handle to a despawned entity errors")
