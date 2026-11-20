@@ -1049,6 +1049,12 @@ where
 /// struct Inner {
 ///     x: f32,
 /// }
+/// // the type of the failing example below, which compiles
+/// #[derive(bevy_reflect::Reflect, Clone, Default)]
+/// struct Outer {
+///     #[reflect(ignore)]
+///     inner: Box<Inner>,
+/// }
 /// let mut world = World::default();
 /// bevy_mod_scripting_bindings::script_native!(&mut world, Inner { x: f32 });
 /// ```
@@ -1098,6 +1104,10 @@ macro_rules! script_native {
             // a field of the type itself (`offset_of!` below doesn't go through `Deref`), of exactly this type: a raw
             // pointer isn't coerced, a reference would be (`&Box<F>` to `&F`)
             const _: fn(&$ty) -> *const $field_ty = |value| ::core::ptr::addr_of!(value.$field);
+            // and one which can be borrowed: not packed (misaligned) or in a union
+            const _: fn(&$ty) = |value| {
+                let _ = &value.$field;
+            };
             // Safety: every value has a `$field_ty` (checked above) at the offset
             let native = unsafe {
                 native.with_struct_field::<$ty, $field_ty>(
