@@ -251,6 +251,13 @@ unsafe impl ArgSource for LuaArgs<'_> {
 #[repr(C, align(16))]
 struct InlineBuffer([MaybeUninit<u8>; 64]);
 
+// handles to components (`t.translation`) are made on every field access: they must fit without a heap allocation
+const _: () = assert!(
+    size_of::<bevy_mod_scripting_bindings::native::NativePlace>() <= size_of::<InlineBuffer>()
+        && align_of::<bevy_mod_scripting_bindings::native::NativePlace>()
+            <= align_of::<InlineBuffer>()
+);
+
 /// A native value made by a call, waiting to be pushed: plain bytes, so a Lua error raised while pushing it skips no
 /// destructor (the value is leaked then).
 struct PendingNative {
