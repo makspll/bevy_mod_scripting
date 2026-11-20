@@ -862,34 +862,60 @@ impl NativeType {
     }
 }
 
-/// The native type of a typed function's result, looked up in the registry on its first return and kept by its thunk, so
-/// returning a native value takes no lock.
+/// Bumped whenever a native type is registered or changes (i.e. functions are registered on it), so caches of native types
+/// look them up again, see [`NativeReturnType`].
+pub(crate) static NATIVE_TYPES_GENERATION: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
+/// The native types of a typed function's results, looked up in the registry on their first return and kept by its thunk,
+/// so returning a native value takes no registry lock. A few types are kept, i.e. the components `get_component` returns.
 ///
-/// Kept weakly: the native type holds its functions, which hold their thunks. If the registry replaced the type since
-/// (functions registered on it after the first return), it's looked up again.
+/// Kept weakly: the native type holds its functions, which hold their thunks. Entries are only used while no native type
+/// changed since (see [`NATIVE_TYPES_GENERATION`]): values made earlier can keep a replaced type alive.
 #[derive(Default)]
-pub struct NativeReturnType(std::sync::OnceLock<(TypeId, Option<std::sync::Weak<NativeType>>)>);
+pub struct NativeReturnType(parking_lot::RwLock<Vec<CachedNativeType>>);
+
+/// An entry of [`NativeReturnType`].
+struct CachedNativeType {
+    type_id: TypeId,
+    generation: u64,
+    native: Option<std::sync::Weak<NativeType>>,
+}
 
 impl NativeReturnType {
-    /// The native type of `type_id`, if it is one: cached for the first type asked for, looked up for others (i.e. the
-    /// other side of a `Union`).
+    /// How many types are kept, others are looked up on every return.
+    const CAPACITY: usize = 8;
+
+    /// The native type of `type_id`, if it is one.
     pub fn get(&self, world: &WorldGuard, type_id: TypeId) -> Option<std::sync::Arc<NativeType>> {
         use crate::WorldExtensions;
-        let look_up = || {
-            world
-                .script_function_registry()
-                .read()
-                .native_type(type_id)
-                .cloned()
-        };
-        let (cached_id, cached) = self
-            .0
-            .get_or_init(|| (type_id, look_up().as_ref().map(std::sync::Arc::downgrade)));
-        if *cached_id != type_id {
-            return look_up();
+        let generation = NATIVE_TYPES_GENERATION.load(std::sync::atomic::Ordering::Acquire);
+        if let Some(cached) = self.0.read().iter().find(|c| c.type_id == type_id)
+            && cached.generation == generation
+        {
+            // not native, the common case: no lookup
+            let native = cached.native.as_ref()?;
+            if let Some(native) = native.upgrade() {
+                return Some(native);
+            }
         }
-        // not native, the common case: no lookup
-        cached.as_ref()?.upgrade().or_else(look_up)
+        let native = world
+            .script_function_registry()
+            .read()
+            .native_type(type_id)
+            .cloned();
+        let mut cache = self.0.write();
+        let entry = CachedNativeType {
+            type_id,
+            generation,
+            native: native.as_ref().map(std::sync::Arc::downgrade),
+        };
+        if let Some(cached) = cache.iter_mut().find(|c| c.type_id == type_id) {
+            *cached = entry;
+        } else if cache.len() < Self::CAPACITY {
+            cache.push(entry);
+        }
+        native
     }
 }
 
