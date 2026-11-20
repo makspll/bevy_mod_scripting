@@ -1,5 +1,6 @@
 # Benchmarks renamed on bencher.dev, so their history follows them: `cargo xtask bencher-migrate`, which runs on main
 # before results are published. One `old name -> new name` per line, as bencher shows them (`group/name Language`,
-# the group is the folder under `assets/benchmarks` with `_` as spaces). Renames already done are skipped.
+# the group is the folder under `assets/benchmarks` with `_` as spaces). Renames already done are skipped. A new name
+# that PR runs already published is deleted first if it has no results on main.
 interop/nested method call Lua -> interop reference/nested method call Lua
 interop/nested method call Rune -> interop reference/nested method call Rune

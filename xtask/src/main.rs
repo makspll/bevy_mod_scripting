@@ -587,7 +587,8 @@ enum Xtasks {
     Miri,
     /// Renames benchmarks on bencher.dev as listed in `benches/bencher_renames.txt`, so their history follows them.
     ///
-    /// Only renames which are still needed are done: the old name exists and the new one doesn't yet.
+    /// Only renames which are still needed are done: the old name exists and the new one doesn't yet, or has
+    /// no results on main (PR runs publish it before the rename), in which case it is deleted first.
     /// Runs on main before publishing, see `cargo xtask bencher --publish`.
     BencherMigrate {
         /// Only print what would be renamed
@@ -1360,6 +1361,42 @@ impl Xtasks {
         )
     }
 
+    const BENCHER_MAIN_BRANCH: &str = "1d70a4e3-d416-43fc-91bd-4b1c8f9e9580";
+    const BENCHER_LATENCY_MEASURE: &str = "6820b034-5163-4cdd-95f5-5640dd0ff298";
+    const BENCHER_TESTBEDS: [(&str, &str); 3] = [
+        ("linux-gha", "467e8580-a67a-435e-a602-b167541f332c"),
+        ("macos-gha", "f8aab940-27d2-4b52-93df-4518fe68abfb"),
+        ("windows-gha", "be8ff546-31d3-40c4-aacc-763e5e8a09c4"),
+    ];
+
+    /// Whether the benchmark has results on main, `None` if bencher can't find it (another job deleted it).
+    fn bencher_has_main_results(uuid: &str, token: &str) -> Result<Option<bool>> {
+        let mut cmd = Command::new("bencher");
+        cmd.stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::inherit())
+            .args(["perf", "bms"])
+            .args(["--branches", Self::BENCHER_MAIN_BRANCH])
+            .args(["--benchmarks", uuid])
+            .args(["--measures", Self::BENCHER_LATENCY_MEASURE])
+            .args(["--token", token]);
+        for (_, testbed) in Self::BENCHER_TESTBEDS {
+            cmd.args(["--testbeds", testbed]);
+        }
+        let output = cmd
+            .output()
+            .with_context(|| "Could not query benchmark results")?;
+        if !output.status.success() {
+            return Ok(None);
+        }
+        let perf: serde_json::Value =
+            serde_json::from_slice(&output.stdout).with_context(|| "Reading benchmark results")?;
+        Ok(Some(perf["results"].as_array().is_some_and(|results| {
+            results
+                .iter()
+                .any(|r| r["metrics"].as_array().is_some_and(|m| !m.is_empty()))
+        })))
+    }
+
     /// The uuid of the benchmark with exactly this name on bencher.dev, if there is one.
     fn bencher_benchmark_uuid(name: &str, token: &str) -> Result<Option<String>> {
         let output = Command::new("bencher")
@@ -1404,10 +1441,41 @@ impl Xtasks {
                     log::info!("`{from}` was already renamed to `{to}`");
                     continue;
                 }
-                // results under both names, i.e. the new one was published before the rename ran: histories can't be merged
-                (Some(_), Some(_)) => bail!(
-                    "Both `{from}` and `{to}` exist on bencher, their histories can't be merged: archive or delete one of them on bencher.dev, or fix the rename in benches/bencher_renames.txt"
-                ),
+                // the new name was published before the rename ran: PR runs create it, without results on main it can go
+                (Some(uuid), Some(new)) => {
+                    match Self::bencher_has_main_results(&new, &token)? {
+                        Some(false) => {}
+                        // deleted by another job (each OS publishes on main), which renames too
+                        None if Self::bencher_benchmark_uuid(to, &token)?.as_deref()
+                            != Some(new.as_str()) =>
+                        {
+                            continue;
+                        }
+                        None => bail!("Failed to read the results of `{to}`"),
+                        Some(true) => bail!(
+                            "Both `{from}` and `{to}` have results on main, their histories can't be merged: archive or delete one of them on bencher.dev, or fix the rename in benches/bencher_renames.txt"
+                        ),
+                    }
+                    if dry_run {
+                        log::info!("Would delete `{to}` (no results on main)");
+                    } else {
+                        log::info!("Deleting `{to}`, it has no results on main");
+                        let output = Command::new("bencher")
+                            .stdout(std::process::Stdio::inherit())
+                            .stderr(std::process::Stdio::inherit())
+                            .args(["benchmark", "delete", "bms", &new])
+                            .args(["--token", &token])
+                            .output()
+                            .with_context(|| "Could not delete benchmark")?;
+                        if !output.status.success()
+                            && Self::bencher_benchmark_uuid(to, &token)?.as_deref()
+                                == Some(new.as_str())
+                        {
+                            bail!("Failed to delete `{to}`: {output:?}");
+                        }
+                    }
+                    uuid
+                }
                 (None, None) => bail!(
                     "Neither `{from}` nor `{to}` exist on bencher: fix the rename in benches/bencher_renames.txt"
                 ),
@@ -1520,17 +1588,7 @@ impl Xtasks {
             }
         }
 
-        const MAIN_BRANCH_UUID: &str = "1d70a4e3-d416-43fc-91bd-4b1c8f9e9580";
-        const LATENCY_MEASURE_UUID: &str = "6820b034-5163-4cdd-95f5-5640dd0ff298";
-        const LINUX_GHA_TESTBED: &str = "467e8580-a67a-435e-a602-b167541f332c";
-        const MACOS_GHA_TESTBAD: &str = "f8aab940-27d2-4b52-93df-4518fe68abfb";
-        const WINDOWS_GHA_TESTBED: &str = "be8ff546-31d3-40c4-aacc-763e5e8a09c4";
-
-        let testbeds = [
-            ("linux-gha", LINUX_GHA_TESTBED),
-            ("macos-gha", MACOS_GHA_TESTBAD),
-            ("windows-gha", WINDOWS_GHA_TESTBED),
-        ];
+        let testbeds = Self::BENCHER_TESTBEDS;
 
         let group_to_benchmark_map: HashMap<_, Vec<_>> =
             benchmarks
@@ -1580,9 +1638,9 @@ impl Xtasks {
                     .args(["--title", &plot_name])
                     .args(["--x-axis", "version"])
                     .args(["--window", &window_seconds.to_string()])
-                    .args(["--branches", MAIN_BRANCH_UUID])
+                    .args(["--branches", Self::BENCHER_MAIN_BRANCH])
                     .args(["--testbeds", testbed_uuid])
-                    .args(["--measures", LATENCY_MEASURE_UUID])
+                    .args(["--measures", Self::BENCHER_LATENCY_MEASURE])
                     .args(["--token", &token.clone().unwrap_or_default()]);
 
                 for benchmark_uuid in uuids {
