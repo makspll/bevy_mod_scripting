@@ -975,7 +975,14 @@ unsafe fn push_native_metatable(
     unsafe {
         with_raw(l, |lua, _| {
             lua.exec_raw::<()>((), |state| {
-                build_native_metatable(state, vtable_key, needs_drop, &fields, &methods)
+                build_native_metatable(
+                    state,
+                    vtable_key,
+                    needs_drop,
+                    vtable.place,
+                    &fields,
+                    &methods,
+                )
             })
         })
     }
@@ -1098,6 +1105,7 @@ unsafe fn build_native_metatable(
     l: *mut ffi::lua_State,
     vtable_key: *mut c_void,
     needs_drop: bool,
+    place: bool,
     fields: &Fields,
     methods: &[(Cow<'static, str>, DynamicScriptFunction)],
 ) {
@@ -1153,8 +1161,18 @@ unsafe fn build_native_metatable(
                 set_field(l, name);
             }
         }
-        // pops the three into upvalues 1, 2 and 3: [.., mt, __index]
-        ffi::lua_pushcclosure(l, native_index, 3);
+        // [.., mt, getters, methods, accessors, proxies | nil]: places keep the places of their fields, see `cached_proxy`
+        if place {
+            ffi::lua_createtable(l, 0, 0);
+            ffi::lua_createtable(l, 0, 1);
+            ffi::lua_pushstring(l, c"k".as_ptr());
+            ffi::lua_setfield(l, -2, c"__mode".as_ptr());
+            ffi::lua_setmetatable(l, -2);
+        } else {
+            ffi::lua_pushnil(l);
+        }
+        // pops the four into upvalues 1 to 4: [.., mt, __index]
+        ffi::lua_pushcclosure(l, native_index, 4);
         // [.., mt]
         ffi::lua_setfield(l, -2, c"__index".as_ptr());
 
@@ -1256,7 +1274,61 @@ unsafe fn function_value(
     .map_err(IntoInteropError::to_bms_error)
 }
 
-/// `__index`, `v.name`: the getter in upvalue 1 (`getters`), else the method in upvalue 2 (`methods`), else the slow path.
+/// Pushes the place of the field `name` of the place `v` (a proxy, i.e. `t.translation`) made by an earlier read, if any.
+/// `[-0, +(0|1), -]`.
+///
+/// Places of fields are fixed by their place and the field (see `NativePlace::field`), so they are kept per place, in the
+/// table with weak keys in upvalue 4 of `__index`: `proxies[v][name]`. Only places are kept, never values or copies.
+///
+/// Called with `[v (1), name (2)]`.
+unsafe fn cached_proxy(l: *mut ffi::lua_State) -> bool {
+    unsafe {
+        // [v, name, proxies[v]]
+        ffi::lua_pushvalue(l, 1);
+        if ffi::lua_rawget(l, ffi::lua_upvalueindex(4)) == ffi::LUA_TTABLE {
+            // [v, name, proxies[v], proxies[v][name]]
+            ffi::lua_pushvalue(l, 2);
+            if ffi::lua_rawget(l, -2) == ffi::LUA_TUSERDATA {
+                return true;
+            }
+        }
+        ffi::lua_settop(l, 2);
+        false
+    }
+}
+
+/// Keeps the result on the top as the proxy of the field `name` of `v` if it's a place, see [`cached_proxy`]. `[-0, +0, m]`:
+/// called once no Rust value of the call is left.
+///
+/// Called with `[v (1), name (2), result (3)]`.
+unsafe fn cache_proxy(l: *mut ffi::lua_State) {
+    unsafe {
+        let is_place =
+            native_base(l, 3).is_some_and(|base| NativeStorage::header(base).vtable.place);
+        if !is_place || ffi::lua_checkstack(l, 4) == 0 {
+            return;
+        }
+        // [v, name, result, proxies[v]]
+        ffi::lua_pushvalue(l, 1);
+        if ffi::lua_rawget(l, ffi::lua_upvalueindex(4)) != ffi::LUA_TTABLE {
+            ffi::lua_pop(l, 1);
+            ffi::lua_createtable(l, 0, 1);
+            // proxies[v] = {}
+            ffi::lua_pushvalue(l, 1);
+            ffi::lua_pushvalue(l, -2);
+            ffi::lua_rawset(l, ffi::lua_upvalueindex(4));
+        }
+        // proxies[v][name] = result
+        ffi::lua_pushvalue(l, 2);
+        ffi::lua_pushvalue(l, 3);
+        ffi::lua_rawset(l, -3);
+        ffi::lua_settop(l, 3);
+    }
+}
+
+/// `__index`, `v.name`: the getter in upvalue 1 (`getters`, read in place for direct fields, else by their getter in upvalue
+/// 3, `accessors`), else the method in upvalue 2 (`methods`), else the slow path. Places keep the proxies the getters
+/// return in upvalue 4 (`proxies`), see [`cached_proxy`].
 ///
 /// Called with `[v (1), name (2)]`.
 unsafe extern "C-unwind" fn native_index(l: *mut ffi::lua_State) -> c_int {
@@ -1278,12 +1350,22 @@ unsafe extern "C-unwind" fn native_index(l: *mut ffi::lua_State) -> c_int {
         if getter == ffi::LUA_TUSERDATA {
             // kept alive by the table in the upvalue
             let getter = holder_function(ffi::lua_touserdata(l, -1));
-            // [v]: the getter's only argument
-            ffi::lua_settop(l, 1);
+            // [v, name]
+            ffi::lua_settop(l, 2);
+            // places (handles) keep the places of their fields (proxies) in upvalue 4, see `cached_proxy`
+            let proxies = ffi::lua_type(l, ffi::lua_upvalueindex(4)) == ffi::LUA_TTABLE;
+            if proxies && cached_proxy(l) {
+                return 1;
+            }
             let Some(getter) = getter else {
                 raise_str(l, c"the getter was collected")
             };
-            return call_holder(l, getter, 1, 1);
+            // the getter's only argument is v: [v, name, result]
+            let n = call_holder(l, getter, 1, 1);
+            if proxies && n == 1 {
+                cache_proxy(l);
+            }
+            return n;
         }
         // [v, name] -> [v, name, methods[name]]
         ffi::lua_pop(l, 1);
