@@ -1672,7 +1672,7 @@ fn run_observer_callback(
 
 /// Whether the members of values of `type_id` depend on the value, see [`Lookups::member`]: registrations reach the
 /// static members of the type they register, enum variants the functions of their enum.
-pub(crate) fn members_depend_on_value(type_id: TypeId) -> bool {
+pub fn members_depend_on_value(type_id: TypeId) -> bool {
     [
         TypeId::of::<ScriptTypeRegistration>(),
         TypeId::of::<ScriptComponentRegistration>(),

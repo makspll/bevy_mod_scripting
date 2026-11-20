@@ -488,6 +488,11 @@ impl equivalent::Equivalent<FunctionKey> for FunctionKeyRef<'_> {
     }
 }
 
+/// Changes whenever the functions of any [`ScriptFunctionRegistry`] change, for caches of functions kept outside of it,
+/// i.e. by languages.
+pub static FUNCTIONS_GENERATION: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
 /// What a name means on values of a type whose members don't depend on the value, see
 /// [`ScriptFunctionRegistry::member_of_type`] and [`crate::dispatch::index_name`].
 #[derive(Clone, Default)]
@@ -706,6 +711,7 @@ impl ScriptFunctionRegistry {
     fn functions_mut(&mut self) -> &mut HashMap<FunctionKey, DynamicScriptFunction> {
         self.bound_to_type.get_mut().clear();
         self.members.get_mut().clear();
+        FUNCTIONS_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
         &mut self.functions
     }
 
