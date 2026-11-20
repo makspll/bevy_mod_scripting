@@ -1297,31 +1297,22 @@ pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi:
     )
 }
 
-<<<<<<< HEAD
 /// Operators of references, i.e. `t.translation + v` or `-t.translation`: the operator's function of the reference operand
 /// (see [`dispatch::binary_function`]) is called with the operands as they are on the stack, the reference first.
-=======
-/// Binary operators of references, i.e. `t.translation + v`: the operator's function of the reference operand (see
-/// [`dispatch::binary_function`]) is called with the operands as they are on the stack, the reference first.
 ///
-/// Called with `[a (1), b (2)]`; `[b, a]` when the reference is `b`. Also called by [`comparison`] on its own stack.
->>>>>>> agent/typed-thunks
+/// Called with `[a (1), b (2)]` for binary operators, `[b, a]` when the reference is `b`; `[a (1), ..]` for unary ones.
+/// Also called by [`comparison`] on its own stack.
 unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>(
     l: *mut ffi::lua_State,
 ) -> c_int {
     unsafe {
-<<<<<<< HEAD
         let unary = matches!(
             operator_from_index(OPERATOR),
             Ok(ScriptOperatorNames::Negation | ScriptOperatorNames::Length)
         );
-        // Lua passes the operand twice to unary metamethods
+        // Lua passes the operand twice to unary metamethods: [a] for unary operators, [a, b] for binary ones
         let len = if unary { 1 } else { 2 };
         ffi::lua_settop(l, len);
-=======
-        // [a, b]
-        ffi::lua_settop(l, 2);
->>>>>>> agent/typed-thunks
         run(l, || {
             let operator = operator_from_index(OPERATOR)?;
             let world = ThreadWorldContainer::try_get_context()?.world;
