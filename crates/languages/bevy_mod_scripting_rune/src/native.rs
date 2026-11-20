@@ -127,9 +127,10 @@ unsafe impl ArgSource for RuneArgs<'_> {
             return rune::from_value::<i64>(value.clone()).ok();
         }
         if hash == <u64 as TypeHash>::HASH {
+            // above `i64::MAX` it's not an integer here, the slow path converts it
             return rune::from_value::<u64>(value.clone())
                 .ok()
-                .map(|u| u as i64);
+                .and_then(|u| i64::try_from(u).ok());
         }
         None
     }
