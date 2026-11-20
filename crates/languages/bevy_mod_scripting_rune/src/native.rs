@@ -196,9 +196,14 @@ unsafe impl ReturnSink for RuneReturn {
         self.set(rune::to_value(b).map_err(IntoInteropError::to_bms_error));
     }
 
-    unsafe fn native(&mut self, native: &Arc<NativeType>, write: &mut dyn FnMut(*mut u8)) -> bool {
+    unsafe fn native(
+        &mut self,
+        native: &Arc<NativeType>,
+        vtable: &'static bevy_mod_scripting_bindings::native::NativeVTable,
+        write: &mut dyn FnMut(*mut u8),
+    ) -> bool {
         // Safety: `write` writes a value of the vtable's type, see the method's contract
-        match unsafe { NativeBox::new(native.vtable, write) } {
+        match unsafe { NativeBox::new(vtable, write) } {
             Ok(storage) => {
                 self.set(new_value(RuneNative::new(storage, native.clone())));
                 true

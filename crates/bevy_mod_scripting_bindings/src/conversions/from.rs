@@ -81,9 +81,10 @@ fn is_native_arg<T: 'static>(args: &dyn ArgSource, index: usize) -> bool {
     )
 }
 
-/// The native value of `T` at argument `index`, borrowed for the call, if the argument is one.
+/// The native value of `T` at argument `index`, borrowed for the call, if the argument is one: the storage and the value,
+/// which is in the world for a place (see [`crate::native::NativePlace`]).
 ///
-/// Errors if the value is already borrowed in a conflicting way by another argument.
+/// Errors if the value is already borrowed in a conflicting way by another argument, or access to a place can't be claimed.
 fn native_arg<T: 'static>(
     args: &dyn ArgSource,
     index: usize,
@@ -97,6 +98,13 @@ fn native_arg<T: 'static>(
     let header = unsafe { NativeStorage::header(base) };
     if header.vtable.type_id != TypeId::of::<T>() {
         return Ok(None);
+    }
+    // Safety: see above, a place of a T
+    if let Some(place) = unsafe { NativeStorage::place(base) } {
+        // access claims keep other arguments from aliasing it
+        return Ok(Some(
+            (base, unsafe { place.resolve(scope, exclusive) }? as *mut T)
+        ));
     }
     // Safety: see above
     if !unsafe { scope.borrow(&header.borrow, exclusive) } {
@@ -407,11 +415,11 @@ impl<T: FromReflect> FromScript for V<T> {
         index: usize,
         scope: &'s CallScope<'_>,
     ) -> Result<Self, InteropError> {
-        if let Some((base, _)) = native_arg::<T>(args, index, scope, false)? {
+        if let Some((base, src)) = native_arg::<T>(args, index, scope, false)? {
             let mut value = std::mem::MaybeUninit::<T>::uninit();
-            // Safety: the storage holds a T, borrowed so no argument changes it while it's copied
+            // Safety: `src` is a T (in the storage, or in the world for a place), borrowed so nothing changes it while it's copied
             unsafe {
-                NativeStorage::clone_value(base, value.as_mut_ptr() as *mut u8);
+                NativeStorage::clone_value(base, src as *const u8, value.as_mut_ptr() as *mut u8);
                 return Ok(V(value.assume_init()));
             }
         }
@@ -490,7 +498,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
         scope: &'s CallScope<'_>,
     ) -> Result<Self::This<'s>, InteropError> {
         if let Some((_, value)) = native_arg::<T>(args, index, scope, false)? {
-            // Safety: the storage holds a T which lives until the call returns, borrowed shared until the scope ends
+            // Safety: a T, borrowed shared until the scope ends: in the storage, alive until the call returns, or in the world for a place, kept by the access claimed for it
             return Ok(R(unsafe { &*value }));
         }
         Self::from_script(args.script_value(index)?, scope)
@@ -602,7 +610,7 @@ impl<T: FromReflect> FromScript for M<'_, T> {
         scope: &'s CallScope<'_>,
     ) -> Result<Self::This<'s>, InteropError> {
         if let Some((_, value)) = native_arg::<T>(args, index, scope, true)? {
-            // Safety: the storage holds a T which lives until the call returns, borrowed exclusively until the scope ends
+            // Safety: a T, borrowed exclusively until the scope ends: in the storage, alive until the call returns, or in the world for a place, kept by the access claimed for it
             return Ok(M(unsafe { &mut *value }));
         }
         Self::from_script(args.script_value(index)?, scope)

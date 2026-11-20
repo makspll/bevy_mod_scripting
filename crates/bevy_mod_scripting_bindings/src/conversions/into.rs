@@ -152,6 +152,41 @@ impl IntoScript for ReflectReference {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Reference(self))
     }
+
+    fn into_ret(
+        self,
+        ret: &mut dyn ReturnSink,
+        world: WorldGuard,
+        native: &NativeReturnType,
+    ) -> Result<(), InteropError> {
+        // a component or resource of a native type is returned as a native handle to it
+        let base = match self.base.base_id {
+            crate::ReflectBase::Component(entity, id) if self.reflect_path.is_empty() => {
+                Some(crate::native::PlaceBase::Component(entity, id))
+            }
+            crate::ReflectBase::Resource(id) if self.reflect_path.is_empty() => {
+                Some(crate::native::PlaceBase::Resource(id))
+            }
+            _ => None,
+        };
+        if let Some(base) = base
+            && let Some(native) = native.get(&world, self.base.type_id)
+        {
+            let mut place = Some(crate::native::NativePlace::new(base, self.base.type_id));
+            // Safety: the place vtable stores a `NativePlace`, of a value of the native type
+            let written = unsafe {
+                ret.native(&native, native.vtable.place_vtable(), &mut |slot| {
+                    if let Some(place) = place.take() {
+                        (slot as *mut crate::native::NativePlace).write(place)
+                    }
+                })
+            };
+            if written {
+                return Ok(());
+            }
+        }
+        ret.script_value(ScriptValue::Reference(self))
+    }
 }
 
 #[profiling::all_functions]
@@ -170,11 +205,13 @@ impl<T: Reflect> IntoScript for V<T> {
         native: &NativeReturnType,
     ) -> Result<(), InteropError> {
         // types stored natively are moved into the language's storage, others are allocated as usual
-        if let Some(native) = native.get(&world, std::any::TypeId::of::<T>()) {
+        if let Some(native) = native.get(&world, std::any::TypeId::of::<T>())
+            && native.inline
+        {
             let mut value = Some(self.0);
             // Safety: the native type is T's, `write` is called once by the sink, which writes the T
             let written = unsafe {
-                ret.native(&native, &mut |slot| {
+                ret.native(&native, native.vtable, &mut |slot| {
                     if let Some(value) = value.take() {
                         // Safety: the slot is memory for a value of the vtable's type, which is T
                         (slot as *mut T).write(value)

@@ -510,9 +510,10 @@ pub(crate) fn register(world: &mut World) {
             z: f32
         }
     );
+    // SIMD vectors: fields through `Deref`
     script_native!(
         world,
-        Vec4 {
+        deref Vec4 {
             x: f32,
             y: f32,
             z: f32,
@@ -521,7 +522,7 @@ pub(crate) fn register(world: &mut World) {
     );
     script_native!(
         world,
-        Vec3A {
+        deref Vec3A {
             x: f32,
             y: f32,
             z: f32

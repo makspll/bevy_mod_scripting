@@ -132,6 +132,15 @@ impl<R: IntoScript, M> IntoScript for TypeOf<R, M> {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
         self.0.into_script(world)
     }
+
+    fn into_ret(
+        self,
+        ret: &mut dyn crate::native::ReturnSink,
+        world: WorldGuard,
+        native: &crate::native::NativeReturnType,
+    ) -> Result<(), InteropError> {
+        self.0.into_ret(ret, world, native)
+    }
 }
 
 impl<R: ArgMeta, M> ArgMeta for TypeOf<R, M> {
@@ -201,6 +210,15 @@ impl<M, R: FromScript> FromScript for ValueOf<M, R> {
 impl<M, R: IntoScript> IntoScript for ValueOf<M, R> {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
         self.0.into_script(world)
+    }
+
+    fn into_ret(
+        self,
+        ret: &mut dyn crate::native::ReturnSink,
+        world: WorldGuard,
+        native: &crate::native::NativeReturnType,
+    ) -> Result<(), InteropError> {
+        self.0.into_ret(ret, world, native)
     }
 }
 

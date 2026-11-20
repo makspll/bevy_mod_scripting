@@ -46,9 +46,12 @@ Hot value types, i.e. `Vec3`, can be stored by the languages themselves instead 
 ```rust,ignore
 // fields are read and written with typed accessors
 script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
+// components (and resources) of native types are native handles: `get_component` returns one, `t.translation` is a
+// handle to the field, `t.translation.x = 5` writes the component
+script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });
 ```
 
-Arguments which aren't native, i.e. references to vectors in components, are converted as usual.
+Values of types with fields of native types (`Transform.from_xyz(..)`) stay references, so writes to their fields aren't lost on a copy. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren't native, i.e. references, are converted as usual.
 
 ## Documentation
 

@@ -114,4 +114,8 @@ pub fn main() {
     assert!(approx(fetched.translation.x, 5.0), "a field change persists");
     assert!(approx(fetched.translation.y, 2.0), "other fields are unchanged");
     assert!(approx_vec3(fetched.forward(), Vec3.new(-math::sin(1.0), 0, -math::cos(1.0))), "a rotation persists");
+    fetched.translation = Vec3.new(7, 8, 9);
+    assert!(fetched.translation.dot(Vec3.unit_x()) == 7.0 && fetched.translation == Vec3.new(7, 8, 9), "whole fields are written");
+    world.despawn(entity);
+    assert!(errors(|| fetched.translation.x), "a handle to a despawned entity errors");
 }
