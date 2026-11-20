@@ -388,10 +388,10 @@ unsafe impl ReturnSink for LuaReturn {
 
     unsafe fn native(
         &mut self,
-        native: &std::sync::Arc<NativeType>,
+        _: &std::sync::Arc<NativeType>,
+        vtable: &'static NativeVTable,
         write: &mut dyn FnMut(*mut u8),
     ) -> bool {
-        let vtable = native.vtable;
         let layout = vtable.layout;
         let heap = if layout.size() <= size_of::<InlineBuffer>()
             && layout.align() <= align_of::<InlineBuffer>()

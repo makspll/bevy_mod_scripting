@@ -256,7 +256,16 @@ impl Transform {
     }
 }
 
-/// Registers the functions of [`Transform`].
+/// Registers the functions of [`Transform`], and its native form: components are native handles, see
+/// [`bevy_mod_scripting_bindings::script_native`].
 pub(crate) fn register(world: &mut World) {
     register_transform_functions(world);
+    bevy_mod_scripting_bindings::script_native!(
+        world,
+        Transform {
+            translation: Vec3,
+            rotation: Quat,
+            scale: Vec3
+        }
+    );
 }
