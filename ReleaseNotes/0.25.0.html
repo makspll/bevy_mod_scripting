@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-f6000159.js";
+            window.path_to_searchindex_js = "../searchindex-7ffb7f29.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-67472866.js"></script>
+        <script src="../toc-94c4b708.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -220,6 +220,8 @@ game.spawn({ name = "goblin", sped = 2 })         -- no field `sped`
 <li><code>ValueOf&lt;A, R&gt;</code> takes the conversion: <code>ValueOf&lt;A, ScriptValue&gt;</code> is any value, typed as whatever was passed, i.e. <code>fn boxed(v: ValueOf&lt;A, ScriptValue&gt;) -&gt; V&lt;MyBox&lt;A&gt;&gt;</code> gives a <code>MyBox&lt;integer&gt;</code> for <code>boxed(5)</code>.</li>
 </ul>
 <p>See <a href="../Summary/controlling-script-bindings.html#typed-arguments">Typed arguments</a>.</p>
+<h2 id="native-types"><a class="header" href="#native-types">Native types</a></h2>
+<p>Vectors (<code>Vec2</code>, <code>Vec3</code>, <code>Vec4</code>, <code>Vec3A</code>, <code>DVec2</code>, <code>DVec3</code>, <code>IVec2</code>, <code>IVec3</code>, <code>UVec2</code>, <code>UVec3</code>) and <code>Quat</code> values made by functions are stored by Lua and Rune themselves, and functions read their arguments without converting them to <code>ScriptValue</code>s. <code>Transform</code> components are native handles: <code>world.get_component(e, Transform)</code> reads and writes the component directly (<code>t.translation.x = 5</code> included). Other types opt in with <code>script_native!</code>, see <a href="../Development/writing-bindings.html#native-types">Writing Bindings</a>. Scripts behave the same: native values are copies like the values functions return, and work wherever references to vectors do.</p>
 <h2 id="other-changes"><a class="header" href="#other-changes">Other changes</a></h2>
 <ul>
 <li>Unions only try the types which could convert a value (<code>FromScript::could_convert</code>), instead of building an error for each type which can’t.</li>

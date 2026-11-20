@@ -38,10 +38,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-f6000159.js";
+            window.path_to_searchindex_js = "../../searchindex-7ffb7f29.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-67472866.js"></script>
+        <script src="../../toc-94c4b708.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -196,6 +196,14 @@
     context.globals().set(name, LuaScriptValue::from(ScriptValue::Function(function)))?;
 }</code></pre>
 <p>Script handlers, loaders etc. must be implemented such that the <code>ThreadWorldContainer</code> is set for every interaction with script contexts, or anywhere else it might be needed.</p>
+<h2 id="typed-calls-and-native-values"><a class="header" href="#typed-calls-and-native-values">Typed calls and native values</a></h2>
+<p>A language calls every function with <code>DynamicScriptFunction::call_with</code> (see <code>bevy_mod_scripting_bindings::native</code>), passing:</p>
+<ul>
+<li>an <code>ArgSource</code> over its own values: numbers, booleans, native values, and any argument converted to a <code>ScriptValue</code> (the slow path)</li>
+<li>a <code>ReturnSink</code>, which receives numbers, booleans, new native values or <code>ScriptValue</code>s</li>
+</ul>
+<p><code>DynamicScriptFunctionMut</code> converts into a <code>DynamicScriptFunction</code> (<code>.into()</code>), so both are called the same way.</p>
+<p>Native values are stored by the language as <code>NativeStorage</code> (<code>[NativeHeader][value]</code>): in memory it owns which never moves (a Lua userdata), or in a <code>NativeBox</code>. The language reaches their fields through the <code>NativeType</code>’s accessors and their methods through the functions registered on the type; anything else goes through <code>NativeStorage::to_script_value</code>, a reference to a copy. A language can decline native values (<code>ReturnSink::native</code> returning false), which then come back as references.</p>
 <h2 id="dispatching-to-rust"><a class="header" href="#dispatching-to-rust">Dispatching to Rust</a></h2>
 <p>All lookup rules live in <code>bevy_mod_scripting_bindings::dispatch</code>; a language maps its operators and metamethods onto it, and converts the values:</p>
 <div class="table-wrapper">
