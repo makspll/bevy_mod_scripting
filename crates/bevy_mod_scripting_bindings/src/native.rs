@@ -684,6 +684,51 @@ pub struct NativeField {
     pub set: Option<DynamicScriptFunction>,
     /// The type of the field's values, if known
     pub type_id: Option<TypeId>,
+    /// Where values store the field, if languages may read and write it in place instead of calling the accessors
+    pub direct: Option<DirectField>,
+}
+
+/// A primitive field at an offset of every value of a [`NativeType`], which languages read and write in place in the values
+/// they store (not in places), checking the value's borrow flag.
+///
+/// The accessors do the same: reading converts to the language's number or boolean, writing a number truncates it with `as`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DirectField {
+    /// The offset of the field in the value
+    pub offset: usize,
+    /// The type of the field
+    pub kind: DirectKind,
+}
+
+/// The type of a [`DirectField`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DirectKind {
+    /// `f32`
+    F32,
+    /// `f64`
+    F64,
+    /// `i32`
+    I32,
+    /// `u32`
+    U32,
+    /// `bool`
+    Bool,
+}
+
+impl DirectKind {
+    /// The kind of `F`, if it's one of the direct types
+    pub fn of<F: 'static>() -> Option<Self> {
+        let id = TypeId::of::<F>();
+        [
+            (TypeId::of::<f32>(), Self::F32),
+            (TypeId::of::<f64>(), Self::F64),
+            (TypeId::of::<i32>(), Self::I32),
+            (TypeId::of::<u32>(), Self::U32),
+            (TypeId::of::<bool>(), Self::Bool),
+        ]
+        .into_iter()
+        .find_map(|(t, kind)| (t == id).then_some(kind))
+    }
 }
 
 /// The offset of `field` (an `F`) in the `T` at `value`, if it's inside it, not reached through a `Deref` to elsewhere.
@@ -736,6 +781,7 @@ impl NativeType {
                 None,
             )),
             type_id: None,
+            direct: None,
         };
         self.fields.insert(name.into(), field);
         self
@@ -849,6 +895,12 @@ impl NativeType {
                 get,
                 set: Some(set),
                 type_id: Some(TypeId::of::<F>()),
+                direct: match at {
+                    FieldAt::Offset(offset) => {
+                        DirectKind::of::<F>().map(|kind| DirectField { offset, kind })
+                    }
+                    FieldAt::Deref(_) => None,
+                },
             },
         );
         self

@@ -45,9 +45,13 @@ use std::{
 
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, InteropError, ScriptValue, WorldExtensions, dispatch,
-    native::{ArgSource, NativeStorage, NativeType, NativeVTable, ReturnSink},
+    native::{
+        ArgSource, DirectField, DirectKind, NativeHeader, NativeStorage, NativeType, NativeVTable,
+        ReturnSink,
+    },
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
+use bevy_mod_scripting_world::BorrowFlag;
 use bevy_mod_scripting_world::ThreadWorldContainer;
 use mlua::{FromLua, IntoLua, IntoLuaMulti, Lua, MultiValue, ffi, state::RawLua};
 
@@ -950,7 +954,15 @@ unsafe fn push_native_metatable(
         let fields = native
             .fields
             .iter()
-            .map(|(name, field)| (name.clone(), field.get.clone(), field.set.clone()))
+            .map(|(name, field)| {
+                (
+                    name.clone(),
+                    field.get.clone(),
+                    field.set.clone(),
+                    // places are in the world: their fields are read and written through the accessors
+                    field.direct.filter(|_| !vtable.place),
+                )
+            })
             .collect::<Vec<_>>();
         let methods = native
             .methods
@@ -978,7 +990,105 @@ type Fields = Vec<(
     Cow<'static, str>,
     DynamicScriptFunction,
     Option<DynamicScriptFunction>,
+    Option<DirectField>,
 )>;
+
+/// A [`DirectField`] as a Lua integer, kept in the getters and setters of a metatable: `offset << 3 | kind`.
+fn direct_code(field: DirectField) -> ffi::lua_Integer {
+    let kind = match field.kind {
+        DirectKind::F32 => 0,
+        DirectKind::F64 => 1,
+        DirectKind::I32 => 2,
+        DirectKind::U32 => 3,
+        DirectKind::Bool => 4,
+    };
+    ((field.offset as ffi::lua_Integer) << 3) | kind
+}
+
+/// The field of the native value at 1 a [`direct_code`] stands for: the field's address and kind.
+///
+/// # Safety
+/// The value at 1 is a native value of the type the code was made for.
+unsafe fn direct_field(
+    l: *mut ffi::lua_State,
+    code: ffi::lua_Integer,
+) -> (&'static BorrowFlag, *mut u8, u8) {
+    unsafe {
+        let base = align_up(ffi::lua_touserdata(l, 1) as *mut u8);
+        // the userdata is on the stack for the call, the header outlives the borrow of it below
+        let header: &'static NativeHeader = NativeStorage::header(base);
+        let field = NativeStorage::value(base).add((code >> 3) as usize);
+        (&header.borrow, field, (code & 7) as u8)
+    }
+}
+
+/// Pushes the direct field `code` of the native value at 1, see [`DirectField`]. `[-0, +(0|1), -]`: false (nothing
+/// pushed) if the value is borrowed mutably, which the getter reports.
+///
+/// # Safety
+/// The value at 1 is a native value of the type the code was made for.
+unsafe fn direct_get(l: *mut ffi::lua_State, code: ffi::lua_Integer) -> bool {
+    unsafe {
+        let (borrow, field, kind) = direct_field(l, code);
+        if borrow.is_borrowed_mut() {
+            return false;
+        }
+        // the same values the getter returns: floats as numbers, integers as integers
+        match kind {
+            0 => ffi::lua_pushnumber(l, *(field as *const f32) as ffi::lua_Number),
+            1 => ffi::lua_pushnumber(l, *(field as *const f64) as ffi::lua_Number),
+            2 => ffi::lua_pushinteger(l, *(field as *const i32) as ffi::lua_Integer),
+            3 => ffi::lua_pushinteger(l, *(field as *const u32) as ffi::lua_Integer),
+            _ => ffi::lua_pushboolean(l, *(field as *const bool) as c_int),
+        }
+        true
+    }
+}
+
+/// Writes the value at 3 to the direct field `code` of the native value at 1, see [`DirectField`]. `[-0, +0, -]`: false
+/// (nothing written) if the value is borrowed or the new value isn't a number (a boolean for booleans), which the setter
+/// handles.
+///
+/// # Safety
+/// The value at 1 is a native value of the type the code was made for.
+unsafe fn direct_set(l: *mut ffi::lua_State, code: ffi::lua_Integer) -> bool {
+    unsafe {
+        let (borrow, field, kind) = direct_field(l, code);
+        if borrow.is_borrowed() {
+            return false;
+        }
+        if kind == 4 {
+            if ffi::lua_type(l, 3) != ffi::LUA_TBOOLEAN {
+                return false;
+            }
+            *(field as *mut bool) = ffi::lua_toboolean(l, 3) != 0;
+            return true;
+        }
+        if ffi::lua_type(l, 3) != ffi::LUA_TNUMBER {
+            return false;
+        }
+        // like the setter: integers first, then numbers, truncated with `as`
+        #[cfg(any(feature = "lua54", feature = "lua53", feature = "luau"))]
+        if ffi::lua_isinteger(l, 3) != 0 {
+            let i = ffi::lua_tointeger(l, 3) as i64;
+            match kind {
+                0 => *(field as *mut f32) = i as f32,
+                1 => *(field as *mut f64) = i as f64,
+                2 => *(field as *mut i32) = i as i32,
+                _ => *(field as *mut u32) = i as u32,
+            }
+            return true;
+        }
+        let n = ffi::lua_tonumber(l, 3) as f64;
+        match kind {
+            0 => *(field as *mut f32) = n as f32,
+            1 => *(field as *mut f64) = n,
+            2 => *(field as *mut i32) = n as i32,
+            _ => *(field as *mut u32) = n as u32,
+        }
+        true
+    }
+}
 
 /// Makes the metatable of a native type and keeps it in the registry (`registry[vtable_key] = mt`).
 /// `[-0, +0, m]`: protected mode only, so it owns no Rust value.
@@ -1020,10 +1130,13 @@ unsafe fn build_native_metatable(
         });
 
         // __index: getters, then methods, then the slow path
-        // [.., mt, getters], each `getters[name] = holder`
+        // [.., mt, getters], each `getters[name] = holder`, or the field's `direct_code`
         ffi::lua_createtable(l, 0, fields.len() as c_int);
-        for (name, get, _) in fields {
-            push_holder(l, get);
+        for (name, get, _, direct) in fields {
+            match direct {
+                Some(direct) => ffi::lua_pushinteger(l, direct_code(*direct)),
+                None => push_holder(l, get),
+            }
             set_field(l, name);
         }
         // [.., mt, getters, methods], each `methods[name] = function`
@@ -1032,21 +1145,38 @@ unsafe fn build_native_metatable(
             push_function(l, function);
             set_field(l, name);
         }
-        // pops both into upvalues 1 and 2: [.., mt, __index]
-        ffi::lua_pushcclosure(l, native_index, 2);
+        // [.., mt, getters, methods, accessors], the getters of direct fields for when they can't be read in place
+        ffi::lua_createtable(l, 0, 0);
+        for (name, get, _, direct) in fields {
+            if direct.is_some() {
+                push_holder(l, get);
+                set_field(l, name);
+            }
+        }
+        // pops the three into upvalues 1, 2 and 3: [.., mt, __index]
+        ffi::lua_pushcclosure(l, native_index, 3);
         // [.., mt]
         ffi::lua_setfield(l, -2, c"__index".as_ptr());
 
-        // __newindex: setters
-        // [.., mt, setters] -> pushcclosure -> [.., mt, __newindex] -> setfield -> [.., mt]
+        // __newindex: setters, each `setters[name] = holder` or the field's `direct_code`, and the setters of direct fields
+        // [.., mt, setters, accessors] -> pushcclosure -> [.., mt, __newindex] -> setfield -> [.., mt]
         ffi::lua_createtable(l, 0, fields.len() as c_int);
-        for (name, _, set) in fields {
-            if let Some(set) = set {
+        for (name, _, set, direct) in fields {
+            match (set, direct) {
+                (Some(_), Some(direct)) => ffi::lua_pushinteger(l, direct_code(*direct)),
+                (Some(set), None) => push_holder(l, set),
+                (None, _) => continue,
+            }
+            set_field(l, name);
+        }
+        ffi::lua_createtable(l, 0, 0);
+        for (name, _, set, direct) in fields {
+            if let (Some(set), Some(_)) = (set, direct) {
                 push_holder(l, set);
                 set_field(l, name);
             }
         }
-        ffi::lua_pushcclosure(l, native_newindex, 1);
+        ffi::lua_pushcclosure(l, native_newindex, 2);
         ffi::lua_setfield(l, -2, c"__newindex".as_ptr());
 
         // upvalues: the operator, its typed function and its typed reflected function, if any
@@ -1133,7 +1263,19 @@ unsafe extern "C-unwind" fn native_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         // [v, name, name] -> rawget pops the key -> [v, name, getters[name]]
         ffi::lua_pushvalue(l, 2);
-        if ffi::lua_rawget(l, ffi::lua_upvalueindex(1)) == ffi::LUA_TUSERDATA {
+        let mut getter = ffi::lua_rawget(l, ffi::lua_upvalueindex(1));
+        if getter == ffi::LUA_TNUMBER {
+            // a field read in place, else by its getter in upvalue 3 (`accessors`)
+            let code = ffi::lua_tointeger(l, -1);
+            if direct_get(l, code) {
+                return 1;
+            }
+            // [v, name, accessors[name]]
+            ffi::lua_pop(l, 1);
+            ffi::lua_pushvalue(l, 2);
+            getter = ffi::lua_rawget(l, ffi::lua_upvalueindex(3));
+        }
+        if getter == ffi::LUA_TUSERDATA {
             // kept alive by the table in the upvalue
             let getter = holder_function(ffi::lua_touserdata(l, -1));
             // [v]: the getter's only argument
@@ -1180,7 +1322,19 @@ unsafe extern "C-unwind" fn native_newindex(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         // [v, name, x, name] -> rawget pops the key -> [v, name, x, setters[name]]
         ffi::lua_pushvalue(l, 2);
-        if ffi::lua_rawget(l, ffi::lua_upvalueindex(1)) == ffi::LUA_TUSERDATA {
+        let mut setter = ffi::lua_rawget(l, ffi::lua_upvalueindex(1));
+        if setter == ffi::LUA_TNUMBER {
+            // a field written in place, else by its setter in upvalue 2 (`accessors`)
+            let code = ffi::lua_tointeger(l, -1);
+            if direct_set(l, code) {
+                return 0;
+            }
+            // [v, name, x, accessors[name]]
+            ffi::lua_pop(l, 1);
+            ffi::lua_pushvalue(l, 2);
+            setter = ffi::lua_rawget(l, ffi::lua_upvalueindex(2));
+        }
+        if setter == ffi::LUA_TUSERDATA {
             // kept alive by the table in the upvalue
             let setter = holder_function(ffi::lua_touserdata(l, -1));
             // [v, name, x]
@@ -1526,7 +1680,7 @@ mod test {
     #[test]
     fn comparisons_and_callbacks() {
         use bevy_mod_scripting_bindings::{
-            FunctionCallContext, R, ReflectReference, V, function::namespace::NamespaceBuilder,
+            FunctionCallContext, M, R, ReflectReference, V, function::namespace::NamespaceBuilder,
         };
         let mut world = World::default();
         world
@@ -1561,6 +1715,18 @@ mod test {
                     })
                     .into_dynamic_script_function(),
                 ),
+                (
+                    "call_back_mut",
+                    (|ctx: FunctionCallContext,
+                      mut v: M<P>,
+                      f: DynamicScriptFunction|
+                     -> Result<(), InteropError> {
+                        f.call([], ctx)?;
+                        v.x = 0.0;
+                        Ok(())
+                    })
+                    .into_dynamic_script_function(),
+                ),
             ];
             for (name, function) in globals {
                 let function = native_function(&lua, function).unwrap();
@@ -1573,9 +1739,17 @@ mod test {
                 assert(a == r and r == a and r <= b and a <= r and not (b < r), "a value and a reference")
                 assert(r == reference(1) and r < reference(2), "references")
                 local x = coroutine.wrap(function()
-                    return call_back(a, function() return a.x + b.x end)
+                    return call_back(a, function()
+                        assert(not pcall(function() a.x = 5 end), "no writes while borrowed")
+                        return a.x + b.x
+                    end)
                 end)()
                 assert(x == 1, "a callback into Lua from a coroutine, the argument still borrowed")
+                assert(not pcall(call_back_mut, a, function() return a.x end), "no reads while borrowed mutably")
+                a.x = 3
+                b.x = 4.5
+                assert(a.x == 3 and b.x == 4.5 and a < b, "fields written in place")
+                assert(not pcall(function() a.x = "3" end) or a.x == 3, "other values through the setter")
                 "#,
             )
             .exec()
