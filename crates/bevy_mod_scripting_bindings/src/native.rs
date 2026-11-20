@@ -1040,6 +1040,34 @@ where
 /// Values of types with fields of native types aren't stored natively (writes to `t.translation.x` would be lost on a copy),
 /// but components and resources of every native type are: `world.get_component(e, Transform)` returns a native handle
 /// ([`NativePlace`]) whose `t.translation` is a place too, read and written through.
+///
+/// Fields are checked to be of the declared type, exactly:
+///
+/// ```rust
+/// # use bevy_ecs::world::World;
+/// #[derive(bevy_reflect::Reflect, Clone, Default)]
+/// struct Inner {
+///     x: f32,
+/// }
+/// let mut world = World::default();
+/// bevy_mod_scripting_bindings::script_native!(&mut world, Inner { x: f32 });
+/// ```
+///
+/// ```rust,compile_fail,E0308
+/// # use bevy_ecs::world::World;
+/// #[derive(bevy_reflect::Reflect, Clone, Default)]
+/// struct Inner {
+///     x: f32,
+/// }
+/// #[derive(bevy_reflect::Reflect, Clone, Default)]
+/// struct Outer {
+///     #[reflect(ignore)]
+///     inner: Box<Inner>,
+/// }
+/// let mut world = World::default();
+/// // a `Box<Inner>` isn't an `Inner`, its pointer would be read as one
+/// bevy_mod_scripting_bindings::script_native!(&mut world, Outer { inner: Inner });
+/// ```
 #[macro_export]
 macro_rules! script_native {
     ($world:expr, deref $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {{
@@ -1067,8 +1095,9 @@ macro_rules! script_native {
         use $crate::native::{FieldConvScript as _, FieldConvValue as _};
         let native = $crate::native::NativeType::new::<$ty>();
         $(
-            // a field of the type itself, at the same offset in every value
-            const _: fn(&$ty) -> &$field_ty = |value| &value.$field;
+            // a field of the type itself (`offset_of!` below doesn't go through `Deref`), of exactly this type: a raw
+            // pointer isn't coerced, a reference would be (`&Box<F>` to `&F`)
+            const _: fn(&$ty) -> *const $field_ty = |value| ::core::ptr::addr_of!(value.$field);
             // Safety: every value has a `$field_ty` (checked above) at the offset
             let native = unsafe {
                 native.with_struct_field::<$ty, $field_ty>(
