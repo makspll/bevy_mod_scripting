@@ -322,6 +322,13 @@ impl NativeStorage {
 
     /// The number of bytes the storage of a value with this vtable needs
     pub fn size(vtable: &NativeVTable) -> usize {
+        // Size(Header) divides the alignment, so the padding then must get us to the Align boundary of values
+        // The difference between these two align values gives us the MAXIMUM required distance to such a point in memory,
+        // for example with Align(Header) = 8, and Align(Value) = 8, 8 - 8 = 0, as they are already aligned,
+        // with Align(Header) = 8 and Align(Value) = 16, we need to make 8 bytes of space to reach the next 16 block
+        // With Align(Header) = 8 and Align(Value) = 4 because only powers of 2 are allowed, any lower alignment for the value is already aligned
+        // this is a higher bound, as the address might end up not needing padding say in the case of 8 and 16, if we end up at address 8 instead of 0.
+        // value_ptr calculates the actual padding necessary given the exact address
         size_of::<NativeHeader>()
             + vtable.layout.align().saturating_sub(Self::ALIGN)
             + vtable.layout.size()
@@ -331,6 +338,7 @@ impl NativeStorage {
         // the storage has room for the header, the padding and the value, see `size`
         let start = base.wrapping_add(size_of::<NativeHeader>());
         let align = vtable.layout.align();
+        // start & (align - 1) is equivalent to start % align, align - 1 is a bitmask over the remainder
         let padding = (align - (start as usize & (align - 1))) & (align - 1);
         start.wrapping_add(padding)
     }
