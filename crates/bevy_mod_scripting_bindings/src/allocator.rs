@@ -29,11 +29,17 @@ pub struct ReflectAllocationId {
 /// ([`SharedClaims`]) since clones of a reference can be used through any guard, i.e. by script systems on other threads.
 trait AllocatedValue: ExternalValue {
     fn get_ptr(&self) -> *mut dyn PartialReflect;
+
+    /// Whether the value is a copy of a native value, see [`ReflectAllocationId::is_native_copy`]
+    fn is_native_copy(&self) -> bool {
+        false
+    }
 }
 
 /// A value of a known type, in the same heap allocation as its reference counts.
 struct Inline<T> {
     claims: SharedClaims,
+    native_copy: bool,
     value: UnsafeCell<T>,
 }
 
@@ -49,6 +55,10 @@ impl<T: Send + 'static> ExternalValue for Inline<T> {
 impl<T: PartialReflect> AllocatedValue for Inline<T> {
     fn get_ptr(&self) -> *mut dyn PartialReflect {
         self.value.get()
+    }
+
+    fn is_native_copy(&self) -> bool {
+        self.native_copy
     }
 }
 
@@ -80,9 +90,27 @@ impl ReflectAllocationId {
         Self {
             value: Arc::new(Inline {
                 claims: SharedClaims::default(),
+                native_copy: false,
                 value: UnsafeCell::new(value),
             }),
         }
+    }
+
+    /// Allocates a copy of a native value (see [`crate::native`]), which nothing can change in place (write claims fail):
+    /// the change would be lost with the copy.
+    pub fn new_native_copy<T: PartialReflect>(value: T) -> Self {
+        Self {
+            value: Arc::new(Inline {
+                claims: SharedClaims::read_only(),
+                native_copy: true,
+                value: UnsafeCell::new(value),
+            }),
+        }
+    }
+
+    /// Whether this is a copy of a native value, see [`Self::new_native_copy`].
+    pub fn is_native_copy(&self) -> bool {
+        self.value.is_native_copy()
     }
 
     /// Allocates a value which is already boxed.

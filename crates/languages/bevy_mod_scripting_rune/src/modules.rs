@@ -10,6 +10,7 @@ use rune::{
 
 use crate::{
     error::vm,
+    native::RuneArg,
     types::{ScriptFunction, call_raw, converter},
     value::{from_rune, to_rune},
 };
@@ -42,11 +43,8 @@ pub fn register_globals(
             .raw_function(
                 name,
                 call_raw(move |values: &[Value]| {
-                    let args = values
-                        .iter()
-                        .map(from_rune)
-                        .collect::<Result<Vec<_>, _>>()?;
-                    convert(function.call(args)?)
+                    let args = values.iter().map(RuneArg::Value).collect::<Vec<_>>();
+                    function.call(&args, convert)
                 }),
             )
             .build()?;

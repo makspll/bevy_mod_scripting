@@ -93,6 +93,39 @@ pub struct CallScope<'w> {
     guard: WorldGuard<'w>,
     /// The claims made through this scope, released when it's dropped
     claims: RefCell<SmallVec<[WorldAccessRange; 4]>>,
+    /// The borrows of values outside the world made through this scope, see [`Self::borrow`], released when it's dropped
+    borrows: RefCell<SmallVec<[(*const BorrowFlag, bool); 2]>>,
+}
+
+/// Tracks the borrows of a value outside the world, i.e. one stored natively by a script language, like a `RefCell`.
+///
+/// Positive counts are shared borrows, -1 is an exclusive one. Not thread safe: script values belong to one thread.
+#[derive(Debug, Default)]
+pub struct BorrowFlag(std::cell::Cell<isize>);
+
+impl BorrowFlag {
+    fn try_borrow(&self, exclusive: bool) -> bool {
+        let current = self.0.get();
+        let next = match exclusive {
+            true if current == 0 => -1,
+            false if (0..isize::MAX).contains(&current) => current + 1,
+            _ => return false,
+        };
+        self.0.set(next);
+        true
+    }
+
+    fn release(&self, exclusive: bool) {
+        match exclusive {
+            true => self.0.set(0),
+            false => self.0.set(self.0.get() - 1),
+        }
+    }
+
+    /// Whether the value is borrowed exclusively, so it can't be read.
+    pub fn is_borrowed_mut(&self) -> bool {
+        self.0.get() < 0
+    }
 }
 
 impl<'w> CallScope<'w> {
@@ -100,7 +133,24 @@ impl<'w> CallScope<'w> {
         Self {
             guard,
             claims: Default::default(),
+            borrows: Default::default(),
         }
+    }
+
+    /// Borrows a value outside the world for as long as this scope, shared or `exclusive`.
+    ///
+    /// Returns false if the value is already borrowed in a conflicting way, i.e. passed both as `&mut` and `&` to a function.
+    ///
+    /// # Safety
+    /// The flag must stay valid until the scope is dropped.
+    pub unsafe fn borrow(&self, flag: &BorrowFlag, exclusive: bool) -> bool {
+        let borrowed = flag.try_borrow(exclusive);
+        if borrowed {
+            self.borrows
+                .borrow_mut()
+                .push((flag as *const BorrowFlag, exclusive));
+        }
+        borrowed
     }
 
     /// The world guard this scope belongs to
@@ -139,6 +189,10 @@ impl Drop for CallScope<'_> {
         for key in self.claims.get_mut().drain(..).rev() {
             // Safety: the borrows made under the claim can't outlive the scope
             unsafe { self.guard.release_access(key) }
+        }
+        for (flag, exclusive) in self.borrows.get_mut().drain(..) {
+            // Safety: `borrow`'s caller keeps the flag valid until now
+            unsafe { (*flag).release(exclusive) }
         }
     }
 }

@@ -39,6 +39,17 @@ Do not write getters or setters for public fields.
 - There is one function per name: registering a name again replaces the function. For mixed operands accept a `Union`, i.e. `rhs: Union<R<Vec3>, f32>`.
 - Mutate in place by taking `M<Self>`; pure functions return new values.
 
+### Native types
+
+Hot value types, i.e. `Vec3`, can be stored by the languages themselves instead of being referenced through the world. Functions read them without converting to `ScriptValue`s:
+
+```rust,ignore
+// fields are read and written with typed accessors
+script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
+```
+
+Arguments which aren't native, i.e. references to vectors in components, are converted as usual.
+
 ## Documentation
 
 Doc comments end up in the generated docs and in editor declaration files, and are read by script writers rather than Rust developers:

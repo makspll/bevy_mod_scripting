@@ -296,8 +296,9 @@ impl UVec3 {
     }
 }
 
-/// Registers the functions of all integer vectors.
+/// Registers the functions of all integer vectors, which are stored natively by the languages.
 pub(crate) fn register(world: &mut World) {
+    use bevy_mod_scripting_bindings::script_native;
     register_ivec2_shared_functions(world);
     register_ivec3_shared_functions(world);
     register_uvec2_shared_functions(world);
@@ -306,4 +307,22 @@ pub(crate) fn register(world: &mut World) {
     register_ivec3_functions(world);
     register_uvec2_functions(world);
     register_uvec3_functions(world);
+    script_native!(world, IVec2 { x: i32, y: i32 });
+    script_native!(
+        world,
+        IVec3 {
+            x: i32,
+            y: i32,
+            z: i32
+        }
+    );
+    script_native!(world, UVec2 { x: u32, y: u32 });
+    script_native!(
+        world,
+        UVec3 {
+            x: u32,
+            y: u32,
+            z: u32
+        }
+    );
 }

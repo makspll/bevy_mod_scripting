@@ -1,9 +1,11 @@
 use std::{any::TypeId, borrow::Cow};
 
-use bevy_mod_scripting_bindings::{ReflectReference, WorldGuard, dispatch, error::InteropError};
+use bevy_mod_scripting_bindings::{
+    ReflectReference, ScriptValue, WorldGuard, dispatch, error::InteropError,
+};
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
-use mlua::{FromLua, IntoLua, MetaMethod, UserData, UserDataMethods};
+use mlua::{FromLua, IntoLua, MetaMethod, UserData, UserDataFields, UserDataMethods};
 
 use crate::IntoMluaError;
 
@@ -42,22 +44,40 @@ fn with_world<O>(
     f(world).map_err(IntoMluaError::to_lua_error)
 }
 
-/// The metamethod of a binary operator, see [`dispatch::binary`].
-///
-/// Lua calls it with the operands in their original order, so for `2 * v` the value is on the right.
-fn binary_operator(
-    operator: ScriptOperatorNames,
-) -> impl Fn(&mlua::Lua, (LuaScriptValue, LuaScriptValue)) -> mlua::Result<LuaScriptValue> {
-    move |_, (lhs, rhs)| {
-        profiling::function_scope!("MetaMethod::BinaryOperator");
-        with_world(|world| {
-            dispatch::binary(world, operator, lhs.into(), rhs.into(), LUA_CALLER_CONTEXT)
-        })
-        .map(LuaScriptValue)
-    }
-}
-
 impl UserData for LuaReflectReference {
+    fn add_fields<F: UserDataFields<Self>>(f: &mut F) {
+        // binary operators call the operator's function with the operands as they are on the stack, see
+        // `super::native::reference_operator`. Lua calls them with the operands in their original order, so for `2 * v`
+        // the value is on the right
+        for (metamethod, operator) in [
+            (MetaMethod::Add, ScriptOperatorNames::Addition),
+            (MetaMethod::Sub, ScriptOperatorNames::Subtraction),
+            (MetaMethod::Mul, ScriptOperatorNames::Multiplication),
+            (MetaMethod::Div, ScriptOperatorNames::Division),
+            (MetaMethod::Mod, ScriptOperatorNames::Remainder),
+            (MetaMethod::Pow, ScriptOperatorNames::Exponentiation),
+        ] {
+            let function = super::native::reference_operator_function(operator);
+            // Safety: the function follows the Lua C API, see `reference_operator`
+            f.add_meta_field_with(metamethod, move |lua| unsafe {
+                lua.create_c_function(function)
+            });
+        }
+        // comparisons are the functions native values share, which also compare references
+        for (metamethod, op) in [
+            (MetaMethod::Eq, super::native::EQ),
+            (MetaMethod::Lt, super::native::LT),
+            (MetaMethod::Le, super::native::LE),
+        ] {
+            // Safety: pushes the function, raising only in the protected mode `exec_raw` runs it in
+            f.add_meta_field_with(metamethod, move |lua| unsafe {
+                lua.exec_raw::<mlua::Function>((), |state| {
+                    super::native::push_comparison(state, op)
+                })
+            });
+        }
+    }
+
     fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
         // methods come back unbound, `v:method()` passes the value itself
         m.add_meta_function(
@@ -107,19 +127,6 @@ impl UserData for LuaReflectReference {
             },
         );
 
-        for (metamethod, operator) in [
-            (MetaMethod::Add, ScriptOperatorNames::Addition),
-            (MetaMethod::Sub, ScriptOperatorNames::Subtraction),
-            (MetaMethod::Mul, ScriptOperatorNames::Multiplication),
-            (MetaMethod::Div, ScriptOperatorNames::Division),
-            (MetaMethod::Mod, ScriptOperatorNames::Remainder),
-            (MetaMethod::Pow, ScriptOperatorNames::Exponentiation),
-            (MetaMethod::Eq, ScriptOperatorNames::Equality),
-            (MetaMethod::Lt, ScriptOperatorNames::LessThanComparison),
-        ] {
-            m.add_meta_function(metamethod, binary_operator(operator));
-        }
-
         m.add_meta_function(MetaMethod::Unm, |_, self_: LuaReflectReference| {
             profiling::function_scope!("MetaMethod::Unm");
             with_world(|world| {
@@ -166,12 +173,17 @@ impl UserData for LuaTypeRef {
     fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
         m.add_meta_function(
             MetaMethod::Index,
-            |_, (self_, key): (LuaTypeRef, LuaScriptValue)| {
+            |lua, (self_, key): (LuaTypeRef, LuaScriptValue)| {
                 profiling::function_scope!("MetaMethod::Index");
-                with_world(|world| {
+                let member = with_world(|world| {
                     dispatch::static_index(world, self_.0, key.into(), LUA_CALLER_CONTEXT)
-                })
-                .map(LuaScriptValue)
+                })?;
+                match member {
+                    // functions of types live in the registry (bound ones are cached there too): their Lua functions
+                    // are made once, not on every `Type.name`
+                    ScriptValue::Function(function) => registered_function_into_lua(lua, function),
+                    member => LuaScriptValue(member).into_lua(lua),
+                }
             },
         );
     }

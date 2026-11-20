@@ -22,6 +22,7 @@ use rune::{
 
 use crate::{
     error::vm,
+    native::RuneArg,
     value::{RUNE_CALLER_CONTEXT, from_rune, function_to_rune, namespace_to_rune, to_rune},
 };
 
@@ -35,11 +36,28 @@ pub enum ScriptFunction {
 }
 
 impl ScriptFunction {
-    /// Calls the function
-    pub fn call(&self, args: Vec<ScriptValue>) -> Result<ScriptValue, InteropError> {
-        match self {
-            ScriptFunction::Plain(f) => f.call(args, RUNE_CALLER_CONTEXT),
-            ScriptFunction::Mut(f) => f.call(args, RUNE_CALLER_CONTEXT),
+    /// Calls the function with the arguments as they are, a [`ScriptValue`] result is converted with `convert`.
+    pub(crate) fn call(
+        &self,
+        args: &[RuneArg],
+        convert: fn(ScriptValue) -> Result<Value, InteropError>,
+    ) -> Result<Value, InteropError> {
+        crate::native::call_with(
+            |args, ret| match self {
+                ScriptFunction::Plain(f) => f.call_with(args, ret, RUNE_CALLER_CONTEXT),
+                ScriptFunction::Mut(f) => f.call_with(args, ret, RUNE_CALLER_CONTEXT),
+            },
+            args,
+            convert,
+        )
+    }
+
+    /// The function of a member, if it is one.
+    fn of_member(member: ScriptValue) -> Result<Self, InteropError> {
+        match member {
+            ScriptValue::Function(f) => Ok(ScriptFunction::Plain(f)),
+            ScriptValue::FunctionMut(f) => Ok(ScriptFunction::Mut(f)),
+            _ => Err(InteropError::str("the member is not a function")),
         }
     }
 }
@@ -69,7 +87,7 @@ pub struct RuneFunction(pub ScriptFunction);
 #[rune(item = ::bms, name = Iter)]
 pub struct RuneIter(ScriptFunction);
 
-fn world() -> Result<WorldGuard<'static>, InteropError> {
+pub(crate) fn world() -> Result<WorldGuard<'static>, InteropError> {
     Ok(ThreadWorldContainer::try_get_context()?.world)
 }
 
@@ -91,7 +109,7 @@ fn member_to_rune(
     }
 }
 
-fn get_ref_member(this: &RuneRef, name: &str) -> Result<Value, InteropError> {
+pub(crate) fn get_ref_member(this: &RuneRef, name: &str) -> Result<Value, InteropError> {
     let member = dispatch::index_name(
         world()?,
         Cow::Borrowed(&this.0),
@@ -120,14 +138,6 @@ fn get_namespace_member(this: &RuneNamespace, name: &str) -> Result<Value, Inter
     }
 }
 
-fn call_value(value: ScriptValue, args: Vec<ScriptValue>) -> Result<ScriptValue, InteropError> {
-    match value {
-        ScriptValue::Function(f) => ScriptFunction::Plain(f).call(args),
-        ScriptValue::FunctionMut(f) => ScriptFunction::Mut(f).call(args),
-        _ => Err(InteropError::str("the member is not a function")),
-    }
-}
-
 /// Makes a raw Rune function from one which takes the values on the stack, the first of which is the receiver of a method.
 pub fn call_raw<F>(
     f: F,
@@ -146,10 +156,7 @@ where
     }
 }
 
-/// Calls the member `name` of the receiver, which is the first value on the stack, with the rest as arguments.
-///
-/// `convert` converts the result, see [`converter`].
-fn call_member_inner(
+pub(crate) fn call_member_inner(
     name: &str,
     convert: fn(ScriptValue) -> Result<Value, InteropError>,
     values: &[Value],
@@ -157,8 +164,17 @@ fn call_member_inner(
     let (receiver, rest) = values
         .split_first()
         .ok_or_else(|| InteropError::str("a method needs a receiver"))?;
-    let args = rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>()?;
-    let result = if let Ok(this) = receiver.borrow_ref::<RuneRef>() {
+    // functions get the values as they are, see `crate::native`; `with_receiver` passes the receiver first
+    let call = |member: ScriptValue, with_receiver: bool| {
+        let args = with_receiver
+            .then_some(receiver)
+            .into_iter()
+            .chain(rest)
+            .map(RuneArg::Value)
+            .collect::<Vec<_>>();
+        ScriptFunction::of_member(member)?.call(&args, convert)
+    };
+    if let Ok(this) = receiver.borrow_ref::<RuneRef>() {
         let member = dispatch::index_name(
             world()?,
             Cow::Borrowed(&this.0),
@@ -166,13 +182,8 @@ fn call_member_inner(
             RUNE_CALLER_CONTEXT,
         )?;
         match member {
-            Member::Method(func) => {
-                let mut with_receiver = Vec::with_capacity(args.len() + 1);
-                with_receiver.push(ScriptValue::Reference(this.0.clone()));
-                with_receiver.extend(args);
-                func.call(with_receiver, RUNE_CALLER_CONTEXT)?
-            }
-            Member::Static(value) => call_value(value, args)?,
+            Member::Method(func) => call(ScriptValue::Function(func), true),
+            Member::Static(value) => call(value, false),
         }
     } else if let Ok(this) = receiver.borrow_ref::<RuneType>() {
         let member = dispatch::static_index(
@@ -181,18 +192,17 @@ fn call_member_inner(
             ScriptValue::String(name.to_owned().into()),
             RUNE_CALLER_CONTEXT,
         )?;
-        call_value(member, args)?
+        call(member, false)
     } else if let Ok(this) = receiver.borrow_ref::<RuneNamespace>() {
         let member = this.0.get(name).cloned().ok_or_else(|| {
             InteropError::external(crate::error::RuneError(format!(
                 "the namespace has no member `{name}`"
             )))
         })?;
-        call_value(member, args)?
+        call(member, false)
     } else {
-        return Err(InteropError::str("unsupported receiver"));
-    };
-    convert(result)
+        Err(InteropError::str("unsupported receiver"))
+    }
 }
 
 /// How the result of the function `name` is converted, the namespaces `import_namespace` returns can call their functions with the method syntax.
@@ -205,7 +215,7 @@ pub fn converter(name: &str) -> fn(ScriptValue) -> Result<Value, InteropError> {
 }
 
 /// Applies an operator to numbers like Rune does, a float with an integer gives a float, or to references through BMS.
-fn apply_operator(
+pub(crate) fn apply_operator(
     operator: ScriptOperatorNames,
     lhs: ScriptValue,
     rhs: ScriptValue,
@@ -281,21 +291,18 @@ const TUPLE_FIELDS: usize = 16;
 
 fn binary(operator: ScriptOperatorNames, this: &RuneRef, other: &Value) -> VmResult<Value> {
     vm((|| {
-        let rhs = from_rune(other)?;
-        let out = dispatch::binary(
-            world()?,
-            operator,
-            ScriptValue::Reference(this.0.clone()),
-            rhs,
-            RUNE_CALLER_CONTEXT,
-        )?;
-        to_rune(out)
+        // the operator's function gets the values as they are, see `crate::native`
+        let function =
+            dispatch::binary_function(world()?, operator, &this.0, true, RUNE_CALLER_CONTEXT)?;
+        crate::native::call(&function, &[RuneArg::Ref(this), RuneArg::Value(other)])
     })())
 }
 
 fn same_reference(this: &RuneRef, other: &Value) -> Result<Option<bool>, InteropError> {
-    // like in Lua, values of different kinds are never equal
-    if other.borrow_ref::<RuneRef>().is_err() {
+    // like in Lua, values of different kinds are never equal; native values are references BMS stores natively
+    if other.borrow_ref::<RuneRef>().is_err()
+        && other.borrow_ref::<crate::native::RuneNative>().is_err()
+    {
         return Ok(Some(false));
     }
     let rhs = from_rune(other)?;
@@ -363,6 +370,7 @@ pub fn register_types(
     module.ty::<RuneNamespace>()?;
     module.ty::<RuneFunction>()?;
     module.ty::<RuneIter>()?;
+    register_native(module, names)?;
 
     // `v["name"]` works for any name
     module.associated_function(&Protocol::INDEX_GET, |this: &RuneRef, key: Value| {
@@ -452,10 +460,11 @@ pub fn register_types(
         )
     })?;
     module.associated_function(&Protocol::NEXT, |this: &mut RuneIter| {
-        vm((|| match this.0.call(Vec::new())? {
-            ScriptValue::Unit => Ok(None),
-            value => Ok(Some(to_rune(value)?)),
-        })())
+        // the iterator returns nothing once it's done
+        vm(this
+            .0
+            .call(&[], to_rune)
+            .map(|value| (value.type_hash() != <() as rune::TypeHash>::HASH).then_some(value)))
     })?;
 
     module.associated_function(
@@ -498,8 +507,9 @@ pub fn register_types(
                         .into_result()
                         .map_err(crate::error::IntoInteropError::to_bms_error);
                 }
-                let args = rest.iter().map(from_rune).collect::<Result<Vec<_>, _>>()?;
-                to_rune(function.0.call(args)?)
+                // functions of BMS get the values as they are, see `crate::native`
+                let args = rest.iter().map(RuneArg::Value).collect::<Vec<_>>();
+                function.0.call(&args, to_rune)
             }),
         )
         .build_associated::<RuneFunction>()?;
@@ -568,6 +578,75 @@ pub fn register_types(
         module.field_function(&Protocol::GET, name, move |this: &RuneNamespace| {
             vm(get_namespace_member(this, name))
         })?;
+    }
+    Ok(())
+}
+
+/// Registers what can be done with native values, see [`crate::native`].
+fn register_native(
+    module: &mut Module,
+    names: &BTreeSet<&'static str>,
+) -> Result<(), ContextError> {
+    use crate::native::{self, RuneNative};
+    module.ty::<RuneNative>()?;
+
+    module.associated_function(&Protocol::INDEX_GET, |this: &RuneNative, key: Value| {
+        vm(native::index_get(this, &key))
+    })?;
+    module.associated_function(
+        &Protocol::INDEX_SET,
+        |this: &RuneNative, key: Value, value: Value| vm(native::index_set(this, &key, &value)),
+    )?;
+    for (protocol, operator) in [
+        (&Protocol::ADD, ScriptOperatorNames::Addition),
+        (&Protocol::SUB, ScriptOperatorNames::Subtraction),
+        (&Protocol::MUL, ScriptOperatorNames::Multiplication),
+        (&Protocol::DIV, ScriptOperatorNames::Division),
+        (&Protocol::REM, ScriptOperatorNames::Remainder),
+    ] {
+        module.associated_function(protocol, move |this: &RuneNative, other: Value| {
+            vm(native::binary(operator, this, &other))
+        })?;
+    }
+    module.associated_function(&Protocol::PARTIAL_EQ, |this: &RuneNative, other: Value| {
+        vm(native::eq(this, &other))
+    })?;
+    module.associated_function(
+        &Protocol::DISPLAY_FMT,
+        |this: &RuneNative, f: &mut Formatter| {
+            let text = rune::vm_try!(vm(native::display(this, false)));
+            rune::vm_write!(f, "{}", text)
+        },
+    )?;
+    module.associated_function(
+        &Protocol::DEBUG_FMT,
+        |this: &RuneNative, f: &mut Formatter| {
+            let text = rune::vm_try!(vm(native::display(this, true)));
+            rune::vm_write!(f, "{}", text)
+        },
+    )?;
+
+    for &name in names {
+        let convert = converter(name);
+        module
+            .raw_function(
+                name,
+                call_raw(move |values: &[Value]| native::call_method(name, convert, values)),
+            )
+            .build_associated::<RuneNative>()?;
+        module.field_function(&Protocol::GET, name, move |this: &RuneNative| {
+            vm(native::get(this, name))
+        })?;
+        module.field_function(
+            &Protocol::SET,
+            name,
+            move |this: &RuneNative, value: Value| vm(native::set(this, name, &value)),
+        )?;
+        for (protocol, operator) in COMPOUND_ASSIGNMENTS {
+            module.field_function(protocol, name, move |this: &RuneNative, value: Value| {
+                vm(native::assign(operator, this, name, &value))
+            })?;
+        }
     }
     Ok(())
 }

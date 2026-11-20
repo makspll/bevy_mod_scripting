@@ -17,7 +17,7 @@ Multi-language scripting for Bevy (Lua, Rune). Scripts are Bevy assets; they acc
 * BMS uses its own reflection paths (`bindings/src/path`) instead of native Bevy ones, to support script-specific access semantics (e.g. 1-based indexing correction).
 * World access is arbitrary at runtime, so `bevy_mod_scripting_world` enforces borrow safety dynamically via an access map + `WorldGuard`, rather than Bevy's static system params.
 * Script lifecycle (load / attach / reload / unload) is a staged pipeline with per-language context management, in `core/src/pipeline`.
-* Functions exposed to scripts are registered in a type-erased registry (`bindings/src/function`), not per-language; languages adapt to it. Operators/primitives live in `bindings_domain`.
+* Functions exposed to scripts are registered in a type-erased registry (`bindings/src/function`), not per-language; languages adapt to it. Operators/primitives live in `bindings_domain`. Opt-in `Native` functions also get a typed entry (`bindings/src/native.rs`: languages implement `ArgSource`/`ReturnSink` over their own values, `FromScript::from_arg`/`IntoScript::into_ret` default to the `ScriptValue` conversion), and `NativeType`s (math vectors, `Quat`) are stored by the languages themselves (Lua raw userdata, Rune `RuneNative`) instead of referenced. Rune calls typed entries from every call path (`call_values`, `call_member_inner`, `.call(..)`).
 * Languages dispatch every script operation through `bindings::dispatch` (indexing, operators, static members, printing, iteration) and only convert values and deliver method receivers; see `docs/src/Development/AddingLanguages/necessary-features.md`.
 * Functions available on every type (e.g. the shared `new` constructor) are registered on `StaticTypeRef` (`FunctionScope::all_types()`) and bound to the type at lookup by currying a `ScriptValue::Type` (no allocation). Enum variants (`EnumVariantRef`) are resolved the same way, lazily.
 * There are no script globals besides the builtins, hardcoded in `bindings::builtins` (`import_namespace`, `export_namespace`) plus the language's `register_callback`; the function registry is keyed by type only. `world` is the `bms.world` namespace value. Functions which don't belong to a type are members of a namespace (`#[script_bindings(remote, namespace = "...")] impl NamespaceMembers`, stored in `AppScriptNamespaceMembers`), i.e. `import_namespace("bms").log_info`; the running script's entity and handle are `bms.current_entity()` / `bms.current_script()`, looked up only when called.
@@ -30,6 +30,8 @@ Multi-language scripting for Bevy (Lua, Rune). Scripts are Bevy assets; they acc
 ## Working here
 * Builds are heavy; scope cargo to one crate (`-p`) and use `xtask` for anything broader.
 * Lints are strict (see `clippy.toml`); `unwrap`/`expect` need justified `allow`s.
+* The unsafe native value paths have Miri tests (`native::` tests of the bindings and Rune crates), run with `cargo xtask miri` and in CI; extend them when changing `native.rs` code. Lua's side is C and can't run under Miri.
+* Benchmarks renamed on bencher.dev are listed in `benches/bencher_renames.txt`, applied on main by `cargo xtask bencher-migrate` before publishing, which fails if a rename can't be done.
 * Prefer direct names that say what a method does over short ambiguous ones, especially for side effects: `make_or_get_generic_layout` (caches), not `generic_layout`.
 
 ## Keeping notes in sync

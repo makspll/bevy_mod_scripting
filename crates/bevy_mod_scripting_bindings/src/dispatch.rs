@@ -148,33 +148,48 @@ pub fn binary(
     ctx: FunctionCallContext,
 ) -> Result<ScriptValue, InteropError> {
     profiling::function_scope!("dispatch::binary");
-    let (receiver, other, name) = match (lhs, rhs) {
-        (ScriptValue::Reference(receiver), other) => {
-            (receiver, other, operator.script_function_name())
-        }
-        (other, ScriptValue::Reference(receiver)) => {
-            match operator.reflected_script_function_name() {
-                Some(name) => (receiver, other, name),
-                None => {
-                    return Err(InteropError::str(
-                        "the right operand of this operator can't be a value",
-                    ));
-                }
-            }
-        }
+    let (receiver, other, on_left) = match (lhs, rhs) {
+        (ScriptValue::Reference(receiver), other) => (receiver, other, true),
+        (other, ScriptValue::Reference(receiver)) => (receiver, other, false),
         _ => {
             return Err(InteropError::str(
                 "neither operand of this operator is a value",
             ));
         }
     };
+    let function = binary_function(world, operator, &receiver, on_left, ctx.clone())?;
+    function.call([ScriptValue::Reference(receiver), other], ctx)
+}
+
+/// The function [`binary`] calls for the reference operand `receiver`, on the left if `on_left`: it takes the receiver
+/// first and the other operand second.
+///
+/// Languages can call it with their own values instead (see [`DynamicScriptFunction::call_with`]), without converting
+/// both operands to [`ScriptValue`]s.
+pub fn binary_function(
+    world: WorldGuard,
+    operator: ScriptOperatorNames,
+    receiver: &ReflectReference,
+    on_left: bool,
+    ctx: FunctionCallContext,
+) -> Result<DynamicScriptFunction, InteropError> {
+    let name = match on_left {
+        true => operator.script_function_name(),
+        false => operator.reflected_script_function_name().ok_or_else(|| {
+            InteropError::str("the right operand of this operator can't be a value")
+        })?,
+    };
     let type_id = receiver.tail_type_id(world.clone())?.or_fake_id();
-    world.call_operator(
-        type_id,
-        name,
-        vec![ScriptValue::Reference(receiver), other],
-        ctx,
-    )
+    // operators not defined on the type itself fall back to the generic ones on `ReflectReference`, i.e. `eq`
+    world
+        .lookup_function([type_id, TypeId::of::<ReflectReference>()], name)
+        .map_err(|name| {
+            InteropError::missing_function(
+                name.to_string(),
+                FunctionScope::OnType(type_id),
+                Some(ctx),
+            )
+        })
 }
 
 /// Applies a unary operator to a reference, i.e. `-v`.

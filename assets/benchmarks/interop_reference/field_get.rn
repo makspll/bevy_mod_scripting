@@ -1,0 +1,13 @@
+// a vector reached through a component: the reflection path, with world access claims
+pub fn pre_bench() {
+    let world = import_namespace("bms").world;
+    let Transform = import_namespace("transform").Transform;
+    let transform_type = world.get_type_by_name("bevy_transform::components::transform::Transform");
+    let entity = world.spawn();
+    world.insert_component(entity, transform_type, Transform.from_xyz(1.0, 2.0, 3.0));
+    world.get_component(entity, transform_type)
+}
+
+pub fn bench(t) {
+    let x = t.translation.x;
+}

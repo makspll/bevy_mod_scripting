@@ -20,7 +20,7 @@ use crate::{
 /// The context for calling a function from Rune
 pub const RUNE_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext::new(Language::Rune);
 
-fn new_value<T: rune::Any>(value: T) -> Result<Value, InteropError> {
+pub(crate) fn new_value<T: rune::Any>(value: T) -> Result<Value, InteropError> {
     Value::new(value).map_err(IntoInteropError::to_bms_error)
 }
 
@@ -156,6 +156,13 @@ pub fn from_rune(value: &Value) -> Result<ScriptValue, InteropError> {
             .map_err(IntoInteropError::to_bms_error)?;
         return Ok(ScriptValue::Reference(reference.0.clone()));
     }
+    if hash == <crate::native::RuneNative as TypeHash>::HASH {
+        // a copy, see `crate::native`
+        let native = value
+            .borrow_ref::<crate::native::RuneNative>()
+            .map_err(IntoInteropError::to_bms_error)?;
+        return native.to_script();
+    }
     if hash == <RuneType as TypeHash>::HASH {
         let type_ref = value
             .borrow_ref::<RuneType>()
@@ -275,16 +282,12 @@ pub fn function_to_rune(
 }
 
 fn call_values(function: &ScriptFunction, args: &[&Value]) -> VmResult<Value> {
-    crate::error::vm((|| {
-        let args = args
-            .iter()
-            .map(|arg| from_rune(arg))
-            .collect::<Result<Vec<_>, _>>()?;
-        match function.call(args)? {
-            ScriptValue::Error(error) => Err(error),
-            result => to_rune(result),
-        }
-    })())
+    // functions get the values as they are, see `crate::native`
+    let args = args
+        .iter()
+        .map(|arg| crate::native::RuneArg::Value(arg))
+        .collect::<Vec<_>>();
+    crate::error::vm(function.call(&args, to_rune))
 }
 
 /// Makes a Rune function which takes the given number of arguments, which Rune needs to know, from a function.

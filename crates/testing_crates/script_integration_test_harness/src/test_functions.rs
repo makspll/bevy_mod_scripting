@@ -36,9 +36,19 @@ pub static RNG: std::sync::LazyLock<Mutex<ChaCha12Rng>> = std::sync::LazyLock::n
 
 pub use rand;
 
+/// A native value which needs dropping, for the tests of native values, see `bevy_mod_scripting_bindings::native`.
+#[derive(Reflect, Clone)]
+pub struct NativeTestValue {
+    pub label: String,
+}
+
 pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
+    bevy_mod_scripting_bindings::script_native!(world, NativeTestValue { label: String });
     NamespaceBuilder::<World>::new_unregistered(world)
+        .register("_make_native_test_value", |label: String| {
+            V(NativeTestValue { label })
+        })
         .register("_get_mock_type", |_s: FunctionCallContext| {
             #[derive(Reflect)]
             struct Dummy;
