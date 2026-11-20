@@ -1271,14 +1271,15 @@ unsafe extern "C-unwind" fn native_operator(l: *mut ffi::lua_State) -> c_int {
     }
 }
 
-/// The metamethod of a binary operator of references, see [`reference_operator`].
+/// The metamethod of an operator of references, see [`reference_operator`].
 pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi::lua_CFunction {
     use ScriptOperatorNames::*;
     macro_rules! of {
         ($($op:ident),*) => {
             match operator {
                 $($op => reference_operator::<{ $op as ffi::lua_Integer }>,)*
-                _ => reference_operator::<{ Addition as ffi::lua_Integer }>,
+                // raises "unknown operator"
+                _ => reference_operator::<-1>,
             }
         };
     }
@@ -1290,20 +1291,28 @@ pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi:
         Remainder,
         Exponentiation,
         Equality,
-        LessThanComparison
+        LessThanComparison,
+        Negation,
+        Length
     )
 }
 
-/// Binary operators of references, i.e. `t.translation + v`: the operator's function of the reference operand (see
-/// [`dispatch::binary_function`]) is called with the operands as they are on the stack, the reference first.
+/// Operators of references, i.e. `t.translation + v` or `-t.translation`: the operator's function of the reference operand
+/// (see [`dispatch::binary_function`]) is called with the operands as they are on the stack, the reference first.
 ///
-/// Called with `[a (1), b (2)]`; `[b, a]` when the reference is `b`. Also called by [`comparison`] on its own stack.
+/// Called with `[a (1), b (2)]` for binary operators, `[b, a]` when the reference is `b`; `[a (1), ..]` for unary ones.
+/// Also called by [`comparison`] on its own stack.
 unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>(
     l: *mut ffi::lua_State,
 ) -> c_int {
     unsafe {
-        // [a, b]
-        ffi::lua_settop(l, 2);
+        let unary = matches!(
+            operator_from_index(OPERATOR),
+            Ok(ScriptOperatorNames::Negation | ScriptOperatorNames::Length)
+        );
+        // Lua passes the operand twice to unary metamethods: [a] for unary operators, [a, b] for binary ones
+        let len = if unary { 1 } else { 2 };
+        ffi::lua_settop(l, len);
         run(l, || {
             let operator = operator_from_index(OPERATOR)?;
             let world = ThreadWorldContainer::try_get_context()?.world;
@@ -1314,6 +1323,17 @@ unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>
                     )
                     .ok()
                 };
+                if unary {
+                    let receiver =
+                        reference(1).ok_or_else(|| InteropError::str("expected a reference"))?;
+                    return dispatch::unary_function(
+                        world,
+                        operator,
+                        &receiver.0,
+                        LUA_CALLER_CONTEXT,
+                    )
+                    .map(|function| (function, true));
+                }
                 let (receiver, on_left) = match reference(1) {
                     Some(receiver) => (receiver, true),
                     None => match reference(2) {
@@ -1332,7 +1352,7 @@ unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>
                 // the reference is the receiver, the first argument: [a, b] -> [b, a]
                 ffi::lua_insert(l, 1);
             }
-            call(l, &function, 1, 2)
+            call(l, &function, 1, len as usize)
         })
     }
 }

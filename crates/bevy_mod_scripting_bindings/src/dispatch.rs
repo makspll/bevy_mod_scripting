@@ -179,17 +179,7 @@ pub fn binary_function(
             InteropError::str("the right operand of this operator can't be a value")
         })?,
     };
-    let type_id = receiver.tail_type_id(world.clone())?.or_fake_id();
-    // operators not defined on the type itself fall back to the generic ones on `ReflectReference`, i.e. `eq`
-    world
-        .lookup_function([type_id, TypeId::of::<ReflectReference>()], name)
-        .map_err(|name| {
-            InteropError::missing_function(
-                name.to_string(),
-                FunctionScope::OnType(type_id),
-                Some(ctx),
-            )
-        })
+    operator_function(world, name, receiver, ctx)
 }
 
 /// Applies a unary operator to a reference, i.e. `-v`.
@@ -200,13 +190,37 @@ pub fn unary(
     ctx: FunctionCallContext,
 ) -> Result<ScriptValue, InteropError> {
     profiling::function_scope!("dispatch::unary");
-    let type_id = value.tail_type_id(world.clone())?.or_fake_id();
-    world.call_operator(
-        type_id,
-        operator.script_function_name(),
-        vec![ScriptValue::Reference(value)],
-        ctx,
-    )
+    let function = unary_function(world, operator, &value, ctx.clone())?;
+    function.call([ScriptValue::Reference(value)], ctx)
+}
+
+/// The function [`unary`] calls for `value`, which takes it as its only argument, see [`binary_function`].
+pub fn unary_function(
+    world: WorldGuard,
+    operator: ScriptOperatorNames,
+    value: &ReflectReference,
+    ctx: FunctionCallContext,
+) -> Result<DynamicScriptFunction, InteropError> {
+    operator_function(world, operator.script_function_name(), value, ctx)
+}
+
+/// The function `name` of the type of `receiver`, or the generic one on `ReflectReference`, i.e. `eq`.
+fn operator_function(
+    world: WorldGuard,
+    name: &'static str,
+    receiver: &ReflectReference,
+    ctx: FunctionCallContext,
+) -> Result<DynamicScriptFunction, InteropError> {
+    let type_id = receiver.tail_type_id(world.clone())?.or_fake_id();
+    world
+        .lookup_function([type_id, TypeId::of::<ReflectReference>()], name)
+        .map_err(|name| {
+            InteropError::missing_function(
+                name.to_string(),
+                FunctionScope::OnType(type_id),
+                Some(ctx),
+            )
+        })
 }
 
 /// The length of a value, i.e. `#v` in Lua.

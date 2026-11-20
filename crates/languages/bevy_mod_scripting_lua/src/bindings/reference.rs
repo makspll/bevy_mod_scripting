@@ -46,9 +46,9 @@ fn with_world<O>(
 
 impl UserData for LuaReflectReference {
     fn add_fields<F: UserDataFields<Self>>(f: &mut F) {
-        // binary operators call the operator's function with the operands as they are on the stack, see
+        // operators call the operator's function with the operands as they are on the stack, see
         // `super::native::reference_operator`. Lua calls them with the operands in their original order, so for `2 * v`
-        // the value is on the right
+        // the value is on the right; `#v` goes through `len` which types can override
         for (metamethod, operator) in [
             (MetaMethod::Add, ScriptOperatorNames::Addition),
             (MetaMethod::Sub, ScriptOperatorNames::Subtraction),
@@ -56,6 +56,8 @@ impl UserData for LuaReflectReference {
             (MetaMethod::Div, ScriptOperatorNames::Division),
             (MetaMethod::Mod, ScriptOperatorNames::Remainder),
             (MetaMethod::Pow, ScriptOperatorNames::Exponentiation),
+            (MetaMethod::Unm, ScriptOperatorNames::Negation),
+            (MetaMethod::Len, ScriptOperatorNames::Length),
         ] {
             let function = super::native::reference_operator_function(operator);
             // Safety: the function follows the Lua C API, see `reference_operator`
@@ -126,25 +128,6 @@ impl UserData for LuaReflectReference {
                 })
             },
         );
-
-        m.add_meta_function(MetaMethod::Unm, |_, self_: LuaReflectReference| {
-            profiling::function_scope!("MetaMethod::Unm");
-            with_world(|world| {
-                dispatch::unary(
-                    world,
-                    ScriptOperatorNames::Negation,
-                    self_.0,
-                    LUA_CALLER_CONTEXT,
-                )
-            })
-            .map(LuaScriptValue)
-        });
-
-        m.add_meta_function(MetaMethod::Len, |_lua, self_: LuaScriptValue| {
-            profiling::function_scope!("MetaMethod::Len");
-            with_world(|world| dispatch::len(world, self_.into(), LUA_CALLER_CONTEXT))
-                .map(LuaScriptValue)
-        });
 
         #[cfg(any(
             feature = "lua54",
