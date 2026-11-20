@@ -179,6 +179,13 @@ pub struct ReferencePath {
     path: Vec<ReferencePart>,
 }
 
+impl ReferencePath {
+    /// The parts of the path, in order.
+    pub fn parts(&self) -> &[ReferencePart] {
+        &self.path
+    }
+}
+
 impl Display for ReferencePart {
     /// Displays the part as it appears in a path: `.field`, `[index]` (0-based) or `[key]`
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
