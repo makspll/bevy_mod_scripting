@@ -77,6 +77,8 @@ local Transform = import_namespace("transform").Transform
 local t = Transform.from_translation(w)
 assert(t.translation == w and w == t.translation, "compared with a reference")
 assert(w:dot(t.translation) == 35, "a reference as an argument")
+assert(t.translation + w == w * 2 and 2 * t.translation == w * 2, "operators of references, reflected too")
+assert(-t.translation == -w, "unary operators of references")
 t.translation = Vec3.new(7, 8, 9)
 assert(t.translation.x == 7, "assigned to a field")
 assert(tostring(w) == "Vec3 { x: 1.0, y: 5.0, z: 3.0 }", "display")
