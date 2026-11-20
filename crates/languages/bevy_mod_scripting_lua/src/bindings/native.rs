@@ -1304,6 +1304,59 @@ pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi:
     )
 }
 
+/// `__index` of references, `r.name` (see [`dispatch::index_name`]) or `r[key]` (see [`dispatch::index`]): methods come
+/// back unbound, `r:method()` passes the reference itself.
+///
+/// Called with `[r (1), key (2)]`.
+pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 2);
+        run(l, || {
+            let world = ThreadWorldContainer::try_get_context()?.world;
+            // one mlua call for the lookup and the result
+            with_raw(l, |lua, raw| {
+                let receiver =
+                    at_index::<mlua::UserDataRef<super::reference::LuaReflectReference>>(raw, l, 1)
+                        .map_err(IntoInteropError::to_bms_error)?;
+                let member = if ffi::lua_type(l, 2) == ffi::LUA_TSTRING {
+                    let mut len = 0;
+                    let name = ffi::lua_tolstring(l, 2, &mut len);
+                    // the string is kept alive by the stack for the call
+                    let name = std::str::from_utf8(std::slice::from_raw_parts(name.cast(), len))
+                        .map_err(|_| InteropError::str("member names must be valid UTF-8"))?;
+                    dispatch::index_name(
+                        world,
+                        Cow::Borrowed(&receiver.0),
+                        name,
+                        LUA_CALLER_CONTEXT,
+                    )?
+                } else {
+                    let key = at_index::<LuaScriptValue>(raw, l, 2)
+                        .map_err(IntoInteropError::to_bms_error)?;
+                    dispatch::index(world, receiver.0.clone(), key.into(), LUA_CALLER_CONTEXT)?
+                };
+                drop(receiver);
+                let value = match member {
+                    // functions of types live in the registry, their Lua functions are made once
+                    dispatch::Member::Method(function) => {
+                        super::script_value::registered_function_into_lua(lua, function)
+                    }
+                    dispatch::Member::Static(ScriptValue::Float(n)) => return Ok(Ready::Number(n)),
+                    dispatch::Member::Static(ScriptValue::Integer(i)) => {
+                        return Ok(Ready::Integer(i));
+                    }
+                    dispatch::Member::Static(ScriptValue::Bool(b)) => return Ok(Ready::Boolean(b)),
+                    // one value, tuples too
+                    dispatch::Member::Static(value) => LuaScriptValue(value).into_lua(lua),
+                };
+                value
+                    .map(Ready::Value)
+                    .map_err(IntoInteropError::to_bms_error)
+            })
+        })
+    }
+}
+
 /// Operators of references, i.e. `t.translation + v` or `-t.translation`: the operator's function of the reference operand
 /// (see [`dispatch::binary_function`]) is called with the operands as they are on the stack, the reference first.
 ///

@@ -1,11 +1,11 @@
-use std::{any::TypeId, borrow::Cow};
+use std::any::TypeId;
 
 use bevy_mod_scripting_bindings::{
     ReflectReference, ScriptValue, WorldGuard, dispatch, error::InteropError,
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
-use mlua::{FromLua, IntoLua, MetaMethod, UserData, UserDataFields, UserDataMethods};
+use mlua::{IntoLua, MetaMethod, UserData, UserDataFields, UserDataMethods};
 
 use crate::IntoMluaError;
 
@@ -46,6 +46,10 @@ fn with_world<O>(
 
 impl UserData for LuaReflectReference {
     fn add_fields<F: UserDataFields<Self>>(f: &mut F) {
+        // Safety: the function follows the Lua C API, see `reference_index`
+        f.add_meta_field_with(MetaMethod::Index, |lua| unsafe {
+            lua.create_c_function(super::native::reference_index)
+        });
         // operators call the operator's function with the operands as they are on the stack, see
         // `super::native::reference_operator`. Lua calls them with the operands in their original order, so for `2 * v`
         // the value is on the right; `#v` goes through `len` which types can override
@@ -81,38 +85,6 @@ impl UserData for LuaReflectReference {
     }
 
     fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
-        // methods come back unbound, `v:method()` passes the value itself
-        m.add_meta_function(
-            MetaMethod::Index,
-            |lua, (self_, key): (mlua::UserDataRef<LuaReflectReference>, mlua::Value)| {
-                profiling::function_scope!("MetaMethod::Index");
-                let member = match &key {
-                    // names and the receiver are only copied for field access
-                    mlua::Value::String(name) => {
-                        let name = name.to_str()?;
-                        with_world(|world| {
-                            dispatch::index_name(
-                                world,
-                                Cow::Borrowed(&self_.0),
-                                &*name,
-                                LUA_CALLER_CONTEXT,
-                            )
-                        })?
-                    }
-                    _ => {
-                        let key = LuaScriptValue::from_lua(key, lua)?;
-                        with_world(|world| {
-                            dispatch::index(world, self_.0.clone(), key.into(), LUA_CALLER_CONTEXT)
-                        })?
-                    }
-                };
-                match member {
-                    dispatch::Member::Method(func) => registered_function_into_lua(lua, func),
-                    member => LuaScriptValue(member.into()).into_lua(lua),
-                }
-            },
-        );
-
         m.add_meta_function(
             MetaMethod::NewIndex,
             |_, (self_, key, value): (LuaReflectReference, LuaScriptValue, LuaScriptValue)| {

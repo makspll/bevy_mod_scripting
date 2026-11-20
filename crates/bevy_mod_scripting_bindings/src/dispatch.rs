@@ -16,7 +16,8 @@ use bevy_reflect::TypeInfo;
 use crate::{
     DynamicScriptFunction, EnumVariantRef, FunctionCallContext, FunctionScope, InteropError,
     ReferencePart, ReflectReference, ScriptValue, WorldExtensions,
-    world_extensions::{FunctionLookups, Lookups},
+    function::script_function::CachedMember,
+    world_extensions::{FunctionLookups, Lookups, members_depend_on_value},
 };
 
 /// What indexing a value by a name found.
@@ -73,16 +74,33 @@ pub fn index_name<'n>(
 ) -> Result<Member, InteropError> {
     profiling::function_scope!("dispatch::index");
     let name = name.into();
-    let tail = static_field(&world, &reference, &name);
-    let type_id = match &tail {
-        Some((type_id, _)) => *type_id,
+    let tail = static_tail(&world, &reference);
+    let type_id = match tail {
+        Some(type_id) => type_id,
         None => reference.tail_type_id(world.clone())?.or_fake_id(),
     };
-    let field = tail.and_then(|(_, field)| field);
     // one registry read for the member and the getter, which is called once unlocked
-    let (member, get) = Lookups::with(&world, |lookups| {
-        let member = lookups.member(&reference, type_id, name);
-        (member, lookups.registry.magic_functions.get)
+    let (member, field, get) = Lookups::with(&world, |lookups| {
+        let get = lookups.registry.magic_functions.get;
+        if tail.is_none() {
+            return (lookups.member(&reference, type_id, name), None, get);
+        }
+        if members_depend_on_value(type_id) {
+            let field = struct_field(&world, type_id, &name);
+            return (lookups.member(&reference, type_id, name), field, get);
+        }
+        // the same on every value of the type, until the functions change
+        let cached = lookups
+            .registry
+            .member_of_type(type_id, &name, || CachedMember {
+                function: match lookups.member(&reference, type_id, &*name) {
+                    Ok(ScriptValue::Function(function)) => Some(function),
+                    _ => None,
+                },
+                field: struct_field(&world, type_id, &name),
+            });
+        let member = cached.function.map(ScriptValue::Function).ok_or(name);
+        (member, cached.field, get)
     });
     match member {
         Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => Ok(Member::Method(func)),
@@ -117,15 +135,13 @@ pub fn index_name<'n>(
     }
 }
 
-/// The type of the value `reference` points to, from type info only (no world access), and its field `name` if it's a
-/// struct with one: its name, and whether its value is returned as a reference (not a primitive or an option).
+/// The type of the value `reference` points to, from type info only (no world access).
 ///
 /// `None` if the path goes through anything but struct fields and tuple struct fields.
-fn static_field(
-    world: &WorldGuard,
-    reference: &ReflectReference,
-    name: &str,
-) -> Option<(TypeId, Option<(&'static str, bool)>)> {
+fn static_tail(world: &WorldGuard, reference: &ReflectReference) -> Option<TypeId> {
+    if reference.reflect_path.is_empty() {
+        return Some(reference.base.type_id);
+    }
     let registry = world.type_registry();
     let registry = registry.read();
     let mut info = registry.get_type_info(reference.base.type_id())?;
@@ -139,23 +155,29 @@ fn static_field(
         };
         info = registry.get_type_info(field_type)?;
     }
-    let field = match info {
-        TypeInfo::Struct(s) => s.field(name).and_then(|field| {
-            let is_reference = matches!(
-                registry.get_type_info(field.type_id())?,
-                TypeInfo::Struct(_)
-                    | TypeInfo::TupleStruct(_)
-                    | TypeInfo::List(_)
-                    | TypeInfo::Array(_)
-                    | TypeInfo::Map(_)
-                    | TypeInfo::Set(_)
-                    | TypeInfo::Tuple(_)
-            );
-            Some((field.name(), is_reference))
-        }),
-        _ => None,
+    Some(info.type_id())
+}
+
+/// The field `name` of the struct `type_id`: its name, and whether its value is returned as a reference (not a
+/// primitive or an option).
+fn struct_field(world: &WorldGuard, type_id: TypeId, name: &str) -> Option<(&'static str, bool)> {
+    let registry = world.type_registry();
+    let registry = registry.read();
+    let TypeInfo::Struct(s) = registry.get_type_info(type_id)? else {
+        return None;
     };
-    Some((info.type_id(), field))
+    let field = s.field(name)?;
+    let is_reference = matches!(
+        registry.get_type_info(field.type_id())?,
+        TypeInfo::Struct(_)
+            | TypeInfo::TupleStruct(_)
+            | TypeInfo::List(_)
+            | TypeInfo::Array(_)
+            | TypeInfo::Map(_)
+            | TypeInfo::Set(_)
+            | TypeInfo::Tuple(_)
+    );
+    Some((field.name(), is_reference))
 }
 
 /// Accesses a field or element with the [`crate::MagicFunctions::get`] function.
