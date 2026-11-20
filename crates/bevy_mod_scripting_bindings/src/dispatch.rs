@@ -11,10 +11,11 @@ use std::{any::TypeId, borrow::Cow};
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_display::OrFakeId;
 use bevy_mod_scripting_world::WorldGuard;
+use bevy_reflect::TypeInfo;
 
 use crate::{
     DynamicScriptFunction, EnumVariantRef, FunctionCallContext, FunctionScope, InteropError,
-    ReflectReference, ScriptValue, WorldExtensions,
+    ReferencePart, ReflectReference, ScriptValue, WorldExtensions,
     world_extensions::{FunctionLookups, Lookups},
 };
 
@@ -62,7 +63,8 @@ pub fn index(
 
 /// [`index`] with a string key, which is only copied when it names no member, i.e. for field access.
 ///
-/// The reference is only cloned for field access too.
+/// Fields of structs are found from type info without reading the world, see [`static_field`]. Members come first, Bevy
+/// types often have private fields named like their methods, i.e. `Time::delta`.
 pub fn index_name<'n>(
     world: WorldGuard,
     reference: Cow<'_, ReflectReference>,
@@ -70,7 +72,13 @@ pub fn index_name<'n>(
     ctx: FunctionCallContext,
 ) -> Result<Member, InteropError> {
     profiling::function_scope!("dispatch::index");
-    let type_id = reference.tail_type_id(world.clone())?.or_fake_id();
+    let name = name.into();
+    let tail = static_field(&world, &reference, &name);
+    let type_id = match &tail {
+        Some((type_id, _)) => *type_id,
+        None => reference.tail_type_id(world.clone())?.or_fake_id(),
+    };
+    let field = tail.and_then(|(_, field)| field);
     // one registry read for the member and the getter, which is called once unlocked
     let (member, get) = Lookups::with(&world, |lookups| {
         let member = lookups.member(&reference, type_id, name);
@@ -79,13 +87,75 @@ pub fn index_name<'n>(
     match member {
         Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => Ok(Member::Method(func)),
         Ok(member) => Ok(Member::Static(member)),
-        Err(name) => get(
-            ctx,
-            reference.into_owned(),
-            ScriptValue::String(Cow::Owned(name.into_owned())),
-        )
-        .map(Member::Static),
+        Err(name) => {
+            // the default getter, done without converting the name or reading values which aren't returned
+            if let Some((field, is_reference)) = field
+                && std::ptr::fn_addr_eq(
+                    get,
+                    crate::function::magic_functions::MagicFunctions::default_get
+                        as fn(_, _, _) -> _,
+                )
+            {
+                let mut reference = reference.into_owned();
+                reference.push_path(ReferencePart::StringAccess(Cow::Borrowed(field)));
+                // access to the value is checked once it's read
+                if is_reference {
+                    return Ok(Member::Static(ScriptValue::Reference(reference)));
+                }
+                return <ReflectReference as crate::IntoScriptErased>::into_script_erased(
+                    reference, world,
+                )
+                .map(Member::Static);
+            }
+            get(
+                ctx,
+                reference.into_owned(),
+                ScriptValue::String(Cow::Owned(name.into_owned())),
+            )
+            .map(Member::Static)
+        }
     }
+}
+
+/// The type of the value `reference` points to, from type info only (no world access), and its field `name` if it's a
+/// struct with one: its name, and whether its value is returned as a reference (not a primitive or an option).
+///
+/// `None` if the path goes through anything but struct fields and tuple struct fields.
+fn static_field(
+    world: &WorldGuard,
+    reference: &ReflectReference,
+    name: &str,
+) -> Option<(TypeId, Option<(&'static str, bool)>)> {
+    let registry = world.type_registry();
+    let registry = registry.read();
+    let mut info = registry.get_type_info(reference.base.type_id())?;
+    for part in reference.reflect_path.parts() {
+        let field_type = match (part, info) {
+            (ReferencePart::StringAccess(n), TypeInfo::Struct(s)) => s.field(n)?.type_id(),
+            (ReferencePart::IntegerAccess(i), TypeInfo::TupleStruct(s)) => {
+                s.field_at(*i as usize)?.type_id()
+            }
+            _ => return None,
+        };
+        info = registry.get_type_info(field_type)?;
+    }
+    let field = match info {
+        TypeInfo::Struct(s) => s.field(name).and_then(|field| {
+            let is_reference = matches!(
+                registry.get_type_info(field.type_id())?,
+                TypeInfo::Struct(_)
+                    | TypeInfo::TupleStruct(_)
+                    | TypeInfo::List(_)
+                    | TypeInfo::Array(_)
+                    | TypeInfo::Map(_)
+                    | TypeInfo::Set(_)
+                    | TypeInfo::Tuple(_)
+            );
+            Some((field.name(), is_reference))
+        }),
+        _ => None,
+    };
+    Some((info.type_id(), field))
 }
 
 /// Accesses a field or element with the [`crate::MagicFunctions::get`] function.

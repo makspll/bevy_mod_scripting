@@ -32,7 +32,8 @@ pub fn my_non_exclusive_system() {
     let ResourceType = world.get_type_by_name("test_utils::test_data::TestResource");
     assert_throws(|| {
         let res = world.get_resource(ResourceType);
-        let blah = res.bytes;
+        // access is checked when a value is read, `res.bytes` alone is only a reference
+        let blah = res.bytes[0];
     }, ".*annot claim access to.*");
     // errors inside systems are only logged, so record that we got to the end
     push_state("runs", "finished");
