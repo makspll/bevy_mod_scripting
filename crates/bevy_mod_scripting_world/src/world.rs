@@ -191,13 +191,20 @@ impl<'w> CallScope<'w> {
 
 impl Drop for CallScope<'_> {
     fn drop(&mut self) {
-        for key in self.claims.get_mut().drain(..).rev() {
-            // Safety: the borrows made under the claim can't outlive the scope
-            unsafe { self.guard.release_access(key) }
+        // most calls claim and borrow nothing (numbers, natives by value)
+        let claims = self.claims.get_mut();
+        if !claims.is_empty() {
+            for key in claims.drain(..).rev() {
+                // Safety: the borrows made under the claim can't outlive the scope
+                unsafe { self.guard.release_access(key) }
+            }
         }
-        for (flag, exclusive) in self.borrows.get_mut().drain(..) {
-            // Safety: `borrow`'s caller keeps the flag valid until now
-            unsafe { (*flag).release(exclusive) }
+        let borrows = self.borrows.get_mut();
+        if !borrows.is_empty() {
+            for (flag, exclusive) in borrows.drain(..) {
+                // Safety: `borrow`'s caller keeps the flag valid until now
+                unsafe { (*flag).release(exclusive) }
+            }
         }
     }
 }
