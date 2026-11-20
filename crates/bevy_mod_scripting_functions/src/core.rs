@@ -1602,6 +1602,42 @@ impl ScriptQueryBuilder {
         let builder = query.into_inner();
         Ok(world.query(builder)?.into())
     }
+
+    /// Builds the query and iterates its results without making a list or a table for them: each call of the returned
+    /// function returns the entity and the components of the next result, in the order they were added to the query
+    /// (absent optional components are nil), and nothing once there are none.
+    ///
+    /// In Lua: `for entity, a, b in world.query():component(A):component(B):iter() do ... end`.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `query`: The query to build.
+    /// Returns:
+    /// * `next`: The function returning the next result.
+    fn iter(
+        ctxt: FunctionCallContext,
+        query: V<ScriptQueryBuilder>,
+    ) -> Result<DynamicScriptFunctionMut, InteropError> {
+        profiling::function_scope!("iter");
+        use bevy_mod_scripting_bindings::IntoScript;
+        let world = ctxt.world()?;
+        let mut results = world.query(query.into_inner())?.into_iter();
+        let next = move |ctxt: FunctionCallContext| -> Result<ScriptValue, InteropError> {
+            let Some(result) = results.next() else {
+                return Ok(ScriptValue::Unit);
+            };
+            let mut values = VecDeque::with_capacity(result.components.len() + 1);
+            values.push_back(V(result.entity).into_script(ctxt.world()?)?);
+            values.extend(
+                result
+                    .components
+                    .into_iter()
+                    .map(|c| c.map_or(ScriptValue::Unit, ScriptValue::Reference)),
+            );
+            Ok(ScriptValue::Tuple(VariadicTuple(values)))
+        };
+        Ok(next.into_dynamic_script_function_mut())
+    }
 }
 
 #[script_bindings(

@@ -1,0 +1,11 @@
+// 100 operations per call
+pub fn pre_bench() {
+    let world = import_namespace("bms").world;
+    world.get_resource(world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields"))
+}
+
+pub fn bench(s) {
+    for i in 0..100 {
+        s.float = 2.0;
+    }
+}

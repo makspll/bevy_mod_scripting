@@ -1,0 +1,15 @@
+// 100 operations per call: the cost of one is (this - `empty loop`) / 100
+pub fn pre_bench() {
+    let world = import_namespace("bms").world;
+    let Transform = import_namespace("transform").Transform;
+    let transform_type = world.get_type_by_name("bevy_transform::components::transform::Transform");
+    let entity = world.spawn();
+    world.insert_component(entity, transform_type, Transform.from_xyz(1.0, 2.0, 3.0));
+    world.get_component(entity, transform_type)
+}
+
+pub fn bench(s) {
+    for i in 0..100 {
+        s.translation.x = 1.0;
+    }
+}
