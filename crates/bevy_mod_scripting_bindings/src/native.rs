@@ -733,20 +733,18 @@ impl NativeType {
         self
     }
 
-    /// Adds the struct field `name` of `T` of type `F`, reached by `project` (`|p| &(*p).field`, also through `Deref` like
-    /// glam's SIMD vectors). On a place (i.e. a component), a field of a native type is a place too (a proxy):
-    /// `t.translation.x = 5` writes the component. See [`crate::script_native`].
+    /// Adds the struct field `name` of `T` of type `F`, at `at`. On a place (i.e. a component), a field of a native type at an
+    /// offset is a place too (a proxy): `t.translation.x = 5` writes the component. See [`crate::script_native`].
     ///
-    /// `ret` and `arg` convert the field's values, see [`FieldConv`]. Fields are written, and are places, only when they're
-    /// stored inside the value: one reached through a `Deref` to elsewhere (i.e. a `Box`) is read only, a reference on places.
+    /// `ret` and `arg` convert the field's values, see [`FieldConv`].
     ///
     /// # Safety
-    /// `project`, given a pointer to a valid `T`, returns a pointer to a valid `F` reachable from it (its field, also
-    /// through `Deref`), valid as long as the `T` is.
+    /// [`FieldAt::Offset`]: every `T` has an `F` at the offset. [`FieldAt::Deref`]: the projection, given a pointer to a
+    /// valid `T`, returns a pointer to a valid `F` reachable from it, valid as long as the `T` is.
     pub unsafe fn with_struct_field<T, F>(
         mut self,
         name: &'static str,
-        project: FieldProject,
+        at: FieldAt,
         ret: FieldRet<F>,
         arg: FieldArg<F>,
     ) -> Self
@@ -766,9 +764,6 @@ impl NativeType {
                 .with_namespace(FunctionScope::OnType(TypeId::of::<T>()))
         };
         let native_return = NativeReturnType::default();
-        // the field's offset, the same in every value as it's inside it: known from the first value a proxy is made from,
-        // `None` if the field isn't inside the value
-        let offset = std::sync::OnceLock::<Option<usize>>::new();
         let get = DynamicScriptFunction::from_thunk::<T>(move |ctx, args, sink| {
             let world = ctx.world()?;
             world.with_call_scope(|scope| {
@@ -779,15 +774,7 @@ impl NativeType {
                     && let Some(place) = unsafe { NativeStorage::place(base) }
                     && let Some(field_native) = native_return.get(&world, TypeId::of::<F>())
                 {
-                    let offset = match offset.get() {
-                        Some(offset) => *offset,
-                        None => {
-                            // Safety: the place holds a T, read for the call
-                            let value = unsafe { place.resolve(scope, false) }?;
-                            *offset.get_or_init(|| field_offset::<T, F>(value, project(value)))
-                        }
-                    };
-                    if let (Some(offset), Some(index)) = (offset, index) {
+                    if let (FieldAt::Offset(offset), Some(index)) = (at, index) {
                         let field_place = place.field(offset, index).ok_or_else(|| {
                             InteropError::str("a native value is nested too deeply")
                         })?;
@@ -814,8 +801,13 @@ impl NativeType {
                     return sink.script_value(ScriptValue::Reference(reference));
                 }
                 let value = <crate::R<T> as crate::FromScript>::from_arg(args, 0, scope)?;
-                // Safety: `project` gives an `F` of the T, see the function's contract
-                let field = unsafe { &*(project(&*value as *const T as *const u8) as *const F) };
+                let value = &*value as *const T as *const u8;
+                let field = match at {
+                    FieldAt::Offset(offset) => value.wrapping_add(offset),
+                    FieldAt::Deref(project) => project(value),
+                };
+                // Safety: an `F` of the T, see the function's contract
+                let field = unsafe { &*(field as *const F) };
                 ret(field.clone(), sink, world.clone(), &native_return)
             })
         })
@@ -829,12 +821,14 @@ impl NativeType {
                 let mut target = <crate::M<T> as crate::FromScript>::from_arg(args, 0, scope)?;
                 let value = arg(args, 1, scope)?;
                 let target = &mut *target as *mut T as *mut u8;
-                // only the field's offset comes from `project`, which reads through a shared reference: the write goes
-                // through the exclusive borrow, so only to a field inside the value
-                let offset = field_offset::<T, F>(target, project(target)).ok_or_else(|| {
-                    InteropError::string(format!("the field `{name}` is read only"))
-                })?;
-                // Safety: an `F` inside the T (checked above), which is borrowed exclusively
+                let offset = match at {
+                    FieldAt::Offset(offset) => Some(offset),
+                    // only the offset comes from the projection, which reads through a shared reference: the write goes
+                    // through the exclusive borrow, so only to a field inside this value
+                    FieldAt::Deref(project) => field_offset::<T, F>(target, project(target)),
+                }
+                .ok_or_else(|| InteropError::string(format!("the field `{name}` is read only")))?;
+                // Safety: an `F` inside the T (see the function's contract, checked for `Deref`), borrowed exclusively
                 unsafe { *(target.add(offset) as *mut F) = value };
                 sink.unit();
                 Ok(())
@@ -939,8 +933,18 @@ pub fn native_vtable(world: &WorldGuard, type_id: TypeId) -> Option<&'static Nat
         .map(|t| t.vtable)
 }
 
-/// Gives the field of a value, from a pointer to it, see [`NativeType::with_struct_field`].
+/// Gives the field of a value, from a pointer to it, see [`FieldAt::Deref`].
 pub type FieldProject = fn(*const u8) -> *const u8;
+
+/// Where a field of a native type is, see [`NativeType::with_struct_field`].
+#[derive(Clone, Copy)]
+pub enum FieldAt {
+    /// At this offset in every value (`offset_of!`): written in place, and a place (a proxy) on places.
+    Offset(usize),
+    /// Reached through `Deref`, i.e. glam's SIMD vectors: read through the projection, written only when it's inside the
+    /// value, and a reference on places (its location may depend on the value, so it's never cached).
+    Deref(FieldProject),
+}
 
 /// Converts the value of a field read by a script, see [`FieldConv`].
 pub type FieldRet<F> = for<'w> fn(
@@ -1029,6 +1033,8 @@ where
 /// ```rust,ignore
 /// script_native!(world, bevy_math::Vec3 { x: f32, y: f32, z: f32 });
 /// script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });
+/// // fields reached through `Deref`, i.e. glam's SIMD vectors: read and written, but never places (proxies)
+/// script_native!(world, deref bevy_math::Vec4 { x: f32, y: f32, z: f32, w: f32 });
 /// ```
 ///
 /// Values of types with fields of native types aren't stored natively (writes to `t.translation.x` would be lost on a copy),
@@ -1036,17 +1042,38 @@ where
 /// ([`NativePlace`]) whose `t.translation` is a place too, read and written through.
 #[macro_export]
 macro_rules! script_native {
+    ($world:expr, deref $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {{
+        #[allow(unused_imports)]
+        use $crate::native::{FieldConvScript as _, FieldConvValue as _};
+        let native = $crate::native::NativeType::new::<$ty>();
+        $(
+            // Safety: the projection gives the field `$field` of the value, a `$field_ty` (the compiler checks both),
+            // through `Deref`: borrowed from the value, so valid as long as it is
+            let native = unsafe {
+                native.with_struct_field::<$ty, $field_ty>(
+                    stringify!($field),
+                    $crate::native::FieldAt::Deref(|value| {
+                        &(&*(value as *const $ty)).$field as *const $field_ty as *const u8
+                    }),
+                    (&$crate::native::FieldConv::<$field_ty>::new()).ret(),
+                    (&$crate::native::FieldConv::<$field_ty>::new()).arg(),
+                )
+            };
+        )*
+        native.register($world);
+    }};
     ($world:expr, $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {{
         #[allow(unused_imports)]
         use $crate::native::{FieldConvScript as _, FieldConvValue as _};
         let native = $crate::native::NativeType::new::<$ty>();
         $(
-            // Safety: the projection gives the field `$field` of the value, a `$field_ty` (the types are checked by the
-            // compiler), also through `Deref`; one which isn't inside the value is only read
+            // a field of the type itself, at the same offset in every value
+            const _: fn(&$ty) -> &$field_ty = |value| &value.$field;
+            // Safety: every value has a `$field_ty` (checked above) at the offset
             let native = unsafe {
                 native.with_struct_field::<$ty, $field_ty>(
                     stringify!($field),
-                    |value| &(&*(value as *const $ty)).$field as *const $field_ty as *const u8,
+                    $crate::native::FieldAt::Offset(::core::mem::offset_of!($ty, $field)),
                     (&$crate::native::FieldConv::<$field_ty>::new()).ret(),
                     (&$crate::native::FieldConv::<$field_ty>::new()).arg(),
                 )
@@ -1679,59 +1706,49 @@ mod test {
         assert!(place.field(0, 0).is_none(), "nested too deeply");
     }
 
-    #[derive(Reflect, Clone, Debug, Default)]
-    struct InPlace {
-        inner: Inner,
+    /// A `Deref` whose target is in the value or on the heap, depending on the value.
+    #[derive(Reflect, Clone, Debug)]
+    enum Small {
+        Inline(Inner),
+        Boxed(#[reflect(ignore)] Box<Inner>),
     }
 
-    impl std::ops::Deref for InPlace {
+    impl std::ops::Deref for Small {
         type Target = Inner;
         fn deref(&self) -> &Inner {
-            &self.inner
+            match self {
+                Small::Inline(inner) => inner,
+                Small::Boxed(inner) => inner,
+            }
         }
     }
 
-    #[derive(Reflect, Clone, Debug, Default)]
-    struct OnHeap {
-        #[reflect(ignore)]
-        inner: Box<Inner>,
-    }
-
-    impl std::ops::Deref for OnHeap {
-        type Target = Inner;
-        fn deref(&self) -> &Inner {
-            &self.inner
-        }
-    }
-
-    /// Fields reached through `Deref` (i.e. glam's SIMD vectors) are read and written when they're inside the value, only
-    /// read when they're elsewhere.
+    /// Fields reached through `Deref` (i.e. glam's SIMD vectors) are found per value: written when they're inside the value,
+    /// only read when they're elsewhere, also for values of one type.
     #[test]
     fn fields_through_deref() {
         let mut world = World::default();
-        crate::script_native!(&mut world, InPlace { x: f32 });
-        crate::script_native!(&mut world, OnHeap { x: f32 });
-        let in_place = (|| V(InPlace::default())).into_dynamic_script_function();
-        let on_heap = (|| V(OnHeap::default())).into_dynamic_script_function();
+        crate::script_native!(&mut world, deref Small { x: f32 });
+        let inline = (|| V(Small::Inline(Inner { x: 0.0 }))).into_dynamic_script_function();
+        let boxed = (|| V(Small::Boxed(Box::new(Inner { x: 0.0 })))).into_dynamic_script_function();
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldAccessGuard::with_static_guard(&mut world, cache, |world| {
-            let field = |type_id| {
+            let field = {
                 let registry = world.script_function_registry();
                 let registry = registry.read();
-                registry.native_type(type_id).unwrap().fields["x"].clone()
+                registry.native_type(TypeId::of::<Small>()).unwrap().fields["x"].clone()
             };
-            let no_args = Args {
-                natives: &[],
-                numbers: &[],
-            };
-            for (make, type_id, writable) in [
-                (&in_place, TypeId::of::<InPlace>(), true),
-                (&on_heap, TypeId::of::<OnHeap>(), false),
-            ] {
-                let (result, value) = call(make, Args { ..no_args });
+            // the inline value first: nothing about it is kept for the boxed one
+            for (make, writable) in [(&inline, true), (&boxed, false), (&inline, true)] {
+                let (result, value) = call(
+                    make,
+                    Args {
+                        natives: &[],
+                        numbers: &[],
+                    },
+                );
                 result.unwrap();
                 let value = value.native.unwrap();
-                let field = field(type_id);
                 let (result, _) = call(
                     field.set.as_ref().unwrap(),
                     Args {
