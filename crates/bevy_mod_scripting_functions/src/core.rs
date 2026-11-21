@@ -1602,6 +1602,52 @@ impl ScriptQueryBuilder {
         let builder = query.into_inner();
         Ok(world.query(builder)?.into())
     }
+
+    /// Builds the query and iterates its results without making a list or a table for them: each call of the returned
+    /// function returns the entity and the components of the next result, in the order they were added to the query
+    /// (absent optional components are nil), and nothing once there are none.
+    ///
+    /// In Lua: `for entity, a, b in world.query():component(A):component(B):iter() do ... end`, `pairs(query)` too.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `query`: The query to build.
+    /// Returns:
+    /// * `next`: The function returning the next result.
+    fn iter(
+        ctxt: FunctionCallContext,
+        query: V<ScriptQueryBuilder>,
+    ) -> Result<
+        bevy_mod_scripting_bindings::function::FunctionOf<fn() -> Option<ScriptQueryResult>>,
+        InteropError,
+    > {
+        profiling::function_scope!("iter");
+        use bevy_mod_scripting_bindings::{
+            IntoScript, function::FunctionOf, function::script_function::ScriptFunction,
+        };
+        let world = ctxt.world()?;
+        let results = std::sync::Mutex::new(world.query(query.into_inner())?.into_iter());
+        // returns a tuple rather than the result's list: several values in Lua
+        let next = move |ctxt: FunctionCallContext| -> Result<ScriptValue, InteropError> {
+            let next = results
+                .lock()
+                .map_err(|_| InteropError::str("the query iterator was poisoned"))?
+                .next();
+            let Some(result) = next else {
+                return Ok(ScriptValue::Unit);
+            };
+            let mut values = VecDeque::with_capacity(result.components.len() + 1);
+            values.push_back(V(result.entity).into_script(ctxt.world()?)?);
+            values.extend(
+                result
+                    .components
+                    .into_iter()
+                    .map(|c| c.map_or(ScriptValue::Unit, ScriptValue::Reference)),
+            );
+            Ok(ScriptValue::Tuple(VariadicTuple(values)))
+        };
+        Ok(FunctionOf::new(next.into_dynamic_script_function()))
+    }
 }
 
 #[script_bindings(

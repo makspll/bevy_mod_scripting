@@ -86,6 +86,11 @@ pub enum LuaType {
         value: Box<LuaType>,
     },
     Function(FunctionSignatureShort),
+    /// The values a function returns, only as the return type of a [`LuaType::Function`]: `fun(): a, b, ...: c`
+    Returns {
+        head: Vec<LuaType>,
+        rest: Option<Box<LuaType>>,
+    },
     /// An instantiation of a generic class, i.e. `Handle<Image>`
     Generic {
         name: String,

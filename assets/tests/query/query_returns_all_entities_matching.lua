@@ -30,3 +30,14 @@ for i, entity in ipairs(found_entities) do
     assert(entity:index() == expected_entities[i]:index(),
         "Expected entity " .. expected_entities[i]:index() .. " but got " .. entity:index())
 end
+
+-- the same results without a list: the entity then the components, per step of a generic for
+local iterated = {}
+for entity, component in world.query():component(component_with):without(component_without):iter() do
+    assert(component ~= nil, "the components come after the entity")
+    table.insert(iterated, entity)
+end
+assert(#iterated == #found_entities, "iter finds the entities build finds")
+for i, entity in ipairs(iterated) do
+    assert(entity:index() == found_entities[i]:index(), "iter keeps the order of build")
+end

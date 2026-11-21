@@ -118,6 +118,14 @@ function {% if module.class -%}{{module.table}}.{%- endif -%} {{ function.name }
         {%- endif -%}
     {%- elif ty.kind == "Dictionary" -%}
         table<{{ self::lua_type(ty=ty.value.key) }}, {{ self::lua_type(ty=ty.value.value) }}>
+    {%- elif ty.kind == "Returns" -%}
+        {%- for subtype in ty.value.head -%}
+            {{ self::lua_type(ty=subtype) }}
+            {%- if not loop.last or ty.value.rest %}, {% endif -%}
+        {%- endfor -%}
+        {%- if ty.value.rest -%}
+        ...: {{ self::lua_type(ty=ty.value.rest) }}
+        {%- endif -%}
     {%- elif ty.kind == "Function" -%}
         fun(
         {%- for param in ty.value.parameters -%}
