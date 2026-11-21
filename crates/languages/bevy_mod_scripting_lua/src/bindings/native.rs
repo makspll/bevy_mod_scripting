@@ -1805,6 +1805,48 @@ unsafe fn cache_registration_member(l: *mut ffi::lua_State, generation: ffi::lua
     }
 }
 
+/// `__index` of types (`LuaTypeRef`, i.e. `world.spawn`), see [`dispatch::static_index`]: functions are cached per type
+/// value like the functions of registrations, see [`cached_registration_member`].
+///
+/// Called with `[t (1), key (2)]`.
+pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 2);
+        let generation = FUNCTIONS_GENERATION.load(Ordering::Acquire) as ffi::lua_Integer;
+        let named = ffi::lua_type(l, 2) == ffi::LUA_TSTRING;
+        if named && cached_registration_member(l, generation) {
+            return 1;
+        }
+        let mut cache = false;
+        let n = run(l, || {
+            let world = ThreadWorldContainer::try_get_context()?.world;
+            with_raw(l, |lua, raw| {
+                let type_id =
+                    at_index::<mlua::UserDataRef<super::reference::LuaTypeRef>>(raw, l, 1)
+                        .map_err(IntoInteropError::to_bms_error)?
+                        .0;
+                let key = value_at(raw, l, 2)?;
+                let value = match dispatch::static_index(world, type_id, key, LUA_CALLER_CONTEXT)? {
+                    // functions of types live in the registry (bound ones are cached there too)
+                    ScriptValue::Function(function) => {
+                        cache = named;
+                        super::script_value::registered_function_into_lua(lua, function)
+                    }
+                    member => LuaScriptValue(member).into_lua(lua),
+                };
+                value
+                    .map(Ready::Value)
+                    .map_err(IntoInteropError::to_bms_error)
+            })
+        });
+        // [t, name, function]: nothing Rust is left
+        if cache && n == 1 {
+            cache_registration_member(l, generation);
+        }
+        n
+    }
+}
+
 /// `__index` of references, `r.name` (see [`dispatch::index_name`]) or `r[key]` (see [`dispatch::index`]): methods come
 /// back unbound, `r:method()` passes the reference itself.
 ///
