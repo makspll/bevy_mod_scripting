@@ -1551,55 +1551,65 @@ unsafe fn function_value(
     .map_err(IntoInteropError::to_bms_error)
 }
 
-/// Pushes the place of the field `name` of the place `v` (a proxy, i.e. `t.translation`) made by an earlier read, if any.
-/// `[-0, +(0|1), -]`.
-///
-/// Places of fields are fixed by their place and the field (see `NativePlace::field`), so they are kept per place, in the
-/// table with weak keys in upvalue 4 of `__index`: `proxies[v][name]`. Only places are kept, never values or copies.
-///
-/// Called with `[v (1), name (2)]`.
 unsafe fn cached_proxy(l: *mut ffi::lua_State) -> bool {
+    unsafe { cached_for_value(l, ffi::lua_upvalueindex(4), ffi::LUA_TUSERDATA) }
+}
+
+/// Pushes `cache[v][name]` if it's of the type `kind`: what was kept for the name on the value `v` by
+/// [`cache_for_value`]. `cache` (a table with weak keys) is at an index which stays valid when values are pushed.
+/// `[-0, +(0|1), -]`, needs 2 free slots.
+///
+/// Called with `[v (1), name (2), ..]`.
+unsafe fn cached_for_value(l: *mut ffi::lua_State, cache: c_int, kind: c_int) -> bool {
     unsafe {
-        // [v, name, proxies[v]]
+        let top = ffi::lua_gettop(l);
+        // [.., cache[v]]
         ffi::lua_pushvalue(l, 1);
-        if ffi::lua_rawget(l, ffi::lua_upvalueindex(4)) == ffi::LUA_TTABLE {
-            // [v, name, proxies[v], proxies[v][name]]
+        if ffi::lua_rawget(l, cache) == ffi::LUA_TTABLE {
+            // [.., cache[v], cache[v][name]]
             ffi::lua_pushvalue(l, 2);
-            if ffi::lua_rawget(l, -2) == ffi::LUA_TUSERDATA {
+            if ffi::lua_rawget(l, -2) == kind {
+                ffi::lua_remove(l, -2);
                 return true;
             }
         }
-        ffi::lua_settop(l, 2);
+        ffi::lua_settop(l, top);
         false
     }
 }
 
-/// Keeps the result on the top as the proxy of the field `name` of `v` if it's a place, see [`cached_proxy`]. `[-0, +0, m]`:
-/// called once no Rust value of the call is left.
+/// `cache[v][name] = result`, see [`cached_for_value`]. `[-0, +0, m]`, needs 3 free slots: called once no Rust value of
+/// the call is left.
 ///
-/// Called with `[v (1), name (2), result (3)]`.
+/// Called with `[v (1), name (2), result (3), ..]`.
+unsafe fn cache_for_value(l: *mut ffi::lua_State, cache: c_int) {
+    unsafe {
+        let top = ffi::lua_gettop(l);
+        // [.., cache[v]]
+        ffi::lua_pushvalue(l, 1);
+        if ffi::lua_rawget(l, cache) != ffi::LUA_TTABLE {
+            ffi::lua_pop(l, 1);
+            ffi::lua_createtable(l, 0, 1);
+            // cache[v] = {}
+            ffi::lua_pushvalue(l, 1);
+            ffi::lua_pushvalue(l, -2);
+            ffi::lua_rawset(l, cache);
+        }
+        // cache[v][name] = result
+        ffi::lua_pushvalue(l, 2);
+        ffi::lua_pushvalue(l, 3);
+        ffi::lua_rawset(l, -3);
+        ffi::lua_settop(l, top);
+    }
+}
+
 unsafe fn cache_proxy(l: *mut ffi::lua_State) {
     unsafe {
         let is_place =
             native_base(l, 3).is_some_and(|base| NativeStorage::header(base).vtable.place);
-        if !is_place || ffi::lua_checkstack(l, 4) == 0 {
-            return;
+        if is_place && ffi::lua_checkstack(l, 3) != 0 {
+            cache_for_value(l, ffi::lua_upvalueindex(4));
         }
-        // [v, name, result, proxies[v]]
-        ffi::lua_pushvalue(l, 1);
-        if ffi::lua_rawget(l, ffi::lua_upvalueindex(4)) != ffi::LUA_TTABLE {
-            ffi::lua_pop(l, 1);
-            ffi::lua_createtable(l, 0, 1);
-            // proxies[v] = {}
-            ffi::lua_pushvalue(l, 1);
-            ffi::lua_pushvalue(l, -2);
-            ffi::lua_rawset(l, ffi::lua_upvalueindex(4));
-        }
-        // proxies[v][name] = result
-        ffi::lua_pushvalue(l, 2);
-        ffi::lua_pushvalue(l, 3);
-        ffi::lua_rawset(l, -3);
-        ffi::lua_settop(l, 3);
     }
 }
 
@@ -2127,32 +2137,18 @@ static REGISTRATION_MEMBERS: u8 = 0;
 /// Its address keys the generation of the functions the cache was made with, in the cache.
 static REGISTRATION_MEMBERS_GENERATION: u8 = 0;
 
-/// Pushes the cached function `name` of the registration `r`, i.e. `Vec3.new`, if there is one. `[-0, +(0|1), -]`.
-///
-/// Members of registrations depend on the registration (see [`dispatch::index_name`]), so they are cached per registration
-/// value: `cache[r][name]`, the cache having weak keys and the generation of the functions it was made with.
-///
-/// Called with `[r (1), name (2)]`.
 unsafe fn cached_registration_member(l: *mut ffi::lua_State, generation: ffi::lua_Integer) -> bool {
     unsafe {
-        // [r, name] -> [r, name, cache]
-        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS)) == ffi::LUA_TTABLE
-            // [r, name, cache, generation]
+        // [r, name, cache, generation]
+        let current = raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS))
+            == ffi::LUA_TTABLE
             && raw_get_p(l, 3, key(&REGISTRATION_MEMBERS_GENERATION)) == ffi::LUA_TNUMBER
-            && ffi::lua_tointeger(l, 4) == generation
-        {
-            // [r, name, cache, generation, r] -> [r, name, cache, generation, members]
-            ffi::lua_pushvalue(l, 1);
-            if ffi::lua_rawget(l, 3) == ffi::LUA_TTABLE {
-                // [.., members, name] -> [.., members, members[name]]
-                ffi::lua_pushvalue(l, 2);
-                if ffi::lua_rawget(l, -2) == ffi::LUA_TFUNCTION {
-                    // [r, name, function]
-                    ffi::lua_replace(l, 3);
-                    ffi::lua_settop(l, 3);
-                    return true;
-                }
-            }
+            && ffi::lua_tointeger(l, 4) == generation;
+        if current && cached_for_value(l, 3, ffi::LUA_TFUNCTION) {
+            // [r, name, cache, generation, function] -> [r, name, function]
+            ffi::lua_replace(l, 3);
+            ffi::lua_settop(l, 3);
+            return true;
         }
         ffi::lua_settop(l, 2);
         false
@@ -2188,19 +2184,7 @@ unsafe fn cache_registration_member(l: *mut ffi::lua_State, generation: ffi::lua
             raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS));
         }
         ffi::lua_settop(l, 4);
-        // [r, name, function, cache, members]
-        ffi::lua_pushvalue(l, 1);
-        if ffi::lua_rawget(l, 4) != ffi::LUA_TTABLE {
-            ffi::lua_pop(l, 1);
-            ffi::lua_newtable(l);
-            ffi::lua_pushvalue(l, 1);
-            ffi::lua_pushvalue(l, -2);
-            ffi::lua_rawset(l, 4);
-        }
-        // members[name] = function
-        ffi::lua_pushvalue(l, 2);
-        ffi::lua_pushvalue(l, 3);
-        ffi::lua_rawset(l, -3);
+        cache_for_value(l, 4);
         ffi::lua_settop(l, 3);
     }
 }
