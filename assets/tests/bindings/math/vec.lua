@@ -82,7 +82,9 @@ assert(-t.translation == -w, "unary operators of references")
 t.translation = Vec3.new(7, 8, 9)
 assert(t.translation.x == 7, "assigned to a field")
 assert(tostring(w) == "Vec3 { x: 1.0, y: 5.0, z: 3.0 }", "display")
-assert(getmetatable(w) == false, "the metatable of native values is hidden")
+-- LuaJIT: Vec3 values are cdata, whose metatable is hidden as "ffi"
+local hidden = getmetatable(w)
+assert(hidden == false or hidden == "ffi", "the metatable of native values is hidden")
 ---@diagnostic disable-next-line: param-type-mismatch
 local function fail() w:dot("a") end
 local _, outside = pcall(fail)
@@ -95,12 +97,15 @@ assert(at and tostring(inside):match("at line: %d+") == at, "errors in coroutine
 local world = import_namespace("bms").world
 local label = world._make_native_test_value("label")
 assert(label.label == "label" and getmetatable(label) == false, "a native value which needs dropping")
-local resurrected
-do
-    local holder = setmetatable({}, { __gc = function(self) resurrected = self.v end })
-    holder.v = world._make_native_test_value("collected")
+-- (tables have no finalizers on Lua 5.1 and LuaJIT)
+if not rawget(_G, "jit") then
+    local resurrected
+    do
+        local holder = setmetatable({}, { __gc = function(self) resurrected = self.v end })
+        holder.v = world._make_native_test_value("collected")
+    end
+    collectgarbage()
+    collectgarbage()
+    assert(resurrected ~= nil, "the finalizer ran")
+    assert(not pcall(function() return resurrected.label end), "a dropped native value can't be used")
 end
-collectgarbage()
-collectgarbage()
-assert(resurrected ~= nil, "the finalizer ran")
-assert(not pcall(function() return resurrected.label end), "a dropped native value can't be used")

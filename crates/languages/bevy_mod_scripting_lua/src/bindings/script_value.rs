@@ -19,7 +19,8 @@ use mlua::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, MultiValue, Value, ffi,
 
 use crate::{IntoMluaError, LuaContextAppData};
 
-use super::reference::{LuaReflectReference, LuaTypeRef};
+use super::reference::LuaTypeRef;
+use bevy_mod_scripting_bindings::ReflectReference;
 
 /// A wrapper around many [`ScriptValue`]'s, used where the potential to return/receive many values separately arises.
 pub struct MultiLuaScriptValue(pub VecDeque<ScriptValue>);
@@ -167,9 +168,19 @@ impl Drop for TableDepth {
 #[profiling::all_functions]
 impl FromLua for LuaScriptValue {
     fn from_lua(value: mlua::Value, lua: &mlua::Lua) -> mlua::Result<Self> {
+        #[cfg(any(feature = "luajit", feature = "luajit52"))]
+        if let Value::Other(_) = &value
+            && let Some(value) = super::native::cdata::cdata_value(lua, &value)
+        {
+            return Ok(LuaScriptValue(value));
+        }
         let Value::Table(table) = value else {
-            return non_table_value(value, |ud| super::native::native_value_base(lua, ud))
-                .map(LuaScriptValue);
+            return non_table_value(
+                value,
+                |ud| super::native::reference_value(lua, ud),
+                |ud| super::native::native_value_base(lua, ud),
+            )
+            .map(LuaScriptValue);
         };
         // released when the table is converted, nested tables are converted inside `pairs`
         let _depth = TableDepth::enter()?;
@@ -199,14 +210,33 @@ impl FromLua for LuaScriptValue {
                     String::from_stack(idx, lua)?.into(),
                 ))),
                 ffi::LUA_TTABLE => table_from_stack(idx, lua).map(LuaScriptValue),
-                // native values are copied into a reference, see `super::native`, only looked for when it's no reference
-                _ => non_table_value(Value::from_stack(idx, lua)?, |_| {
-                    // looking it up pushes two values, nothing guarantees room for them here (i.e. deep in a table)
-                    if ffi::lua_checkstack(state, 2) == 0 {
-                        return None;
+                // cdata of native types are copied into a reference, like native values
+                #[cfg(any(feature = "luajit", feature = "luajit52"))]
+                super::native::cdata::LUA_TCDATA if ffi::lua_checkstack(state, 2) != 0 => {
+                    match super::native::cdata::cdata_script_value(state, idx) {
+                        Some(value) => Ok(LuaScriptValue(value)),
+                        None => non_table_value(Value::from_stack(idx, lua)?, |_| None, |_| None)
+                            .map(LuaScriptValue),
                     }
-                    super::native::native_base(state, idx)
-                })
+                }
+                // native values are copied into a reference, see `super::native`, only looked for when it's no reference
+                // looking references and natives up pushes two values, nothing guarantees room for them here (i.e. deep
+                // in a table)
+                _ => non_table_value(
+                    Value::from_stack(idx, lua)?,
+                    |_| {
+                        if ffi::lua_checkstack(state, 2) == 0 {
+                            return None;
+                        }
+                        super::native::reference_at(state, idx).cloned()
+                    },
+                    |_| {
+                        if ffi::lua_checkstack(state, 2) == 0 {
+                            return None;
+                        }
+                        super::native::native_base(state, idx)
+                    },
+                )
                 .map(LuaScriptValue),
             }
         }
@@ -216,6 +246,7 @@ impl FromLua for LuaScriptValue {
 /// Converts any value but a table, `native_base` gives the base of a userdata which is a native value (checked last).
 fn non_table_value(
     value: Value,
+    reference: impl FnOnce(&mlua::AnyUserData) -> Option<ReflectReference>,
     native_base: impl FnOnce(&mlua::AnyUserData) -> Option<*mut u8>,
 ) -> mlua::Result<ScriptValue> {
     Ok(match value {
@@ -246,23 +277,20 @@ fn non_table_value(
             if let Ok(type_ref) = ud.borrow::<LuaTypeRef>() {
                 return Ok(ScriptValue::Type(type_ref.0));
             }
-            let reference = match ud.borrow::<LuaReflectReference>() {
-                Ok(reference) => reference,
-                Err(e) => {
-                    // native values are copied into a reference, see `super::native`, only checked when it's no reference
-                    if let Some(base) = native_base(&ud) {
-                        // Safety: the userdata is a native value, alive while `ud` is
-                        return unsafe { NativeStorage::to_script_value(base) }
-                            .map_err(IntoMluaError::to_lua_error);
-                    }
-                    return Err(mlua::Error::FromLuaConversionError {
-                        from: "UserData",
-                        to: "LuaReflectReference".to_owned(),
-                        message: Some(e.to_string()),
-                    });
-                }
-            };
-            ScriptValue::Reference(reference.clone().into())
+            if let Some(reference) = reference(&ud) {
+                return Ok(ScriptValue::Reference(reference));
+            }
+            // native values are copied into a reference, see `super::native`, only checked when it's no reference
+            if let Some(base) = native_base(&ud) {
+                // Safety: the userdata is a native value, alive while `ud` is
+                return unsafe { NativeStorage::to_script_value(base) }
+                    .map_err(IntoMluaError::to_lua_error);
+            }
+            return Err(mlua::Error::FromLuaConversionError {
+                from: "UserData",
+                to: "LuaReflectReference".to_owned(),
+                message: None,
+            });
         }
         _ => {
             return Err(mlua::Error::FromLuaConversionError {
@@ -568,7 +596,7 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Integer(i) => Value::Integer(i),
             ScriptValue::Float(f) => Value::Number(f),
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
-            ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
+            ScriptValue::Reference(r) => super::native::reference_into_lua(lua, r)?,
             ScriptValue::Type(type_id) => LuaTypeRef(type_id).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => match function.script_function::<mlua::Function>() {

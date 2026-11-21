@@ -19,6 +19,8 @@ use crate::{
     world_extensions::{FunctionLookups, Lookups},
 };
 
+pub use crate::world_extensions::members_depend_on_value;
+
 /// What indexing a value by a name found.
 pub enum Member {
     /// A function called on the indexed value, i.e. `v:length()` in Lua.
@@ -73,12 +75,11 @@ pub fn index_name<'n>(
 ) -> Result<Member, InteropError> {
     profiling::function_scope!("dispatch::index");
     let name = name.into();
-    let tail = static_field(&world, &reference, &name);
-    let type_id = match &tail {
-        Some((type_id, _)) => *type_id,
+    let tail = static_tail(&world, &reference);
+    let type_id = match tail {
+        Some(type_id) => type_id,
         None => reference.tail_type_id(world.clone())?.or_fake_id(),
     };
-    let field = tail.and_then(|(_, field)| field);
     // one registry read for the member and the getter, which is called once unlocked
     let (member, get) = Lookups::with(&world, |lookups| {
         let member = lookups.member(&reference, type_id, name);
@@ -89,7 +90,8 @@ pub fn index_name<'n>(
         Ok(member) => Ok(Member::Static(member)),
         Err(name) => {
             // the default getter, done without converting the name or reading values which aren't returned
-            if let Some((field, is_reference)) = field
+            if let Some((field, is_reference)) =
+                tail.and_then(|type_id| struct_field(&world, type_id, &name))
                 && std::ptr::fn_addr_eq(
                     get,
                     crate::function::magic_functions::MagicFunctions::default_get
@@ -117,15 +119,13 @@ pub fn index_name<'n>(
     }
 }
 
-/// The type of the value `reference` points to, from type info only (no world access), and its field `name` if it's a
-/// struct with one: its name, and whether its value is returned as a reference (not a primitive or an option).
+/// The type of the value `reference` points to, from type info only (no world access).
 ///
 /// `None` if the path goes through anything but struct fields and tuple struct fields.
-fn static_field(
-    world: &WorldGuard,
-    reference: &ReflectReference,
-    name: &str,
-) -> Option<(TypeId, Option<(&'static str, bool)>)> {
+fn static_tail(world: &WorldGuard, reference: &ReflectReference) -> Option<TypeId> {
+    if reference.reflect_path.is_empty() {
+        return Some(reference.base.type_id);
+    }
     let registry = world.type_registry();
     let registry = registry.read();
     let mut info = registry.get_type_info(reference.base.type_id())?;
@@ -139,23 +139,29 @@ fn static_field(
         };
         info = registry.get_type_info(field_type)?;
     }
-    let field = match info {
-        TypeInfo::Struct(s) => s.field(name).and_then(|field| {
-            let is_reference = matches!(
-                registry.get_type_info(field.type_id())?,
-                TypeInfo::Struct(_)
-                    | TypeInfo::TupleStruct(_)
-                    | TypeInfo::List(_)
-                    | TypeInfo::Array(_)
-                    | TypeInfo::Map(_)
-                    | TypeInfo::Set(_)
-                    | TypeInfo::Tuple(_)
-            );
-            Some((field.name(), is_reference))
-        }),
-        _ => None,
+    Some(info.type_id())
+}
+
+/// The field `name` of the struct `type_id`: its name, and whether its value is returned as a reference (not a
+/// primitive or an option).
+fn struct_field(world: &WorldGuard, type_id: TypeId, name: &str) -> Option<(&'static str, bool)> {
+    let registry = world.type_registry();
+    let registry = registry.read();
+    let TypeInfo::Struct(s) = registry.get_type_info(type_id)? else {
+        return None;
     };
-    Some((info.type_id(), field))
+    let field = s.field(name)?;
+    let is_reference = matches!(
+        registry.get_type_info(field.type_id())?,
+        TypeInfo::Struct(_)
+            | TypeInfo::TupleStruct(_)
+            | TypeInfo::List(_)
+            | TypeInfo::Array(_)
+            | TypeInfo::Map(_)
+            | TypeInfo::Set(_)
+            | TypeInfo::Tuple(_)
+    );
+    Some((field.name(), is_reference))
 }
 
 /// Accesses a field or element with the [`crate::MagicFunctions::get`] function.

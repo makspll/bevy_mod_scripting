@@ -154,5 +154,9 @@ assert(approx(fetched.translation.y, 2), "other fields are unchanged")
 assert(approx_vec3(fetched:forward(), Vec3.new(-math.sin(1.0), 0, -math.cos(1.0))), "a rotation persists")
 fetched.translation = Vec3.new(7, 8, 9)
 assert(fetched.translation:dot(Vec3.unit_x()) == 7 and fetched.translation == Vec3.new(7, 8, 9), "whole fields are written")
+local proxy = fetched.translation
+proxy.y = 1
+assert(rawequal(proxy, fetched.translation) and fetched.translation.y == 1, "field places are kept and write through")
 world.despawn(entity)
+assert(not pcall(function(p) return p.x end, proxy), "a kept field place of a despawned entity errors")
 assert(not pcall(function() return fetched.translation.x end), "a handle to a despawned entity errors")

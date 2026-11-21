@@ -17,6 +17,7 @@ fn direction(v: Vec3) -> Result<Vec3, InteropError> {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "quat_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -162,7 +163,7 @@ pub(crate) fn register(world: &mut World) {
     // a SIMD type: fields through `Deref`
     bevy_mod_scripting_bindings::script_native!(
         world,
-        deref Quat {
+        ffi deref Quat {
             x: f32,
             y: f32,
             z: f32,

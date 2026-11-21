@@ -393,6 +393,16 @@ impl ReflectReference {
         })
     }
 
+    /// Whether dropping the reference frees anything: references to whole components and resources own nothing, so
+    /// languages can skip finalizing them.
+    pub fn owns_heap(&self) -> bool {
+        self.reflect_path.owns_heap()
+            || !matches!(
+                self.base.base_id,
+                ReflectBase::Component(..) | ReflectBase::Resource(..)
+            )
+    }
+
     /// Retrieves the type id of the value the reference points to.
     pub fn tail_type_id(&self, world: WorldGuard) -> Result<Option<TypeId>, InteropError> {
         if self.reflect_path.is_empty() {

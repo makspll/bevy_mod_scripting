@@ -307,19 +307,19 @@ pub(crate) fn register(world: &mut World) {
     register_ivec3_functions(world);
     register_uvec2_functions(world);
     register_uvec3_functions(world);
-    script_native!(world, IVec2 { x: i32, y: i32 });
+    script_native!(world, ffi IVec2 { x: i32, y: i32 });
     script_native!(
         world,
-        IVec3 {
+        ffi IVec3 {
             x: i32,
             y: i32,
             z: i32
         }
     );
-    script_native!(world, UVec2 { x: u32, y: u32 });
+    script_native!(world, ffi UVec2 { x: u32, y: u32 });
     script_native!(
         world,
-        UVec3 {
+        ffi UVec3 {
             x: u32,
             y: u32,
             z: u32

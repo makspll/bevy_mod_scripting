@@ -141,8 +141,9 @@ fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
             continue;
         };
 
-        // values and the type in its namespace share the functions, which `X.Functions` holds:
-        // ---@class transform.Transform : ReflectReference, transform.Transform.Functions
+        // values and the type in its namespace share the functions, which `X.Functions` holds, first: LuaLS takes a member
+        // from the first parent declaring it, and the type's functions come before those of all references (i.e. `iter`)
+        // ---@class transform.Transform : transform.Transform.Functions, ReflectReference
         // ---@class transform.Transform.Static : transform.Transform.Functions, bms.ScriptComponentRegistration
         // ---@alias transform.Transform.Type transform.Transform.Static | bms.ScriptComponentRegistration<transform.Transform>
         // the alias is the type of the table, the generic registration in it lets LuaLS infer `A` in generic functions,
@@ -163,7 +164,7 @@ fn class_modules(ladfile: &ladfile::LadFile) -> Vec<LuaModule> {
         ));
         lua_class
             .parents
-            .push(LuaType::Alias(functions_class.clone()));
+            .insert(0, LuaType::Alias(functions_class.clone()));
         modules.push(module(lua_class, vec![], true));
         let mut type_module = module(
             LuaClass {
@@ -819,6 +820,32 @@ pub struct LuaTypeVisitor<'a> {
     pub ladfile: &'a LadFile,
 }
 
+impl LuaTypeVisitor<'_> {
+    /// What a function returns: a tuple is several values in Lua (`fun(): a, b`, `fun(): a, ...: b` with a rest), and an
+    /// optional tuple several optional ones, i.e. an iterator for a generic `for`, which types the loop's variables.
+    fn function_returns(&mut self, returns: &LadTypeKind) -> Result<LuaType, anyhow::Error> {
+        let (returns, optional) = match returns {
+            LadTypeKind::Option(inner) => (&**inner, true),
+            returns => (returns, false),
+        };
+        let (head, rest) = match returns {
+            LadTypeKind::Tuple(head) if !head.is_empty() => (head.as_slice(), None),
+            LadTypeKind::TupleWithRest { head, rest } => (head.as_slice(), Some(&**rest)),
+            _ if optional => return self.visit_option(returns),
+            _ => return self.visit(returns),
+        };
+        let mut value =
+            |kind: &LadTypeKind| match optional && !matches!(kind, LadTypeKind::Option(_)) {
+                true => self.visit_option(kind),
+                false => self.visit(kind),
+            };
+        Ok(LuaType::Returns {
+            head: head.iter().map(&mut value).collect::<Result<_, _>>()?,
+            rest: rest.map(value).transpose()?.map(Box::new),
+        })
+    }
+}
+
 impl ArgumentVisitor for LuaTypeVisitor<'_> {
     type Output = Result<LuaType, anyhow::Error>;
 
@@ -943,7 +970,7 @@ impl ArgumentVisitor for LuaTypeVisitor<'_> {
                     .enumerate()
                     .map(|(i, param)| Ok((format!("arg{}", i + 1), self.visit(param)?)))
                     .collect::<Result<_, anyhow::Error>>()?,
-                return_type: Box::new(self.visit(returns)?),
+                return_type: Box::new(self.function_returns(returns)?),
             },
         ))
     }
@@ -1818,7 +1845,7 @@ mod test {
         // values and the type in its namespace share the functions, the type is also its registration
         for line in [
             "---@class ladfile_builder.PlainStructType.Functions\n",
-            "---@class ladfile_builder.PlainStructType : ReflectReference,ladfile_builder.PlainStructType.Functions\n",
+            "---@class ladfile_builder.PlainStructType : ladfile_builder.PlainStructType.Functions,ReflectReference\n",
             "---@class ladfile_builder.PlainStructType.Static : ladfile_builder.PlainStructType.Functions,bms.ScriptTypeRegistration<ladfile_builder.PlainStructType>\n",
             "---@alias ladfile_builder.PlainStructType.Type ladfile_builder.PlainStructType.Static | bms.ScriptTypeRegistration<ladfile_builder.PlainStructType>\n",
             "---@class bms.ScriptTypeRegistration<T> : ReflectReference\n",
@@ -1958,6 +1985,31 @@ mod test {
         let rendered = render(&file_with_constructors());
         assert!(
             rendered.contains("--- Constructs a value.\n---@param payload"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn returned_tuples_are_several_values() {
+        // an iterator for a generic `for`, i.e. `query:iter()`: a function returning an optional tuple with a rest
+        let mut file = file_with_constructors();
+        let unit = type_id(&file, "UnitType");
+        let tuple = LadTypeKind::TupleWithRest {
+            head: vec![LadTypeKind::Primitive(ReflectionPrimitiveKind::Bool)],
+            rest: Box::new(LadTypeKind::Primitive(ReflectionPrimitiveKind::String)),
+        };
+        add_function(
+            &mut file,
+            LadFunctionNamespace::Type(unit.into()),
+            vec![],
+            LadTypeKind::Function {
+                params: vec![],
+                returns: Box::new(LadTypeKind::Option(Box::new(tuple))),
+            },
+        );
+        let rendered = render(&file);
+        assert!(
+            rendered.contains("---@return fun(): boolean | nil, ...: string | nil"),
             "{rendered}"
         );
     }

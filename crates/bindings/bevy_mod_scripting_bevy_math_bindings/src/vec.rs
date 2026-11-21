@@ -15,7 +15,7 @@ use bevy_mod_scripting_derive::script_bindings;
 macro_rules! float_vector_functions {
     ($ty:ty, $name:literal) => {
         #[script_bindings(
-            remote,
+            remote, ffi,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
             namespace = "math",
@@ -243,6 +243,7 @@ float_vector_functions!(Vec4, "vec4_shared_functions");
 
 #[script_bindings(
     remote,
+    ffi,
     name = "vec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -329,6 +330,7 @@ impl Vec2 {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "vec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -415,6 +417,7 @@ impl Vec3 {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "vec4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -434,6 +437,7 @@ impl Vec4 {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "vec3a_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -453,6 +457,7 @@ impl Vec3A {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "dvec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -472,6 +477,7 @@ impl DVec2 {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "dvec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -501,10 +507,10 @@ pub(crate) fn register(world: &mut World) {
     register_vec3a_functions(world);
     register_dvec2_functions(world);
     register_dvec3_functions(world);
-    script_native!(world, Vec2 { x: f32, y: f32 });
+    script_native!(world, ffi vector Vec2 { x: f32, y: f32 });
     script_native!(
         world,
-        Vec3 {
+        ffi vector Vec3 {
             x: f32,
             y: f32,
             z: f32
@@ -513,7 +519,7 @@ pub(crate) fn register(world: &mut World) {
     // SIMD vectors: fields through `Deref`
     script_native!(
         world,
-        deref Vec4 {
+        ffi vector deref Vec4 {
             x: f32,
             y: f32,
             z: f32,
@@ -522,16 +528,16 @@ pub(crate) fn register(world: &mut World) {
     );
     script_native!(
         world,
-        deref Vec3A {
+        ffi vector deref Vec3A {
             x: f32,
             y: f32,
             z: f32
         }
     );
-    script_native!(world, DVec2 { x: f64, y: f64 });
+    script_native!(world, ffi vector DVec2 { x: f64, y: f64 });
     script_native!(
         world,
-        DVec3 {
+        ffi vector DVec3 {
             x: f64,
             y: f64,
             z: f64

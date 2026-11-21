@@ -488,6 +488,11 @@ impl equivalent::Equivalent<FunctionKey> for FunctionKeyRef<'_> {
     }
 }
 
+/// Changes whenever the functions of any [`ScriptFunctionRegistry`] change, for caches of functions kept outside of it,
+/// i.e. by languages.
+pub static FUNCTIONS_GENERATION: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
 /// A key of [`ScriptFunctionRegistry::bound_to_type`] borrowing its name. Hashes the same as the key.
 #[derive(Hash)]
 struct BoundKeyRef<'a>(TypeId, &'a str);
@@ -512,6 +517,9 @@ pub struct ScriptFunctionRegistry {
     /// The types languages store natively, see [`crate::native`]
     #[debug_with_type_info(skip)]
     native_types: HashMap<TypeId, Arc<crate::native::NativeType>>,
+    /// The functions of types callable through a language's FFI, see [`crate::native::FfiFunction`]
+    #[debug_with_type_info(skip)]
+    ffi_functions: HashMap<TypeId, Vec<crate::native::FfiFunction>>,
     /// A registry of magic functions
     pub magic_functions: MagicFunctions,
 }
@@ -671,6 +679,7 @@ impl ScriptFunctionRegistry {
     /// The functions, for changing them, which invalidates the bound functions.
     fn functions_mut(&mut self) -> &mut HashMap<FunctionKey, DynamicScriptFunction> {
         self.bound_to_type.get_mut().clear();
+        FUNCTIONS_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
         &mut self.functions
     }
 
@@ -701,9 +710,32 @@ impl ScriptFunctionRegistry {
         crate::native::NATIVE_TYPES_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
     }
 
+    /// Registers a function of the type `type_id` callable through a language's FFI, replacing one with the same name.
+    ///
+    /// It's the FFI form of the function registered on the type with this name right now: registering another function
+    /// with the name, or removing it, drops the FFI form. Languages which made their types already keep it.
+    pub fn register_ffi_function(&mut self, type_id: TypeId, function: crate::native::FfiFunction) {
+        let functions = self.ffi_functions.entry(type_id).or_default();
+        functions.retain(|f| f.name != function.name);
+        functions.push(function);
+    }
+
+    /// The functions of the type `type_id` callable through a language's FFI.
+    pub fn ffi_functions(&self, type_id: TypeId) -> &[crate::native::FfiFunction] {
+        self.ffi_functions
+            .get(&type_id)
+            .map(Vec::as_slice)
+            .unwrap_or_default()
+    }
+
     /// The native type of `type_id`, if it is one, see [`crate::native`].
     pub fn native_type(&self, type_id: TypeId) -> Option<&Arc<crate::native::NativeType>> {
         self.native_types.get(&type_id)
+    }
+
+    /// Every native type, see [`crate::native`].
+    pub fn native_types(&self) -> impl Iterator<Item = &Arc<crate::native::NativeType>> {
+        self.native_types.values()
     }
 
     /// Keeps the methods of a native type in step with the functions registered on it.
@@ -713,6 +745,10 @@ impl ScriptFunctionRegistry {
         name: &str,
         function: Option<&DynamicScriptFunction>,
     ) {
+        // an FFI form is of the function which was there, see `register_ffi_function`
+        if let Some(functions) = self.ffi_functions.get_mut(&type_id) {
+            functions.retain(|f| f.name != name);
+        }
         if let Some(native) = self.native_types.get_mut(&type_id) {
             let methods = &mut Arc::make_mut(native).methods;
             match function {
@@ -816,9 +852,9 @@ macro_rules! impl_script_function {
                     let received_args_len = args.len();
                     let expected_arg_count = count!($($param )*);
                     $( let $context = caller_context.clone(); )?
-                    let world = caller_context.world()?;
-                    // the accesses and borrows made for the arguments are released once the call ends
-                    world.with_call_scope(|scope| {
+                    // the accesses and borrows made for the arguments are released once the call ends; the world is only
+                    // looked up when an argument or the result needs it
+                    bevy_mod_scripting_world::CallScope::with_lazy(|scope| {
                         let mut current_arg = 0usize;
                         $(let $param = {
                             let index = current_arg;
@@ -846,7 +882,7 @@ macro_rules! impl_script_function {
                             let $out = out?;
                             let out = $out;
                         )?
-                        out.into_ret(ret, world.clone(), &native_return)
+                        out.into_ret(ret, scope, &native_return)
                             .map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
                     })
                 })
@@ -990,8 +1026,19 @@ mod test {
         let fn_ = |a: usize, b: usize| a + b;
         let namespace = TypeId::of::<()>();
         registry.register(namespace, "test", fn_);
+        registry.register_ffi_function(
+            namespace,
+            crate::native::FfiFunction {
+                name: "test",
+                function: std::ptr::null(),
+                params: vec![],
+                result: crate::native::FfiType::Scalar("float"),
+            },
+        );
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_some());
+        // the FFI form goes with the function
+        assert!(registry.ffi_functions(namespace).is_empty());
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_none());
     }

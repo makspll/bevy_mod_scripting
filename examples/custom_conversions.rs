@@ -34,7 +34,7 @@ impl FromScript for MyFunkyArgumentType {
     where
         Self: Sized,
     {
-        let world = scope.world();
+        let world = scope.world()?;
         match value {
             ScriptValue::Unit => Ok(Self::Nil),
             ScriptValue::Bool(_) => todo!(),

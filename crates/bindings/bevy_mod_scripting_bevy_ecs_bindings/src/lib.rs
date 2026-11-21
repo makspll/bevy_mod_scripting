@@ -36,6 +36,9 @@ impl Plugin for BevyEcsBindingsPlugin {
     fn build(&self, app: &mut App) {
         let world = app.world_mut();
         register_entity_functions(world);
+        // entities are stored natively by languages (8 bytes, no fields): no allocation for each one scripts get, i.e. in
+        // query results, and typed functions read them without reflection
+        bevy_mod_scripting_bindings::script_native!(world, Entity {});
         register_name_functions(world);
         register_child_of_functions(world);
         register_world_ecs_functions(world);
