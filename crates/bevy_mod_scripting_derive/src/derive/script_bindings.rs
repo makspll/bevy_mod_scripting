@@ -358,6 +358,69 @@ fn ffi_params(
     }])
 }
 
+/// The two alternatives of a `Union<L, R>`, `None` for other types.
+fn union_alternatives(ty: &syn::Type) -> Option<(&syn::Type, &syn::Type)> {
+    let syn::Type::Path(path) = ty else {
+        return None;
+    };
+    let segment = path.path.segments.last()?;
+    let syn::PathArguments::AngleBracketed(arguments) = &segment.arguments else {
+        return None;
+    };
+    let mut types = arguments.args.iter().filter_map(|a| match a {
+        syn::GenericArgument::Type(ty) => Some(ty),
+        _ => None,
+    });
+    match (segment.ident == "Union", types.next(), types.next()) {
+        (true, Some(left), Some(right)) => Some((left, right)),
+        _ => None,
+    }
+}
+
+/// The statements writing `value`, a `Union` (`ty`), to the out-pointer `out` as the alternative it holds and evaluating
+/// to that alternative's index (nested unions flattened, in order, their `FfiType`s pushed to `kinds`). `None` if an alternative has no C
+/// kind.
+///
+/// ```rust,ignore
+/// match output.into_left() {
+///     Ok(left) => { unsafe { out.cast::<Mat3>().write(left.into_inner()) }; 0u8 }
+///     Err(right) => { unsafe { out.cast::<Vec3>().write(right.into_inner()) }; 1u8 }
+/// }
+/// ```
+fn ffi_union_result(
+    ty: &syn::Type,
+    value: TokenStream,
+    bms: &syn::Path,
+    span: Span,
+    kinds: &mut Vec<TokenStream>,
+) -> Option<TokenStream> {
+    if let Some((left, right)) = union_alternatives(ty) {
+        let left = ffi_union_result(left, quote_spanned! {span=> left }, bms, span, kinds)?;
+        let right = ffi_union_result(right, quote_spanned! {span=> right }, bms, span, kinds)?;
+        return Some(quote_spanned! {span=>
+            match #value.into_left() {
+                Ok(left) => { #left }
+                Err(right) => { #right }
+            }
+        });
+    }
+    let index = proc_macro2::Literal::u8_suffixed(u8::try_from(kinds.len()).ok()?);
+    match ffi_kind(ty)? {
+        FfiKind::Scalar(c) => {
+            kinds.push(quote_spanned! {span=> #bms::native::FfiType::Scalar(#c) });
+            Some(quote_spanned! {span=> unsafe { out.cast::<#ty>().write(#value) }; #index })
+        }
+        FfiKind::Value(inner) => {
+            let write = quote_spanned! {span=> unsafe { out.cast::<#inner>().write(#value.into_inner()) }; #index };
+            kinds.push(
+                quote_spanned! {span=> #bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>()) },
+            );
+            Some(write)
+        }
+        FfiKind::Ref(_) => None,
+    }
+}
+
 /// The registrations of the `extern "C"` wrappers of a function whose parameters and result have FFI kinds (see
 /// [`ffi_kind`]), `None` for other functions. A wrapper runs the function's body like its registration does. A function
 /// with `Union` parameters gets a wrapper for each combination of their alternatives (i.e. `add(R<Vec3>, R<Vec3>)` and
@@ -396,20 +459,38 @@ fn ffi_wrapper(fun: &syn::ImplItemFn, self_ty: &syn::Type, bms: &syn::Path) -> O
     let syn::ReturnType::Type(_, out_type) = &fun.sig.output else {
         return None;
     };
-    let (out_param, ret_type, finish, result) = match ffi_kind(out_type)? {
-        FfiKind::Scalar(c) => (
-            None,
-            quote_spanned! {span=> #out_type },
+    let (out_param, ret_type, finish, result) = if union_alternatives(out_type).is_some() {
+        // one of the alternatives, written to an out-pointer to a C union of them, its index returned
+        let mut kinds = Vec::new();
+        let finish = ffi_union_result(
+            out_type,
             quote_spanned! {span=> output },
-            quote_spanned! {span=> #bms::native::FfiType::Scalar(#c) },
-        ),
-        FfiKind::Value(inner) => (
-            Some(quote_spanned! {span=> out: *mut #inner }),
-            quote_spanned! {span=> () },
-            quote_spanned! {span=> unsafe { out.write(output.into_inner()) } },
-            quote_spanned! {span=> #bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>()) },
-        ),
-        FfiKind::Ref(_) => return None,
+            bms,
+            span,
+            &mut kinds,
+        )?;
+        (
+            Some(quote_spanned! {span=> out: *mut u8 }),
+            quote_spanned! {span=> u8 },
+            finish,
+            quote_spanned! {span=> #bms::native::FfiResult::Union(vec![#(#kinds),*]) },
+        )
+    } else {
+        match ffi_kind(out_type)? {
+            FfiKind::Scalar(c) => (
+                None,
+                quote_spanned! {span=> #out_type },
+                quote_spanned! {span=> output },
+                quote_spanned! {span=> #bms::native::FfiResult::One(#bms::native::FfiType::Scalar(#c)) },
+            ),
+            FfiKind::Value(inner) => (
+                Some(quote_spanned! {span=> out: *mut #inner }),
+                quote_spanned! {span=> () },
+                quote_spanned! {span=> unsafe { out.write(output.into_inner()) } },
+                quote_spanned! {span=> #bms::native::FfiResult::One(#bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>())) },
+            ),
+            FfiKind::Ref(_) => return None,
+        }
     };
     let args = &fun.sig.inputs;
     let body = &fun.block;

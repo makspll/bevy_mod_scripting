@@ -20,7 +20,7 @@ use std::{
 
 use bevy_mod_scripting_bindings::{
     InteropError, ScriptValue, WorldExtensions, dispatch,
-    native::{FfiFunction, FfiLayout, FfiType, NativeType, NativeVTable},
+    native::{FfiFunction, FfiLayout, FfiResult, FfiType, NativeType, NativeVTable},
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
@@ -545,9 +545,55 @@ fn function_source(
         }
     }
     let args = params.join(", ");
-    let (c_result, call) = match function.result {
-        FfiType::Scalar(c) => (c.to_owned(), format!("return f{pointer}({args})")),
-        FfiType::Value(type_id) => {
+    let with_out = |out: &str| match args.is_empty() {
+        true => out.to_owned(),
+        false => format!("{args}, {out}"),
+    };
+    // the scratch union of a `Union` result, made with the function
+    let mut setup = String::new();
+    let (c_result, call) = match &function.result {
+        FfiResult::Union(alternatives) => {
+            let mut members = Vec::new();
+            let mut reads = Vec::new();
+            for (i, alternative) in alternatives.iter().enumerate() {
+                let i = i + 1;
+                match alternative {
+                    FfiType::Scalar(c) => {
+                        members.push(format!("{c} a{i};"));
+                        reads.push(format!("U.a{i}"));
+                    }
+                    FfiType::Value(type_id) => {
+                        let (lua_ctype, c_name) = ctype(*type_id)?;
+                        members.push(format!("{c_name} a{i};"));
+                        // copied, like a single result from its scratch value
+                        reads.push(format!("{lua_ctype}(U.a{i})"));
+                    }
+                }
+            }
+            c_params.push("void*".to_owned());
+            let _ = write!(
+                setup,
+                "local U = ffi.new(\"union {{ {} }}\") ",
+                members.join(" ")
+            );
+            // the index of the alternative written, the last one needs no check
+            let mut call = format!("local t = f{pointer}({}) ", with_out("U"));
+            let last = reads.len().saturating_sub(1);
+            for (i, read) in reads.iter().enumerate() {
+                match i == last {
+                    true => {
+                        let _ = write!(call, "return {read}");
+                    }
+                    false => {
+                        let _ = write!(call, "if t == {i} then return {read} end ");
+                    }
+                }
+            }
+            ("uint8_t".to_owned(), call)
+        }
+        FfiResult::One(FfiType::Scalar(c)) => (c.to_string(), format!("return f{pointer}({args})")),
+        FfiResult::One(FfiType::Value(type_id)) => {
+            let type_id = *type_id;
             let (lua_ctype, c_name) = ctype(type_id)?;
             c_params.push(format!("{c_name}*"));
             // written to the type's scratch value and copied from it: a result made here and passed to C would always
@@ -571,7 +617,7 @@ fn function_source(
     Some(format!(
         // in a block: a chunk has room for 200 locals only
         // other arguments go to the function's FFI form made before this one (see `Union`), else through BMS
-        "do local f{pointer}, other = cast(\"{c_result} (*)({})\", ptrs[{pointer}]), methods.{name} or slow.{name}\nlocal function w({args}) if {guard} then {call} end return other({args}) end\nmethods.{name} = w statics.{name} = w end\n",
+        "do {setup}local f{pointer}, other = cast(\"{c_result} (*)({})\", ptrs[{pointer}]), methods.{name} or slow.{name}\nlocal function w({args}) if {guard} then {call} end return other({args}) end\nmethods.{name} = w statics.{name} = w end\n",
         c_params.join(", ")
     ))
 }

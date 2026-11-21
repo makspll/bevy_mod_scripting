@@ -847,8 +847,19 @@ pub struct FfiFunction {
     pub function: *const (),
     /// Its parameters, in order
     pub params: Vec<FfiType>,
-    /// Its result, written to an out-pointer after the parameters for values
-    pub result: FfiType,
+    /// Its result
+    pub result: FfiResult,
+}
+
+/// The result of an [`FfiFunction`].
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum FfiResult {
+    /// A scalar returned, or a value written to an out-pointer after the parameters
+    One(FfiType),
+    /// One of the alternatives of a `Union` (nested ones flattened, in order), written to an out-pointer after the
+    /// parameters to memory big and aligned enough for each (a C union of them): the wrapper returns the index of the
+    /// alternative written, as a `uint8_t`
+    Union(Vec<FfiType>),
 }
 
 // Safety: a pointer to a function, which can be called from any thread
