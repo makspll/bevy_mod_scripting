@@ -2189,6 +2189,19 @@ unsafe fn cache_registration_member(l: *mut ffi::lua_State, generation: ffi::lua
     }
 }
 
+/// The Lua function of a function of a type or registration (`Vec3.new`): these live in the registry, so it's made once.
+/// On LuaJIT it's the function's FFI form if it has one, see `cdata::ffi_static`.
+fn static_function_value(lua: &Lua, function: DynamicScriptFunction) -> mlua::Result<mlua::Value> {
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    if let bevy_mod_scripting_bindings::function::namespace::FunctionScope::OnType(type_id) =
+        function.info.namespace
+        && let Some(value) = cdata::ffi_static(lua, type_id, &function.info.name)?
+    {
+        return Ok(value);
+    }
+    super::script_value::registered_function_into_lua(lua, function)
+}
+
 /// `__index` of types (`LuaTypeRef`, i.e. `world.spawn`), see [`dispatch::static_index`]: functions are cached per type
 /// value like the functions of registrations, see [`cached_registration_member`].
 ///
@@ -2214,14 +2227,7 @@ pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) ->
                     // functions of types live in the registry (bound ones are cached there too)
                     ScriptValue::Function(function) => {
                         cache = named;
-                        // on LuaJIT, functions with a C form (`Vec3.new`) are called through the FFI
-                        #[cfg(any(feature = "luajit", feature = "luajit52"))]
-                        if let Some(value) = cdata::ffi_static(lua, type_id, &function.info.name)
-                            .map_err(IntoInteropError::to_bms_error)?
-                        {
-                            return Ok(Ready::Value(value));
-                        }
-                        super::script_value::registered_function_into_lua(lua, function)
+                        static_function_value(lua, function)
                     }
                     member => LuaScriptValue(member).into_lua(lua),
                 };
@@ -2276,21 +2282,11 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
                         .map_err(IntoInteropError::to_bms_error)?;
                     dispatch::index(world, receiver.clone(), key.into(), LUA_CALLER_CONTEXT)?
                 };
-                // functions of types and registrations live in the registry, their Lua functions are made once; on
-                // LuaJIT, functions of registrations with a C form (`Vec3.new`) are called through the FFI
-                #[cfg(any(feature = "luajit", feature = "luajit52"))]
+                // functions of registrations have FFI forms on LuaJIT, methods of references are called with references
                 let registration = cache;
-                let function_value = |function: DynamicScriptFunction| {
-                    #[cfg(any(feature = "luajit", feature = "luajit52"))]
-                    if registration
-                        && let bevy_mod_scripting_bindings::function::namespace::FunctionScope::OnType(
-                            type_id,
-                        ) = function.info.namespace
-                        && let Some(value) = cdata::ffi_static(lua, type_id, &function.info.name)?
-                    {
-                        return Ok(value);
-                    }
-                    super::script_value::registered_function_into_lua(lua, function)
+                let function_value = |function: DynamicScriptFunction| match registration {
+                    true => static_function_value(lua, function),
+                    false => super::script_value::registered_function_into_lua(lua, function),
                 };
                 let value = match member {
                     dispatch::Member::Method(function) => function_value(function),
