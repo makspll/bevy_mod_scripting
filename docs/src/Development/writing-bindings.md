@@ -20,7 +20,7 @@ Only declare types whose parameter is part of what they are (`Handle`, `Time`, `
 ## What to bind
 
 Every reflected type is already usable from scripts without any bindings:
-- fields are read and written through references, i.e. `transform.translation.x = 2`
+- fields are read and written through references, i.e. `sprite.color = c` or `player.stats.hp = 2`
 - every type can be constructed with `Type.new({...})`, see [Constructing Arbitrary Types](../ScriptingReference/constructing-arbitrary-types.md)
 - enum variants are available as `Type.Variant`
 - containers support `len`, `iter`, `push` etc., and every value can be printed
@@ -46,12 +46,12 @@ Hot value types, i.e. `Vec3`, can be stored by the languages themselves instead 
 ```rust,ignore
 // fields are read and written with typed accessors
 script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
-// components (and resources) of native types are native handles: `get_component` returns one, `t.translation` is a
-// handle to the field, `t.translation.x = 5` writes the component
+// components (and resources) of native types are native handles: `get_component` returns one, `t.translation = v`
+// writes the component
 script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });
 ```
 
-Values of types with fields of native types (`Transform.from_xyz(..)`) stay references, so writes to their fields aren't lost on a copy. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren't native, i.e. references, are converted as usual.
+Native types are values, with no write-through: a field of a native type is read as a read-only copy (`t.translation.x = 5` is an error, not a lost write) and written whole (`t.translation = v`); `clone` gives a copy scripts can change. Functions get copies of the native values scripts hold (`M<T>` is written back when the call ends), so a script may use a value while a call has it. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren't native, i.e. references, are converted as usual.
 
 ## Documentation
 

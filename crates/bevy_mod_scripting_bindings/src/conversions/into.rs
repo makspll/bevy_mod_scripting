@@ -205,9 +205,7 @@ impl<T: Reflect> IntoScript for V<T> {
         native: &NativeReturnType,
     ) -> Result<(), InteropError> {
         // types stored natively are moved into the language's storage, others are allocated as usual
-        if let Some(native) = native.get(scope, std::any::TypeId::of::<T>())
-            && native.inline
-        {
+        if let Some(native) = native.get(scope, std::any::TypeId::of::<T>()) {
             let mut value = Some(self.0);
             // Safety: the native type is T's, `write` is called once by the sink, which writes the T
             let written = unsafe {

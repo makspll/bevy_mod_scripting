@@ -81,21 +81,39 @@ fn is_native_arg<T: 'static>(args: &dyn ArgSource, index: usize) -> bool {
     )
 }
 
+/// The error for changing a read-only copy, see [`crate::native::ReturnSink::read_only`].
+fn read_only<T>() -> InteropError {
+    InteropError::string(format!(
+        "this {} is a read-only copy of a field: assign the whole field instead, or `clone` it first",
+        std::any::type_name::<T>()
+    ))
+}
+
+/// The native value of `T` at argument `index` for a reference to it which lives as long as the scope, if the argument
+/// is one: the storage, if it has one, and the value.
+///
+/// A value stored by the language is one scripts can write while the call runs (in a callback), so the reference is to a
+/// copy kept by the scope, which replaces the value when the scope ends if the call may change it (`exclusive`). A place
+/// is the value in the world, kept by the access claimed for it.
 fn native_arg<T: 'static>(
     args: &dyn ArgSource,
     index: usize,
     scope: &CallScope<'_>,
     exclusive: bool,
 ) -> Result<Option<(Option<*mut u8>, *mut T)>, InteropError> {
+    let out_of_memory = || InteropError::str("out of memory");
     let Some(base) = args.native(index) else {
-        // a plain value (i.e. a LuaJIT cdata), whose bytes scripts can write while the call runs: the call gets a copy,
-        // written back when the scope ends if it may change it
-        let Some(value) = args.plain(index, TypeId::of::<T>()) else {
+        // a plain value (i.e. a LuaJIT cdata)
+        let Some((value, is_read_only)) = args.plain(index, TypeId::of::<T>()) else {
             return Ok(None);
         };
-        // Safety: `ArgSource` gives a T, alive until the call returns, which outlives the scope
-        let copy = unsafe { scope.copy_plain(value, std::alloc::Layout::new::<T>(), exclusive) }
-            .ok_or_else(|| InteropError::str("out of memory"))?;
+        if exclusive && is_read_only {
+            return Err(read_only::<T>());
+        }
+        let layout = std::alloc::Layout::new::<T>();
+        // Safety: `ArgSource` gives a T of a `Copy` type, alive until the call returns, which outlives the scope
+        let copy = unsafe { scope.copy_value(value, layout, None, None, exclusive) }
+            .ok_or_else(out_of_memory)?;
         return Ok(Some((None, copy as *mut T)));
     };
     // Safety: `ArgSource` gives initialised storage, alive until the call returns, which outlives the scope
@@ -111,17 +129,22 @@ fn native_arg<T: 'static>(
             unsafe { place.resolve(scope, exclusive) }? as *mut T,
         )));
     }
-    // Safety: see above
-    if !unsafe { scope.borrow(&header.borrow, exclusive) } {
-        return Err(InteropError::string(format!(
-            "a {} is passed to a function in a way which conflicts with another argument",
-            header.vtable.type_name
-        )));
+    if exclusive && header.read_only.get() {
+        return Err(read_only::<T>());
     }
-    // Safety: see above, the value is a T
-    Ok(Some(
-        (Some(base), unsafe { NativeStorage::value(base) } as *mut T)
-    ))
+    let vtable = header.vtable;
+    // Safety: see above, the value is a T, which the vtable clones and drops
+    let copy = unsafe {
+        scope.copy_value(
+            NativeStorage::value(base),
+            vtable.layout,
+            Some(vtable.clone_into),
+            vtable.drop,
+            exclusive,
+        )
+    }
+    .ok_or_else(out_of_memory)?;
+    Ok(Some((Some(base), copy as *mut T)))
 }
 
 #[profiling::all_functions]
@@ -430,14 +453,29 @@ impl<T: FromReflect> FromScript for V<T> {
         index: usize,
         scope: &'s CallScope<'_>,
     ) -> Result<Self, InteropError> {
-        // a plain value is read once, where it is: no copy kept by the scope
-        if args.native(index).is_none()
-            && let Some(src) = args.plain(index, TypeId::of::<T>())
+        // a value stored by the language is read once, where it is: no copy kept by the scope
+        let native = args.native(index);
+        if native.is_none()
+            && let Some((src, _)) = args.plain(index, TypeId::of::<T>())
         {
             // Safety: a T of a `Copy` type (see `ArgSource::plain`), which needn't be aligned
             return Ok(V(unsafe { std::ptr::read_unaligned(src as *const T) }));
         }
-        if let Some((Some(base), src)) = native_arg::<T>(args, index, scope, false)? {
+        // only a place needs the scope, for its access claim
+        // Safety: `ArgSource` gives initialised storage
+        let place = native.filter(|base| unsafe {
+            NativeStorage::header(*base).vtable.type_id == TypeId::of::<T>()
+                && NativeStorage::place(*base).is_some()
+        });
+        let source = match (native, place) {
+            (_, Some(_)) => native_arg::<T>(args, index, scope, false)?,
+            // Safety: see above, the value of a storage of a T
+            (Some(base), None) => (unsafe { NativeStorage::header(base) }.vtable.type_id
+                == TypeId::of::<T>())
+            .then(|| (Some(base), unsafe { NativeStorage::value(base) } as *mut T)),
+            (None, None) => None,
+        };
+        if let Some((Some(base), src)) = source {
             let mut value = std::mem::MaybeUninit::<T>::uninit();
             // Safety: `src` is a T (in the storage, or in the world for a place), borrowed so nothing changes it while it's copied
             unsafe {

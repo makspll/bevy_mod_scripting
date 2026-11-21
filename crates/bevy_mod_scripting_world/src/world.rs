@@ -96,55 +96,31 @@ pub struct CallScope<'w> {
     guard: std::cell::OnceCell<WorldGuard<'w>>,
     /// The claims made through this scope, released when it's dropped
     claims: RefCell<SmallVec<[WorldAccessRange; 4]>>,
-    /// The borrows of values outside the world made through this scope, see [`Self::borrow`], released when it's dropped
-    borrows: RefCell<SmallVec<[(*const BorrowFlag, bool); 2]>>,
-    /// The copies of plain values made through this scope, see [`Self::copy_plain`], written back and freed when it's
-    /// dropped
-    plain: RefCell<SmallVec<[PlainCopy; 2]>>,
+    /// The copies of values outside the world made through this scope, see [`Self::copy_value`], written back and
+    /// dropped when it's dropped
+    copies: RefCell<SmallVec<[ValueCopy; 4]>>,
+    /// Room for the first copies, the others are allocated
+    slots: std::cell::UnsafeCell<[std::mem::MaybeUninit<CopySlot>; COPY_SLOTS]>,
+    slots_used: std::cell::Cell<usize>,
 }
 
-/// A copy of a plain value, see [`CallScope::copy_plain`].
-struct PlainCopy {
+/// How many copies a [`CallScope`] holds without allocating.
+const COPY_SLOTS: usize = 4;
+
+/// Room for a copy of most values (vectors, quaternions, matrices, transforms).
+#[repr(C, align(16))]
+struct CopySlot([std::mem::MaybeUninit<u8>; 64]);
+
+/// A copy of a value, see [`CallScope::copy_value`].
+struct ValueCopy {
     copy: *mut u8,
     layout: std::alloc::Layout,
+    /// The slot of the scope the copy is in, if it wasn't allocated. Dropping the scope finds the copy by it: pointers
+    /// into the scope made earlier are no longer valid then
+    slot: Option<usize>,
     /// Where the copy is written back to, for values the call may change
     origin: Option<*mut u8>,
-}
-
-/// Tracks the borrows of a value outside the world, i.e. one stored natively by a script language, like a `RefCell`.
-///
-/// Positive counts are shared borrows, -1 is an exclusive one. Not thread safe: script values belong to one thread.
-#[derive(Debug, Default)]
-pub struct BorrowFlag(std::cell::Cell<isize>);
-
-impl BorrowFlag {
-    fn try_borrow(&self, exclusive: bool) -> bool {
-        let current = self.0.get();
-        let next = match exclusive {
-            true if current == 0 => -1,
-            false if (0..isize::MAX).contains(&current) => current + 1,
-            _ => return false,
-        };
-        self.0.set(next);
-        true
-    }
-
-    fn release(&self, exclusive: bool) {
-        match exclusive {
-            true => self.0.set(0),
-            false => self.0.set(self.0.get() - 1),
-        }
-    }
-
-    /// Whether the value is borrowed exclusively, so it can't be read.
-    pub fn is_borrowed_mut(&self) -> bool {
-        self.0.get() < 0
-    }
-
-    /// Whether the value is borrowed at all, so it can't be written.
-    pub fn is_borrowed(&self) -> bool {
-        self.0.get() != 0
-    }
+    drop: Option<unsafe fn(*mut u8)>,
 }
 
 impl<'w> CallScope<'w> {
@@ -152,40 +128,70 @@ impl<'w> CallScope<'w> {
         Self {
             guard: guard.map(std::cell::OnceCell::from).unwrap_or_default(),
             claims: Default::default(),
-            borrows: Default::default(),
-            plain: Default::default(),
+            copies: Default::default(),
+            slots: std::cell::UnsafeCell::new(
+                [const { std::mem::MaybeUninit::uninit() }; COPY_SLOTS],
+            ),
+            slots_used: Default::default(),
         }
     }
 
-    /// Copies a plain value outside the world (the bytes of `layout` at `value`), which has no [`BorrowFlag`] of its own
-    /// (i.e. a LuaJIT cdata, whose bytes scripts can write at any time, also while the call runs), and returns the copy,
-    /// which lives as long as this scope and is never aliased. With `write_back` the copy is written to `value` when the
-    /// scope is dropped (the last one wins if a value is copied twice).
+    /// Copies a value outside the world, i.e. one stored by a script language, and returns the copy, which lives as long
+    /// as this scope and is never aliased. Scripts can write such a value at any time, also while the call runs (a
+    /// callback), so calls never hold references to them. With `write_back` the copy replaces the value when the scope
+    /// is dropped (the last one wins if a value is copied twice).
+    ///
+    /// `clone` makes the copy (the bytes are copied without one), `drop` drops a value of the type, if it needs to be.
     ///
     /// `None` if the copy can't be allocated.
     ///
     /// # Safety
-    /// `value` is valid for reads, and for writes with `write_back`, until the scope is dropped. It needn't be aligned.
-    pub unsafe fn copy_plain(
+    /// - `value` is a valid value of `layout`, for reads and, with `write_back`, for writes, until the scope is dropped.
+    ///   Without `clone` it needn't be aligned.
+    /// - `clone` writes a valid copy of its first argument to its second, `drop` drops a value of the type.
+    pub unsafe fn copy_value(
         &self,
         value: *mut u8,
         layout: std::alloc::Layout,
+        clone: Option<unsafe fn(*const u8, *mut u8)>,
+        drop: Option<unsafe fn(*mut u8)>,
         write_back: bool,
     ) -> Option<*mut u8> {
         if layout.size() == 0 {
+            // nothing to copy or write back, any aligned pointer is a value
             return Some(layout.align() as *mut u8);
         }
-        // Safety: the layout isn't empty
-        let copy = unsafe { std::alloc::alloc(layout) };
-        if copy.is_null() {
-            return None;
+        let used = self.slots_used.get();
+        let fits =
+            layout.size() <= size_of::<CopySlot>() && layout.align() <= align_of::<CopySlot>();
+        let (copy, slot) = if fits && used < COPY_SLOTS {
+            self.slots_used.set(used + 1);
+            // Safety: inside the slots, each slot is handed out once
+            (
+                unsafe { (self.slots.get() as *mut CopySlot).add(used) } as *mut u8,
+                Some(used),
+            )
+        } else {
+            // Safety: the layout isn't empty
+            let copy = unsafe { std::alloc::alloc(layout) };
+            if copy.is_null() {
+                return None;
+            }
+            (copy, None)
+        };
+        // Safety: the caller's, the copy is new memory of the layout
+        unsafe {
+            match clone {
+                Some(clone) => clone(value, copy),
+                None => std::ptr::copy_nonoverlapping(value, copy, layout.size()),
+            }
         }
-        // Safety: the caller's, the copy is new
-        unsafe { std::ptr::copy_nonoverlapping(value, copy, layout.size()) };
-        self.plain.borrow_mut().push(PlainCopy {
+        self.copies.borrow_mut().push(ValueCopy {
             copy,
             layout,
+            slot,
             origin: write_back.then_some(value),
+            drop,
         });
         Some(copy)
     }
@@ -207,22 +213,6 @@ impl<'w> CallScope<'w> {
         }
         let world = ThreadWorldContainer::try_get_context()?.world;
         Ok(self.guard.get_or_init(|| world))
-    }
-
-    /// Borrows a value outside the world for as long as this scope, shared or `exclusive`.
-    ///
-    /// Returns false if the value is already borrowed in a conflicting way, i.e. passed both as `&mut` and `&` to a function.
-    ///
-    /// # Safety
-    /// The flag must stay valid until the scope is dropped.
-    pub unsafe fn borrow(&self, flag: &BorrowFlag, exclusive: bool) -> bool {
-        let borrowed = flag.try_borrow(exclusive);
-        if borrowed {
-            self.borrows
-                .borrow_mut()
-                .push((flag as *const BorrowFlag, exclusive));
-        }
-        borrowed
     }
 
     /// The world guard this scope belongs to, an error for a lazy scope without a running script, see [`Self::with_lazy`].
@@ -269,22 +259,29 @@ impl Drop for CallScope<'_> {
                 unsafe { guard.release_access(key) }
             }
         }
-        for (flag, exclusive) in self.borrows.get_mut().drain(..) {
-            // Safety: `borrow`'s caller keeps the flag valid until now
-            unsafe { (*flag).release(exclusive) }
-        }
-        for PlainCopy {
-            copy,
-            layout,
-            origin,
-        } in self.plain.get_mut().drain(..)
-        {
-            // Safety: `copy_plain` made the copy with this layout, its caller keeps the origin valid until now
+        let slots = self.slots.get() as *mut CopySlot;
+        for copy in self.copies.get_mut().drain(..) {
+            // Safety: `copy_value` made the copy with this layout, in this slot if it has one; its caller keeps the
+            // origin valid until now
             unsafe {
-                if let Some(origin) = origin {
-                    std::ptr::copy_nonoverlapping(copy, origin, layout.size());
+                let value = match copy.slot {
+                    Some(slot) => slots.add(slot) as *mut u8,
+                    None => copy.copy,
+                };
+                match (copy.origin, copy.drop) {
+                    // the copy replaces the value: the old one is dropped, the copy moved
+                    (Some(origin), drop) => {
+                        if let Some(drop) = drop {
+                            drop(origin);
+                        }
+                        std::ptr::copy_nonoverlapping(value, origin, copy.layout.size());
+                    }
+                    (None, Some(drop)) => drop(value),
+                    (None, None) => {}
                 }
-                std::alloc::dealloc(copy, layout);
+                if copy.slot.is_none() {
+                    std::alloc::dealloc(copy.copy, copy.layout);
+                }
             }
         }
     }

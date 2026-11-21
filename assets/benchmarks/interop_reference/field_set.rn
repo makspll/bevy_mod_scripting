@@ -9,5 +9,8 @@ pub fn pre_bench() {
 }
 
 pub fn bench(t) {
-    t.translation.x = 2.0;
+    // native fields have no write-through: the field is read, changed and written whole
+    let v = t.translation.clone();
+    v.x = 2.0;
+    t.translation = v;
 }

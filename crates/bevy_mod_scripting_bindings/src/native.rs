@@ -19,7 +19,7 @@
 use std::{alloc::Layout, any::TypeId, borrow::Cow, ptr::NonNull};
 
 use bevy_ecs::world::World;
-use bevy_mod_scripting_world::{BorrowFlag, WorldGuard};
+use bevy_mod_scripting_world::WorldGuard;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
 
@@ -53,9 +53,8 @@ pub unsafe trait ArgSource {
     fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError>;
     /// The argument as a plain value of the type `type_id` without a [`NativeHeader`] (i.e. a LuaJIT cdata), only for types
     /// with an [`FfiLayout`]: a pointer to the value, alive and in place until the call returns, which needn't be
-    /// aligned. Scripts can write it while the call runs, so references are to copies kept by the call scope, see
-    /// [`bevy_mod_scripting_world::CallScope::copy_plain`].
-    fn plain(&self, _i: usize, _type_id: TypeId) -> Option<*mut u8> {
+    /// aligned, and whether it's read-only (see [`ReturnSink::read_only`]).
+    fn plain(&self, _i: usize, _type_id: TypeId) -> Option<(*mut u8, bool)> {
         None
     }
     /// The argument as a string, borrowed from the language, if it is one (numbers aren't converted).
@@ -109,6 +108,10 @@ pub unsafe trait ReturnSink {
     ) -> bool;
     /// Returns any value, the slow path.
     fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError>;
+    /// Makes the native value returned next a read-only copy: a copy of a field of another value, which scripts can't
+    /// write, as the write would be lost (`t.translation.x = 5`), see [`NativeHeader::read_only`]. Native values have
+    /// no write-through: scripts assign the whole field. Ignored by languages without read-only values.
+    fn read_only(&mut self) {}
 }
 
 /// What every function runs, see [`DynamicScriptFunction::call_with`]. Its result's native type is cached in it, see
@@ -287,7 +290,7 @@ pub struct NativeVTable {
     pub drop: Option<unsafe fn(*mut u8)>,
     /// Whether this stores a [`NativePlace`] of the type instead of a value
     pub place: bool,
-    clone_into: unsafe fn(*const u8, *mut u8),
+    pub(crate) clone_into: unsafe fn(*const u8, *mut u8),
     to_reference: unsafe fn(*const u8) -> ReflectReference,
     /// The value vtable of a place vtable, and the other way around
     counterpart: std::sync::OnceLock<&'static NativeVTable>,
@@ -409,55 +412,27 @@ impl From<PlaceBase> for crate::ReflectBase {
     }
 }
 
-/// A value of a [`NativeType`] in the world, i.e. a component, or a field of one (a proxy, see [`crate::script_native`]),
-/// stored by the language in place of a value (see [`NativeVTable::place_vtable`]). Typed functions read and write the
-/// world through it, claiming access for the call.
+/// A value of a [`NativeType`] in the world, a whole component or resource, stored by the language in place of a value
+/// (see [`NativeVTable::place_vtable`]). Typed functions read and write the world through it, claiming access for the
+/// call. Its fields are read as copies: only the whole value has a place.
 #[derive(Clone, Copy, Debug)]
 pub struct NativePlace {
     /// The component or resource
     pub base: PlaceBase,
     /// The type of the component or resource
     pub base_type: TypeId,
-    /// The offset of the value in the component or resource
-    pub offset: usize,
-    /// The indices of the struct fields leading to the value, `path[..depth]`
-    path: [u8; NativePlace::MAX_DEPTH],
-    depth: u8,
 }
 
 impl NativePlace {
-    /// How many fields deep a place can be.
-    pub const MAX_DEPTH: usize = 8;
-
     /// The place of a whole component or resource of type `base_type`.
     pub fn new(base: PlaceBase, base_type: TypeId) -> Self {
-        Self {
-            base,
-            base_type,
-            offset: 0,
-            path: [0; Self::MAX_DEPTH],
-            depth: 0,
-        }
-    }
-
-    /// The place of the field at `offset` in this place's value, the struct field with `index`.
-    pub fn field(&self, offset: usize, index: u8) -> Option<Self> {
-        let depth = self.depth as usize;
-        if depth >= Self::MAX_DEPTH {
-            return None;
-        }
-        let mut field = *self;
-        field.offset += offset;
-        field.path[depth] = index;
-        field.depth += 1;
-        Some(field)
+        Self { base, base_type }
     }
 
     /// The value in the world, after claiming access to its component or resource for the call (`write` for exclusive access).
     ///
     /// # Safety
-    /// - The place was made for a value of the type the pointer is used as, its offset is inside the component or resource
-    ///   (nothing checks it).
+    /// - The place was made for a value of the type the pointer is used as.
     /// - The pointer is valid until `scope` ends (the claim keeps the value where it is), for reads only unless `write`.
     pub unsafe fn resolve(
         &self,
@@ -492,13 +467,13 @@ impl NativePlace {
         let ptr = ptr.ok_or_else(|| {
             InteropError::string(format!("the entity or its component is gone: {base:?}"))
         })?;
-        Ok(ptr.wrapping_add(self.offset))
+        Ok(ptr)
     }
 
     /// A reference to the value, for everything which isn't typed.
-    pub fn to_reference(&self, world: &WorldGuard) -> Result<ReflectReference, InteropError> {
+    pub fn to_reference(&self) -> ReflectReference {
         // Safety: the type is the one of the component or resource the place was made for
-        let mut reference = unsafe {
+        unsafe {
             match self.base {
                 PlaceBase::Component(entity, id) => {
                     ReflectReference::new_component_ref_by_id(entity, id, self.base_type)
@@ -507,22 +482,7 @@ impl NativePlace {
                     ReflectReference::new_resource_ref_by_id(id, self.base_type)
                 }
             }
-        };
-        let registry = world.type_registry();
-        let registry = registry.read();
-        let mut type_id = self.base_type;
-        for index in &self.path[..self.depth as usize] {
-            let field = match registry.get_type_info(type_id) {
-                Some(bevy_reflect::TypeInfo::Struct(info)) => info.field_at(*index as usize),
-                _ => None,
-            }
-            .ok_or_else(|| InteropError::str("the path of a native value isn't a struct field"))?;
-            reference.push_path(crate::ReferencePart::StringAccess(Cow::Borrowed(
-                field.name(),
-            )));
-            type_id = field.type_id();
         }
-        Ok(reference)
     }
 }
 
@@ -531,8 +491,9 @@ impl NativePlace {
 pub struct NativeHeader {
     /// The type of the value
     pub vtable: &'static NativeVTable,
-    /// The borrows of the value made by calls, see [`bevy_mod_scripting_world::CallScope::borrow`]
-    pub borrow: BorrowFlag,
+    /// Whether the value is a read-only copy (of a field of another value, see [`ReturnSink::read_only`]): scripts and
+    /// calls can't change it
+    pub read_only: std::cell::Cell<bool>,
 }
 
 /// Helpers for the memory of a native value: `[NativeHeader][padding][value]`.
@@ -582,7 +543,7 @@ impl NativeStorage {
         unsafe {
             (base as *mut NativeHeader).write(NativeHeader {
                 vtable,
-                borrow: BorrowFlag::default(),
+                read_only: Default::default(),
             })
         }
     }
@@ -625,16 +586,9 @@ impl NativeStorage {
     pub unsafe fn to_script_value(base: *mut u8) -> Result<ScriptValue, InteropError> {
         // Safety: see the function's contract
         let header = unsafe { Self::header(base) };
-        if header.borrow.is_borrowed_mut() {
-            return Err(InteropError::string(format!(
-                "a {} is borrowed mutably by a call",
-                header.vtable.type_name
-            )));
-        }
         // a place is referenced where it is
         if let Some(place) = unsafe { Self::place(base) } {
-            let world = bevy_mod_scripting_world::ThreadWorldContainer::try_get_context()?.world;
-            return place.to_reference(&world).map(ScriptValue::Reference);
+            return Ok(ScriptValue::Reference(place.to_reference()));
         }
         // one allocation holding the copy
         Ok(ScriptValue::Reference(unsafe {
@@ -785,9 +739,6 @@ pub struct NativeType {
     pub fields: HashMap<Cow<'static, str>, NativeField>,
     /// The functions registered on the type, kept up to date by the registry so languages can look them up without cloning
     pub methods: HashMap<Cow<'static, str>, DynamicScriptFunction>,
-    /// Whether values are stored natively, not only places (see [`NativePlace`]): false for types with fields of native
-    /// types, which would be copies a write to i.e. `t.translation.x` is lost on. Kept up to date by the registry.
-    pub inline: bool,
     /// The C layout of the values, if languages may store them as plain C structs (i.e. LuaJIT cdata), see
     /// [`crate::script_native`]'s `ffi` form.
     pub ffi: Option<FfiLayout>,
@@ -923,7 +874,6 @@ impl NativeType {
             vtable: NativeVTable::new::<T>(),
             fields: Default::default(),
             methods: Default::default(),
-            inline: true,
             ffi: None,
         }
     }
@@ -960,8 +910,8 @@ impl NativeType {
         self
     }
 
-    /// Adds the struct field `name` of `T` of type `F`, at `at`. On a place (i.e. a component), a field of a native type at an
-    /// offset is a place too (a proxy): `t.translation.x = 5` writes the component. See [`crate::script_native`].
+    /// Adds the struct field `name` of `T` of type `F`, at `at`. Reading it gives a copy, read-only if `F` is a native type
+    /// (`t.translation.x = 5` is an error, `t.translation = v` writes the field). See [`crate::script_native`].
     ///
     /// `ret` and `arg` convert the field's values, see [`FieldConv`].
     ///
@@ -979,12 +929,6 @@ impl NativeType {
         T: bevy_reflect::FromReflect + bevy_reflect::Typed + 'static,
         F: Reflect + Clone + 'static,
     {
-        let index = match T::type_info() {
-            bevy_reflect::TypeInfo::Struct(info) => {
-                info.index_of(name).and_then(|i| u8::try_from(i).ok())
-            }
-            _ => None,
-        };
         let info = || {
             crate::FunctionInfo::default()
                 .with_name(name)
@@ -994,39 +938,6 @@ impl NativeType {
         let get = DynamicScriptFunction::from_thunk::<T>(move |_ctx, args, sink| {
             // the world is only looked up when needed (places, conversions)
             bevy_mod_scripting_world::CallScope::with_lazy(|scope| {
-                // a field of a native type in a place is a place too
-                if let Some(base) = args.native(0)
-                    // Safety: `ArgSource` gives initialised storage
-                    && unsafe { NativeStorage::header(base) }.vtable.type_id == TypeId::of::<T>()
-                    && let Some(place) = unsafe { NativeStorage::place(base) }
-                    && let Some(field_native) = native_return.get(scope, TypeId::of::<F>())
-                {
-                    if let (FieldAt::Offset(offset), Some(index)) = (at, index) {
-                        let field_place = place.field(offset, index).ok_or_else(|| {
-                            InteropError::str("a native value is nested too deeply")
-                        })?;
-                        let mut field_place = Some(field_place);
-                        // Safety: the place vtable stores a `NativePlace`, of an `F`
-                        let written = unsafe {
-                            sink.native(
-                                &field_native,
-                                field_native.vtable.place_vtable(),
-                                &mut |slot| {
-                                    if let Some(place) = field_place.take() {
-                                        (slot as *mut NativePlace).write(place)
-                                    }
-                                },
-                            )
-                        };
-                        if written {
-                            return Ok(());
-                        }
-                    }
-                    // a reference to where the field is, not a copy a write would be lost on
-                    let mut reference = place.to_reference(&scope.world()?)?;
-                    reference.push_path(crate::ReferencePart::StringAccess(Cow::Borrowed(name)));
-                    return sink.script_value(ScriptValue::Reference(reference));
-                }
                 let value = <crate::R<T> as crate::FromScript>::from_arg(args, 0, scope)?;
                 let value = &*value as *const T as *const u8;
                 let field = match at {
@@ -1035,6 +946,8 @@ impl NativeType {
                 };
                 // Safety: an `F` of the T, see the function's contract
                 let field = unsafe { &*(field as *const F) };
+                // a copy: native values have no write-through, a native field is read-only so writes to it aren't lost
+                sink.read_only();
                 ret(field.clone(), sink, scope, &native_return)
             })
         })
@@ -1257,6 +1170,22 @@ where
     }
 }
 
+/// Registers `clone` on the native type `T`, unless it has one: a copy scripts can change, i.e. of the read-only copy
+/// reading a field gives (`local p = t.translation:clone(); p.x = 5; t.translation = p`).
+pub fn register_clone<T>(world: &mut World)
+where
+    T: bevy_reflect::FromReflect + bevy_reflect::Typed + 'static,
+{
+    let mut registry = world
+        .get_resource_or_init::<AppScriptFunctionRegistry>()
+        .0
+        .clone();
+    let mut registry = registry.write();
+    if !registry.contains(TypeId::of::<T>(), "clone") {
+        registry.register(TypeId::of::<T>(), "clone", |value: crate::V<T>| value);
+    }
+}
+
 /// Declares a [`NativeType`] with typed accessors for the given struct fields, and registers it.
 ///
 /// ```rust,ignore
@@ -1366,6 +1295,7 @@ macro_rules! script_native {
             None => native,
         };
         native.register($world);
+        $crate::native::register_clone::<$ty>($world);
     }};
     (@offset $world:expr, $ffi:expr, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
         #[allow(unused_imports)]
@@ -1395,6 +1325,7 @@ macro_rules! script_native {
             None => native,
         };
         native.register($world);
+        $crate::native::register_clone::<$ty>($world);
     }};
     // stored as plain C structs where a language can (LuaJIT cdata), fields reached through `Deref` (glam's SIMD types):
     // the size and alignment are checked at compile time, the offsets when registered
@@ -1507,6 +1438,7 @@ mod test {
     struct Return {
         native: Option<NativeBox>,
         value: Option<ScriptValue>,
+        read_only: bool,
     }
 
     // Safety: `native` keeps the value in a `NativeBox`, which calls `write` once when it's made
@@ -1529,11 +1461,20 @@ mod test {
         ) -> bool {
             // Safety: `write` writes a value of the vtable's type, see the method's contract
             self.native = unsafe { NativeBox::new(vtable, write) }.ok();
+            if let Some(native) = &self.native {
+                // Safety: initialised storage
+                unsafe { NativeStorage::header(native.base()) }
+                    .read_only
+                    .set(self.read_only && !vtable.place);
+            }
             self.native.is_some()
         }
         fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError> {
             self.value = Some(value);
             Ok(())
+        }
+        fn read_only(&mut self) {
+            self.read_only = true;
         }
     }
 
@@ -1619,31 +1560,29 @@ mod test {
         });
     }
 
+    /// Calls get copies of the values languages store, so one value can be passed as `&mut` and `&` at once; a
+    /// read-only copy can't be changed.
     #[test]
-    fn conflicting_borrows_of_one_value_error() {
+    fn calls_copy_values_and_read_only_ones_stay() {
         let both = (|_a: M<Tracked>, _b: R<Tracked>| ()).into_dynamic_script_function();
         let shared = (|_a: R<Tracked>, _b: R<Tracked>| ()).into_dynamic_script_function();
         with_native_world(|| {
             let native = tracked(1.0);
-            let (result, _) = call(
-                &both,
-                Args {
-                    natives: &[&native, &native],
-                    numbers: &[],
-                },
-            );
-            assert!(result.is_err(), "&mut and & of one value");
-            let (result, _) = call(
-                &shared,
-                Args {
-                    natives: &[&native, &native],
-                    numbers: &[],
-                },
-            );
-            assert!(
-                result.is_ok(),
-                "two & of one value, after the first call released its borrows"
-            );
+            let natives = [&native, &native];
+            let args = || Args {
+                natives: &natives,
+                numbers: &[],
+            };
+            let (result, _) = call(&both, args());
+            assert!(result.is_ok(), "&mut and & of one value are two copies");
+            // Safety: initialised storage
+            unsafe { NativeStorage::header(native.base()) }
+                .read_only
+                .set(true);
+            let (result, _) = call(&both, args());
+            assert!(result.is_err(), "&mut of a read-only copy");
+            let (result, _) = call(&shared, args());
+            assert!(result.is_ok(), "& of a read-only copy");
         });
     }
 
@@ -1856,9 +1795,9 @@ mod test {
         n: f32,
     }
 
-    /// A component of a native type is a handle to it (a place), its native fields are places too: reads and writes go to
-    /// the world, conflicting accesses error, places follow the component (archetype moves, removal, despawning), resources
-    /// work alike, and outside typed calls a place is a reference to where it is.
+    /// A component of a native type is a handle to it (a place): reads and writes go to the world, conflicting accesses
+    /// error, places follow the component (archetype moves, removal, despawning), resources work alike, and outside typed
+    /// calls a place is a reference to where it is. Its native fields are read as read-only copies and written whole.
     #[test]
     fn places_read_and_write_components() {
         fn with_guard<O>(world: &mut World, f: impl FnOnce(WorldGuard<'_>) -> O) -> O {
@@ -1872,7 +1811,6 @@ mod test {
             registry.register::<Outer>();
             registry.register::<Inner>();
         }
-        // the outer type first: it stops being stored as values once its field's type is native
         crate::script_native!(
             &mut world,
             Outer {
@@ -1917,14 +1855,11 @@ mod test {
             )
         };
         let read_x = (|v: V<Inner>| v.x).into_dynamic_script_function();
+        let read_outer_x = (|v: V<Outer>| v.inner.x).into_dynamic_script_function();
 
-        let (handle, proxy) = with_guard(&mut world, |world| {
+        let handle = with_guard(&mut world, |world| {
             let outer = natives(&world, TypeId::of::<Outer>());
             let inner = natives(&world, TypeId::of::<Inner>());
-            assert!(
-                !outer.inline && inner.inline,
-                "a type with native fields is only a place"
-            );
 
             // Safety: the component is an Outer
             let handle = handle_of(&world, unsafe {
@@ -1936,18 +1871,42 @@ mod test {
             });
             let (result, got) = get(&outer.fields["inner"].get, &handle);
             result.unwrap();
-            let proxy = got.native.expect("a native field of a place is a place");
+            let copy = got.native.expect("a native field of a place is a value");
             // Safety: initialised storage
-            assert!(unsafe { NativeStorage::place(proxy.base()) }.is_some());
+            assert!(unsafe { NativeStorage::place(copy.base()) }.is_none());
 
-            let (result, _) = call(
-                inner.fields["x"].set.as_ref().unwrap(),
+            // the copy is read-only: a write to it would be lost
+            let set_x = |target: &NativeBox| {
+                call(
+                    inner.fields["x"].set.as_ref().unwrap(),
+                    Args {
+                        natives: &[target],
+                        numbers: &[5.0],
+                    },
+                )
+                .0
+            };
+            assert!(set_x(&copy).is_err(), "a field of a read-only copy");
+            // the whole field is written instead, with a value which isn't a copy of a field
+            let (result, got) = call(
+                &(|x: f32| V(Inner { x })).into_dynamic_script_function(),
                 Args {
-                    natives: &[&proxy],
-                    numbers: &[5.0],
+                    natives: &[],
+                    numbers: &[4.0],
                 },
             );
             result.unwrap();
+            let value = got.native.expect("a native value");
+            set_x(&value).unwrap();
+            let (result, _) = call(
+                outer.fields["inner"].set.as_ref().unwrap(),
+                Args {
+                    natives: &[&handle, &value],
+                    numbers: &[],
+                },
+            );
+            result.unwrap();
+
             let (result, got) = get(&outer.fields["n"].get, &handle);
             result.unwrap();
             assert_eq!(
@@ -1955,75 +1914,49 @@ mod test {
                 Some(ScriptValue::Float(2.0)),
                 "plain fields are read"
             );
-            let (result, got) = get(&read_x, &proxy);
+            let (result, got) = get(&read_x, &copy);
             result.unwrap();
             assert_eq!(
                 got.value,
-                Some(ScriptValue::Float(5.0)),
-                "a value copied out of a place"
+                Some(ScriptValue::Float(1.0)),
+                "the copy is what the field was"
             );
 
-            // the component, or its field, written while it's used otherwise
-            let write_read = (|_a: M<Outer>, _b: R<Inner>| ()).into_dynamic_script_function();
-            let write_write = (|_a: M<Inner>, _b: M<Inner>| ()).into_dynamic_script_function();
-            for (function, a, b) in [
-                (&write_read, &handle, &proxy),
-                (&write_write, &proxy, &proxy),
-            ] {
-                let (result, _) = call(
-                    function,
-                    Args {
-                        natives: &[a, b],
-                        numbers: &[],
-                    },
-                );
-                assert!(result.is_err(), "conflicting accesses of a component error");
-            }
-
-            // a getter called the dynamic way: a reference to the field, which writes the component
-            let mut sink = ScriptValueReturn::default();
-            outer.fields["inner"]
-                .get
-                .call_with(
-                    &Args {
-                        natives: &[&handle],
-                        numbers: &[],
-                    },
-                    &mut sink,
-                    FunctionCallContext::new(Language::Lua),
-                )
-                .unwrap();
-            let ScriptValue::Reference(field) = sink.into_value() else {
-                panic!("a field of a place is a reference when not native")
-            };
-            field
-                .with_reflect_mut(world.clone(), |r| {
-                    r.try_downcast_mut::<Inner>().unwrap().x = 6.0;
-                })
-                .unwrap();
+            // the component written while it's read
+            let write_read = (|_a: M<Outer>, _b: R<Outer>| ()).into_dynamic_script_function();
+            let (result, _) = call(
+                &write_read,
+                Args {
+                    natives: &[&handle, &handle],
+                    numbers: &[],
+                },
+            );
+            assert!(result.is_err(), "conflicting accesses of a component error");
 
             // outside typed calls, a place is a reference to where it is
-            let ScriptValue::Reference(copy) =
-                (unsafe { NativeStorage::to_script_value(proxy.base()) }).unwrap()
+            let ScriptValue::Reference(reference) =
+                (unsafe { NativeStorage::to_script_value(handle.base()) }).unwrap()
             else {
                 panic!("a place is a reference")
             };
             assert_eq!(
-                copy.with_reflect(world.clone(), |r| r.try_downcast_ref::<Inner>().cloned())
-                    .unwrap(),
-                Some(Inner { x: 6.0 })
+                reference
+                    .with_reflect(world.clone(), |r| r.try_downcast_ref::<Outer>().cloned())
+                    .unwrap()
+                    .map(|outer| outer.inner),
+                Some(Inner { x: 5.0 })
             );
-            (handle, proxy)
+            handle
         });
         assert_eq!(
             world.get::<Outer>(entity).unwrap().inner.x,
-            6.0,
+            5.0,
             "written to the world"
         );
 
         let x_of = |world: &mut World| {
             with_guard(world, |_| {
-                let (result, got) = get(&read_x, &proxy);
+                let (result, got) = get(&read_outer_x, &handle);
                 result.map(|()| got.value)
             })
         };
@@ -2033,7 +1966,7 @@ mod test {
             .insert(bevy_ecs::name::Name::default());
         assert_eq!(
             x_of(&mut world).unwrap(),
-            Some(ScriptValue::Float(6.0)),
+            Some(ScriptValue::Float(5.0)),
             "after a move"
         );
         world.entity_mut(entity).remove::<Outer>();
@@ -2060,13 +1993,6 @@ mod test {
             result.unwrap();
             assert_eq!(got.value, Some(ScriptValue::Float(3.0)), "a resource");
         });
-
-        // places nest so deep only
-        let mut place = NativePlace::new(PlaceBase::Resource(resource_id), TypeId::of::<Outer>());
-        for _ in 0..NativePlace::MAX_DEPTH {
-            place = place.field(0, 0).unwrap();
-        }
-        assert!(place.field(0, 0).is_none(), "nested too deeply");
     }
 
     /// A `Deref` whose target is in the value or on the heap, depending on the value.

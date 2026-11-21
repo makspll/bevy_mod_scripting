@@ -44,15 +44,15 @@ static TYPES: u8 = 0;
 /// The named registry value keeping the private FFI library alive, see [`private_ffi`].
 const FFI_MODULE: &str = "bms_ffi";
 
-/// The native value at `idx` if it's a cdata of a native type with a C layout: its vtable and its payload, alive while
-/// the value is on the stack. `[-0, +0, -]`, but needs 2 free slots.
+/// The native value at `idx` if it's a cdata of a native type with a C layout: its vtable, its payload, alive while
+/// the value is on the stack, and whether it's a read-only copy (a `const` struct). `[-0, +0, -]`, but needs 2 free slots.
 ///
 /// # Safety
 /// `idx` is on the stack of `l`.
 pub(crate) unsafe fn cdata_at(
     l: *mut ffi::lua_State,
     idx: c_int,
-) -> Option<(&'static NativeVTable, *mut u8)> {
+) -> Option<(&'static NativeVTable, *mut u8, bool)> {
     unsafe {
         if ffi::lua_type(l, idx) != LUA_TCDATA {
             return None;
@@ -71,10 +71,12 @@ pub(crate) unsafe fn cdata_at(
             return None;
         }
         ffi::lua_rawgeti(l, -1, id as ffi::lua_Integer);
-        let vtable = ffi::lua_touserdata(l, -1) as *const NativeVTable;
+        // the vtable, with its lowest bit set for the type's `const` form (vtables are aligned)
+        let tagged = ffi::lua_touserdata(l, -1) as usize;
         ffi::lua_pop(l, 2);
+        let vtable = (tagged & !1) as *const NativeVTable;
         // Safety: only vtables are kept in the table
-        (!vtable.is_null()).then(|| (&*vtable, payload))
+        (!vtable.is_null()).then(|| (&*vtable, payload, tagged & 1 == 1))
     }
 }
 
@@ -85,7 +87,7 @@ pub(crate) unsafe fn cdata_at(
 /// `idx` is on the stack of `l`, which has 2 free slots.
 pub(crate) unsafe fn cdata_script_value(l: *mut ffi::lua_State, idx: c_int) -> Option<ScriptValue> {
     unsafe {
-        let (vtable, payload) = cdata_at(l, idx)?;
+        let (vtable, payload, _) = cdata_at(l, idx)?;
         Some(ScriptValue::Reference(vtable.plain_reference(payload)))
     }
 }
@@ -104,17 +106,20 @@ pub(crate) fn cdata_value(lua: &Lua, value: &mlua::Value) -> Option<ScriptValue>
     })
 }
 
-/// Pushes the function making a cdata of the type of `vtable` from a pointer to a value, making the types first if this
-/// state has none yet. `[-0, +(0|1), m]`: nothing for types registered after the types were made, which stay userdata.
+/// Pushes the function making a cdata of the type of `vtable` from a pointer to a value (a `const` one, which scripts
+/// can't write, if `read_only`), making the types first if this state has none yet. `[-0, +(0|1), m]`: nothing for types registered after the types were made, which stay userdata.
 ///
 /// # Safety
 /// `l` is the state of a call.
 pub(super) unsafe fn push_from_ptr(
     l: *mut ffi::lua_State,
     vtable: &'static NativeVTable,
+    read_only: bool,
 ) -> Result<bool, InteropError> {
+    // where the info of a type keeps the functions, see `types_source`
+    let from_ptr = if read_only { 6 } else { 2 };
     unsafe {
-        // made already: `types[vtable][2]`, raw gets only
+        // made already: `types[vtable][from_ptr]`, raw gets only
         if ffi::lua_checkstack(l, 3) != 0 {
             // [.., types]
             if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&TYPES)) == ffi::LUA_TTABLE {
@@ -123,7 +128,7 @@ pub(super) unsafe fn push_from_ptr(
                 let made = ffi::lua_rawget(l, -2) == ffi::LUA_TTABLE;
                 if made {
                     // [.., types, info, from_ptr] -> [.., from_ptr]
-                    ffi::lua_rawgeti(l, -1, 2);
+                    ffi::lua_rawgeti(l, -1, from_ptr);
                     ffi::lua_replace(l, -3);
                     ffi::lua_pop(l, 1);
                 } else {
@@ -139,7 +144,7 @@ pub(super) unsafe fn push_from_ptr(
             let Some(info) = type_info(lua, vtable)? else {
                 return Ok(0);
             };
-            let from_ptr: mlua::Function = info.raw_get(2)?;
+            let from_ptr: mlua::Function = info.raw_get(from_ptr)?;
             from_ptr.push_into_stack(raw)?;
             Ok(1)
         })
@@ -250,6 +255,12 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
         let vtable = LightUserData(native.vtable as *const NativeVTable as *mut c_void);
         by_vtable.raw_set(vtable, info.clone())?;
         by_id.raw_set(id, vtable)?;
+        // the `const` form, which read-only copies are: the vtable with its lowest bit set, see `cdata_at`
+        let const_id: i64 = info.raw_get(7)?;
+        by_id.raw_set(
+            const_id,
+            LightUserData((native.vtable as *const NativeVTable as usize | 1) as *mut c_void),
+        )?;
         // the same for every type and state of this build
         if CTYPEID_OFFSET.load(Ordering::Acquire) == 0 {
             calibrate(&info.raw_get::<mlua::Value>(5)?, id)?;
@@ -390,7 +401,9 @@ fn types_source(
         operators_source(&mut out, native);
         let _ = writeln!(
             out,
-            "T = ffi.metatype(T, mt)\nmade.{name} = {{ T, function(p) return T(cast(P, p)[0]) end, statics, tonumber(T), T() }}\nend"
+            // 1 the type, 2 a value from a pointer, 3 the statics, 4 the type's id, 5 a probe, 6 and 7 the same as 2 and 4
+            // for the `const` form: a read-only copy
+            "T = ffi.metatype(T, mt)\nlocal K = ffi.typeof(\"const {name}\")\nmade.{name} = {{ T, function(p) return T(cast(P, p)[0]) end, statics, tonumber(T), T(), function(p) return K(cast(P, p)[0]) end, tonumber(K) }}\nend"
         );
     }
     out.push_str("return made\n");
@@ -587,6 +600,16 @@ mod test {
             .write()
             .register::<C>();
         bevy_mod_scripting_bindings::script_native!(&mut world, ffi C { x: f32 });
+        // a type with a field of the cdata type: reading it gives a read-only copy, a `const` cdata
+        #[derive(bevy_reflect::Reflect, Clone, Default)]
+        struct Holder {
+            c: C,
+        }
+        world
+            .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
+            .write()
+            .register::<Holder>();
+        bevy_mod_scripting_bindings::script_native!(&mut world, Holder { c: C });
         // `add` through BMS adds, its FFI form also adds 100, to tell which one ran
         extern "C" fn add(a: *const C, b: *const C, out: *mut C) {
             // Safety: called by the generated Lua with cdata of `C`
@@ -624,6 +647,10 @@ mod test {
                 (
                     "value",
                     (|x: f32| V(C { x })).into_dynamic_script_function(),
+                ),
+                (
+                    "holder",
+                    (|x: f32| V(Holder { c: C { x } })).into_dynamic_script_function(),
                 ),
                 (
                     "call_back",
@@ -669,6 +696,16 @@ mod test {
                 assert(x == 1 and a.x == 5, "the call reads its copy, the script's write stays")
                 call_back_mut(a, function() assert(a.x == 5) end)
                 assert(a.x == 6, "written back when the call ends")
+                -- native values have no write-through: a field is read as a read-only copy and written whole
+                local h = holder(1)
+                local c = h.c
+                assert(type(c) == "cdata" and c.x == 1 and (c + c).x == 102, "a read-only copy is read like any value")
+                assert(not pcall(function() c.x = 5 end) and c.x == 1, "but not written")
+                assert(not pcall(call_back_mut, c, function() end), "nor changed by a call")
+                local m = c:clone()
+                m.x = 5
+                h.c = m
+                assert(h.c.x == 5 and c.x == 1, "a clone is written, and the field with it")
                 "#,
             )
             .exec()

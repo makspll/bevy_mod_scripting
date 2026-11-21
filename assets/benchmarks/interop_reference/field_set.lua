@@ -7,5 +7,8 @@ world.insert_component(entity, transform_type, Transform.from_xyz(1.0, 2.0, 3.0)
 local t = world.get_component(entity, transform_type)
 
 function bench()
-    t.translation.x = 2.0
+    -- native fields have no write-through: the field is read, changed and written whole
+    local v = t.translation:clone()
+    v.x = 2.0
+    t.translation = v
 end

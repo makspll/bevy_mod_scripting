@@ -165,6 +165,8 @@ struct RuneReturn {
     value: Option<Result<Value, InteropError>>,
     /// How a [`ScriptValue`] result is converted, see [`crate::types::converter`]
     convert: fn(ScriptValue) -> Result<Value, InteropError>,
+    /// Whether the native value returned next is a read-only copy, see [`ReturnSink::read_only`]
+    read_only: bool,
 }
 
 impl RuneReturn {
@@ -205,11 +207,19 @@ unsafe impl ReturnSink for RuneReturn {
         // Safety: `write` writes a value of the vtable's type, see the method's contract
         match unsafe { NativeBox::new(vtable, write) } {
             Ok(storage) => {
+                // Safety: initialised storage; a place is the value in the world, never a copy
+                unsafe { NativeStorage::header(storage.base()) }
+                    .read_only
+                    .set(self.read_only && !vtable.place);
                 self.set(new_value(RuneNative::new(storage, native.clone())));
                 true
             }
             Err(_) => false,
         }
+    }
+
+    fn read_only(&mut self) {
+        self.read_only = true;
     }
 
     fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError> {
@@ -239,6 +249,7 @@ pub(crate) fn call_with(
     let mut ret = RuneReturn {
         value: None,
         convert,
+        read_only: false,
     };
     call(&RuneArgs::new(args), &mut ret)?;
     ret.finish()

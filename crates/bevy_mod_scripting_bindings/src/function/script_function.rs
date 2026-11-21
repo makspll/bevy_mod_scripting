@@ -685,17 +685,6 @@ impl ScriptFunctionRegistry {
             .map(|(key, function)| (key.name.clone(), function.clone()))
             .collect();
         self.native_types.insert(type_id, Arc::new(native));
-        // values of types with fields of native types are only stored as places, see `NativeType::inline`
-        let natives = self.native_types.keys().copied().collect::<Vec<_>>();
-        for native in self.native_types.values_mut() {
-            let inline = !native
-                .fields
-                .values()
-                .any(|field| field.type_id.is_some_and(|t| natives.contains(&t)));
-            if native.inline != inline {
-                Arc::make_mut(native).inline = inline;
-            }
-        }
     }
 
     /// Registers a function of the type `type_id` callable through a language's FFI, replacing one with the same name and
