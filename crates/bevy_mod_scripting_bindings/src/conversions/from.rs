@@ -224,7 +224,7 @@ macro_rules! impl_from_stringlike {
                     matches!(value, ScriptValue::String(_) | ScriptValue::Reference(_))
                 }
 
-                fn from_arg<'s>(args: &dyn ArgSource, index: usize, scope: &'s CallScope<'_>) -> Result<Self, InteropError> {
+                fn from_arg(args: &dyn ArgSource, index: usize, scope: &CallScope<'_>,) -> Result<Self, InteropError> {
                     // read from the language's string, no script value
                     if let Some(s) = args.string(index) {
                         return Ok(s.to_owned().into());
@@ -675,10 +675,10 @@ where
         matches!(value, ScriptValue::List(_))
     }
 
-    fn from_arg<'s>(
+    fn from_arg(
         args: &dyn ArgSource,
         index: usize,
-        scope: &'s CallScope<'_>,
+        scope: &CallScope<'_>,
     ) -> Result<Self, InteropError> {
         // the items read as arguments, no script values
         let mut vec = None;
@@ -842,10 +842,10 @@ macro_rules! impl_from_script_hashmap {
                 matches!(value, ScriptValue::Map(_) | ScriptValue::List(_))
             }
 
-            fn from_arg<'s>(
+            fn from_arg(
                 args: &dyn ArgSource,
                 index: usize,
-                scope: &'s CallScope<'_>,
+                scope: &CallScope<'_>,
             ) -> Result<Self, InteropError> {
                 // the entries read as arguments, no script values
                 let mut hashmap = <$hashmap_type>::new();
