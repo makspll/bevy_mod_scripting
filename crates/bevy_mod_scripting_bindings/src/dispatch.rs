@@ -17,8 +17,10 @@ use crate::{
     DynamicScriptFunction, EnumVariantRef, FunctionCallContext, FunctionScope, InteropError,
     ReferencePart, ReflectReference, ScriptValue, WorldExtensions,
     function::script_function::CachedMember,
-    world_extensions::{FunctionLookups, Lookups, members_depend_on_value},
+    world_extensions::{FunctionLookups, Lookups},
 };
+
+pub use crate::world_extensions::members_depend_on_value;
 
 /// What indexing a value by a name found.
 pub enum Member {

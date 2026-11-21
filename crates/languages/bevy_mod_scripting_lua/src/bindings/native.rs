@@ -41,10 +41,12 @@ use std::{
     mem::{ManuallyDrop, MaybeUninit},
     os::raw::{c_char, c_int},
     panic::{AssertUnwindSafe, catch_unwind},
+    sync::atomic::Ordering,
 };
 
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, InteropError, ScriptValue, WorldExtensions, dispatch,
+    function::FUNCTIONS_GENERATION,
     native::{ArgSource, NativeStorage, NativeType, NativeVTable, ReturnSink},
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
@@ -496,6 +498,8 @@ unsafe impl ReturnSink for LuaReturn {
 /// A result ready to be pushed, see [`push_ready`].
 enum Ready {
     Nothing,
+    /// One result, already on the top of the stack
+    OnTop,
     Number(f64),
     Integer(i64),
     Boolean(bool),
@@ -515,6 +519,7 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
     unsafe {
         match ready {
             Ready::Nothing => Ok(0),
+            Ready::OnTop => Ok(1),
             Ready::Number(n) => {
                 ffi::lua_pushnumber(l, n);
                 Ok(1)
@@ -1304,6 +1309,89 @@ pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi:
     )
 }
 
+/// Its address keys the cache of the functions of registrations in the registry, see [`cached_registration_member`].
+static REGISTRATION_MEMBERS: u8 = 0;
+/// Its address keys the generation of the functions the cache was made with, in the cache.
+static REGISTRATION_MEMBERS_GENERATION: u8 = 0;
+
+/// Pushes the cached function `name` of the registration `r`, i.e. `Vec3.new`, if there is one. `[-0, +(0|1), -]`.
+///
+/// Members of registrations depend on the registration (see [`dispatch::index_name`]), so they are cached per registration
+/// value: `cache[r][name]`, the cache having weak keys and the generation of the functions it was made with.
+///
+/// Called with `[r (1), name (2)]`.
+unsafe fn cached_registration_member(l: *mut ffi::lua_State, generation: ffi::lua_Integer) -> bool {
+    unsafe {
+        // [r, name] -> [r, name, cache]
+        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS)) == ffi::LUA_TTABLE
+            // [r, name, cache, generation]
+            && raw_get_p(l, 3, key(&REGISTRATION_MEMBERS_GENERATION)) == ffi::LUA_TNUMBER
+            && ffi::lua_tointeger(l, 4) == generation
+        {
+            // [r, name, cache, generation, r] -> [r, name, cache, generation, members]
+            ffi::lua_pushvalue(l, 1);
+            if ffi::lua_rawget(l, 3) == ffi::LUA_TTABLE {
+                // [.., members, name] -> [.., members, members[name]]
+                ffi::lua_pushvalue(l, 2);
+                if ffi::lua_rawget(l, -2) == ffi::LUA_TFUNCTION {
+                    // [r, name, function]
+                    ffi::lua_replace(l, 3);
+                    ffi::lua_settop(l, 3);
+                    return true;
+                }
+            }
+        }
+        ffi::lua_settop(l, 2);
+        false
+    }
+}
+
+/// Caches the function on the top as `name` of the registration `r`, see [`cached_registration_member`]. `[-0, +0, m]`:
+/// called once no Rust value of the call is left.
+///
+/// Called with `[r (1), name (2), function (3)]`.
+unsafe fn cache_registration_member(l: *mut ffi::lua_State, generation: ffi::lua_Integer) {
+    unsafe {
+        if ffi::lua_checkstack(l, 4) == 0 {
+            return;
+        }
+        // [r, name, function, cache]
+        let current = raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS))
+            == ffi::LUA_TTABLE
+            && raw_get_p(l, 4, key(&REGISTRATION_MEMBERS_GENERATION)) == ffi::LUA_TNUMBER
+            && ffi::lua_tointeger(l, 5) == generation;
+        if !current {
+            // a new cache for the functions as they are now: [r, name, function, cache]
+            ffi::lua_settop(l, 3);
+            ffi::lua_newtable(l);
+            ffi::lua_newtable(l);
+            ffi::lua_pushstring(l, c"__mode".as_ptr());
+            ffi::lua_pushstring(l, c"k".as_ptr());
+            ffi::lua_rawset(l, -3);
+            ffi::lua_setmetatable(l, -2);
+            ffi::lua_pushinteger(l, generation);
+            raw_set_p(l, -2, key(&REGISTRATION_MEMBERS_GENERATION));
+            ffi::lua_pushvalue(l, -1);
+            raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS));
+        }
+        ffi::lua_settop(l, 4);
+        // [r, name, function, cache, members]
+        ffi::lua_pushvalue(l, 1);
+        if ffi::lua_rawget(l, 4) != ffi::LUA_TTABLE {
+            ffi::lua_pop(l, 1);
+            ffi::lua_newtable(l);
+            ffi::lua_pushvalue(l, 1);
+            ffi::lua_pushvalue(l, -2);
+            ffi::lua_rawset(l, 4);
+        }
+        // members[name] = function
+        ffi::lua_pushvalue(l, 2);
+        ffi::lua_pushvalue(l, 3);
+        ffi::lua_rawset(l, -3);
+        ffi::lua_settop(l, 3);
+    }
+}
+
 /// `__index` of references, `r.name` (see [`dispatch::index_name`]) or `r[key]` (see [`dispatch::index`]): methods come
 /// back unbound, `r:method()` passes the reference itself.
 ///
@@ -1311,7 +1399,9 @@ pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi:
 pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
-        run(l, || {
+        let generation = FUNCTIONS_GENERATION.load(Ordering::Acquire) as ffi::lua_Integer;
+        let mut cache = false;
+        let n = run(l, || {
             let world = ThreadWorldContainer::try_get_context()?.world;
             // one mlua call for the lookup and the result
             with_raw(l, |lua, raw| {
@@ -1319,6 +1409,13 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
                     at_index::<mlua::UserDataRef<super::reference::LuaReflectReference>>(raw, l, 1)
                         .map_err(IntoInteropError::to_bms_error)?;
                 let member = if ffi::lua_type(l, 2) == ffi::LUA_TSTRING {
+                    // functions of registrations (`Vec3.new`) are cached per registration
+                    let registration = receiver.0.reflect_path.is_empty()
+                        && dispatch::members_depend_on_value(receiver.0.base.type_id());
+                    if registration && cached_registration_member(l, generation) {
+                        return Ok(Ready::OnTop);
+                    }
+                    cache = registration;
                     let mut len = 0;
                     let name = ffi::lua_tolstring(l, 2, &mut len);
                     // the string is kept alive by the stack for the call
@@ -1337,23 +1434,34 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
                 };
                 drop(receiver);
                 let value = match member {
-                    // functions of types live in the registry, their Lua functions are made once
+                    // functions of types and registrations live in the registry, their Lua functions are made once
                     dispatch::Member::Method(function) => {
                         super::script_value::registered_function_into_lua(lua, function)
                     }
-                    dispatch::Member::Static(ScriptValue::Float(n)) => return Ok(Ready::Number(n)),
-                    dispatch::Member::Static(ScriptValue::Integer(i)) => {
-                        return Ok(Ready::Integer(i));
+                    dispatch::Member::Static(ScriptValue::Function(function)) if cache => {
+                        super::script_value::registered_function_into_lua(lua, function)
                     }
-                    dispatch::Member::Static(ScriptValue::Bool(b)) => return Ok(Ready::Boolean(b)),
-                    // one value, tuples too
-                    dispatch::Member::Static(value) => LuaScriptValue(value).into_lua(lua),
+                    dispatch::Member::Static(value) => {
+                        cache = false;
+                        match value {
+                            ScriptValue::Float(n) => return Ok(Ready::Number(n)),
+                            ScriptValue::Integer(i) => return Ok(Ready::Integer(i)),
+                            ScriptValue::Bool(b) => return Ok(Ready::Boolean(b)),
+                            // one value, tuples too
+                            value => LuaScriptValue(value).into_lua(lua),
+                        }
+                    }
                 };
                 value
                     .map(Ready::Value)
                     .map_err(IntoInteropError::to_bms_error)
             })
-        })
+        });
+        // [r, name, function]: nothing Rust is left
+        if cache && n == 1 {
+            cache_registration_member(l, generation);
+        }
+        n
     }
 }
 
