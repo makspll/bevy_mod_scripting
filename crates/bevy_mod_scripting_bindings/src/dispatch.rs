@@ -16,7 +16,6 @@ use bevy_reflect::TypeInfo;
 use crate::{
     DynamicScriptFunction, EnumVariantRef, FunctionCallContext, FunctionScope, InteropError,
     ReferencePart, ReflectReference, ScriptValue, WorldExtensions,
-    function::script_function::CachedMember,
     world_extensions::{FunctionLookups, Lookups},
 };
 
@@ -82,34 +81,17 @@ pub fn index_name<'n>(
         None => reference.tail_type_id(world.clone())?.or_fake_id(),
     };
     // one registry read for the member and the getter, which is called once unlocked
-    let (member, field, get) = Lookups::with(&world, |lookups| {
-        let get = lookups.registry.magic_functions.get;
-        if tail.is_none() {
-            return (lookups.member(&reference, type_id, name), None, get);
-        }
-        if members_depend_on_value(type_id) {
-            let field = struct_field(&world, type_id, &name);
-            return (lookups.member(&reference, type_id, name), field, get);
-        }
-        // the same on every value of the type, until the functions change
-        let cached = lookups
-            .registry
-            .member_of_type(type_id, &name, || CachedMember {
-                function: match lookups.member(&reference, type_id, &*name) {
-                    Ok(ScriptValue::Function(function)) => Some(function),
-                    _ => None,
-                },
-                field: struct_field(&world, type_id, &name),
-            });
-        let member = cached.function.map(ScriptValue::Function).ok_or(name);
-        (member, cached.field, get)
+    let (member, get) = Lookups::with(&world, |lookups| {
+        let member = lookups.member(&reference, type_id, name);
+        (member, lookups.registry.magic_functions.get)
     });
     match member {
         Ok(ScriptValue::Function(func)) if is_method(&func, type_id) => Ok(Member::Method(func)),
         Ok(member) => Ok(Member::Static(member)),
         Err(name) => {
             // the default getter, done without converting the name or reading values which aren't returned
-            if let Some((field, is_reference)) = field
+            if let Some((field, is_reference)) =
+                tail.and_then(|type_id| struct_field(&world, type_id, &name))
                 && std::ptr::fn_addr_eq(
                     get,
                     crate::function::magic_functions::MagicFunctions::default_get

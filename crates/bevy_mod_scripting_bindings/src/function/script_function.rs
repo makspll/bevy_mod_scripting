@@ -493,18 +493,7 @@ impl equivalent::Equivalent<FunctionKey> for FunctionKeyRef<'_> {
 pub static FUNCTIONS_GENERATION: std::sync::atomic::AtomicU64 =
     std::sync::atomic::AtomicU64::new(0);
 
-/// What a name means on values of a type whose members don't depend on the value, see
-/// [`ScriptFunctionRegistry::member_of_type`] and [`crate::dispatch::index_name`].
-#[derive(Clone, Default)]
-pub(crate) struct CachedMember {
-    /// The function found by [`crate::world_extensions::Lookups::member`]
-    pub(crate) function: Option<DynamicScriptFunction>,
-    /// The struct field: its name, and whether its value is returned as a reference
-    pub(crate) field: Option<(&'static str, bool)>,
-}
-
-/// A key of [`ScriptFunctionRegistry::bound_to_type`] and [`ScriptFunctionRegistry::members`] borrowing its name.
-/// Hashes the same as the key.
+/// A key of [`ScriptFunctionRegistry::bound_to_type`] borrowing its name. Hashes the same as the key.
 #[derive(Hash)]
 struct BoundKeyRef<'a>(TypeId, &'a str);
 
@@ -525,10 +514,6 @@ pub struct ScriptFunctionRegistry {
     /// Cleared whenever the functions change.
     #[debug_with_type_info(skip)]
     bound_to_type: Mutex<HashMap<(TypeId, Cow<'static, str>), DynamicScriptFunction>>,
-    /// What names mean on values of a type, see [`ScriptFunctionRegistry::member_of_type`].
-    /// Cleared whenever the functions change.
-    #[debug_with_type_info(skip)]
-    members: Mutex<HashMap<(TypeId, Cow<'static, str>), CachedMember>>,
     /// The types languages store natively, see [`crate::native`]
     #[debug_with_type_info(skip)]
     native_types: HashMap<TypeId, Arc<crate::native::NativeType>>,
@@ -691,29 +676,9 @@ impl ScriptFunctionRegistry {
         Ok(func)
     }
 
-    /// What `name` means on values of `type_id`, made by `resolve` the first time until the functions change.
-    ///
-    /// `resolve` must not use this registry's caches.
-    pub(crate) fn member_of_type(
-        &self,
-        type_id: TypeId,
-        name: &str,
-        resolve: impl FnOnce() -> CachedMember,
-    ) -> CachedMember {
-        if let Some(member) = self.members.lock().get(&BoundKeyRef(type_id, name)) {
-            return member.clone();
-        }
-        let member = resolve();
-        self.members
-            .lock()
-            .insert((type_id, Cow::Owned(name.to_owned())), member.clone());
-        member
-    }
-
-    /// The functions, for changing them, which invalidates the bound functions and the cached members.
+    /// The functions, for changing them, which invalidates the bound functions.
     fn functions_mut(&mut self) -> &mut HashMap<FunctionKey, DynamicScriptFunction> {
         self.bound_to_type.get_mut().clear();
-        self.members.get_mut().clear();
         FUNCTIONS_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
         &mut self.functions
     }
@@ -1061,15 +1026,6 @@ mod test {
         let fn_ = |a: usize, b: usize| a + b;
         let namespace = TypeId::of::<()>();
         registry.register(namespace, "test", fn_);
-        let cached_member = |registry: &ScriptFunctionRegistry| {
-            registry
-                .member_of_type(namespace, "test", || CachedMember {
-                    function: registry.get_function(namespace, "test").ok().cloned(),
-                    field: None,
-                })
-                .function
-        };
-        assert!(cached_member(&registry).is_some());
         registry.register_ffi_function(
             namespace,
             crate::native::FfiFunction {
@@ -1081,8 +1037,7 @@ mod test {
         );
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_some());
-        // cached members and the FFI form go with the function
-        assert!(cached_member(&registry).is_none());
+        // the FFI form goes with the function
         assert!(registry.ffi_functions(namespace).is_empty());
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_none());
