@@ -38,11 +38,8 @@ static CTYPEID_OFFSET: AtomicUsize = AtomicUsize::new(0);
 /// Its address keys the table `{ [ctype id] = vtable (light userdata) }` in the registry, see [`cdata_at`].
 static CTYPES: u8 = 0;
 
-/// Its address keys the table `{ [vtable] = from_ptr }` in the registry, see [`push_from_ptr`].
-static FROM_PTRS: u8 = 0;
-
-/// The named registry value of the table `{ [vtable] = { ctype, from_ptr, statics } }`.
-const TYPES: &str = "bms_ffi_types";
+/// Its address keys the table `{ [vtable] = { ctype, from_ptr, statics } }` in the registry, see [`type_info`].
+static TYPES: u8 = 0;
 
 /// The native value at `idx` if it's a cdata of a native type with a C layout: its vtable and its payload, alive while
 /// the value is on the stack. `[-0, +0, -]`, but needs 2 free slots.
@@ -114,15 +111,18 @@ pub(super) unsafe fn push_from_ptr(
     vtable: &'static NativeVTable,
 ) -> Result<bool, InteropError> {
     unsafe {
-        // made already: `from_ptrs[vtable]`, raw gets only
-        if ffi::lua_checkstack(l, 2) != 0 {
-            // [.., from_ptrs]
-            if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&FROM_PTRS)) == ffi::LUA_TTABLE {
-                // [.., from_ptrs, from_ptr | nil]
+        // made already: `types[vtable][2]`, raw gets only
+        if ffi::lua_checkstack(l, 3) != 0 {
+            // [.., types]
+            if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&TYPES)) == ffi::LUA_TTABLE {
+                // [.., types, info | nil]
                 ffi::lua_pushlightuserdata(l, vtable as *const NativeVTable as *mut c_void);
-                let made = ffi::lua_rawget(l, -2) == ffi::LUA_TFUNCTION;
+                let made = ffi::lua_rawget(l, -2) == ffi::LUA_TTABLE;
                 if made {
-                    ffi::lua_remove(l, -2);
+                    // [.., types, info, from_ptr] -> [.., from_ptr]
+                    ffi::lua_rawgeti(l, -1, 2);
+                    ffi::lua_replace(l, -3);
+                    ffi::lua_pop(l, 1);
                 } else {
                     ffi::lua_pop(l, 2);
                 }
@@ -174,14 +174,20 @@ pub(super) fn ffi_static(
 /// Types are made once per state: `None` for types registered later.
 fn type_info(lua: &Lua, vtable: &'static NativeVTable) -> mlua::Result<Option<Table>> {
     let key = LightUserData(vtable as *const NativeVTable as *mut c_void);
-    let types = match lua.named_registry_value::<Option<Table>>(TYPES)? {
-        Some(types) => types,
+    // Safety: protected mode, a raw get from the registry
+    let types = || unsafe {
+        lua.exec_raw::<Option<Table>>((), |l| {
+            raw_get_p(l, ffi::LUA_REGISTRYINDEX, self::key(&TYPES));
+        })
+    };
+    let types = match types()? {
+        Some(types) => Some(types),
         None => {
             make_types(lua)?;
-            lua.named_registry_value::<Table>(TYPES)?
+            types()?
         }
     };
-    types.raw_get::<Option<Table>>(key)
+    types.map_or(Ok(None), |types| types.raw_get(key))
 }
 
 /// Makes the FFI forms of every native type with a C layout in this state, see the module docs.
@@ -235,27 +241,24 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
     // by vtable for Rust, by ctype id for C
     let by_vtable = lua.create_table()?;
     let by_id = lua.create_table()?;
-    let from_ptrs = lua.create_table()?;
     for native in &types {
         let info: Table = made.raw_get(layout_name(native))?;
         let id: i64 = info.raw_get(4)?;
         let vtable = LightUserData(native.vtable as *const NativeVTable as *mut c_void);
         by_vtable.raw_set(vtable, info.clone())?;
         by_id.raw_set(id, vtable)?;
-        from_ptrs.raw_set(vtable, info.raw_get::<mlua::Function>(2)?)?;
         // the same for every type and state of this build
         if CTYPEID_OFFSET.load(Ordering::Acquire) == 0 {
             calibrate(&info.raw_get::<mlua::Value>(5)?, id)?;
         }
     }
-    lua.set_named_registry_value(TYPES, by_vtable)?;
     // Safety: protected mode, raw sets of the tables on the top into the registry
     unsafe {
         lua.exec_raw::<()>(by_id, |l| {
             raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&CTYPES))
         })?;
-        lua.exec_raw::<()>(from_ptrs, |l| {
-            raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&FROM_PTRS))
+        lua.exec_raw::<()>(by_vtable, |l| {
+            raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&TYPES))
         })?;
     }
     Ok(())
