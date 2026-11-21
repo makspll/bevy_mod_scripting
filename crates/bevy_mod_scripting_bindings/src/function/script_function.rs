@@ -816,9 +816,9 @@ macro_rules! impl_script_function {
                     let received_args_len = args.len();
                     let expected_arg_count = count!($($param )*);
                     $( let $context = caller_context.clone(); )?
-                    let world = caller_context.world()?;
-                    // the accesses and borrows made for the arguments are released once the call ends
-                    world.with_call_scope(|scope| {
+                    // the accesses and borrows made for the arguments are released once the call ends; the world is only
+                    // looked up when an argument or the result needs it
+                    bevy_mod_scripting_world::CallScope::with_lazy(|scope| {
                         let mut current_arg = 0usize;
                         $(let $param = {
                             let index = current_arg;
@@ -846,7 +846,7 @@ macro_rules! impl_script_function {
                             let $out = out?;
                             let out = $out;
                         )?
-                        out.into_ret(ret, world.clone(), &native_return)
+                        out.into_ret(ret, scope, &native_return)
                             .map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
                     })
                 })
