@@ -52,8 +52,9 @@ pub unsafe trait ArgSource {
     /// The argument converted to a [`ScriptValue`], the slow path.
     fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError>;
     /// The argument as a plain value of the type `type_id` without a [`NativeHeader`] (i.e. a LuaJIT cdata), only for types
-    /// with an [`FfiLayout`]: a pointer to the value, alive and in place until the call returns. Its borrows are kept by the
-    /// call scope, see [`bevy_mod_scripting_world::CallScope::borrow_plain`].
+    /// with an [`FfiLayout`]: a pointer to the value, alive and in place until the call returns, which needn't be
+    /// aligned. Scripts can write it while the call runs, so references are to copies kept by the call scope, see
+    /// [`bevy_mod_scripting_world::CallScope::copy_plain`].
     fn plain(&self, _i: usize, _type_id: TypeId) -> Option<*mut u8> {
         None
     }

@@ -6,8 +6,8 @@
 //!   wrapper (`#[script_bindings(ffi)]`, see [`FfiFunction`]) are called through the FFI with C types, after checking
 //!   their arguments are of the expected types, else (and for other functions) through BMS' typed functions, which read
 //!   cdata in place ([`cdata_at`], [`super::LuaArgs`]); arithmetic of component-wise types is computed in Lua.
-//! - Values Rust returns are copied into new cdata ([`push_from_ptr`]); borrows of cdata are kept by the call scope, as
-//!   scripts can write every byte of a cdata (see `CallScope::borrow_plain`).
+//! - Values Rust returns are copied into new cdata ([`push_from_ptr`]); scripts can write every byte of a cdata at any
+//!   time, so BMS' functions never borrow one: they get copies, written back for `M<T>` (see `CallScope::copy_plain`).
 //! - Types are told apart by LuaJIT's ctype id, which scripts can't change, see [`cdata_at`].
 
 use std::{
@@ -603,5 +603,85 @@ unsafe extern "C-unwind" fn cdata_tostring(l: *mut ffi::lua_State) -> c_int {
                 .map(Ready::Value)
                 .map_err(IntoInteropError::to_bms_error)
         })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use bevy_ecs::world::World;
+    use bevy_mod_scripting_bindings::{
+        CurrentScriptAttachment, DynamicScriptFunction, FunctionCallContext, M, R, ScriptFunction,
+        V,
+    };
+    use bevy_mod_scripting_world::WorldAccessGuard;
+
+    use super::*;
+
+    #[derive(bevy_reflect::Reflect, Clone, Copy, Default)]
+    struct C {
+        x: f32,
+    }
+
+    /// Values of a type with a C layout are cdata scripts can write at any time: BMS' functions get copies, written back
+    /// for `M<T>`, and scripts don't get the FFI library.
+    #[test]
+    fn cdata_arguments_are_copies() {
+        let mut world = World::default();
+        world
+            .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
+            .write()
+            .register::<C>();
+        bevy_mod_scripting_bindings::script_native!(&mut world, ffi vector C { x: f32 });
+        let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
+        WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
+            let lua = Lua::new();
+            let globals = [
+                (
+                    "value",
+                    (|x: f32| V(C { x })).into_dynamic_script_function(),
+                ),
+                (
+                    "call_back",
+                    (|ctx: FunctionCallContext,
+                      v: R<C>,
+                      f: DynamicScriptFunction|
+                     -> Result<f32, InteropError> {
+                        f.call([], ctx)?;
+                        Ok(v.x)
+                    })
+                    .into_dynamic_script_function(),
+                ),
+                (
+                    "call_back_mut",
+                    (|ctx: FunctionCallContext,
+                      mut v: M<C>,
+                      f: DynamicScriptFunction|
+                     -> Result<(), InteropError> {
+                        f.call([], ctx)?;
+                        v.x += 1.0;
+                        Ok(())
+                    })
+                    .into_dynamic_script_function(),
+                ),
+            ];
+            for (name, function) in globals {
+                let function = super::super::native_function(&lua, function).unwrap();
+                lua.globals().set(name, function).unwrap();
+            }
+            lua.load(
+                r#"
+                local a = value(1)
+                assert(type(a) == "cdata" and a.x == 1, "a cdata")
+                assert(not pcall(require, "ffi") and package.loaded.ffi == nil, "no FFI library for scripts")
+                assert((a + a).x == 2 and (a * 3).x == 3 and a == value(1), "operators in Lua")
+                local x = call_back(a, function() a.x = 5 end)
+                assert(x == 1 and a.x == 5, "the call reads its copy, the script's write stays")
+                call_back_mut(a, function() assert(a.x == 5) end)
+                assert(a.x == 6, "written back when the call ends")
+                "#,
+            )
+            .exec()
+            .unwrap();
+        });
     }
 }

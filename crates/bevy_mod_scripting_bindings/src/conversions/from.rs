@@ -88,18 +88,15 @@ fn native_arg<T: 'static>(
     exclusive: bool,
 ) -> Result<Option<(Option<*mut u8>, *mut T)>, InteropError> {
     let Some(base) = args.native(index) else {
-        // a plain value (i.e. a LuaJIT cdata), whose bytes scripts can write: its borrows are kept by the scope
+        // a plain value (i.e. a LuaJIT cdata), whose bytes scripts can write while the call runs: the call gets a copy,
+        // written back when the scope ends if it may change it
         let Some(value) = args.plain(index, TypeId::of::<T>()) else {
             return Ok(None);
         };
         // Safety: `ArgSource` gives a T, alive until the call returns, which outlives the scope
-        if !unsafe { scope.borrow_plain(value, std::mem::size_of::<T>(), exclusive) } {
-            return Err(InteropError::string(format!(
-                "a {} is passed to a function in a way which conflicts with another argument",
-                std::any::type_name::<T>()
-            )));
-        }
-        return Ok(Some((None, value as *mut T)));
+        let copy = unsafe { scope.copy_plain(value, std::alloc::Layout::new::<T>(), exclusive) }
+            .ok_or_else(|| InteropError::str("out of memory"))?;
+        return Ok(Some((None, copy as *mut T)));
     };
     // Safety: `ArgSource` gives initialised storage, alive until the call returns, which outlives the scope
     let header = unsafe { NativeStorage::header(base) };
@@ -433,11 +430,14 @@ impl<T: FromReflect> FromScript for V<T> {
         index: usize,
         scope: &'s CallScope<'_>,
     ) -> Result<Self, InteropError> {
-        if let Some((base, src)) = native_arg::<T>(args, index, scope, false)? {
-            let Some(base) = base else {
-                // Safety: a plain value, of a `Copy` type (see `ArgSource::plain`), borrowed while it's copied
-                return Ok(V(unsafe { std::ptr::read(src) }));
-            };
+        // a plain value is read once, where it is: no copy kept by the scope
+        if args.native(index).is_none()
+            && let Some(src) = args.plain(index, TypeId::of::<T>())
+        {
+            // Safety: a T of a `Copy` type (see `ArgSource::plain`), which needn't be aligned
+            return Ok(V(unsafe { std::ptr::read_unaligned(src as *const T) }));
+        }
+        if let Some((Some(base), src)) = native_arg::<T>(args, index, scope, false)? {
             let mut value = std::mem::MaybeUninit::<T>::uninit();
             // Safety: `src` is a T (in the storage, or in the world for a place), borrowed so nothing changes it while it's copied
             unsafe {
@@ -520,7 +520,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
         scope: &'s CallScope<'_>,
     ) -> Result<Self::This<'s>, InteropError> {
         if let Some((_, value)) = native_arg::<T>(args, index, scope, false)? {
-            // Safety: a T, borrowed shared until the scope ends: in the storage, alive until the call returns, or in the world for a place, kept by the access claimed for it
+            // Safety: a T, borrowed shared until the scope ends: in the storage, alive until the call returns, in the world for a place, kept by the access claimed for it, or the scope's copy of a plain value
             return Ok(R(unsafe { &*value }));
         }
         Self::from_script(args.script_value(index)?, scope)
@@ -632,7 +632,7 @@ impl<T: FromReflect> FromScript for M<'_, T> {
         scope: &'s CallScope<'_>,
     ) -> Result<Self::This<'s>, InteropError> {
         if let Some((_, value)) = native_arg::<T>(args, index, scope, true)? {
-            // Safety: a T, borrowed exclusively until the scope ends: in the storage, alive until the call returns, or in the world for a place, kept by the access claimed for it
+            // Safety: a T, borrowed exclusively until the scope ends: in the storage, alive until the call returns, in the world for a place, kept by the access claimed for it, or the scope's copy of a plain value
             return Ok(M(unsafe { &mut *value }));
         }
         Self::from_script(args.script_value(index)?, scope)

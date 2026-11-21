@@ -98,16 +98,17 @@ pub struct CallScope<'w> {
     claims: RefCell<SmallVec<[WorldAccessRange; 4]>>,
     /// The borrows of values outside the world made through this scope, see [`Self::borrow`], released when it's dropped
     borrows: RefCell<SmallVec<[(*const BorrowFlag, bool); 2]>>,
-    /// How many of the thread's borrows of plain values were made before this scope's first one, see
-    /// [`Self::borrow_plain`]: they are this scope's, released when it's dropped
-    plain_mark: std::cell::Cell<Option<usize>>,
+    /// The copies of plain values made through this scope, see [`Self::copy_plain`], written back and freed when it's
+    /// dropped
+    plain: RefCell<SmallVec<[PlainCopy; 2]>>,
 }
 
-thread_local! {
-    /// The borrows of plain values (without a [`BorrowFlag`], i.e. LuaJIT cdata) of every running call on this thread, as
-    /// `(start, end, exclusive)` address ranges, see [`CallScope::borrow_plain`]. Scopes nest with the calls, so each one's
-    /// borrows are at the end while it runs.
-    static PLAIN_BORROWS: RefCell<Vec<(usize, usize, bool)>> = const { RefCell::new(Vec::new()) };
+/// A copy of a plain value, see [`CallScope::copy_plain`].
+struct PlainCopy {
+    copy: *mut u8,
+    layout: std::alloc::Layout,
+    /// Where the copy is written back to, for values the call may change
+    origin: Option<*mut u8>,
 }
 
 /// Tracks the borrows of a value outside the world, i.e. one stored natively by a script language, like a `RefCell`.
@@ -152,32 +153,41 @@ impl<'w> CallScope<'w> {
             guard: guard.map(std::cell::OnceCell::from).unwrap_or_default(),
             claims: Default::default(),
             borrows: Default::default(),
-            plain_mark: Default::default(),
+            plain: Default::default(),
         }
     }
 
-    /// Borrows a plain value outside the world (its `size` bytes at `ptr`), which has no [`BorrowFlag`] of its own (i.e. a
-    /// LuaJIT cdata, whose bytes scripts can write), for as long as this scope, shared or `exclusive`.
+    /// Copies a plain value outside the world (the bytes of `layout` at `value`), which has no [`BorrowFlag`] of its own
+    /// (i.e. a LuaJIT cdata, whose bytes scripts can write at any time, also while the call runs), and returns the copy,
+    /// which lives as long as this scope and is never aliased. With `write_back` the copy is written to `value` when the
+    /// scope is dropped (the last one wins if a value is copied twice).
     ///
-    /// Returns false if any running call on this thread, this one included, borrows overlapping bytes in a conflicting way.
+    /// `None` if the copy can't be allocated.
     ///
     /// # Safety
-    /// The value must stay valid until the scope is dropped.
-    pub unsafe fn borrow_plain(&self, ptr: *const u8, size: usize, exclusive: bool) -> bool {
-        let (start, end) = (ptr as usize, ptr as usize + size.max(1));
-        PLAIN_BORROWS.with_borrow_mut(|borrows| {
-            let conflicts = borrows
-                .iter()
-                .any(|&(s, e, x)| s < end && start < e && (x || exclusive));
-            if conflicts {
-                return false;
-            }
-            if self.plain_mark.get().is_none() {
-                self.plain_mark.set(Some(borrows.len()));
-            }
-            borrows.push((start, end, exclusive));
-            true
-        })
+    /// `value` is valid for reads, and for writes with `write_back`, until the scope is dropped. It needn't be aligned.
+    pub unsafe fn copy_plain(
+        &self,
+        value: *mut u8,
+        layout: std::alloc::Layout,
+        write_back: bool,
+    ) -> Option<*mut u8> {
+        if layout.size() == 0 {
+            return Some(layout.align() as *mut u8);
+        }
+        // Safety: the layout isn't empty
+        let copy = unsafe { std::alloc::alloc(layout) };
+        if copy.is_null() {
+            return None;
+        }
+        // Safety: the caller's, the copy is new
+        unsafe { std::ptr::copy_nonoverlapping(value, copy, layout.size()) };
+        self.plain.borrow_mut().push(PlainCopy {
+            copy,
+            layout,
+            origin: write_back.then_some(value),
+        });
+        Some(copy)
     }
 
     /// Runs `f` in a new scope of the running script's world ([`ThreadWorldContainer`]), looked up the first time the
@@ -263,9 +273,19 @@ impl Drop for CallScope<'_> {
             // Safety: `borrow`'s caller keeps the flag valid until now
             unsafe { (*flag).release(exclusive) }
         }
-        // this scope's borrows of plain values are the last ones: the calls it made have ended
-        if let Some(mark) = self.plain_mark.get() {
-            PLAIN_BORROWS.with_borrow_mut(|borrows| borrows.truncate(mark));
+        for PlainCopy {
+            copy,
+            layout,
+            origin,
+        } in self.plain.get_mut().drain(..)
+        {
+            // Safety: `copy_plain` made the copy with this layout, its caller keeps the origin valid until now
+            unsafe {
+                if let Some(origin) = origin {
+                    std::ptr::copy_nonoverlapping(copy, origin, layout.size());
+                }
+                std::alloc::dealloc(copy, layout);
+            }
         }
     }
 }
