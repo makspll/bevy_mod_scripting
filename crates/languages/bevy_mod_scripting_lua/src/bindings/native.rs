@@ -287,6 +287,100 @@ unsafe impl ArgSource for LuaArgs<'_> {
         native
     }
 
+    fn string(&self, i: usize) -> Option<&str> {
+        // Safety: the index is on the stack, the string stays there (or in its table) for the call
+        unsafe {
+            if ffi::lua_type(self.l, self.idx(i)) != ffi::LUA_TSTRING {
+                return None;
+            }
+            let mut len = 0;
+            let s = ffi::lua_tolstring(self.l, self.idx(i), &mut len);
+            std::str::from_utf8(std::slice::from_raw_parts(s.cast(), len)).ok()
+        }
+    }
+
+    fn list(&self, i: usize, items: &mut dyn FnMut(&dyn ArgSource)) -> bool {
+        let l = self.l;
+        let idx = self.idx(i);
+        // Safety: the index is on the stack; the items are pushed above every argument and stay there until the call returns,
+        // so native items stay alive for borrows; raw gets and `next` over an unchanged table don't raise
+        unsafe {
+            if ffi::lua_type(l, idx) != ffi::LUA_TTABLE || ffi::lua_checkstack(l, 2) == 0 {
+                return false;
+            }
+            // a sequence, exactly the keys `1..=len`, as tables become lists (see `TableBuilder`)
+            let len = ffi::lua_rawlen(l, idx);
+            let mut count = 0;
+            ffi::lua_pushnil(l);
+            while ffi::lua_next(l, idx) != 0 {
+                // [.., key, value] -> [.., key]
+                ffi::lua_pop(l, 1);
+                let key =
+                    (ffi::lua_type(l, -1) == ffi::LUA_TNUMBER).then(|| ffi::lua_tonumber(l, -1));
+                if !key.is_some_and(|k| k.fract() == 0.0 && k >= 1.0 && k <= len as ffi::lua_Number)
+                {
+                    ffi::lua_pop(l, 1);
+                    return false;
+                }
+                count += 1;
+            }
+            if count != len || ffi::lua_checkstack(l, len as c_int) == 0 {
+                return false;
+            }
+            let first = ffi::lua_gettop(l) + 1;
+            for j in 1..=len {
+                ffi::lua_rawgeti(l, idx, j as ffi::lua_Integer);
+            }
+            items(&LuaArgs {
+                l,
+                first,
+                len,
+                raw: self.raw,
+                natives: Default::default(),
+            });
+        }
+        true
+    }
+
+    fn map(
+        &self,
+        i: usize,
+        entry: &mut dyn FnMut(&dyn ArgSource) -> Result<(), InteropError>,
+    ) -> Option<Result<(), InteropError>> {
+        let l = self.l;
+        let idx = self.idx(i);
+        // Safety: the index is on the stack, entries are pushed above every argument; `next` over an unchanged table doesn't
+        // raise; values are popped after their entry, so natives aren't handed out (see `NoNatives`)
+        unsafe {
+            if ffi::lua_type(l, idx) != ffi::LUA_TTABLE || ffi::lua_checkstack(l, 3) == 0 {
+                return None;
+            }
+            ffi::lua_pushnil(l);
+            while ffi::lua_next(l, idx) != 0 {
+                // [.., key, value]: string keys only, like the map a table becomes
+                if ffi::lua_type(l, -2) != ffi::LUA_TSTRING {
+                    ffi::lua_pop(l, 2);
+                    return None;
+                }
+                let args = LuaArgs {
+                    l,
+                    first: ffi::lua_gettop(l) - 1,
+                    len: 2,
+                    raw: self.raw,
+                    natives: Default::default(),
+                };
+                let read = entry(&NoNatives(&args));
+                // [.., key]: the key for `next`
+                ffi::lua_pop(l, 1);
+                if let Err(error) = read {
+                    ffi::lua_pop(l, 1);
+                    return Some(Err(error));
+                }
+            }
+        }
+        Some(Ok(()))
+    }
+
     fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError> {
         // a native value found by a typed argument, else mlua, which finds natives after references (the common case)
         if let Some(Some(Some(base))) = self.natives.get(i).map(std::cell::Cell::get) {
@@ -301,6 +395,36 @@ unsafe impl ArgSource for LuaArgs<'_> {
             }
         }
     }
+}
+
+/// Arguments which don't stay on the stack for the whole call (the entries of a map), so their native values aren't handed
+/// out: they're copied into references like other values (see [`ArgSource::script_value`]).
+struct NoNatives<'a>(&'a LuaArgs<'a>);
+
+// Safety: never hands out native values
+unsafe impl ArgSource for NoNatives<'_> {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+    fn number(&self, i: usize) -> Option<f64> {
+        self.0.number(i)
+    }
+    fn integer(&self, i: usize) -> Option<i64> {
+        self.0.integer(i)
+    }
+    fn boolean(&self, i: usize) -> Option<bool> {
+        self.0.boolean(i)
+    }
+    fn native(&self, _i: usize) -> Option<*mut u8> {
+        None
+    }
+    fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError> {
+        self.0.script_value(i)
+    }
+    fn string(&self, i: usize) -> Option<&str> {
+        self.0.string(i)
+    }
+    // nested lists and maps would hand out natives of values which don't stay on the stack: the slow path
 }
 
 // ---------------------------------------------------------------- results

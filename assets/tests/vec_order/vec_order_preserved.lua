@@ -66,6 +66,10 @@ assert(strs[1] == "a" and strs[2] == "b" and strs[3] == "c" and strs[4] == "d", 
 -- empty
 assert(#test_utils.make_vec_i64({}) == 0, "empty list should stay empty")
 
+-- tables which aren't sequences are no lists, read off the stack or not
+assert(not pcall(test_utils.make_vec_i64, { [1] = 1, [3] = 3 }), "a table with holes is no list")
+assert(not pcall(test_utils.make_vec_i64, { 1, 2, key = 3 }), "a table with other keys is no list")
+
 -- lists returned from a binding (built on the rust side) must keep their order when passed back in
 for n = 1, 12 do
     local input = {}

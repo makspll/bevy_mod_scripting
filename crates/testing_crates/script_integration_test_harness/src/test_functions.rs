@@ -188,6 +188,11 @@ pub fn register_test_functions(world: &mut App) {
             "noop_4_args",
             |_a: ScriptValue, _b: ScriptValue, _c: ScriptValue, _d: ScriptValue| {},
         )
+        // the arguments of `noop_4_args`, typed: read without script values where the language can
+        .register(
+            "noop_typed_args",
+            |_a: i64, _b: String, _c: Vec<i64>, _d: HashMap<String, i64>| {},
+        )
         .register("into_script_function", |f: DynamicScriptFunction| f)
         .register(
             "assert_str_eq",
