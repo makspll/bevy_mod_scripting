@@ -106,20 +106,20 @@ pub(crate) fn cdata_value(lua: &Lua, value: &mlua::Value) -> Option<ScriptValue>
     })
 }
 
-/// Pushes the function making a cdata of the type of `vtable` from a pointer to a value (a `const` one, which scripts
-/// can't write, if `read_only`), making the types first if this state has none yet. `[-0, +(0|1), m]`: nothing for types registered after the types were made, which stay userdata.
+/// Pushes the C type of `vtable` (its `const` form, whose values scripts can't write, if `read_only`), making the types
+/// first if this state has none yet. Calling it makes a zeroed value, see [`super::push_ready`]. `[-0, +(0|1), m]`: nothing for types registered after the types were made, which stay userdata.
 ///
 /// # Safety
 /// `l` is the state of a call.
-pub(super) unsafe fn push_from_ptr(
+pub(super) unsafe fn push_ctype(
     l: *mut ffi::lua_State,
     vtable: &'static NativeVTable,
     read_only: bool,
 ) -> Result<bool, InteropError> {
-    // where the info of a type keeps the functions, see `types_source`
-    let from_ptr = if read_only { 6 } else { 2 };
+    // where the info of a type keeps the types, see `types_source`
+    let from_ptr = if read_only { 2 } else { 1 };
     unsafe {
-        // made already: `types[vtable][from_ptr]`, raw gets only
+        // made already: `types[vtable][ctype]`, raw gets only
         if ffi::lua_checkstack(l, 3) != 0 {
             // [.., types]
             if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&TYPES)) == ffi::LUA_TTABLE {
@@ -127,7 +127,7 @@ pub(super) unsafe fn push_from_ptr(
                 ffi::lua_pushlightuserdata(l, vtable as *const NativeVTable as *mut c_void);
                 let made = ffi::lua_rawget(l, -2) == ffi::LUA_TTABLE;
                 if made {
-                    // [.., types, info, from_ptr] -> [.., from_ptr]
+                    // [.., types, info, ctype] -> [.., ctype]
                     ffi::lua_rawgeti(l, -1, from_ptr);
                     ffi::lua_replace(l, -3);
                     ffi::lua_pop(l, 1);
@@ -144,8 +144,8 @@ pub(super) unsafe fn push_from_ptr(
             let Some(info) = type_info(lua, vtable)? else {
                 return Ok(0);
             };
-            let from_ptr: mlua::Function = info.raw_get(from_ptr)?;
-            from_ptr.push_into_stack(raw)?;
+            let ctype: mlua::Value = info.raw_get(from_ptr)?;
+            ctype.push_into_stack(raw)?;
             Ok(1)
         })
     }
@@ -256,7 +256,7 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
         by_vtable.raw_set(vtable, info.clone())?;
         by_id.raw_set(id, vtable)?;
         // the `const` form, which read-only copies are: the vtable with its lowest bit set, see `cdata_at`
-        let const_id: i64 = info.raw_get(7)?;
+        let const_id: i64 = info.raw_get(6)?;
         by_id.raw_set(
             const_id,
             LightUserData((native.vtable as *const NativeVTable as usize | 1) as *mut c_void),
@@ -383,7 +383,7 @@ fn types_source(
         let name = layout_name(native);
         let _ = writeln!(
             out,
-            "do\nlocal T, P, slow, methods, statics = {t}, ffi.typeof(\"const {name}*\"), slows.{name}, {{}}, {{}}"
+            "do\nlocal T, slow, methods, statics = {t}, slows.{name}, {{}}, {{}}"
         );
         // functions with a C form
         for function in functions {
@@ -401,9 +401,9 @@ fn types_source(
         operators_source(&mut out, native);
         let _ = writeln!(
             out,
-            // 1 the type, 2 a value from a pointer, 3 the statics, 4 the type's id, 5 a probe, 6 and 7 the same as 2 and 4
-            // for the `const` form: a read-only copy
-            "T = ffi.metatype(T, mt)\nlocal K = ffi.typeof(\"const {name}\")\nmade.{name} = {{ T, function(p) return T(cast(P, p)[0]) end, statics, tonumber(T), T(), function(p) return K(cast(P, p)[0]) end, tonumber(K) }}\nend"
+            // 1 the type, 2 its `const` form (a read-only copy), 3 the statics, 4 the type's id, 5 a probe, 6 the id of the
+            // `const` form
+            "T = ffi.metatype(T, mt)\nlocal K = ffi.typeof(\"const {name}\")\nmade.{name} = {{ T, K, statics, tonumber(T), T(), tonumber(K) }}\nend"
         );
     }
     out.push_str("return made\n");

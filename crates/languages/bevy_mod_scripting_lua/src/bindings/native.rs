@@ -548,7 +548,7 @@ impl LuaReturn {
             #[cfg(any(feature = "luajit", feature = "luajit52"))]
             Pending::Native(native)
                 if native.cdata
-                    && unsafe { cdata::push_from_ptr(l, native.vtable, native.read_only) }
+                    && unsafe { cdata::push_ctype(l, native.vtable, native.read_only) }
                         .unwrap_or(false) =>
             {
                 Ready::Cdata(native)
@@ -798,10 +798,12 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
                     native.discard();
                     return Err("stack overflow");
                 }
-                // [.., from_ptr, p] -> [.., v]: the value is copied, plain bytes (no destructor), so raising leaks nothing
-                // but the heap block of big values
-                ffi::lua_pushlightuserdata(l, native.ptr() as *mut c_void);
-                ffi::lua_call(l, 1, 1);
+                // [.., ctype] -> [.., v]: calling the type makes a zeroed value (a C function of LuaJIT, no Lua code runs),
+                // which the result is copied into; plain bytes (no destructor), so raising leaks nothing but the heap
+                // block of big values. A `const` value is only read-only for scripts.
+                ffi::lua_call(l, 0, 1);
+                let value = ffi::lua_topointer(l, -1) as *mut u8;
+                std::ptr::copy_nonoverlapping(native.ptr(), value, native.vtable.layout.size());
                 native.free();
                 Ok(1)
             }
