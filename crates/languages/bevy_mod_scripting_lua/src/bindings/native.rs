@@ -41,12 +41,10 @@ use std::{
     mem::{ManuallyDrop, MaybeUninit},
     os::raw::{c_char, c_int},
     panic::{AssertUnwindSafe, catch_unwind},
-    sync::atomic::Ordering,
 };
 
 use bevy_mod_scripting_bindings::{
     DynamicScriptFunction, InteropError, ReflectReference, ScriptValue, WorldExtensions, dispatch,
-    function::FUNCTIONS_GENERATION,
     native::{
         ArgSource, DirectField, DirectKind, NativeHeader, NativeStorage, NativeType, NativeVTable,
         ReturnSink,
@@ -1551,6 +1549,13 @@ unsafe fn function_value(
     .map_err(IntoInteropError::to_bms_error)
 }
 
+/// Pushes the place of the field `name` of the place `v` (a proxy, i.e. `t.translation`) made by an earlier read, if any.
+/// `[-0, +(0|1), -]`.
+///
+/// Places of fields are fixed by their place and the field (see `NativePlace::field`), so they are kept per place, in the
+/// table with weak keys in upvalue 4 of `__index`: `proxies[v][name]`. Only places are kept, never values or copies.
+///
+/// Called with `[v (1), name (2)]`.
 unsafe fn cached_proxy(l: *mut ffi::lua_State) -> bool {
     unsafe { cached_for_value(l, ffi::lua_upvalueindex(4), ffi::LUA_TUSERDATA) }
 }
@@ -1603,6 +1608,10 @@ unsafe fn cache_for_value(l: *mut ffi::lua_State, cache: c_int) {
     }
 }
 
+/// Keeps the result on the top as the proxy of the field `name` of `v` if it's a place, see [`cached_proxy`]. `[-0, +0, m]`:
+/// called once no Rust value of the call is left.
+///
+/// Called with `[v (1), name (2), result (3)]`.
 unsafe fn cache_proxy(l: *mut ffi::lua_State) {
     unsafe {
         let is_place =
@@ -2134,20 +2143,21 @@ unsafe extern "C-unwind" fn reference_pairs(l: *mut ffi::lua_State) -> c_int {
 
 /// Its address keys the cache of the functions of registrations in the registry, see [`cached_registration_member`].
 static REGISTRATION_MEMBERS: u8 = 0;
-/// Its address keys the generation of the functions the cache was made with, in the cache.
-static REGISTRATION_MEMBERS_GENERATION: u8 = 0;
 
-unsafe fn cached_registration_member(l: *mut ffi::lua_State, generation: ffi::lua_Integer) -> bool {
+/// Pushes the cached function `name` of the registration `r`, i.e. `Vec3.new`, if there is one. `[-0, +(0|1), -]`.
+///
+/// Members of registrations depend on the registration (see [`dispatch::index_name`]), so they are cached per registration
+/// value: `cache[r][name]`, the cache having weak keys. Kept for good: functions are registered before scripts run.
+///
+/// Called with `[r (1), name (2)]`.
+unsafe fn cached_registration_member(l: *mut ffi::lua_State) -> bool {
     unsafe {
-        // [r, name, cache, generation]
-        let current = raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS))
-            == ffi::LUA_TTABLE
-            && raw_get_p(l, 3, key(&REGISTRATION_MEMBERS_GENERATION)) == ffi::LUA_TNUMBER
-            && ffi::lua_tointeger(l, 4) == generation;
-        if current && cached_for_value(l, 3, ffi::LUA_TFUNCTION) {
-            // [r, name, cache, generation, function] -> [r, name, function]
+        // [r, name, cache]
+        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS)) == ffi::LUA_TTABLE
+            && cached_for_value(l, 3, ffi::LUA_TFUNCTION)
+        {
+            // [r, name, cache, function] -> [r, name, function]
             ffi::lua_replace(l, 3);
-            ffi::lua_settop(l, 3);
             return true;
         }
         ffi::lua_settop(l, 2);
@@ -2159,18 +2169,14 @@ unsafe fn cached_registration_member(l: *mut ffi::lua_State, generation: ffi::lu
 /// called once no Rust value of the call is left.
 ///
 /// Called with `[r (1), name (2), function (3)]`.
-unsafe fn cache_registration_member(l: *mut ffi::lua_State, generation: ffi::lua_Integer) {
+unsafe fn cache_registration_member(l: *mut ffi::lua_State) {
     unsafe {
         if ffi::lua_checkstack(l, 4) == 0 {
             return;
         }
         // [r, name, function, cache]
-        let current = raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS))
-            == ffi::LUA_TTABLE
-            && raw_get_p(l, 4, key(&REGISTRATION_MEMBERS_GENERATION)) == ffi::LUA_TNUMBER
-            && ffi::lua_tointeger(l, 5) == generation;
-        if !current {
-            // a new cache for the functions as they are now: [r, name, function, cache]
+        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS)) != ffi::LUA_TTABLE {
+            // the first one of this state: a table with weak keys
             ffi::lua_settop(l, 3);
             ffi::lua_newtable(l);
             ffi::lua_newtable(l);
@@ -2178,12 +2184,9 @@ unsafe fn cache_registration_member(l: *mut ffi::lua_State, generation: ffi::lua
             ffi::lua_pushstring(l, c"k".as_ptr());
             ffi::lua_rawset(l, -3);
             ffi::lua_setmetatable(l, -2);
-            ffi::lua_pushinteger(l, generation);
-            raw_set_p(l, -2, key(&REGISTRATION_MEMBERS_GENERATION));
             ffi::lua_pushvalue(l, -1);
             raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS));
         }
-        ffi::lua_settop(l, 4);
         cache_for_value(l, 4);
         ffi::lua_settop(l, 3);
     }
@@ -2209,9 +2212,8 @@ fn static_function_value(lua: &Lua, function: DynamicScriptFunction) -> mlua::Re
 pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
-        let generation = FUNCTIONS_GENERATION.load(Ordering::Acquire) as ffi::lua_Integer;
         let named = ffi::lua_type(l, 2) == ffi::LUA_TSTRING;
-        if named && cached_registration_member(l, generation) {
+        if named && cached_registration_member(l) {
             return 1;
         }
         let mut cache = false;
@@ -2238,7 +2240,7 @@ pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) ->
         });
         // [t, name, function]: nothing Rust is left
         if cache && n == 1 {
-            cache_registration_member(l, generation);
+            cache_registration_member(l);
         }
         n
     }
@@ -2251,14 +2253,13 @@ pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) ->
 pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
-        let generation = FUNCTIONS_GENERATION.load(Ordering::Acquire) as ffi::lua_Integer;
         // functions of registrations (`Vec3.new`) are cached per registration: found before anything else is looked up
         let registration = ffi::lua_type(l, 2) == ffi::LUA_TSTRING
             && reference_at(l, 1).is_some_and(|receiver| {
                 receiver.reflect_path.is_empty()
                     && dispatch::members_depend_on_value(receiver.base.type_id())
             });
-        if registration && cached_registration_member(l, generation) {
+        if registration && cached_registration_member(l) {
             return 1;
         }
         let mut cache = false;
@@ -2316,7 +2317,7 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
         });
         // [r, name, function]: nothing Rust is left
         if cache && n == 1 {
-            cache_registration_member(l, generation);
+            cache_registration_member(l);
         }
         n
     }

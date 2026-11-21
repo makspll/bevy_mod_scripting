@@ -1092,23 +1092,17 @@ impl NativeType {
     }
 }
 
-/// Bumped whenever a native type is registered or changes (i.e. functions are registered on it), so caches of native types
-/// look them up again, see [`NativeReturnType`].
-pub(crate) static NATIVE_TYPES_GENERATION: std::sync::atomic::AtomicU64 =
-    std::sync::atomic::AtomicU64::new(0);
-
 /// The native types of a typed function's results, looked up in the registry on their first return and kept by its thunk,
 /// so returning a native value takes no registry lock. A few types are kept, i.e. the components `get_component` returns.
 ///
-/// Kept weakly: the native type holds its functions, which hold their thunks. Entries are only used while no native type
-/// changed since (see [`NATIVE_TYPES_GENERATION`]): values made earlier can keep a replaced type alive.
+/// Kept weakly: the native type holds its functions, which hold their thunks. Kept for good: native types and their
+/// functions are registered before scripts run.
 #[derive(Default)]
 pub struct NativeReturnType(parking_lot::RwLock<Vec<CachedNativeType>>);
 
 /// An entry of [`NativeReturnType`].
 struct CachedNativeType {
     type_id: TypeId,
-    generation: u64,
     native: Option<std::sync::Weak<NativeType>>,
 }
 
@@ -1123,12 +1117,11 @@ impl NativeReturnType {
         type_id: TypeId,
     ) -> Option<std::sync::Arc<NativeType>> {
         use crate::WorldExtensions;
-        let generation = NATIVE_TYPES_GENERATION.load(std::sync::atomic::Ordering::Acquire);
         // whether there's room for the type, if it needs looking up
         let cacheable = {
             let cache = self.0.read();
             match cache.iter().find(|c| c.type_id == type_id) {
-                Some(cached) if cached.generation == generation => {
+                Some(cached) => {
                     // not native, the common case: no lookup
                     let native = cached.native.as_ref()?;
                     if let Some(native) = native.upgrade() {
@@ -1136,7 +1129,6 @@ impl NativeReturnType {
                     }
                     true
                 }
-                Some(_) => true,
                 None => cache.len() < Self::CAPACITY,
             }
         };
@@ -1153,7 +1145,6 @@ impl NativeReturnType {
         let mut cache = self.0.write();
         let entry = CachedNativeType {
             type_id,
-            generation,
             native: native.as_ref().map(std::sync::Arc::downgrade),
         };
         if let Some(cached) = cache.iter_mut().find(|c| c.type_id == type_id) {

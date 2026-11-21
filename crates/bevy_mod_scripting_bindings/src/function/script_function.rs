@@ -488,11 +488,6 @@ impl equivalent::Equivalent<FunctionKey> for FunctionKeyRef<'_> {
     }
 }
 
-/// Changes whenever the functions of any [`ScriptFunctionRegistry`] change, for caches of functions kept outside of it,
-/// i.e. by languages.
-pub static FUNCTIONS_GENERATION: std::sync::atomic::AtomicU64 =
-    std::sync::atomic::AtomicU64::new(0);
-
 /// A key of [`ScriptFunctionRegistry::bound_to_type`] borrowing its name. Hashes the same as the key.
 #[derive(Hash)]
 struct BoundKeyRef<'a>(TypeId, &'a str);
@@ -679,7 +674,6 @@ impl ScriptFunctionRegistry {
     /// The functions, for changing them, which invalidates the bound functions.
     fn functions_mut(&mut self) -> &mut HashMap<FunctionKey, DynamicScriptFunction> {
         self.bound_to_type.get_mut().clear();
-        FUNCTIONS_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
         &mut self.functions
     }
 
@@ -702,21 +696,16 @@ impl ScriptFunctionRegistry {
                 Arc::make_mut(native).inline = inline;
             }
         }
-        Self::native_types_changed();
     }
 
-    /// Makes caches of native types look them up again, see [`crate::native::NativeReturnType`].
-    fn native_types_changed() {
-        crate::native::NATIVE_TYPES_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
-    }
-
-    /// Registers a function of the type `type_id` callable through a language's FFI, replacing one with the same name.
+    /// Registers a function of the type `type_id` callable through a language's FFI, replacing one with the same name and
+    /// parameters: a function has an FFI form for each way its parameters are passed (see [`crate::Union`]).
     ///
-    /// It's the FFI form of the function registered on the type with this name right now: registering another function
-    /// with the name, or removing it, drops the FFI form. Languages which made their types already keep it.
+    /// It's an FFI form of the function registered on the type with this name right now: registering another function
+    /// with the name, or removing it, drops its FFI forms.
     pub fn register_ffi_function(&mut self, type_id: TypeId, function: crate::native::FfiFunction) {
         let functions = self.ffi_functions.entry(type_id).or_default();
-        functions.retain(|f| f.name != function.name);
+        functions.retain(|f| f.name != function.name || f.params != function.params);
         functions.push(function);
     }
 
@@ -755,7 +744,6 @@ impl ScriptFunctionRegistry {
                 Some(function) => methods.insert(Cow::Owned(name.to_owned()), function.clone()),
                 None => methods.remove(name),
             };
-            Self::native_types_changed();
         }
     }
 
