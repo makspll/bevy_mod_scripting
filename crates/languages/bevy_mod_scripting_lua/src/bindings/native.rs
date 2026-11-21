@@ -422,6 +422,25 @@ impl LuaReturn {
     /// [`Self::prepare`] with mlua already at hand.
     unsafe fn prepare_with(self, l: *mut ffi::lua_State, lua: &Lua) -> Result<Ready, InteropError> {
         Ok(match self.pending {
+            // a tuple of plain values (i.e. the results of a query step), pushed without mlua when allocating can't raise
+            Pending::Value(ScriptValue::Tuple(values))
+                if values.0.iter().all(Plain::is_plain) && unlikely_memory_error(lua) =>
+            {
+                for gc in [false, true] {
+                    if values
+                        .0
+                        .iter()
+                        .any(|v| matches!(v, ScriptValue::Reference(r) if r.owns_heap() == gc))
+                    {
+                        // Safety: `l` is the state of the call, the metatable is popped
+                        unsafe {
+                            push_reference_metatable(l, gc)?;
+                            ffi::lua_pop(l, 1);
+                        }
+                    }
+                }
+                Ready::Plain(values.0.into_iter().map(Plain::from).collect())
+            }
             // a tuple is several values, anything else one, without a `MultiValue`
             Pending::Value(value @ ScriptValue::Tuple(_)) => Ready::Values(
                 LuaFunctionReturn(value)
@@ -506,6 +525,41 @@ unsafe impl ReturnSink for LuaReturn {
     }
 }
 
+/// A value pushed without mlua, see [`Ready::Plain`].
+enum Plain {
+    Nil,
+    Boolean(bool),
+    Integer(i64),
+    Number(f64),
+    Reference(ReflectReference),
+}
+
+impl Plain {
+    fn is_plain(value: &ScriptValue) -> bool {
+        matches!(
+            value,
+            ScriptValue::Unit
+                | ScriptValue::Bool(_)
+                | ScriptValue::Integer(_)
+                | ScriptValue::Float(_)
+                | ScriptValue::Reference(_)
+        )
+    }
+}
+
+impl From<ScriptValue> for Plain {
+    fn from(value: ScriptValue) -> Self {
+        match value {
+            ScriptValue::Bool(b) => Plain::Boolean(b),
+            ScriptValue::Integer(i) => Plain::Integer(i),
+            ScriptValue::Float(n) => Plain::Number(n),
+            ScriptValue::Reference(r) => Plain::Reference(r),
+            // only plain values, see `is_plain`
+            _ => Plain::Nil,
+        }
+    }
+}
+
 /// A result ready to be pushed, see [`push_ready`].
 enum Ready {
     Nothing,
@@ -517,6 +571,9 @@ enum Ready {
     Native(PendingNative),
     /// A reference, its metatable on the top, see [`LuaReturn::prepare`]
     Reference(ReflectReference),
+    /// Several values pushed without mlua, only made when allocating can't raise (see [`unlikely_memory_error`]): the
+    /// values not pushed yet are alive while the others are
+    Plain(Vec<Plain>),
     Value(mlua::Value),
     Values(MultiValue),
 }
@@ -578,6 +635,32 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
                 // the metatable `LuaReturn::prepare` left on the top
                 push_reference_with_metatable(l, reference);
                 Ok(1)
+            }
+            Ready::Plain(values) => {
+                let n = values.len() as c_int;
+                // a reference needs its metatable below it while it's made
+                if ffi::lua_checkstack(l, n + 1) == 0 {
+                    return Err("stack overflow");
+                }
+                for value in values {
+                    match value {
+                        Plain::Nil => ffi::lua_pushnil(l),
+                        Plain::Boolean(b) => ffi::lua_pushboolean(l, b as c_int),
+                        Plain::Integer(i) => ffi::lua_pushinteger(l, i as ffi::lua_Integer),
+                        Plain::Number(n) => ffi::lua_pushnumber(l, n),
+                        Plain::Reference(reference) => {
+                            let gc = if reference.owns_heap() {
+                                &REFERENCE_METATABLE_GC
+                            } else {
+                                &REFERENCE_METATABLE
+                            };
+                            // made when the result was prepared
+                            raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(gc));
+                            push_reference_with_metatable(l, reference);
+                        }
+                    }
+                }
+                Ok(n)
             }
             Ready::Value(value) => {
                 if ffi::lua_checkstack(l, 1) == 0 {
@@ -1515,46 +1598,41 @@ pub(crate) fn reference_into_lua(
     } else {
         &REFERENCE_METATABLE
     });
-    // the metatable is made once per state (in protected mode), looking it up is a raw get, which doesn't raise
-    // Safety: the get is popped right away
-    let made = lua.exec_raw_lua(|raw| unsafe {
-        let made = raw_get_p(raw.state(), ffi::LUA_REGISTRYINDEX, mt_key) == ffi::LUA_TTABLE;
-        ffi::lua_pop(raw.state(), 1);
-        made
-    });
-    if !made {
-        // Safety: protected mode, leaves the stack as it was
-        unsafe {
-            lua.exec_raw::<()>((), |l| match push_reference_metatable(l, gc) {
-                Ok(()) => ffi::lua_pop(l, 1),
-                Err(_) => raise_str(l, c"failed to make the metatable of references"),
-            })?;
+    let unlikely_memory_error = unlikely_memory_error(lua);
+    // the common case under one lock: the metatable exists (a raw get, which doesn't raise) and allocating can't raise
+    // (like mlua's own userdata, no protected call then)
+    // Safety: room is checked, the stack is left as it was
+    let reference = lua.exec_raw_lua(|raw| unsafe {
+        let l = raw.state();
+        if ffi::lua_checkstack(l, 2) == 0 {
+            return Err(Err(mlua::Error::StackError));
         }
-    }
-    if unlikely_memory_error(lua) {
-        // like mlua's own userdata: allocating can't raise, so no protected call
-        // Safety: room is checked, the value is taken off the stack right away
-        return lua.exec_raw_lua(|raw| unsafe {
-            let l = raw.state();
-            if ffi::lua_checkstack(l, 2) == 0 {
-                return Err(mlua::Error::StackError);
-            }
-            raw_get_p(l, ffi::LUA_REGISTRYINDEX, mt_key);
-            push_reference_with_metatable(l, reference);
-            let value = mlua::Value::from_stack(-1, raw);
+        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, mt_key) != ffi::LUA_TTABLE || !unlikely_memory_error
+        {
             ffi::lua_pop(l, 1);
-            value
-        });
-    }
+            return Ok(reference);
+        }
+        push_reference_with_metatable(l, reference);
+        let value = mlua::Value::from_stack(-1, raw);
+        ffi::lua_pop(l, 1);
+        Err(value)
+    });
+    let reference = match reference {
+        Ok(reference) => reference,
+        Err(value) => return value,
+    };
+    // the first reference of this state, or allocating can raise: protected mode
     let mut reference = Some(reference);
-    // allocating can raise, mlua's frames are on the stack: protected mode
-    // Safety: the reference is moved into the userdata (`take` leaves nothing to drop in this frame)
+    // Safety: the reference is moved into the userdata (`take` leaves nothing to drop in this frame), the stack is left
+    // with the value only
     unsafe {
         lua.exec_raw::<mlua::Value>((), |l| {
             if ffi::lua_checkstack(l, 2) == 0 {
                 raise_str(l, c"stack overflow");
             }
-            raw_get_p(l, ffi::LUA_REGISTRYINDEX, mt_key);
+            if push_reference_metatable(l, gc).is_err() {
+                raise_str(l, c"failed to make the metatable of references");
+            }
             if let Some(reference) = reference.take() {
                 push_reference_with_metatable(l, reference);
             }
