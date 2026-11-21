@@ -59,7 +59,11 @@ fn main() {
 
     let tests = discover_all_tests(manifest_dir, |p| p.script_asset_path.starts_with("tests"))
         .into_iter()
-        .map(|t| Trial::test(t.name(), move || t.execute()))
+        .map(|t| {
+            // iterating a reference needs `__pairs`, which plain LuaJIT (Lua 5.1) doesn't call
+            let ignored = cfg!(feature = "luajit") && t.script_asset_path.ends_with("iter/vec.lua");
+            Trial::test(t.name(), move || t.execute()).with_ignored_flag(ignored)
+        })
         .collect::<Vec<_>>();
 
     libtest_mimic::run(&args, tests).exit();

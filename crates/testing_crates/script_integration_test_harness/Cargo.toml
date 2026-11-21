@@ -5,12 +5,16 @@ edition = "2024"
 publish = false
 
 [features]
-default = ["lua"]
-lua = [
-    "bevy_mod_scripting_lua",
-    "bevy_mod_scripting_functions/lua_bindings",
-    "bevy_mod_scripting_lua/lua54",
-]
+default = []
+lua = ["bevy_mod_scripting_lua", "bevy_mod_scripting_functions/lua_bindings"]
+# the Lua variant, the root crate's variant features select the same one
+lua51 = ["lua", "bevy_mod_scripting_lua/lua51"]
+lua52 = ["lua", "bevy_mod_scripting_lua/lua52"]
+lua53 = ["lua", "bevy_mod_scripting_lua/lua53"]
+lua54 = ["lua", "bevy_mod_scripting_lua/lua54"]
+luajit = ["lua", "bevy_mod_scripting_lua/luajit"]
+luajit52 = ["lua", "bevy_mod_scripting_lua/luajit52"]
+luau = ["lua", "bevy_mod_scripting_lua/luau"]
 rune = [
     "bevy_mod_scripting_rune",
     "bevy_mod_scripting_functions/rune_bindings",
