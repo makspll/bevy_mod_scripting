@@ -48,6 +48,7 @@ local n = m:clone()
 assert(n.y_axis == Vec3.new(0, 2, 0) and not pcall(function(c) c.x = 1 end, n.y_axis), "a column is a read-only copy")
 n.y_axis = Vec3.new(0, 5, 0)
 assert(n:col(1) == Vec3.new(0, 5, 0) and m:col(1) == Vec3.new(0, 2, 0), "a column is written whole, to the clone only")
+---@diagnostic disable-next-line: assign-type-mismatch
 assert(not pcall(function() n.y_axis = 5 end) and n.y_axis == Vec3.new(0, 5, 0), "a column is written with a vector")
 assert(m + m == m * 2, "mat3 + mat3")
 assert(m - m == m * 0, "mat3 - mat3")
