@@ -718,8 +718,6 @@ impl From<ScriptValue> for Plain {
 /// A result ready to be pushed, see [`push_ready`].
 enum Ready {
     Nothing,
-    /// One result, already on the top of the stack
-    OnTop,
     Number(f64),
     Integer(i64),
     Boolean(bool),
@@ -747,7 +745,6 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
     unsafe {
         match ready {
             Ready::Nothing => Ok(0),
-            Ready::OnTop => Ok(1),
             Ready::Number(n) => {
                 ffi::lua_pushnumber(l, n);
                 Ok(1)
@@ -2265,6 +2262,15 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
     unsafe {
         ffi::lua_settop(l, 2);
         let generation = FUNCTIONS_GENERATION.load(Ordering::Acquire) as ffi::lua_Integer;
+        // functions of registrations (`Vec3.new`) are cached per registration: found before anything else is looked up
+        let registration = ffi::lua_type(l, 2) == ffi::LUA_TSTRING
+            && reference_at(l, 1).is_some_and(|receiver| {
+                receiver.reflect_path.is_empty()
+                    && dispatch::members_depend_on_value(receiver.base.type_id())
+            });
+        if registration && cached_registration_member(l, generation) {
+            return 1;
+        }
         let mut cache = false;
         let n = run(l, || {
             let world = ThreadWorldContainer::try_get_context()?.world;
@@ -2274,12 +2280,6 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
                 reference_at(l, 1).ok_or_else(|| InteropError::str("expected a reference"))?;
             with_raw(l, |lua, raw| {
                 let member = if ffi::lua_type(l, 2) == ffi::LUA_TSTRING {
-                    // functions of registrations (`Vec3.new`) are cached per registration
-                    let registration = receiver.reflect_path.is_empty()
-                        && dispatch::members_depend_on_value(receiver.base.type_id());
-                    if registration && cached_registration_member(l, generation) {
-                        return Ok(Ready::OnTop);
-                    }
                     cache = registration;
                     let mut len = 0;
                     let name = ffi::lua_tolstring(l, 2, &mut len);
