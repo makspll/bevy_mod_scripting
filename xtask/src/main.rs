@@ -1632,6 +1632,10 @@ impl Xtasks {
                     n => format!("{without_gha} {group} ({}/{n})", i + 1),
                 };
 
+                if plot_name.contains("build_time") {
+                    continue;
+                }
+
                 let window_months = 12;
                 let window_seconds = window_months * 30 * 24 * 60 * 60;
                 let mut bencher_cmd = Command::new("bencher");
