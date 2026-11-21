@@ -1670,6 +1670,19 @@ fn run_observer_callback(
     });
 }
 
+/// Whether the members of values of `type_id` depend on the value, see [`Lookups::member`]: registrations reach the
+/// static members of the type they register, enum variants the functions of their enum.
+pub fn members_depend_on_value(type_id: TypeId) -> bool {
+    [
+        TypeId::of::<ScriptTypeRegistration>(),
+        TypeId::of::<ScriptComponentRegistration>(),
+        TypeId::of::<ScriptResourceRegistration>(),
+        TypeId::of::<ScriptBundleRegistration>(),
+        TypeId::of::<EnumVariantRef>(),
+    ]
+    .contains(&type_id)
+}
+
 /// The type a type registration points to, if `type_id` (the type of the value behind `reference`) is one of the registration types.
 fn registered_type_id(
     guard: &WorldAccessGuard,

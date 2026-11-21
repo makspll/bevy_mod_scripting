@@ -488,7 +488,23 @@ impl equivalent::Equivalent<FunctionKey> for FunctionKeyRef<'_> {
     }
 }
 
-/// A key of [`ScriptFunctionRegistry::bound_to_type`] borrowing its name. Hashes the same as the key.
+/// Changes whenever the functions of any [`ScriptFunctionRegistry`] change, for caches of functions kept outside of it,
+/// i.e. by languages.
+pub static FUNCTIONS_GENERATION: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
+/// What a name means on values of a type whose members don't depend on the value, see
+/// [`ScriptFunctionRegistry::member_of_type`] and [`crate::dispatch::index_name`].
+#[derive(Clone, Default)]
+pub(crate) struct CachedMember {
+    /// The function found by [`crate::world_extensions::Lookups::member`]
+    pub(crate) function: Option<DynamicScriptFunction>,
+    /// The struct field: its name, and whether its value is returned as a reference
+    pub(crate) field: Option<(&'static str, bool)>,
+}
+
+/// A key of [`ScriptFunctionRegistry::bound_to_type`] and [`ScriptFunctionRegistry::members`] borrowing its name.
+/// Hashes the same as the key.
 #[derive(Hash)]
 struct BoundKeyRef<'a>(TypeId, &'a str);
 
@@ -509,9 +525,16 @@ pub struct ScriptFunctionRegistry {
     /// Cleared whenever the functions change.
     #[debug_with_type_info(skip)]
     bound_to_type: Mutex<HashMap<(TypeId, Cow<'static, str>), DynamicScriptFunction>>,
+    /// What names mean on values of a type, see [`ScriptFunctionRegistry::member_of_type`].
+    /// Cleared whenever the functions change.
+    #[debug_with_type_info(skip)]
+    members: Mutex<HashMap<(TypeId, Cow<'static, str>), CachedMember>>,
     /// The types languages store natively, see [`crate::native`]
     #[debug_with_type_info(skip)]
     native_types: HashMap<TypeId, Arc<crate::native::NativeType>>,
+    /// The functions of types callable through a language's FFI, see [`crate::native::FfiFunction`]
+    #[debug_with_type_info(skip)]
+    ffi_functions: HashMap<TypeId, Vec<crate::native::FfiFunction>>,
     /// A registry of magic functions
     pub magic_functions: MagicFunctions,
 }
@@ -668,9 +691,30 @@ impl ScriptFunctionRegistry {
         Ok(func)
     }
 
-    /// The functions, for changing them, which invalidates the bound functions.
+    /// What `name` means on values of `type_id`, made by `resolve` the first time until the functions change.
+    ///
+    /// `resolve` must not use this registry's caches.
+    pub(crate) fn member_of_type(
+        &self,
+        type_id: TypeId,
+        name: &str,
+        resolve: impl FnOnce() -> CachedMember,
+    ) -> CachedMember {
+        if let Some(member) = self.members.lock().get(&BoundKeyRef(type_id, name)) {
+            return member.clone();
+        }
+        let member = resolve();
+        self.members
+            .lock()
+            .insert((type_id, Cow::Owned(name.to_owned())), member.clone());
+        member
+    }
+
+    /// The functions, for changing them, which invalidates the bound functions and the cached members.
     fn functions_mut(&mut self) -> &mut HashMap<FunctionKey, DynamicScriptFunction> {
         self.bound_to_type.get_mut().clear();
+        self.members.get_mut().clear();
+        FUNCTIONS_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
         &mut self.functions
     }
 
@@ -701,9 +745,29 @@ impl ScriptFunctionRegistry {
         crate::native::NATIVE_TYPES_GENERATION.fetch_add(1, std::sync::atomic::Ordering::Release);
     }
 
+    /// Registers a function of the type `type_id` callable through a language's FFI, replacing one with the same name.
+    pub fn register_ffi_function(&mut self, type_id: TypeId, function: crate::native::FfiFunction) {
+        let functions = self.ffi_functions.entry(type_id).or_default();
+        functions.retain(|f| f.name != function.name);
+        functions.push(function);
+    }
+
+    /// The functions of the type `type_id` callable through a language's FFI.
+    pub fn ffi_functions(&self, type_id: TypeId) -> &[crate::native::FfiFunction] {
+        self.ffi_functions
+            .get(&type_id)
+            .map(Vec::as_slice)
+            .unwrap_or_default()
+    }
+
     /// The native type of `type_id`, if it is one, see [`crate::native`].
     pub fn native_type(&self, type_id: TypeId) -> Option<&Arc<crate::native::NativeType>> {
         self.native_types.get(&type_id)
+    }
+
+    /// Every native type, see [`crate::native`].
+    pub fn native_types(&self) -> impl Iterator<Item = &Arc<crate::native::NativeType>> {
+        self.native_types.values()
     }
 
     /// Keeps the methods of a native type in step with the functions registered on it.
@@ -816,9 +880,9 @@ macro_rules! impl_script_function {
                     let received_args_len = args.len();
                     let expected_arg_count = count!($($param )*);
                     $( let $context = caller_context.clone(); )?
-                    let world = caller_context.world()?;
-                    // the accesses and borrows made for the arguments are released once the call ends
-                    world.with_call_scope(|scope| {
+                    // the accesses and borrows made for the arguments are released once the call ends; the world is only
+                    // looked up when an argument or the result needs it
+                    bevy_mod_scripting_world::CallScope::with_lazy(|scope| {
                         let mut current_arg = 0usize;
                         $(let $param = {
                             let index = current_arg;
@@ -846,7 +910,7 @@ macro_rules! impl_script_function {
                             let $out = out?;
                             let out = $out;
                         )?
-                        out.into_ret(ret, world.clone(), &native_return)
+                        out.into_ret(ret, scope, &native_return)
                             .map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
                     })
                 })
@@ -990,8 +1054,19 @@ mod test {
         let fn_ = |a: usize, b: usize| a + b;
         let namespace = TypeId::of::<()>();
         registry.register(namespace, "test", fn_);
+        let cached_member = |registry: &ScriptFunctionRegistry| {
+            registry
+                .member_of_type(namespace, "test", || CachedMember {
+                    function: registry.get_function(namespace, "test").ok().cloned(),
+                    field: None,
+                })
+                .function
+        };
+        assert!(cached_member(&registry).is_some());
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_some());
+        // cached members go with the function
+        assert!(cached_member(&registry).is_none());
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_none());
     }

@@ -15,7 +15,7 @@ use bevy_mod_scripting_derive::script_bindings;
 macro_rules! int_vector_functions {
     ($ty:ty, $scalar:ty, $name:literal) => {
         #[script_bindings(
-            remote,
+            remote, ffi,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
             namespace = "math",
@@ -152,6 +152,7 @@ int_vector_functions!(UVec3, u32, "uvec3_shared_functions");
 
 #[script_bindings(
     remote,
+    ffi,
     name = "ivec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -191,6 +192,7 @@ impl IVec2 {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "ivec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -235,6 +237,7 @@ impl IVec3 {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "uvec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -264,6 +267,7 @@ impl UVec2 {
 
 #[script_bindings(
     remote,
+    ffi,
     name = "uvec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -307,19 +311,19 @@ pub(crate) fn register(world: &mut World) {
     register_ivec3_functions(world);
     register_uvec2_functions(world);
     register_uvec3_functions(world);
-    script_native!(world, IVec2 { x: i32, y: i32 });
+    script_native!(world, ffi IVec2 { x: i32, y: i32 });
     script_native!(
         world,
-        IVec3 {
+        ffi IVec3 {
             x: i32,
             y: i32,
             z: i32
         }
     );
-    script_native!(world, UVec2 { x: u32, y: u32 });
+    script_native!(world, ffi UVec2 { x: u32, y: u32 });
     script_native!(
         world,
-        UVec3 {
+        ffi UVec3 {
             x: u32,
             y: u32,
             z: u32

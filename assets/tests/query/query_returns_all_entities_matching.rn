@@ -29,4 +29,21 @@ pub fn main() {
             "Expected entity {} but got {}", expected_entities[i].index(), entity.index());
         i += 1;
     }
+
+    // the same results without a list: each call returns the entity then the components, unit once done
+    let next = world.query().component(component_with).without(component_without).iter();
+    let iterated = [];
+    loop {
+        let result = next.call();
+        if result == () {
+            break;
+        }
+        iterated.push(result.0);
+    }
+    assert!(iterated.len() == 3, "iter finds the entities build finds");
+    let i = 0;
+    for entity in iterated {
+        assert!(entity.index() == expected_entities[i].index(), "iter keeps the order of build");
+        i += 1;
+    }
 }
