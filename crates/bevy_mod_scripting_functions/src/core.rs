@@ -1607,7 +1607,7 @@ impl ScriptQueryBuilder {
     /// function returns the entity and the components of the next result, in the order they were added to the query
     /// (absent optional components are nil), and nothing once there are none.
     ///
-    /// In Lua: `for entity, a, b in world.query():component(A):component(B):iter() do ... end`.
+    /// In Lua: `for entity, a, b in world.query():component(A):component(B):iter() do ... end`, `pairs(query)` too.
     ///
     /// Arguments:
     /// * `ctxt`: The function call context.
@@ -1617,13 +1617,23 @@ impl ScriptQueryBuilder {
     fn iter(
         ctxt: FunctionCallContext,
         query: V<ScriptQueryBuilder>,
-    ) -> Result<DynamicScriptFunctionMut, InteropError> {
+    ) -> Result<
+        bevy_mod_scripting_bindings::function::FunctionOf<fn() -> Option<ScriptQueryResult>>,
+        InteropError,
+    > {
         profiling::function_scope!("iter");
-        use bevy_mod_scripting_bindings::IntoScript;
+        use bevy_mod_scripting_bindings::{
+            IntoScript, function::FunctionOf, function::script_function::ScriptFunction,
+        };
         let world = ctxt.world()?;
-        let mut results = world.query(query.into_inner())?.into_iter();
+        let results = std::sync::Mutex::new(world.query(query.into_inner())?.into_iter());
+        // returns a tuple rather than the result's list: several values in Lua
         let next = move |ctxt: FunctionCallContext| -> Result<ScriptValue, InteropError> {
-            let Some(result) = results.next() else {
+            let next = results
+                .lock()
+                .map_err(|_| InteropError::str("the query iterator was poisoned"))?
+                .next();
+            let Some(result) = next else {
                 return Ok(ScriptValue::Unit);
             };
             let mut values = VecDeque::with_capacity(result.components.len() + 1);
@@ -1636,7 +1646,7 @@ impl ScriptQueryBuilder {
             );
             Ok(ScriptValue::Tuple(VariadicTuple(values)))
         };
-        Ok(next.into_dynamic_script_function_mut())
+        Ok(FunctionOf::new(next.into_dynamic_script_function()))
     }
 }
 
