@@ -3,17 +3,16 @@ use std::any::TypeId;
 use bevy_mod_scripting_bindings::{
     ReflectReference, ScriptValue, WorldGuard, dispatch, error::InteropError,
 };
-use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
-use mlua::{IntoLua, MetaMethod, UserData, UserDataFields, UserDataMethods};
+use mlua::{FromLua, IntoLua, MetaMethod, UserData, UserDataMethods};
 
 use crate::IntoMluaError;
 
 use super::script_value::{LUA_CALLER_CONTEXT, LuaScriptValue, registered_function_into_lua};
 
-/// Lua UserData wrapper for [`ReflectReference`].
+/// A [`ReflectReference`] in Lua: a userdata with BMS' metatable of references, see `super::native::reference_at`.
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
-#[derive(Debug, Clone, PartialEq, mlua::FromLua)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct LuaReflectReference(pub ReflectReference);
 
 impl AsRef<ReflectReference> for LuaReflectReference {
@@ -34,6 +33,27 @@ impl From<ReflectReference> for LuaReflectReference {
     }
 }
 
+impl IntoLua for LuaReflectReference {
+    fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<mlua::Value> {
+        super::native::reference_into_lua(lua, self.0)
+    }
+}
+
+impl FromLua for LuaReflectReference {
+    fn from_lua(value: mlua::Value, lua: &mlua::Lua) -> mlua::Result<Self> {
+        match &value {
+            mlua::Value::UserData(ud) => super::native::reference_value(lua, ud),
+            _ => None,
+        }
+        .map(Self)
+        .ok_or_else(|| mlua::Error::FromLuaConversionError {
+            from: value.type_name(),
+            to: "LuaReflectReference".to_owned(),
+            message: None,
+        })
+    }
+}
+
 /// Runs a [`dispatch`] function with the world of the running script.
 fn with_world<O>(
     f: impl FnOnce(WorldGuard<'static>) -> Result<O, InteropError>,
@@ -42,82 +62,6 @@ fn with_world<O>(
         .map_err(IntoMluaError::to_lua_error)?
         .world;
     f(world).map_err(IntoMluaError::to_lua_error)
-}
-
-impl UserData for LuaReflectReference {
-    fn add_fields<F: UserDataFields<Self>>(f: &mut F) {
-        // Safety: the function follows the Lua C API, see `reference_index`
-        f.add_meta_field_with(MetaMethod::Index, |lua| unsafe {
-            lua.create_c_function(super::native::reference_index)
-        });
-        // operators call the operator's function with the operands as they are on the stack, see
-        // `super::native::reference_operator`. Lua calls them with the operands in their original order, so for `2 * v`
-        // the value is on the right; `#v` goes through `len` which types can override
-        for (metamethod, operator) in [
-            (MetaMethod::Add, ScriptOperatorNames::Addition),
-            (MetaMethod::Sub, ScriptOperatorNames::Subtraction),
-            (MetaMethod::Mul, ScriptOperatorNames::Multiplication),
-            (MetaMethod::Div, ScriptOperatorNames::Division),
-            (MetaMethod::Mod, ScriptOperatorNames::Remainder),
-            (MetaMethod::Pow, ScriptOperatorNames::Exponentiation),
-            (MetaMethod::Unm, ScriptOperatorNames::Negation),
-            (MetaMethod::Len, ScriptOperatorNames::Length),
-        ] {
-            let function = super::native::reference_operator_function(operator);
-            // Safety: the function follows the Lua C API, see `reference_operator`
-            f.add_meta_field_with(metamethod, move |lua| unsafe {
-                lua.create_c_function(function)
-            });
-        }
-        // comparisons are the functions native values share, which also compare references
-        for (metamethod, op) in [
-            (MetaMethod::Eq, super::native::EQ),
-            (MetaMethod::Lt, super::native::LT),
-            (MetaMethod::Le, super::native::LE),
-        ] {
-            // Safety: pushes the function, raising only in the protected mode `exec_raw` runs it in
-            f.add_meta_field_with(metamethod, move |lua| unsafe {
-                lua.exec_raw::<mlua::Function>((), |state| {
-                    super::native::push_comparison(state, op)
-                })
-            });
-        }
-    }
-
-    fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
-        m.add_meta_function(
-            MetaMethod::NewIndex,
-            |_, (self_, key, value): (LuaReflectReference, LuaScriptValue, LuaScriptValue)| {
-                profiling::function_scope!("MetaMethod::NewIndex");
-                with_world(|world| {
-                    dispatch::set_index(
-                        world,
-                        self_.0,
-                        key.into(),
-                        value.into(),
-                        LUA_CALLER_CONTEXT,
-                    )
-                })
-            },
-        );
-
-        #[cfg(any(
-            feature = "lua54",
-            feature = "lua53",
-            feature = "lua52",
-            feature = "luajit52",
-        ))]
-        m.add_meta_function(MetaMethod::Pairs, |_, self_: LuaReflectReference| {
-            profiling::function_scope!("MetaMethod::Pairs");
-            with_world(|world| dispatch::iter(world, self_.0, LUA_CALLER_CONTEXT))
-                .map(LuaScriptValue)
-        });
-
-        m.add_meta_function(MetaMethod::ToString, |_, self_: LuaReflectReference| {
-            profiling::function_scope!("MetaMethod::ToString");
-            with_world(|world| dispatch::display(world, self_.0, LUA_CALLER_CONTEXT))
-        });
-    }
 }
 
 /// A type itself, i.e. what [`bevy_mod_scripting_bindings::ScriptValue::Type`] is in Lua. Indexing it reaches the type's static members, i.e. `Entity.from_raw(..)`.

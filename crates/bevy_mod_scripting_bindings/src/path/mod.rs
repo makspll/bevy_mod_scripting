@@ -279,6 +279,11 @@ impl ReferencePath {
         self.path.is_empty()
     }
 
+    /// Whether the path holds memory dropping it frees
+    pub fn owns_heap(&self) -> bool {
+        self.path.capacity() != 0
+    }
+
     /// Pushes a new reference at the end of the current reflection path.
     pub fn push(&mut self, part: ReferencePart) {
         self.path.push(part)

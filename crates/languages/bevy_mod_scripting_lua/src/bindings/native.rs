@@ -45,7 +45,7 @@ use std::{
 };
 
 use bevy_mod_scripting_bindings::{
-    DynamicScriptFunction, InteropError, ScriptValue, WorldExtensions, dispatch,
+    DynamicScriptFunction, ReflectReference, InteropError, ScriptValue, WorldExtensions, dispatch,
     function::FUNCTIONS_GENERATION,
     native::{ArgSource, NativeStorage, NativeType, NativeVTable, ReturnSink},
 };
@@ -362,6 +362,7 @@ enum Pending {
     Integer(i64),
     Boolean(bool),
     Native(PendingNative),
+    Reference(ReflectReference),
     Value(ScriptValue),
 }
 
@@ -408,6 +409,12 @@ impl LuaReturn {
                     return Err(e);
                 }
                 Ready::Native(native)
+            }
+            Pending::Reference(reference) => {
+                // left on the stack for `push_ready`
+                // Safety: `l` is the state of the call
+                unsafe { push_reference_metatable(l, reference.owns_heap()) }?;
+                Ready::Reference(reference)
             }
         })
     }
@@ -490,7 +497,11 @@ unsafe impl ReturnSink for LuaReturn {
     }
 
     fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError> {
-        self.pending = Pending::Value(value);
+        self.pending = match value {
+            // pushed without mlua, see `push_reference_with_metatable`
+            ScriptValue::Reference(reference) => Pending::Reference(reference),
+            value => Pending::Value(value),
+        };
         Ok(())
     }
 }
@@ -504,6 +515,8 @@ enum Ready {
     Integer(i64),
     Boolean(bool),
     Native(PendingNative),
+    /// A reference, its metatable on the top, see [`LuaReturn::prepare`]
+    Reference(ReflectReference),
     Value(mlua::Value),
     Values(MultiValue),
 }
@@ -558,6 +571,14 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
                 ffi::lua_setmetatable(l, -2);
                 Ok(1)
             }
+            Ready::Reference(reference) => {
+                if ffi::lua_checkstack(l, 1) == 0 {
+                    return Err("stack overflow");
+                }
+                // the metatable `LuaReturn::prepare` left on the top
+                push_reference_with_metatable(l, reference);
+                Ok(1)
+            }
             Ready::Value(value) => {
                 if ffi::lua_checkstack(l, 1) == 0 {
                     return Err("stack overflow");
@@ -598,6 +619,7 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
 enum Dtor {
     Native,
     Holder,
+    Reference,
 }
 
 /// Pushes a new userdata of `size` bytes and returns its block. `[-0, +1, m]`.
@@ -610,6 +632,9 @@ unsafe fn new_userdata(l: *mut ffi::lua_State, size: usize, dtor: Option<Dtor>) 
             }
             Some(Dtor::Holder) => {
                 return ffi::lua_newuserdatadtor(l, size, luau_holder_dtor) as *mut u8;
+            }
+            Some(Dtor::Reference) => {
+                return ffi::lua_newuserdatadtor(l, size, luau_reference_dtor) as *mut u8;
             }
             None => {}
         }
@@ -1309,6 +1334,313 @@ pub(crate) fn reference_operator_function(operator: ScriptOperatorNames) -> ffi:
     )
 }
 
+// References: `ReflectReference`s in raw userdata with BMS metatables (no mlua userdata: no box, no metatable lookup by
+// type), told apart like native values by a marker in their metatable. References owning nothing to free (whole
+// components and resources) get a metatable without a finalizer, which makes collecting them cheaper.
+
+/// Its address keys the marker in the metatables of references, see [`reference_at`].
+static REFERENCE_MARKER: u8 = 0;
+/// Its address keys the metatable of references which own nothing to free in the registry.
+static REFERENCE_METATABLE: u8 = 0;
+/// Its address keys the metatable of references with a finalizer in the registry.
+static REFERENCE_METATABLE_GC: u8 = 0;
+
+/// The bytes of the userdata of a reference: the reference, aligned by arithmetic like native values.
+const REFERENCE_SIZE: usize = size_of::<ReflectReference>() + ALIGN - 1;
+const _: () = assert!(align_of::<ReflectReference>() <= ALIGN);
+
+/// The reference at `idx`, if it's one: a userdata whose metatable holds the reference marker. Valid while the value is
+/// on the stack. `[-0, +0, -]`, but needs 2 free slots.
+pub(crate) unsafe fn reference_at<'a>(
+    l: *mut ffi::lua_State,
+    idx: c_int,
+) -> Option<&'a ReflectReference> {
+    unsafe {
+        if ffi::lua_type(l, idx) != ffi::LUA_TUSERDATA {
+            return None;
+        }
+        let block = ffi::lua_touserdata(l, idx) as *mut u8;
+        // [.., r, .., mt], nothing pushed without a metatable (i.e. once collected)
+        if block.is_null() || ffi::lua_getmetatable(l, idx) == 0 {
+            return None;
+        }
+        let reference = raw_get_p(l, -1, key(&REFERENCE_MARKER)) != ffi::LUA_TNIL;
+        ffi::lua_pop(l, 2);
+        // Safety: only BMS' reference metatables hold the marker, set on userdata initialised with a reference
+        reference.then(|| &*(align_up(block) as *const ReflectReference))
+    }
+}
+
+pub(crate) fn reference_value(lua: &Lua, value: &mlua::AnyUserData) -> Option<ReflectReference> {
+    // pushing an existing value and the lookup don't raise: no protected call
+    // Safety: room is checked, the value is popped right after the reference is cloned
+    lua.exec_raw_lua(|raw| unsafe {
+        let l = raw.state();
+        if ffi::lua_checkstack(l, 3) == 0 || value.push_into_stack(raw).is_err() {
+            return None;
+        }
+        let reference = reference_at(l, -1).cloned();
+        ffi::lua_pop(l, 1);
+        reference
+    })
+}
+
+/// Pushes the metatable of references (with a finalizer if `gc`), made in protected mode if this Lua state has none
+/// yet. `[-0, +1, -]` on success, `[-0, +0, -]` on error.
+unsafe fn push_reference_metatable(l: *mut ffi::lua_State, gc: bool) -> Result<(), InteropError> {
+    let mt_key = key(if gc {
+        &REFERENCE_METATABLE_GC
+    } else {
+        &REFERENCE_METATABLE
+    });
+    unsafe {
+        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, mt_key) != ffi::LUA_TNIL {
+            return Ok(());
+        }
+        ffi::lua_pop(l, 1);
+        with_raw(l, |lua, _| {
+            lua.exec_raw::<()>((), |state| build_reference_metatable(state, mt_key, gc))
+        })
+        .map_err(IntoInteropError::to_bms_error)?;
+        raw_get_p(l, ffi::LUA_REGISTRYINDEX, mt_key);
+    }
+    Ok(())
+}
+
+/// Makes a metatable of references and keeps it in the registry. `[-0, +0, m]`: protected mode only.
+unsafe fn build_reference_metatable(l: *mut ffi::lua_State, mt_key: *mut c_void, gc: bool) {
+    unsafe {
+        // [.., mt]
+        ffi::lua_createtable(l, 0, 24);
+        #[cfg(feature = "luau")]
+        let _ = gc;
+        #[cfg(not(feature = "luau"))]
+        if gc {
+            ffi::lua_pushcfunction(l, reference_gc);
+            ffi::lua_setfield(l, -2, c"__gc".as_ptr());
+        }
+        // scripts can't get or change it
+        ffi::lua_pushboolean(l, 0);
+        ffi::lua_setfield(l, -2, c"__metatable".as_ptr());
+        let functions: [(&std::ffi::CStr, ffi::lua_CFunction); 3] = [
+            (c"__index", reference_index),
+            (c"__newindex", reference_newindex),
+            (c"__tostring", reference_tostring),
+        ];
+        for (name, function) in functions {
+            ffi::lua_pushcfunction(l, function);
+            ffi::lua_setfield(l, -2, name.as_ptr());
+        }
+        #[cfg(any(
+            feature = "lua54",
+            feature = "lua53",
+            feature = "lua52",
+            feature = "luajit52",
+        ))]
+        {
+            ffi::lua_pushcfunction(l, reference_pairs);
+            ffi::lua_setfield(l, -2, c"__pairs".as_ptr());
+        }
+        // operators call the operator's function with the operands as they are on the stack, see `reference_operator`
+        for (name, operator) in [
+            (c"__add", ScriptOperatorNames::Addition),
+            (c"__sub", ScriptOperatorNames::Subtraction),
+            (c"__mul", ScriptOperatorNames::Multiplication),
+            (c"__div", ScriptOperatorNames::Division),
+            (c"__mod", ScriptOperatorNames::Remainder),
+            (c"__pow", ScriptOperatorNames::Exponentiation),
+            (c"__unm", ScriptOperatorNames::Negation),
+            (c"__len", ScriptOperatorNames::Length),
+        ] {
+            ffi::lua_pushcfunction(l, reference_operator_function(operator));
+            ffi::lua_setfield(l, -2, name.as_ptr());
+        }
+        // comparisons are the functions native values share, which also compare references
+        for (name, op) in [(c"__eq", EQ), (c"__lt", LT), (c"__le", LE)] {
+            push_comparison(l, op);
+            ffi::lua_setfield(l, -2, name.as_ptr());
+        }
+        ffi::lua_pushstring(l, c"ReflectReference".as_ptr());
+        ffi::lua_setfield(l, -2, c"__name".as_ptr());
+        // tells references apart, see `reference_at`
+        ffi::lua_pushboolean(l, 1);
+        raw_set_p(l, -2, key(&REFERENCE_MARKER));
+        // pops mt into the registry: [..]
+        raw_set_p(l, ffi::LUA_REGISTRYINDEX, mt_key);
+    }
+}
+
+/// Pushes `reference` as a new userdata, its metatable being on the top (see [`push_reference_metatable`]), which it
+/// takes: `[.., mt] -> [.., r]`, `[-1, +1, m]`. Only the reference is alive in this frame and it isn't dropped by it: if
+/// allocating raises, it's leaked, nothing is skipped.
+unsafe fn push_reference_with_metatable(l: *mut ffi::lua_State, reference: ReflectReference) {
+    let gc = reference.owns_heap();
+    let reference = ManuallyDrop::new(reference);
+    unsafe {
+        let block = new_userdata(l, REFERENCE_SIZE, gc.then_some(Dtor::Reference));
+        (align_up(block) as *mut ReflectReference).write(ManuallyDrop::into_inner(reference));
+        // [.., mt, r] -> [.., r, mt] -> setmetatable pops mt -> [.., r]
+        ffi::lua_insert(l, -2);
+        ffi::lua_setmetatable(l, -2);
+    }
+}
+
+/// Whether allocating can't raise in this state, as mlua decides for its own userdata: mlua's allocator aborts on out of
+/// memory instead of failing, unless a memory limit is set. LuaJIT allocates by itself, so it always can.
+fn unlikely_memory_error(lua: &Lua) -> bool {
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    {
+        let _ = lua;
+        false
+    }
+    #[cfg(not(any(feature = "luajit", feature = "luajit52")))]
+    // mlua has no getter for the limit: setting one returns the previous one, which is put back
+    match lua.set_memory_limit(0) {
+        Ok(0) => true,
+        Ok(limit) => {
+            let _ = lua.set_memory_limit(limit);
+            false
+        }
+        Err(_) => false,
+    }
+}
+
+pub(crate) fn reference_into_lua(lua: &Lua, reference: ReflectReference) -> mlua::Result<mlua::Value> {
+    let gc = reference.owns_heap();
+    let mt_key = key(if gc {
+        &REFERENCE_METATABLE_GC
+    } else {
+        &REFERENCE_METATABLE
+    });
+    // the metatable is made once per state (in protected mode), looking it up is a raw get, which doesn't raise
+    // Safety: the get is popped right away
+    let made = lua.exec_raw_lua(|raw| unsafe {
+        let made = raw_get_p(raw.state(), ffi::LUA_REGISTRYINDEX, mt_key) == ffi::LUA_TTABLE;
+        ffi::lua_pop(raw.state(), 1);
+        made
+    });
+    if !made {
+        // Safety: protected mode, leaves the stack as it was
+        unsafe {
+            lua.exec_raw::<()>((), |l| match push_reference_metatable(l, gc) {
+                Ok(()) => ffi::lua_pop(l, 1),
+                Err(_) => raise_str(l, c"failed to make the metatable of references"),
+            })?;
+        }
+    }
+    if unlikely_memory_error(lua) {
+        // like mlua's own userdata: allocating can't raise, so no protected call
+        // Safety: room is checked, the value is taken off the stack right away
+        return lua.exec_raw_lua(|raw| unsafe {
+            let l = raw.state();
+            if ffi::lua_checkstack(l, 2) == 0 {
+                return Err(mlua::Error::StackError);
+            }
+            raw_get_p(l, ffi::LUA_REGISTRYINDEX, mt_key);
+            push_reference_with_metatable(l, reference);
+            let value = mlua::Value::from_stack(-1, raw);
+            ffi::lua_pop(l, 1);
+            value
+        });
+    }
+    let mut reference = Some(reference);
+    // allocating can raise, mlua's frames are on the stack: protected mode
+    // Safety: the reference is moved into the userdata (`take` leaves nothing to drop in this frame)
+    unsafe {
+        lua.exec_raw::<mlua::Value>((), |l| {
+            if ffi::lua_checkstack(l, 2) == 0 {
+                raise_str(l, c"stack overflow");
+            }
+            raw_get_p(l, ffi::LUA_REGISTRYINDEX, mt_key);
+            if let Some(reference) = reference.take() {
+                push_reference_with_metatable(l, reference);
+            }
+        })
+    }
+}
+
+/// `__gc` of references which own memory: drops the reference and takes the metatable, so it's no reference anymore.
+///
+/// Called with the collected value as the only argument: `[r]`.
+#[cfg(not(feature = "luau"))]
+unsafe extern "C-unwind" fn reference_gc(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        if let Some(reference) = reference_at(l, 1) {
+            let reference = reference as *const ReflectReference as *mut ReflectReference;
+            // a panicking drop must not unwind through the collector
+            let _ = catch_unwind(AssertUnwindSafe(|| std::ptr::drop_in_place(reference)));
+            ffi::lua_pushnil(l);
+            ffi::lua_setmetatable(l, 1);
+        }
+    }
+    0
+}
+
+#[cfg(feature = "luau")]
+unsafe extern "C" fn luau_reference_dtor(_l: *mut ffi::lua_State, block: *mut c_void) {
+    // Safety: only for references, initialised right after they're made
+    let _ = catch_unwind(AssertUnwindSafe(|| unsafe {
+        std::ptr::drop_in_place(align_up(block as *mut u8) as *mut ReflectReference)
+    }));
+}
+
+/// The reference at 1 of a metamethod, or an error.
+unsafe fn receiver(l: *mut ffi::lua_State) -> Result<ReflectReference, InteropError> {
+    unsafe { reference_at(l, 1) }
+        .cloned()
+        .ok_or_else(|| InteropError::str("expected a reference"))
+}
+
+/// `__newindex` of references, `r.key = value`, see [`dispatch::set_index`]. Called with `[r (1), key (2), value (3)]`.
+unsafe extern "C-unwind" fn reference_newindex(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 3);
+        run(l, || {
+            let world = ThreadWorldContainer::try_get_context()?.world;
+            let receiver = receiver(l)?;
+            let (key, value) = with_raw(l, |_, raw| {
+                Ok::<_, InteropError>((value_at(raw, l, 2)?, value_at(raw, l, 3)?))
+            })?;
+            dispatch::set_index(world, receiver, key, value, LUA_CALLER_CONTEXT)?;
+            Ok(Ready::Nothing)
+        })
+    }
+}
+
+/// `__tostring` of references, see [`dispatch::display`]. Called with `[r (1)]`.
+unsafe extern "C-unwind" fn reference_tostring(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 1);
+        run(l, || {
+            let world = ThreadWorldContainer::try_get_context()?.world;
+            let text = dispatch::display(world, receiver(l)?, LUA_CALLER_CONTEXT)?;
+            with_raw(l, |lua, _| text.into_lua(lua))
+                .map(Ready::Value)
+                .map_err(IntoInteropError::to_bms_error)
+        })
+    }
+}
+
+/// `__pairs` of references, see [`dispatch::iter`]. Called with `[r (1)]`.
+#[cfg(any(
+    feature = "lua54",
+    feature = "lua53",
+    feature = "lua52",
+    feature = "luajit52",
+))]
+unsafe extern "C-unwind" fn reference_pairs(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 1);
+        run(l, || {
+            let world = ThreadWorldContainer::try_get_context()?.world;
+            let iter = dispatch::iter(world, receiver(l)?, LUA_CALLER_CONTEXT)?;
+            with_raw(l, |lua, _| LuaScriptValue(iter).into_lua(lua))
+                .map(Ready::Value)
+                .map_err(IntoInteropError::to_bms_error)
+        })
+    }
+}
+
 /// Its address keys the cache of the functions of registrations in the registry, see [`cached_registration_member`].
 static REGISTRATION_MEMBERS: u8 = 0;
 /// Its address keys the generation of the functions the cache was made with, in the cache.
@@ -1404,14 +1736,13 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
         let n = run(l, || {
             let world = ThreadWorldContainer::try_get_context()?.world;
             // one mlua call for the lookup and the result
+            // on the stack for the call
+            let receiver = reference_at(l, 1).ok_or_else(|| InteropError::str("expected a reference"))?;
             with_raw(l, |lua, raw| {
-                let receiver =
-                    at_index::<mlua::UserDataRef<super::reference::LuaReflectReference>>(raw, l, 1)
-                        .map_err(IntoInteropError::to_bms_error)?;
                 let member = if ffi::lua_type(l, 2) == ffi::LUA_TSTRING {
                     // functions of registrations (`Vec3.new`) are cached per registration
-                    let registration = receiver.0.reflect_path.is_empty()
-                        && dispatch::members_depend_on_value(receiver.0.base.type_id());
+                    let registration = receiver.reflect_path.is_empty()
+                        && dispatch::members_depend_on_value(receiver.base.type_id());
                     if registration && cached_registration_member(l, generation) {
                         return Ok(Ready::OnTop);
                     }
@@ -1421,18 +1752,12 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
                     // the string is kept alive by the stack for the call
                     let name = std::str::from_utf8(std::slice::from_raw_parts(name.cast(), len))
                         .map_err(|_| InteropError::str("member names must be valid UTF-8"))?;
-                    dispatch::index_name(
-                        world,
-                        Cow::Borrowed(&receiver.0),
-                        name,
-                        LUA_CALLER_CONTEXT,
-                    )?
+                    dispatch::index_name(world, Cow::Borrowed(receiver), name, LUA_CALLER_CONTEXT)?
                 } else {
                     let key = at_index::<LuaScriptValue>(raw, l, 2)
                         .map_err(IntoInteropError::to_bms_error)?;
-                    dispatch::index(world, receiver.0.clone(), key.into(), LUA_CALLER_CONTEXT)?
+                    dispatch::index(world, receiver.clone(), key.into(), LUA_CALLER_CONTEXT)?
                 };
-                drop(receiver);
                 let value = match member {
                     // functions of types and registrations live in the registry, their Lua functions are made once
                     dispatch::Member::Method(function) => {
@@ -1447,6 +1772,11 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
                             ScriptValue::Float(n) => return Ok(Ready::Number(n)),
                             ScriptValue::Integer(i) => return Ok(Ready::Integer(i)),
                             ScriptValue::Bool(b) => return Ok(Ready::Boolean(b)),
+                            ScriptValue::Reference(reference) => {
+                                // left on the stack for `push_ready`
+                                push_reference_metatable(l, reference.owns_heap())?;
+                                return Ok(Ready::Reference(reference));
+                            }
                             // one value, tuples too
                             value => LuaScriptValue(value).into_lua(lua),
                         }
@@ -1484,24 +1814,15 @@ unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>
         run(l, || {
             let operator = operator_from_index(OPERATOR)?;
             let world = ThreadWorldContainer::try_get_context()?.world;
-            let (function, on_left) = with_raw(l, |_, raw| {
-                let reference = |idx| {
-                    at_index::<mlua::UserDataRef<super::reference::LuaReflectReference>>(
-                        raw, l, idx,
-                    )
-                    .ok()
-                };
+            let (function, on_left) = {
+                // on the stack for the call
+                let reference = |idx| reference_at(l, idx);
                 if unary {
                     let receiver =
                         reference(1).ok_or_else(|| InteropError::str("expected a reference"))?;
-                    return dispatch::unary_function(
-                        world,
-                        operator,
-                        &receiver.0,
-                        LUA_CALLER_CONTEXT,
-                    )
-                    .map(|function| (function, true));
-                }
+                    dispatch::unary_function(world, operator, receiver, LUA_CALLER_CONTEXT)
+                        .map(|function| (function, true))
+                } else {
                 let (receiver, on_left) = match reference(1) {
                     Some(receiver) => (receiver, true),
                     None => match reference(2) {
@@ -1513,9 +1834,10 @@ unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>
                         }
                     },
                 };
-                dispatch::binary_function(world, operator, &receiver.0, on_left, LUA_CALLER_CONTEXT)
+                dispatch::binary_function(world, operator, receiver, on_left, LUA_CALLER_CONTEXT)
                     .map(|function| (function, on_left))
-            })?;
+                }
+            }?;
             if !on_left {
                 // the reference is the receiver, the first argument: [a, b] -> [b, a]
                 ffi::lua_insert(l, 1);
