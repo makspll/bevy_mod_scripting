@@ -842,15 +842,11 @@ impl FfiLayout {
 /// A parameter or the result of an [`FfiFunction`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FfiType {
-    /// Nothing (only results)
-    Unit,
     /// A scalar passed by value, its C type, i.e. `float`
     Scalar(&'static str),
     /// A pointer to a value of a native type with an [`FfiLayout`], read only (`R<T>`, `V<T>`), or for results, where the
     /// value is written (an out-pointer after the parameters)
     Value(TypeId),
-    /// A pointer to a value written by the function (`M<T>`)
-    Mut(TypeId),
 }
 
 /// A function of a native type callable through a language's FFI (i.e. LuaJIT's) with C types: an `extern "C"` wrapper of a

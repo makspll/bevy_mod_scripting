@@ -411,32 +411,10 @@ fn function_source(
                 c_params.push(format!("const {c_name}*"));
                 guards.push(format!("istype({lua_ctype}, {param})"));
             }
-            FfiType::Mut(type_id) => {
-                let (lua_ctype, c_name) = ctype(*type_id)?;
-                c_params.push(format!("{c_name}*"));
-                guards.push(format!("istype({lua_ctype}, {param})"));
-            }
-            FfiType::Unit => return None,
-        }
-    }
-    // a value written through a pointer must not be read through another (`v:op_assign(v)`): through BMS then, which
-    // checks borrows
-    for (i, kind) in function.params.iter().enumerate() {
-        if matches!(kind, FfiType::Mut(_)) {
-            for (j, other) in function.params.iter().enumerate() {
-                if i != j && !matches!(other, FfiType::Scalar(_)) {
-                    guards.push(format!("not rawequal({}, {})", params[i], params[j]));
-                }
-            }
         }
     }
     let args = params.join(", ");
     let (c_result, call) = match function.result {
-        FfiType::Unit => ("void".to_owned(), format!("f{pointer}({args}) return")),
-        // 64 bit integers are cdata in LuaJIT, BMS gives numbers
-        FfiType::Scalar(c @ ("int64_t" | "uint64_t" | "size_t")) => {
-            (c.to_owned(), format!("return tonumber(f{pointer}({args}))"))
-        }
         FfiType::Scalar(c) => (c.to_owned(), format!("return f{pointer}({args})")),
         FfiType::Value(type_id) => {
             let (lua_ctype, c_name) = ctype(type_id)?;
@@ -450,7 +428,6 @@ fn function_source(
                 format!("local r = {lua_ctype}() f{pointer}({out_args}) return r"),
             )
         }
-        FfiType::Mut(_) => return None,
     };
     let guard = match guards.is_empty() {
         true => "true".to_owned(),

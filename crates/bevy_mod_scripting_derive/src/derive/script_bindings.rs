@@ -269,13 +269,11 @@ enum FfiKind {
     Scalar(&'static str),
     /// A pointer to the value, `R<T>`
     Ref(syn::Type),
-    /// A pointer to the value, `M<T>`
-    Mut(syn::Type),
     /// A pointer to the value, `V<T>`, copied (results: an out-pointer)
     Value(syn::Type),
 }
 
-/// The FFI kind of a type as written: scalars, and `R`, `M` and `V` of any type (types without an FFI layout get wrappers
+/// The FFI kind of a type as written: 32 bit scalars and floats (numbers in every language), and `R` and `V` of any type (types without an FFI layout get wrappers
 /// languages never call, see `FfiFunction`). `None` for anything else.
 fn ffi_kind(ty: &syn::Type) -> Option<FfiKind> {
     let syn::Type::Path(path) = ty else {
@@ -287,10 +285,7 @@ fn ffi_kind(ty: &syn::Type) -> Option<FfiKind> {
         "f64" => Some("double"),
         "i32" => Some("int32_t"),
         "u32" => Some("uint32_t"),
-        "i64" => Some("int64_t"),
-        "u64" => Some("uint64_t"),
         "bool" => Some("bool"),
-        "usize" => Some("size_t"),
         _ => None,
     };
     if let Some(scalar) = scalar {
@@ -308,7 +303,6 @@ fn ffi_kind(ty: &syn::Type) -> Option<FfiKind> {
     })?;
     match segment.ident.to_string().as_str() {
         "R" => Some(FfiKind::Ref(inner)),
-        "M" => Some(FfiKind::Mut(inner)),
         "V" => Some(FfiKind::Value(inner)),
         _ => None,
     }
@@ -350,11 +344,6 @@ fn ffi_wrapper(fun: &syn::ImplItemFn, self_ty: &syn::Type, bms: &syn::Path) -> O
                 quote_spanned! {span=> #bms::R::from(unsafe { &*#name }) },
                 quote_spanned! {span=> #bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>()) },
             ),
-            FfiKind::Mut(inner) => (
-                quote_spanned! {span=> #name: *mut #inner },
-                quote_spanned! {span=> #bms::M::from(unsafe { &mut *#name }) },
-                quote_spanned! {span=> #bms::native::FfiType::Mut(::std::any::TypeId::of::<#inner>()) },
-            ),
             FfiKind::Value(inner) => (
                 quote_spanned! {span=> #name: *const #inner },
                 quote_spanned! {span=> #bms::V(unsafe { *#name }) },
@@ -365,35 +354,27 @@ fn ffi_wrapper(fun: &syn::ImplItemFn, self_ty: &syn::Type, bms: &syn::Path) -> O
         conversions.push(conversion);
         kinds.push(kind);
     }
-    let (out_param, ret_type, finish, result) = match &fun.sig.output {
-        syn::ReturnType::Default => (
+    // a result is a scalar, or a value written to an out-pointer
+    let syn::ReturnType::Type(_, out_type) = &fun.sig.output else {
+        return None;
+    };
+    let (out_param, ret_type, finish, result) = match ffi_kind(out_type)? {
+        FfiKind::Scalar(c) => (
             None,
-            quote_spanned! {span=> () },
+            quote_spanned! {span=> #out_type },
             quote_spanned! {span=> output },
-            quote_spanned! {span=> #bms::native::FfiType::Unit },
+            quote_spanned! {span=> #bms::native::FfiType::Scalar(#c) },
         ),
-        syn::ReturnType::Type(_, ty) => match ffi_kind(ty)? {
-            FfiKind::Scalar(c) => (
-                None,
-                quote_spanned! {span=> #ty },
-                quote_spanned! {span=> output },
-                quote_spanned! {span=> #bms::native::FfiType::Scalar(#c) },
-            ),
-            FfiKind::Value(inner) => (
-                Some(quote_spanned! {span=> out: *mut #inner }),
-                quote_spanned! {span=> () },
-                quote_spanned! {span=> unsafe { out.write(output.into_inner()) } },
-                quote_spanned! {span=> #bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>()) },
-            ),
-            FfiKind::Ref(_) | FfiKind::Mut(_) => return None,
-        },
+        FfiKind::Value(inner) => (
+            Some(quote_spanned! {span=> out: *mut #inner }),
+            quote_spanned! {span=> () },
+            quote_spanned! {span=> unsafe { out.write(output.into_inner()) } },
+            quote_spanned! {span=> #bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>()) },
+        ),
+        FfiKind::Ref(_) => return None,
     };
     let args = &fun.sig.inputs;
     let body = &fun.block;
-    let out_type = match &fun.sig.output {
-        syn::ReturnType::Default => quote_spanned! {span=> () },
-        syn::ReturnType::Type(_, ty) => quote_spanned! {span=> #ty },
-    };
     let fun_name = syn::LitStr::new(&fun.sig.ident.to_string(), Span::call_site());
     let params = params.into_iter().chain(out_param);
     Some(quote_spanned! {span=>
