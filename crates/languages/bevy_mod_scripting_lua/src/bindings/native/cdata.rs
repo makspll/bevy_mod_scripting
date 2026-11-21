@@ -11,6 +11,7 @@
 //! - Types are told apart by LuaJIT's ctype id, which scripts can't change, see [`cdata_at`].
 
 use std::{
+    any::TypeId,
     ffi::c_void,
     fmt::Write as _,
     os::raw::c_int,
@@ -19,7 +20,7 @@ use std::{
 
 use bevy_mod_scripting_bindings::{
     InteropError, ScriptValue, WorldExtensions, dispatch,
-    native::{FfiFunction, FfiType, NativeType, NativeVTable},
+    native::{FfiFunction, FfiLayout, FfiType, NativeType, NativeVTable},
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
@@ -206,10 +207,20 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
     let (types, functions) = {
         let registry = world.script_function_registry();
         let registry = registry.read();
-        let types = registry
+        let with_layout = registry
             .native_types()
             .filter(|n| n.ffi.is_some())
-            .cloned()
+            .collect::<Vec<_>>();
+        // and whose fields of native types (if any) have layouts of scalars
+        let layout_of = layout_lookup(&with_layout);
+        let types = with_layout
+            .iter()
+            .filter(|n| {
+                n.ffi
+                    .as_ref()
+                    .is_some_and(|l| l.c_declaration(&layout_of).is_some())
+            })
+            .map(|n| (*n).clone())
             .collect::<Vec<_>>();
         let functions = types
             .iter()
@@ -342,6 +353,65 @@ fn layout_name(native: &NativeType) -> &str {
         .unwrap_or_default()
 }
 
+/// The layouts of `types` by type id, for [`FfiLayout::c_fields`].
+fn layout_lookup<'a, N: AsRef<NativeType>>(
+    types: &'a [N],
+) -> impl Fn(TypeId) -> Option<&'a FfiLayout> {
+    move |type_id| {
+        types
+            .iter()
+            .map(AsRef::as_ref)
+            .find(|n| n.vtable.type_id == type_id)
+            .and_then(|n| n.ffi.as_ref())
+    }
+}
+
+/// The Lua source of the accessors of the fields of native types of `layout` (i.e. a matrix' columns), which are
+/// flattened in the C struct (see [`FfiLayout::c_fields`]): `getters.x_axis` reads a `const` copy, `setters.x_axis` writes
+/// a whole value of the field's type. Empty for types without such fields.
+///
+/// ```lua
+/// do local K, N = ffi.typeof("const bms_Vec3"), C2
+/// getters.x_axis = function(v) return K(v._x_axis_x, v._x_axis_y, v._x_axis_z) end
+/// setters.x_axis = function(v, x) if not istype(N, x) then error("expected a glam::Vec3", 2) end
+/// v._x_axis_x, v._x_axis_y, v._x_axis_z = x.x, x.y, x.z end end
+/// ```
+fn nested_fields_source<'a>(
+    layout: &'a FfiLayout,
+    layout_of: &dyn Fn(TypeId) -> Option<&'a FfiLayout>,
+    ctype: &impl Fn(TypeId) -> Option<(String, String)>,
+    type_name: &impl Fn(TypeId) -> &'a str,
+) -> String {
+    let mut out = String::new();
+    for field in &layout.fields {
+        let FfiType::Value(type_id) = field.ty else {
+            continue;
+        };
+        let (Some(inner), Some((lua_ctype, c_name))) = (layout_of(type_id), ctype(type_id)) else {
+            continue;
+        };
+        let name = field.name;
+        let flat = inner
+            .fields
+            .iter()
+            .map(|f| format!("v._{name}_{}", f.name))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let from = inner
+            .fields
+            .iter()
+            .map(|f| format!("x.{}", f.name))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let _ = writeln!(
+            out,
+            "do local K, N = ffi.typeof(\"const {c_name}\"), {lua_ctype}\ngetters.{name} = function(v) return K({flat}) end\nsetters.{name} = function(v, x) if not istype(N, x) then error(\"expected a {}\", 2) end {flat} = {from} end end",
+            type_name(type_id)
+        );
+    }
+    out
+}
+
 /// The Lua source making the FFI forms of `types`, and the pointers of their FFI functions it's given (as `ptrs[i]`).
 ///
 /// ```lua
@@ -369,16 +439,29 @@ fn types_source(
     let mut out = String::from(
         "local ffi, ptrs, slows, index, tostring_ = ...\nlocal istype, cast = ffi.istype, ffi.cast\nffi.cdef[[\n",
     );
+    let layout_of = layout_lookup(types);
+    let type_name = |type_id| {
+        types
+            .iter()
+            .find(|n| n.vtable.type_id == type_id)
+            .map(|n| n.vtable.type_name)
+            .unwrap_or_default()
+    };
+    // only types whose declaration can be made are given, see `make_types`
     for layout in types.iter().filter_map(|n| n.ffi.as_ref()) {
-        let _ = writeln!(out, "{}", layout.c_declaration());
+        if let Some(declaration) = layout.c_declaration(&layout_of) {
+            let _ = writeln!(out, "{declaration}");
+        }
     }
     out.push_str("]]\n");
     for (i, native) in types.iter().enumerate() {
         // the type, and its scratch value: where FFI functions write their result
         let _ = writeln!(
             out,
-            "local C{n} = ffi.typeof(\"{}\") local S{n} = C{n}()",
+            "local C{n} = ffi.typeof(\"{}\") local S{n} = C{n}() assert(ffi.sizeof(C{n}) == {}, \"{} has another size in C\")",
             layout_name(native),
+            native.ffi.as_ref().map_or(0, |l| l.size),
+            native.vtable.type_name,
             n = i + 1,
         );
     }
@@ -404,9 +487,25 @@ fn types_source(
         }
         // every other function through BMS
         out.push_str("for name, f in pairs(slow) do if methods[name] == nil then methods[name] = f end end\n");
-        out.push_str(
-            "local mt = { __index = function(v, k) local m = methods[k] if m ~= nil then return m end return index(v, k) end,\n__tostring = tostring_ }\n",
-        );
+        let nested = native
+            .ffi
+            .as_ref()
+            .map(|layout| nested_fields_source(layout, &layout_of, &ctype, &type_name))
+            .unwrap_or_default();
+        if nested.is_empty() {
+            out.push_str(
+                "local mt = { __index = function(v, k) local m = methods[k] if m ~= nil then return m end return index(v, k) end,\n__tostring = tostring_ }\n",
+            );
+        } else {
+            // fields of native types are read as `const` copies and written whole
+            out.push_str("local getters, setters = {}, {}\n");
+            out.push_str(&nested);
+            let _ = writeln!(
+                out,
+                "local mt = {{ __index = function(v, k) local g = getters[k] if g ~= nil then return g(v) end local m = methods[k] if m ~= nil then return m end return index(v, k) end,\n__newindex = function(v, k, x) local s = setters[k] if s ~= nil then return s(v, x) end error(\"{} has no field `\" .. tostring(k) .. \"`\", 2) end,\n__tostring = tostring_ }}",
+                native.vtable.type_name
+            );
+        }
         operators_source(&mut out, native);
         let _ = writeln!(
             out,

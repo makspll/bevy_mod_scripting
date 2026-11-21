@@ -764,25 +764,63 @@ pub struct FfiLayout {
 pub struct FfiField {
     /// The field's name
     pub name: &'static str,
-    /// The field's C type, i.e. `float`
-    pub c_type: &'static str,
+    /// The field's type: a scalar, or a native type with an [`FfiLayout`] of scalar fields (i.e. a matrix' columns)
+    pub ty: FfiType,
     /// The offset of the field in a value
     pub offset: usize,
 }
 
 impl FfiLayout {
-    /// The C declaration of the struct, i.e. `typedef struct { float x; float y; float z; } bms_Vec3;`, aligned like the
-    /// Rust type when it's aligned more than its fields.
-    pub fn c_declaration(&self) -> String {
-        let fields: String = self
-            .fields
-            .iter()
-            .map(|f| format!("{} {}; ", f.c_type, f.name))
-            .collect();
-        format!(
+    /// The scalar fields of the C struct, `(name, C type, offset)`. A field of a native type is flattened into the scalar
+    /// fields of its layout (`layout_of`), named `_{field}_{inner}`: a nested struct field would be read as a reference,
+    /// which doesn't keep the value alive. `None` if a nested type has no layout, or fields of native types itself.
+    pub fn c_fields<'a>(
+        &'a self,
+        layout_of: &dyn Fn(TypeId) -> Option<&'a FfiLayout>,
+    ) -> Option<Vec<(Cow<'static, str>, &'static str, usize)>> {
+        let mut out = Vec::with_capacity(self.fields.len());
+        for field in &self.fields {
+            match field.ty {
+                FfiType::Scalar(c) => out.push((field.name.into(), c, field.offset)),
+                FfiType::Value(type_id) => {
+                    for inner in &layout_of(type_id)?.fields {
+                        let FfiType::Scalar(c) = inner.ty else {
+                            return None;
+                        };
+                        let name = format!("_{}_{}", field.name, inner.name);
+                        out.push((name.into(), c, field.offset + inner.offset));
+                    }
+                }
+            }
+        }
+        Some(out)
+    }
+
+    /// The C declaration of the struct, i.e. `typedef struct __attribute__((aligned(4))) { float x; float y; float z; }
+    /// bms_Vec3;`, aligned like the Rust type, with the fields of [`Self::c_fields`] and padding where the Rust type has
+    /// some. `None` if a field can't be flattened.
+    pub fn c_declaration<'a>(
+        &'a self,
+        layout_of: &dyn Fn(TypeId) -> Option<&'a FfiLayout>,
+    ) -> Option<String> {
+        use std::fmt::Write as _;
+        let mut fields = String::new();
+        let mut end = 0;
+        let pad = |fields: &mut String, from: usize, to: usize| {
+            if to > from {
+                let _ = write!(fields, "uint8_t _pad{from}[{}]; ", to - from);
+            }
+        };
+        for (name, c_type, offset) in self.c_fields(layout_of)? {
+            pad(&mut fields, end, offset);
+            let _ = write!(fields, "{c_type} {name}; ");
+            end = offset + c_size(c_type)?;
+        }
+        pad(&mut fields, end, self.size);
+        Some(format!(
             "typedef struct __attribute__((aligned({}))) {{ {fields}}} {};",
             self.align, self.name
-        )
+        ))
     }
 }
 
@@ -825,6 +863,63 @@ unsafe impl Sync for FfiFunction {}
 pub unsafe trait FfiScalar: Copy + 'static {
     /// The C type
     const C_TYPE: &'static str;
+}
+
+/// The size of a C type of an [`FfiScalar`].
+fn c_size(c_type: &str) -> Option<usize> {
+    match c_type {
+        "float" | "int32_t" | "uint32_t" => Some(4),
+        "double" => Some(8),
+        "bool" => Some(1),
+        _ => None,
+    }
+}
+
+/// Picks the [`FfiType`] of a field of type `F` of an [`FfiLayout`] (autoref specialization, like [`FieldConv`]):
+/// [`FfiFieldScalar`] for [`FfiScalar`]s, else [`FfiFieldValue`], a native type, whose layout is looked up when the C
+/// struct is made (see [`FfiLayout::c_fields`]).
+///
+/// ```rust,ignore
+/// use bevy_mod_scripting_bindings::native::{FfiFieldKind, FfiFieldScalar as _, FfiFieldValue as _};
+/// let ty = (&FfiFieldKind::<f32>::new()).ffi_type();
+/// ```
+pub struct FfiFieldKind<F>(std::marker::PhantomData<F>);
+
+impl<F> FfiFieldKind<F> {
+    /// The kind of `F`
+    pub const fn new() -> Self {
+        Self(std::marker::PhantomData)
+    }
+}
+
+impl<F> Default for FfiFieldKind<F> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Scalar fields, see [`FfiFieldKind`].
+pub trait FfiFieldScalar {
+    /// The field's type
+    fn ffi_type(&self) -> FfiType;
+}
+
+impl<F: FfiScalar> FfiFieldScalar for FfiFieldKind<F> {
+    fn ffi_type(&self) -> FfiType {
+        FfiType::Scalar(F::C_TYPE)
+    }
+}
+
+/// Fields of native types, see [`FfiFieldKind`].
+pub trait FfiFieldValue {
+    /// The field's type
+    fn ffi_type(&self) -> FfiType;
+}
+
+impl<F: 'static> FfiFieldValue for &FfiFieldKind<F> {
+    fn ffi_type(&self) -> FfiType {
+        FfiType::Value(TypeId::of::<F>())
+    }
 }
 
 // Safety: the C types of the same size and representation
@@ -881,7 +976,8 @@ impl NativeType {
     /// Declares the C layout of the values, see [`FfiLayout`].
     ///
     /// # Safety
-    /// The layout is the type's: its size and alignment, and fields of its scalar types at their offsets. The type is `Copy`.
+    /// The layout is the type's: its size and alignment, and fields of its types (scalars, or native types with a layout)
+    /// at their offsets. The type is `Copy`.
     pub unsafe fn with_ffi(mut self, layout: FfiLayout) -> Self {
         self.ffi = Some(layout);
         self
@@ -1234,13 +1330,13 @@ where
 /// ```
 #[macro_export]
 macro_rules! script_native {
-    // the C layout of `ffi` forms, the same as the type's: a `Copy` struct of scalar fields at the same offsets
+    // the C layout of `ffi` forms, the same as the type's: a `Copy` struct of fields at the same offsets, scalars or
+    // native types with a layout of scalars (checked when the C struct is made, see `FfiLayout::c_fields`)
     (@ffi_checks $ty:ty { $($field:ident : $field_ty:ty),* }) => {
         const _: fn() = || {
             fn copy<T: Copy>() {}
-            fn scalar<T: $crate::native::FfiScalar>() {}
             copy::<$ty>();
-            $(scalar::<$field_ty>();)*
+            $(copy::<$field_ty>();)*
         };
         const _: () = {
             let (_, size, align) = $crate::native::ffi_layout(
@@ -1256,8 +1352,10 @@ macro_rules! script_native {
             [$((::core::mem::size_of::<$field_ty>(), ::core::mem::align_of::<$field_ty>())),*],
             ::core::mem::align_of::<$ty>(),
         );
+        #[allow(unused_imports)]
+        use $crate::native::{FfiFieldScalar as _, FfiFieldValue as _};
         let names = [$(stringify!($field)),*];
-        let c_types = [$(<$field_ty as $crate::native::FfiScalar>::C_TYPE),*];
+        let types = [$((&$crate::native::FfiFieldKind::<$field_ty>::new()).ffi_type()),*];
         $crate::native::FfiLayout {
             name: format!(
                 "bms_{}",
@@ -1267,7 +1365,7 @@ macro_rules! script_native {
             size,
             align,
             fields: (0..names.len())
-                .map(|i| $crate::native::FfiField { name: names[i], c_type: c_types[i], offset: offsets[i] })
+                .map(|i| $crate::native::FfiField { name: names[i], ty: types[i], offset: offsets[i] })
                 .collect(),
         }
     }};

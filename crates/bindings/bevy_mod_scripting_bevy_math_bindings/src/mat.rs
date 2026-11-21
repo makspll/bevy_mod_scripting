@@ -14,7 +14,8 @@ use bevy_mod_scripting_derive::script_bindings;
     name = "mat3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
-    core
+    core,
+    ffi
 )]
 impl Mat3 {
     /// The identity matrix, which leaves vectors unchanged.
@@ -137,7 +138,8 @@ impl Mat3 {
     name = "mat4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
-    core
+    core,
+    ffi
 )]
 impl Mat4 {
     /// The identity matrix, which leaves vectors unchanged.
@@ -267,10 +269,10 @@ impl Mat4 {
 pub(crate) fn register(world: &mut World) {
     register_mat3_functions(world);
     register_mat4_functions(world);
-    // stored by the languages as values: the columns are read as read-only copies and written whole
+    // stored by the languages as values (LuaJIT: cdata): the columns are read as read-only copies and written whole
     bevy_mod_scripting_bindings::script_native!(
         world,
-        Mat3 {
+        ffi Mat3 {
             x_axis: Vec3,
             y_axis: Vec3,
             z_axis: Vec3
@@ -278,7 +280,7 @@ pub(crate) fn register(world: &mut World) {
     );
     bevy_mod_scripting_bindings::script_native!(
         world,
-        Mat4 {
+        ffi Mat4 {
             x_axis: Vec4,
             y_axis: Vec4,
             z_axis: Vec4,
