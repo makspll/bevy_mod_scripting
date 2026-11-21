@@ -354,11 +354,12 @@ fn types_source(
     }
     out.push_str("]]\n");
     for (i, native) in types.iter().enumerate() {
+        // the type, and its scratch value: where FFI functions write their result
         let _ = writeln!(
             out,
-            "local C{} = ffi.typeof(\"{}\")",
-            i + 1,
-            layout_name(native)
+            "local C{n} = ffi.typeof(\"{}\") local S{n} = C{n}()",
+            layout_name(native),
+            n = i + 1,
         );
     }
     out.push_str("local made = {}\n");
@@ -428,13 +429,16 @@ fn function_source(
         FfiType::Value(type_id) => {
             let (lua_ctype, c_name) = ctype(type_id)?;
             c_params.push(format!("{c_name}*"));
+            // written to the type's scratch value and copied from it: a result made here and passed to C would always
+            // be allocated, a copy made by Lua can be optimised away. Nothing else points to the scratch value.
+            let scratch = lua_ctype.replacen('C', "S", 1);
             let out_args = match args.is_empty() {
-                true => "r".to_owned(),
-                false => format!("{args}, r"),
+                true => scratch.clone(),
+                false => format!("{args}, {scratch}"),
             };
             (
                 "void".to_owned(),
-                format!("local r = {lua_ctype}() f{pointer}({out_args}) return r"),
+                format!("f{pointer}({out_args}) return {lua_ctype}({scratch})"),
             )
         }
     };
