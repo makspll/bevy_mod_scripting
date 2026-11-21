@@ -223,6 +223,14 @@ macro_rules! impl_from_stringlike {
                 fn could_convert(value: &ScriptValue) -> bool {
                     matches!(value, ScriptValue::String(_) | ScriptValue::Reference(_))
                 }
+
+                fn from_arg(args: &dyn ArgSource, index: usize, scope: &CallScope<'_>,) -> Result<Self, InteropError> {
+                    // read from the language's string, no script value
+                    if let Some(s) = args.string(index) {
+                        return Ok(s.to_owned().into());
+                    }
+                    Self::from_script(args.script_value(index)?, scope)
+                }
             }
         )*
     };
@@ -666,6 +674,26 @@ where
     fn could_convert(value: &ScriptValue) -> bool {
         matches!(value, ScriptValue::List(_))
     }
+
+    fn from_arg(
+        args: &dyn ArgSource,
+        index: usize,
+        scope: &CallScope<'_>,
+    ) -> Result<Self, InteropError> {
+        // the items read as arguments, no script values
+        let mut vec = None;
+        if args.list(index, &mut |items| {
+            vec = Some(
+                (0..items.len())
+                    .map(|i| T::from_arg(items, i, scope).map(Into::into))
+                    .collect(),
+            );
+        }) && let Some(vec) = vec
+        {
+            return vec;
+        }
+        Self::from_script(args.script_value(index)?, scope)
+    }
 }
 
 #[profiling::all_functions]
@@ -812,6 +840,25 @@ macro_rules! impl_from_script_hashmap {
 
             fn could_convert(value: &ScriptValue) -> bool {
                 matches!(value, ScriptValue::Map(_) | ScriptValue::List(_))
+            }
+
+            fn from_arg(
+                args: &dyn ArgSource,
+                index: usize,
+                scope: &CallScope<'_>,
+            ) -> Result<Self, InteropError> {
+                // the entries read as arguments, no script values
+                let mut hashmap = <$hashmap_type>::new();
+                let read = args.map(index, &mut |entry| {
+                    let key = String::from_arg(entry, 0, scope)?;
+                    hashmap.insert(key, V::from_arg(entry, 1, scope)?.into());
+                    Ok(())
+                });
+                match read {
+                    Some(read) => read.map(|()| hashmap),
+                    // not a map with string keys, or no fast way: as before
+                    None => Self::from_script(args.script_value(index)?, scope),
+                }
             }
         }
     };

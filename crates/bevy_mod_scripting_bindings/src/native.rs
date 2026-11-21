@@ -32,7 +32,8 @@ use crate::{
 ///
 /// # Safety
 /// [`ArgSource::native`] must only return the base of a [`NativeStorage`] which was initialised with [`NativeStorage::init`],
-/// and which stays alive and in place until the call returns.
+/// and which stays alive and in place until the call returns. The sources [`ArgSource::list`] and [`ArgSource::map`] give
+/// keep to the same.
 pub unsafe trait ArgSource {
     /// The number of arguments.
     fn len(&self) -> usize;
@@ -50,6 +51,25 @@ pub unsafe trait ArgSource {
     fn native(&self, i: usize) -> Option<*mut u8>;
     /// The argument converted to a [`ScriptValue`], the slow path.
     fn script_value(&self, i: usize) -> Result<ScriptValue, InteropError>;
+    /// The argument as a string, borrowed from the language, if it is one (numbers aren't converted).
+    fn string(&self, _i: usize) -> Option<&str> {
+        None
+    }
+    /// Calls `items` with the items of the argument as arguments, if it's a list: what [`ScriptValue::List`] the argument
+    /// would convert to. False if it isn't one, or the language has no fast way to read it.
+    fn list(&self, _i: usize, _items: &mut dyn FnMut(&dyn ArgSource)) -> bool {
+        false
+    }
+    /// Calls `entry` with each entry of the argument as arguments (the key at 0, the value at 1), if it's a map with string
+    /// keys: what [`ScriptValue::Map`] the argument would convert to. `None` if it isn't one, or the language has no fast way
+    /// to read it, in which case `entry` may have been called for some entries already.
+    fn map(
+        &self,
+        _i: usize,
+        _entry: &mut dyn FnMut(&dyn ArgSource) -> Result<(), InteropError>,
+    ) -> Option<Result<(), InteropError>> {
+        None
+    }
 }
 
 /// Where the result of a typed call goes, implemented by each language.
