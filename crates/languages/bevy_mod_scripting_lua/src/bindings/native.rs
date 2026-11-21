@@ -45,7 +45,7 @@ use std::{
 };
 
 use bevy_mod_scripting_bindings::{
-    DynamicScriptFunction, ReflectReference, InteropError, ScriptValue, WorldExtensions, dispatch,
+    DynamicScriptFunction, InteropError, ReflectReference, ScriptValue, WorldExtensions, dispatch,
     function::FUNCTIONS_GENERATION,
     native::{ArgSource, NativeStorage, NativeType, NativeVTable, ReturnSink},
 };
@@ -1505,7 +1505,10 @@ fn unlikely_memory_error(lua: &Lua) -> bool {
     }
 }
 
-pub(crate) fn reference_into_lua(lua: &Lua, reference: ReflectReference) -> mlua::Result<mlua::Value> {
+pub(crate) fn reference_into_lua(
+    lua: &Lua,
+    reference: ReflectReference,
+) -> mlua::Result<mlua::Value> {
     let gc = reference.owns_heap();
     let mt_key = key(if gc {
         &REFERENCE_METATABLE_GC
@@ -1737,7 +1740,8 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
             let world = ThreadWorldContainer::try_get_context()?.world;
             // one mlua call for the lookup and the result
             // on the stack for the call
-            let receiver = reference_at(l, 1).ok_or_else(|| InteropError::str("expected a reference"))?;
+            let receiver =
+                reference_at(l, 1).ok_or_else(|| InteropError::str("expected a reference"))?;
             with_raw(l, |lua, raw| {
                 let member = if ffi::lua_type(l, 2) == ffi::LUA_TSTRING {
                     // functions of registrations (`Vec3.new`) are cached per registration
@@ -1823,18 +1827,24 @@ unsafe extern "C-unwind" fn reference_operator<const OPERATOR: ffi::lua_Integer>
                     dispatch::unary_function(world, operator, receiver, LUA_CALLER_CONTEXT)
                         .map(|function| (function, true))
                 } else {
-                let (receiver, on_left) = match reference(1) {
-                    Some(receiver) => (receiver, true),
-                    None => match reference(2) {
-                        Some(receiver) => (receiver, false),
-                        None => {
-                            return Err(InteropError::str(
-                                "neither operand of this operator is a value",
-                            ));
-                        }
-                    },
-                };
-                dispatch::binary_function(world, operator, receiver, on_left, LUA_CALLER_CONTEXT)
+                    let (receiver, on_left) = match reference(1) {
+                        Some(receiver) => (receiver, true),
+                        None => match reference(2) {
+                            Some(receiver) => (receiver, false),
+                            None => {
+                                return Err(InteropError::str(
+                                    "neither operand of this operator is a value",
+                                ));
+                            }
+                        },
+                    };
+                    dispatch::binary_function(
+                        world,
+                        operator,
+                        receiver,
+                        on_left,
+                        LUA_CALLER_CONTEXT,
+                    )
                     .map(|function| (function, on_left))
                 }
             }?;
