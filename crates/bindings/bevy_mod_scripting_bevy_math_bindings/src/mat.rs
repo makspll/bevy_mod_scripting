@@ -267,4 +267,22 @@ impl Mat4 {
 pub(crate) fn register(world: &mut World) {
     register_mat3_functions(world);
     register_mat4_functions(world);
+    // stored by the languages as values: the columns are read as read-only copies and written whole
+    bevy_mod_scripting_bindings::script_native!(
+        world,
+        Mat3 {
+            x_axis: Vec3,
+            y_axis: Vec3,
+            z_axis: Vec3
+        }
+    );
+    bevy_mod_scripting_bindings::script_native!(
+        world,
+        Mat4 {
+            x_axis: Vec4,
+            y_axis: Vec4,
+            z_axis: Vec4,
+            w_axis: Vec4
+        }
+    );
 }
