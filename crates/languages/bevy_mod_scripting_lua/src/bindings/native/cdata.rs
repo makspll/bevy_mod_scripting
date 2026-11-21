@@ -203,14 +203,7 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
             .collect::<Vec<_>>();
         (types, functions)
     };
-    // the FFI library, kept out of the globals and `package.loaded`
-    // Safety: protected mode, `luaopen_ffi` returns the module table
-    let ffi_module: Table = unsafe {
-        lua.exec_raw((), |l| {
-            ffi::lua_pushcfunction(l, ffi::luaopen_ffi);
-            ffi::lua_call(l, 0, 1);
-        })?
-    };
+    let ffi_module = private_ffi(lua)?;
     let (source, pointers) = types_source(&types, &functions);
     // the BMS functions of each type: the slow paths
     let slows = lua.create_table()?;
@@ -263,6 +256,30 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
         })?;
     }
     Ok(())
+}
+
+/// The FFI library, which scripts don't get: opening it doesn't make a global, but registers it in `package.loaded`, where
+/// it's taken out of again.
+///
+/// If the host loaded it already it's used as it is: opening it again would reset the C types of the state.
+fn private_ffi(lua: &Lua) -> mlua::Result<Table> {
+    let loaded = lua.named_registry_value::<Option<Table>>("_LOADED")?;
+    if let Some(loaded) = &loaded
+        && let Some(module) = loaded.raw_get::<Option<Table>>("ffi")?
+    {
+        return Ok(module);
+    }
+    // Safety: protected mode, `luaopen_ffi` returns the module table
+    let module: Table = unsafe {
+        lua.exec_raw((), |l| {
+            ffi::lua_pushcfunction(l, ffi::luaopen_ffi);
+            ffi::lua_call(l, 0, 1);
+        })?
+    };
+    if let Some(loaded) = &loaded {
+        loaded.raw_set("ffi", mlua::Nil)?;
+    }
+    Ok(module)
 }
 
 /// Finds where this LuaJIT build keeps the ctype id of a cdata, from a `probe` of the type `id`.
