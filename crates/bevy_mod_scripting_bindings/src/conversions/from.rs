@@ -146,7 +146,7 @@ impl FromScript for bool {
     {
         match value {
             ScriptValue::Bool(b) => Ok(b),
-            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
+            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()?),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<Self>(),
                 value,
@@ -170,7 +170,7 @@ macro_rules! impl_from_with_downcast {
                     match value {
                         ScriptValue::Integer(i) => Ok(i as $ty),
                         ScriptValue::Float(i) => Ok(i as $ty),
-                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
+                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()?),
                         ScriptValue::Bool(b) => Ok(b as usize as $ty),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
@@ -215,7 +215,7 @@ macro_rules! impl_from_stringlike {
                 fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
                     match value {
                         ScriptValue::String(s) => Ok(s.to_string().into()),
-                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
+                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()?),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
                 }
@@ -268,7 +268,7 @@ impl FromScript for char {
             ScriptValue::String(c) => c.chars().next().ok_or_else(|| {
                 InteropError::value_mismatch(TypeId::of::<char>(), ScriptValue::String(c))
             }),
-            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
+            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()?),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<Self>(),
                 value,
@@ -375,7 +375,7 @@ impl<T: FromReflect> FromScript for V<T> {
     type This<'w> = Self;
     #[profiling::function]
     fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
-        let world = scope.world();
+        let world = scope.world()?;
         match value {
             ScriptValue::Reference(reflect_reference) => {
                 let from_reflect = |reference: &ReflectReference| {
@@ -457,7 +457,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
     ) -> Result<Self::This<'s>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
-                let world = scope.world();
+                let world = scope.world()?;
                 // the claim keeps an allocated value alive, the borrow outlives `reflect_reference`
                 // and is released when `scope` ends, which the borrow can't outlive
                 if scope.claim_read_access(&reflect_reference.base.base_id) {
@@ -580,7 +580,7 @@ impl<T: FromReflect> FromScript for M<'_, T> {
                 if scope.claim_write_access(&reflect_reference.base.base_id) {
                     // Safety: we just claimed write access
                     let ref_ =
-                        unsafe { reflect_reference.reflect_mut_unsafe_non_empty(scope.world()) }?;
+                        unsafe { reflect_reference.reflect_mut_unsafe_non_empty(scope.world()?) }?;
                     let type_id = ref_.get_represented_type_info().map(|i| i.type_id());
                     let cast = ref_.try_downcast_mut::<T>().ok_or_else(|| {
                         InteropError::type_mismatch(std::any::TypeId::of::<T>(), type_id)

@@ -136,10 +136,10 @@ impl<R: IntoScript, M> IntoScript for TypeOf<R, M> {
     fn into_ret(
         self,
         ret: &mut dyn crate::native::ReturnSink,
-        world: WorldGuard,
+        scope: &CallScope,
         native: &crate::native::NativeReturnType,
     ) -> Result<(), InteropError> {
-        self.0.into_ret(ret, world, native)
+        self.0.into_ret(ret, scope, native)
     }
 }
 
@@ -215,10 +215,10 @@ impl<M, R: IntoScript> IntoScript for ValueOf<M, R> {
     fn into_ret(
         self,
         ret: &mut dyn crate::native::ReturnSink,
-        world: WorldGuard,
+        scope: &CallScope,
         native: &crate::native::NativeReturnType,
     ) -> Result<(), InteropError> {
-        self.0.into_ret(ret, world, native)
+        self.0.into_ret(ret, scope, native)
     }
 }
 

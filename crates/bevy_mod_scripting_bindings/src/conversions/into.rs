@@ -4,7 +4,7 @@ use super::{Union, V};
 use crate::function::{DynamicScriptFunction, DynamicScriptFunctionMut};
 use crate::native::{NativeReturnType, ReturnSink};
 use crate::{ReflectReference, ScriptValue, VariadicTuple, error::InteropError};
-use bevy_mod_scripting_world::WorldGuard;
+use bevy_mod_scripting_world::{CallScope, WorldGuard};
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
 use std::{borrow::Cow, collections::VecDeque, ffi::OsString, path::PathBuf};
@@ -29,13 +29,13 @@ pub trait IntoScript {
     fn into_ret(
         self,
         ret: &mut dyn ReturnSink,
-        world: WorldGuard,
+        scope: &CallScope,
         _native: &NativeReturnType,
     ) -> Result<(), InteropError>
     where
         Self: Sized,
     {
-        ret.script_value(self.into_script(world)?)
+        ret.script_value(self.into_script(scope.world()?)?)
     }
 }
 
@@ -54,7 +54,7 @@ impl IntoScript for () {
     fn into_ret(
         self,
         ret: &mut dyn ReturnSink,
-        _world: WorldGuard,
+        _scope: &CallScope,
         _native: &NativeReturnType,
     ) -> Result<(), InteropError> {
         ret.unit();
@@ -85,7 +85,7 @@ impl IntoScript for bool {
     fn into_ret(
         self,
         ret: &mut dyn ReturnSink,
-        _world: WorldGuard,
+        _scope: &CallScope,
         _native: &NativeReturnType,
     ) -> Result<(), InteropError> {
         ret.boolean(self);
@@ -102,7 +102,7 @@ macro_rules! impl_into_with_downcast {
                     Ok(ScriptValue::$variant(self as $cast))
                 }
 
-                fn into_ret(self, ret: &mut dyn ReturnSink, _world: WorldGuard, _native: &NativeReturnType) -> Result<(), InteropError> {
+                fn into_ret(self, ret: &mut dyn ReturnSink, _scope: &CallScope, _native: &NativeReturnType) -> Result<(), InteropError> {
                     ret.$ret(self as $cast);
                     Ok(())
                 }
@@ -156,7 +156,7 @@ impl IntoScript for ReflectReference {
     fn into_ret(
         self,
         ret: &mut dyn ReturnSink,
-        world: WorldGuard,
+        scope: &CallScope,
         native: &NativeReturnType,
     ) -> Result<(), InteropError> {
         // a component or resource of a native type is returned as a native handle to it
@@ -170,7 +170,7 @@ impl IntoScript for ReflectReference {
             _ => None,
         };
         if let Some(base) = base
-            && let Some(native) = native.get(&world, self.base.type_id)
+            && let Some(native) = native.get(scope, self.base.type_id)
         {
             let mut place = Some(crate::native::NativePlace::new(base, self.base.type_id));
             // Safety: the place vtable stores a `NativePlace`, of a value of the native type
@@ -201,11 +201,11 @@ impl<T: Reflect> IntoScript for V<T> {
     fn into_ret(
         self,
         ret: &mut dyn ReturnSink,
-        world: WorldGuard,
+        scope: &CallScope,
         native: &NativeReturnType,
     ) -> Result<(), InteropError> {
         // types stored natively are moved into the language's storage, others are allocated as usual
-        if let Some(native) = native.get(&world, std::any::TypeId::of::<T>())
+        if let Some(native) = native.get(scope, std::any::TypeId::of::<T>())
             && native.inline
         {
             let mut value = Some(self.0);
@@ -222,13 +222,13 @@ impl<T: Reflect> IntoScript for V<T> {
                 // not written: the language has no native form for it
                 Some(value) if !written => {
                     return V(value)
-                        .into_script(world)
+                        .into_script(scope.world()?)
                         .and_then(|v| ret.script_value(v));
                 }
                 _ => return Ok(()),
             }
         }
-        ret.script_value(self.into_script(world)?)
+        ret.script_value(self.into_script(scope.world()?)?)
     }
 }
 
@@ -244,11 +244,11 @@ impl<T: IntoScript> IntoScript for Option<T> {
     fn into_ret(
         self,
         ret: &mut dyn ReturnSink,
-        world: WorldGuard,
+        scope: &CallScope,
         native: &NativeReturnType,
     ) -> Result<(), InteropError> {
         match self {
-            Some(val) => val.into_ret(ret, world, native),
+            Some(val) => val.into_ret(ret, scope, native),
             None => {
                 ret.unit();
                 Ok(())
@@ -302,12 +302,12 @@ impl<T1: IntoScript, T2: IntoScript> IntoScript for Union<T1, T2> {
     fn into_ret(
         self,
         ret: &mut dyn ReturnSink,
-        world: WorldGuard,
+        scope: &CallScope,
         native: &NativeReturnType,
     ) -> Result<(), InteropError> {
         match self.into_left() {
-            Ok(left) => left.into_ret(ret, world, native),
-            Err(right) => right.into_ret(ret, world, native),
+            Ok(left) => left.into_ret(ret, scope, native),
+            Err(right) => right.into_ret(ret, scope, native),
         }
     }
 }

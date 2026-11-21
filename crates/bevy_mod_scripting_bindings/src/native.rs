@@ -438,7 +438,7 @@ impl NativePlace {
                 format!("In a native value of {base:?}"),
             ));
         }
-        let cell = scope.world().as_unsafe_world_cell()?;
+        let cell = scope.world()?.as_unsafe_world_cell()?;
         // Safety: access is claimed until the call ends, which the pointer doesn't outlive
         let ptr = unsafe {
             match write {
@@ -772,15 +772,15 @@ impl NativeType {
                 .with_namespace(FunctionScope::OnType(TypeId::of::<T>()))
         };
         let native_return = NativeReturnType::default();
-        let get = DynamicScriptFunction::from_thunk::<T>(move |ctx, args, sink| {
-            let world = ctx.world()?;
-            world.with_call_scope(|scope| {
+        let get = DynamicScriptFunction::from_thunk::<T>(move |_ctx, args, sink| {
+            // the world is only looked up when needed (places, conversions)
+            bevy_mod_scripting_world::CallScope::with_lazy(|scope| {
                 // a field of a native type in a place is a place too
                 if let Some(base) = args.native(0)
                     // Safety: `ArgSource` gives initialised storage
                     && unsafe { NativeStorage::header(base) }.vtable.type_id == TypeId::of::<T>()
                     && let Some(place) = unsafe { NativeStorage::place(base) }
-                    && let Some(field_native) = native_return.get(&world, TypeId::of::<F>())
+                    && let Some(field_native) = native_return.get(scope, TypeId::of::<F>())
                 {
                     if let (FieldAt::Offset(offset), Some(index)) = (at, index) {
                         let field_place = place.field(offset, index).ok_or_else(|| {
@@ -804,7 +804,7 @@ impl NativeType {
                         }
                     }
                     // a reference to where the field is, not a copy a write would be lost on
-                    let mut reference = place.to_reference(&world)?;
+                    let mut reference = place.to_reference(&scope.world()?)?;
                     reference.push_path(crate::ReferencePart::StringAccess(Cow::Borrowed(name)));
                     return sink.script_value(ScriptValue::Reference(reference));
                 }
@@ -816,16 +816,15 @@ impl NativeType {
                 };
                 // Safety: an `F` of the T, see the function's contract
                 let field = unsafe { &*(field as *const F) };
-                ret(field.clone(), sink, world.clone(), &native_return)
+                ret(field.clone(), sink, scope, &native_return)
             })
         })
         .with_info(info());
-        let set = DynamicScriptFunction::from_thunk::<T>(move |ctx, args, sink| {
+        let set = DynamicScriptFunction::from_thunk::<T>(move |_ctx, args, sink| {
             if args.len() < 2 {
                 return Err(InteropError::argument_count_mismatch(2, args.len()));
             }
-            let world = ctx.world()?;
-            world.with_call_scope(|scope| {
+            bevy_mod_scripting_world::CallScope::with_lazy(|scope| {
                 let mut target = <crate::M<T> as crate::FromScript>::from_arg(args, 0, scope)?;
                 let value = arg(args, 1, scope)?;
                 let target = &mut *target as *mut T as *mut u8;
@@ -888,8 +887,12 @@ impl NativeReturnType {
     /// How many types are kept, others are looked up on every return.
     const CAPACITY: usize = 8;
 
-    /// The native type of `type_id`, if it is one.
-    pub fn get(&self, world: &WorldGuard, type_id: TypeId) -> Option<std::sync::Arc<NativeType>> {
+    /// The native type of `type_id`, if it is one. The scope's world is only needed when it isn't cached.
+    pub fn get(
+        &self,
+        scope: &bevy_mod_scripting_world::CallScope,
+        type_id: TypeId,
+    ) -> Option<std::sync::Arc<NativeType>> {
         use crate::WorldExtensions;
         let generation = NATIVE_TYPES_GENERATION.load(std::sync::atomic::Ordering::Acquire);
         // whether there's room for the type, if it needs looking up
@@ -908,7 +911,9 @@ impl NativeReturnType {
                 None => cache.len() < Self::CAPACITY,
             }
         };
-        let native = world
+        let native = scope
+            .world()
+            .ok()?
             .script_function_registry()
             .read()
             .native_type(type_id)
@@ -955,10 +960,10 @@ pub enum FieldAt {
 }
 
 /// Converts the value of a field read by a script, see [`FieldConv`].
-pub type FieldRet<F> = for<'w> fn(
+pub type FieldRet<F> = for<'s, 'w> fn(
     F,
     &mut dyn ReturnSink,
-    WorldGuard<'w>,
+    &'s bevy_mod_scripting_world::CallScope<'w>,
     &NativeReturnType,
 ) -> Result<(), InteropError>;
 
@@ -1005,7 +1010,7 @@ where
     F: crate::IntoScript + for<'s> crate::FromScript<This<'s> = F>,
 {
     fn ret(&self) -> FieldRet<F> {
-        |value, sink, world, native| value.into_ret(sink, world, native)
+        |value, sink, scope, native| value.into_ret(sink, scope, native)
     }
     fn arg(&self) -> FieldArg<F> {
         |args, index, scope| F::from_arg(args, index, scope)
@@ -1025,8 +1030,8 @@ where
     crate::V<F>: crate::IntoScript + for<'s> crate::FromScript<This<'s> = crate::V<F>>,
 {
     fn ret(&self) -> FieldRet<F> {
-        |value, sink, world, native| {
-            crate::IntoScript::into_ret(crate::V(value), sink, world, native)
+        |value, sink, scope, native| {
+            crate::IntoScript::into_ret(crate::V(value), sink, scope, native)
         }
     }
     fn arg(&self) -> FieldArg<F> {
@@ -1581,13 +1586,16 @@ mod test {
         };
         let handle_of = |world: &WorldGuard, reference: ReflectReference| {
             let mut ret = Return::default();
-            crate::IntoScript::into_ret(
-                reference,
-                &mut ret,
-                world.clone(),
-                &NativeReturnType::default(),
-            )
-            .unwrap();
+            world
+                .with_call_scope(|scope| {
+                    crate::IntoScript::into_ret(
+                        reference,
+                        &mut ret,
+                        scope,
+                        &NativeReturnType::default(),
+                    )
+                })
+                .unwrap();
             ret.native
                 .expect("a component or resource of a native type is a native handle")
         };
