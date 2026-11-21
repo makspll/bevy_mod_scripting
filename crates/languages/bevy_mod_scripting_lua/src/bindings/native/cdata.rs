@@ -791,7 +791,7 @@ mod test {
                     name: "add",
                     function: add as *const (),
                     params: vec![value, value],
-                    result: value,
+                    result: FfiResult::One(value),
                 },
             );
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
