@@ -835,7 +835,7 @@ pub enum FfiType {
 }
 
 /// A function of a native type callable through a language's FFI (i.e. LuaJIT's) with C types: an `extern "C"` wrapper of a
-/// registered function, made by `#[script_bindings(ffi)]`.
+/// registered function, made for functions marked `#[ffi]` in `#[script_bindings]` blocks (see [`FfiArg`] and [`FfiReturn`]).
 ///
 /// A panic of the function aborts the process, as it can't unwind through C: only for functions which don't panic (no
 /// integer arithmetic which may overflow, no indexing).
@@ -860,6 +860,190 @@ pub enum FfiResult {
     /// parameters to memory big and aligned enough for each (a C union of them): the wrapper returns the index of the
     /// alternative written, as a `uint8_t`
     Union(Vec<FfiType>),
+}
+
+/// A parameter of an `#[ffi]` function (see [`FfiFunction`]): a scalar passed by value, or `R<T>`/`V<T>` passed as a pointer
+/// to the value. `T` needs an [`FfiLayout`] (`script_native!`'s `ffi` form), which languages check when they make their
+/// C types: it can't be a bound, the orphan rule would keep binding crates from declaring it for other crates' types.
+///
+/// # Safety
+/// `C` is FFI-safe and the parameter of the C type [`Self::kind`] says.
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` can't be a parameter of an `#[ffi]` function",
+    label = "not an FFI parameter",
+    note = "FFI parameters are `f32`, `f64`, `i32`, `u32`, `bool`, `R<T>` and `V<T>` (`T` with a C layout, see `script_native!`'s `ffi` form), or `Union`s of them"
+)]
+pub unsafe trait FfiArg {
+    /// How the wrapper takes it
+    type C;
+    /// Its C type
+    fn kind() -> FfiType;
+    /// The parameter from what the wrapper is given.
+    ///
+    /// # Safety
+    /// `c` is what a caller passes for [`Self::kind`]: pointers point to valid values, which outlive the call.
+    unsafe fn from_c(c: Self::C) -> Self;
+}
+
+/// The result of an `#[ffi]` function (see [`FfiFunction`]): a scalar returned, `V<T>` written to the out-pointer (`T` with
+/// an [`FfiLayout`], see [`FfiArg`]), or a `Union` of them, see [`FfiResult::Union`].
+///
+/// # Safety
+/// `C` is FFI-safe and what [`Self::result`] says is returned, [`Self::into_c`] writes what it says is written.
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` can't be the result of an `#[ffi]` function",
+    label = "not an FFI result",
+    note = "FFI results are `f32`, `f64`, `i32`, `u32`, `bool` and `V<T>` (`T` with a C layout, see `script_native!`'s `ffi` form), or `Union`s of them"
+)]
+pub unsafe trait FfiReturn {
+    /// What the wrapper returns
+    type C;
+    /// How it's returned
+    fn result() -> FfiResult;
+    /// The wrapper's return value, writing to `out` what [`Self::result`] says is written there.
+    ///
+    /// # Safety
+    /// `out` points to memory big and aligned enough for that.
+    unsafe fn into_c(self, out: *mut u8) -> Self::C;
+}
+
+/// An alternative of a `Union` result, or a `Union` of them, see [`FfiResult::Union`].
+///
+/// # Safety
+/// [`Self::write`] writes a value of the C type of the alternative whose index it returns.
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` can't be an alternative of the `Union` result of an `#[ffi]` function",
+    label = "not an FFI result",
+    note = "FFI results are `f32`, `f64`, `i32`, `u32`, `bool` and `V<T>` (`T` with a C layout, see `script_native!`'s `ffi` form), or `Union`s of them"
+)]
+pub unsafe trait FfiAlternative {
+    /// The number of alternatives
+    const COUNT: u8;
+    /// Their C types, in order
+    fn alternatives(out: &mut Vec<FfiType>);
+    /// Writes the value to `out`, evaluating to its index among the alternatives, counted from `base`.
+    ///
+    /// # Safety
+    /// `out` points to memory big and aligned enough for every alternative.
+    unsafe fn write(self, out: *mut u8, base: u8) -> u8;
+}
+
+macro_rules! ffi_scalar {
+    ($($ty:ty => $c:literal),*) => {$(
+        // Safety: passed and returned by value as the C type of the same size and representation
+        unsafe impl FfiArg for $ty {
+            type C = $ty;
+            fn kind() -> FfiType {
+                FfiType::Scalar($c)
+            }
+            unsafe fn from_c(c: Self::C) -> Self {
+                c
+            }
+        }
+        // Safety: see above
+        unsafe impl FfiReturn for $ty {
+            type C = $ty;
+            fn result() -> FfiResult {
+                FfiResult::One(FfiType::Scalar($c))
+            }
+            unsafe fn into_c(self, _: *mut u8) -> Self::C {
+                self
+            }
+        }
+        // Safety: see above
+        unsafe impl FfiAlternative for $ty {
+            const COUNT: u8 = 1;
+            fn alternatives(out: &mut Vec<FfiType>) {
+                out.push(FfiType::Scalar($c));
+            }
+            unsafe fn write(self, out: *mut u8, base: u8) -> u8 {
+                // Safety: upheld by the caller
+                unsafe { out.cast::<$ty>().write(self) };
+                base
+            }
+        }
+    )*};
+}
+
+ffi_scalar!(f32 => "float", f64 => "double", i32 => "int32_t", u32 => "uint32_t", bool => "bool");
+
+// Safety: a pointer to a value, which outlives the call (upheld by the caller of `from_c`)
+unsafe impl<'w, T: 'static> FfiArg for crate::R<'w, T> {
+    type C = *const T;
+    fn kind() -> FfiType {
+        FfiType::Value(TypeId::of::<T>())
+    }
+    unsafe fn from_c(c: Self::C) -> Self {
+        // Safety: upheld by the caller
+        crate::R(unsafe { &*c })
+    }
+}
+
+// Safety: see above, the value is copied
+unsafe impl<T: Copy + 'static> FfiArg for crate::V<T> {
+    type C = *const T;
+    fn kind() -> FfiType {
+        FfiType::Value(TypeId::of::<T>())
+    }
+    unsafe fn from_c(c: Self::C) -> Self {
+        // Safety: upheld by the caller
+        crate::V(unsafe { *c })
+    }
+}
+
+// Safety: the value is written to the out-pointer
+unsafe impl<T: Copy + 'static> FfiReturn for crate::V<T> {
+    type C = ();
+    fn result() -> FfiResult {
+        FfiResult::One(FfiType::Value(TypeId::of::<T>()))
+    }
+    unsafe fn into_c(self, out: *mut u8) -> Self::C {
+        // Safety: upheld by the caller
+        unsafe { out.cast::<T>().write(self.0) }
+    }
+}
+
+// Safety: see above
+unsafe impl<T: Copy + 'static> FfiAlternative for crate::V<T> {
+    const COUNT: u8 = 1;
+    fn alternatives(out: &mut Vec<FfiType>) {
+        out.push(FfiType::Value(TypeId::of::<T>()));
+    }
+    unsafe fn write(self, out: *mut u8, base: u8) -> u8 {
+        // Safety: upheld by the caller
+        unsafe { out.cast::<T>().write(self.0) };
+        base
+    }
+}
+
+// Safety: the alternative held, with the index of the side's alternatives
+unsafe impl<A: FfiAlternative, B: FfiAlternative> FfiAlternative for crate::Union<A, B> {
+    const COUNT: u8 = A::COUNT + B::COUNT;
+    fn alternatives(out: &mut Vec<FfiType>) {
+        A::alternatives(out);
+        B::alternatives(out);
+    }
+    unsafe fn write(self, out: *mut u8, base: u8) -> u8 {
+        // Safety: upheld by the caller
+        match self.into_left() {
+            Ok(a) => unsafe { a.write(out, base) },
+            Err(b) => unsafe { b.write(out, base + A::COUNT) },
+        }
+    }
+}
+
+// Safety: written to a C union of the alternatives, the index returned
+unsafe impl<A: FfiAlternative, B: FfiAlternative> FfiReturn for crate::Union<A, B> {
+    type C = u8;
+    fn result() -> FfiResult {
+        let mut alternatives = Vec::new();
+        <Self as FfiAlternative>::alternatives(&mut alternatives);
+        FfiResult::Union(alternatives)
+    }
+    unsafe fn into_c(self, out: *mut u8) -> Self::C {
+        // Safety: upheld by the caller
+        unsafe { self.write(out, 0) }
+    }
 }
 
 // Safety: a pointer to a function, which can be called from any thread

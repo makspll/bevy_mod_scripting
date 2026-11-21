@@ -706,6 +706,13 @@ impl ScriptFunctionRegistry {
             .unwrap_or_default()
     }
 
+    /// Every function callable through a language's FFI, with the type it's a function of.
+    pub fn all_ffi_functions(&self) -> impl Iterator<Item = (TypeId, &crate::native::FfiFunction)> {
+        self.ffi_functions
+            .iter()
+            .flat_map(|(type_id, functions)| functions.iter().map(|f| (*type_id, f)))
+    }
+
     /// The native type of `type_id`, if it is one, see [`crate::native`].
     pub fn native_type(&self, type_id: TypeId) -> Option<&Arc<crate::native::NativeType>> {
         self.native_types.get(&type_id)

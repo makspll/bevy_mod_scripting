@@ -17,7 +17,6 @@ fn direction(v: Vec3) -> Result<Vec3, InteropError> {
 
 #[script_bindings(
     remote,
-    ffi,
     name = "quat_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -25,21 +24,25 @@ fn direction(v: Vec3) -> Result<Vec3, InteropError> {
 )]
 impl Quat {
     /// The identity rotation, which leaves everything unchanged.
+    #[ffi]
     fn identity() -> V<Quat> {
         V(Quat::IDENTITY)
     }
 
     /// A rotation of `angle` radians around the x axis.
+    #[ffi]
     fn from_rotation_x(angle: f32) -> V<Quat> {
         V(Quat::from_rotation_x(angle))
     }
 
     /// A rotation of `angle` radians around the y axis.
+    #[ffi]
     fn from_rotation_y(angle: f32) -> V<Quat> {
         V(Quat::from_rotation_y(angle))
     }
 
     /// A rotation of `angle` radians around the z axis.
+    #[ffi]
     fn from_rotation_z(angle: f32) -> V<Quat> {
         V(Quat::from_rotation_z(angle))
     }
@@ -69,6 +72,7 @@ impl Quat {
     }
 
     /// The rotation described by a 3x3 rotation matrix.
+    #[ffi]
     fn from_mat3(m: R<Mat3>) -> V<Quat> {
         V(Quat::from_mat3(&m))
     }
@@ -82,76 +86,91 @@ impl Quat {
     }
 
     /// Rotates a [`Vec3`](bevy_math::Vec3).
+    #[ffi]
     fn mul_vec3(_self: R<Quat>, v: R<Vec3>) -> V<Vec3> {
         V(_self.mul_vec3(*v))
     }
 
     /// Whether both rotations have exactly the same components.
+    #[ffi]
     fn eq(_self: R<Quat>, other: R<Quat>) -> bool {
         *_self == *other
     }
 
     /// The opposite rotation, with every component negated.
+    #[ffi]
     fn neg(_self: R<Quat>) -> V<Quat> {
         V(-*_self)
     }
 
     /// The rotation scaled to a length of `1`.
+    #[ffi]
     fn normalize(_self: R<Quat>) -> V<Quat> {
         V(_self.normalize())
     }
 
     /// The rotation that undoes this one.
+    #[ffi]
     fn inverse(_self: R<Quat>) -> V<Quat> {
         V(_self.inverse())
     }
 
     /// The rotation with the vector part negated, which is the inverse for unit quaternions.
+    #[ffi]
     fn conjugate(_self: R<Quat>) -> V<Quat> {
         V(_self.conjugate())
     }
 
     /// The length of the quaternion, which is `1` for a rotation.
+    #[ffi]
     fn length(_self: R<Quat>) -> f32 {
         _self.length()
     }
 
     /// The dot product of two rotations.
+    #[ffi]
     fn dot(_self: R<Quat>, other: R<Quat>) -> f32 {
         _self.dot(*other)
     }
 
     /// Spherically interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.
+    #[ffi]
     fn slerp(_self: R<Quat>, other: R<Quat>, t: f32) -> V<Quat> {
         V(_self.slerp(*other, t))
     }
 
     /// Linearly interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.
+    #[ffi]
     fn lerp(_self: R<Quat>, other: R<Quat>, t: f32) -> V<Quat> {
         V(_self.lerp(*other, t))
     }
 
     /// The angle in radians between two rotations.
+    #[ffi]
     fn angle_between(_self: R<Quat>, other: R<Quat>) -> f32 {
         _self.angle_between(*other)
     }
 
     /// The axis this rotation turns around.
+    #[ffi]
     fn axis(_self: R<Quat>) -> V<Vec3> {
         V(_self.to_axis_angle().0)
     }
 
     /// The angle in radians this rotation turns by around its [`axis`](Self::axis).
+    #[ffi]
     fn angle(_self: R<Quat>) -> f32 {
         _self.to_axis_angle().1
     }
 
     /// The vector part of the quaternion, i.e. the x, y and z components.
+    #[ffi]
     fn xyz(_self: R<Quat>) -> V<Vec3> {
         V(_self.xyz())
     }
 
     /// Whether the quaternion has a length of `1`.
+    #[ffi]
     fn is_normalized(_self: R<Quat>) -> bool {
         _self.is_normalized()
     }

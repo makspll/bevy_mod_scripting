@@ -14,41 +14,47 @@ use bevy_mod_scripting_derive::script_bindings;
     name = "mat3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
-    core,
-    ffi
+    core
 )]
 impl Mat3 {
     /// The identity matrix, which leaves vectors unchanged.
+    #[ffi]
     fn identity() -> V<Mat3> {
         V(Mat3::IDENTITY)
     }
 
     /// A matrix with the given columns.
+    #[ffi]
     fn from_cols(x: R<Vec3>, y: R<Vec3>, z: R<Vec3>) -> V<Mat3> {
         V(Mat3::from_cols(*x, *y, *z))
     }
 
     /// A matrix with the given diagonal and zeros elsewhere.
+    #[ffi]
     fn from_diagonal(diagonal: R<Vec3>) -> V<Mat3> {
         V(Mat3::from_diagonal(*diagonal))
     }
 
     /// The rotation matrix of a rotation.
+    #[ffi]
     fn from_quat(q: R<Quat>) -> V<Mat3> {
         V(Mat3::from_quat(*q))
     }
 
     /// A rotation matrix of `angle` radians around the x axis.
+    #[ffi]
     fn from_rotation_x(angle: f32) -> V<Mat3> {
         V(Mat3::from_rotation_x(angle))
     }
 
     /// A rotation matrix of `angle` radians around the y axis.
+    #[ffi]
     fn from_rotation_y(angle: f32) -> V<Mat3> {
         V(Mat3::from_rotation_y(angle))
     }
 
     /// A rotation matrix of `angle` radians around the z axis.
+    #[ffi]
     fn from_rotation_z(angle: f32) -> V<Mat3> {
         V(Mat3::from_rotation_z(angle))
     }
@@ -72,21 +78,25 @@ impl Mat3 {
     }
 
     /// The matrix with rows and columns swapped.
+    #[ffi]
     fn transpose(_self: R<Mat3>) -> V<Mat3> {
         V(_self.transpose())
     }
 
     /// The matrix that undoes this one.
+    #[ffi]
     fn inverse(_self: R<Mat3>) -> V<Mat3> {
         V(_self.inverse())
     }
 
     /// The determinant of the matrix.
+    #[ffi]
     fn determinant(_self: R<Mat3>) -> f32 {
         _self.determinant()
     }
 
     /// Multiplies by a matrix, or transforms a vector, or scales every component by a number.
+    #[ffi]
     fn mul(_self: R<Mat3>, rhs: Union<R<Mat3>, Union<R<Vec3>, f32>>) -> Union<V<Mat3>, V<Vec3>> {
         match rhs.into_left() {
             Ok(m) => Union::new_left(V(*_self * *m)),
@@ -98,36 +108,43 @@ impl Mat3 {
     }
 
     /// Whether both matrices have exactly the same components.
+    #[ffi]
     fn eq(_self: R<Mat3>, other: R<Mat3>) -> bool {
         *_self == *other
     }
 
     /// Adds two matrices component-wise.
+    #[ffi]
     fn add(_self: R<Mat3>, other: R<Mat3>) -> V<Mat3> {
         V(*_self + *other)
     }
 
     /// Subtracts two matrices component-wise.
+    #[ffi]
     fn sub(_self: R<Mat3>, other: R<Mat3>) -> V<Mat3> {
         V(*_self - *other)
     }
 
     /// Divides every component by a number.
+    #[ffi]
     fn div(_self: R<Mat3>, rhs: f32) -> V<Mat3> {
         V(*_self / rhs)
     }
 
     /// Transforms a [`Vec3`](bevy_math::Vec3) by this matrix.
+    #[ffi]
     fn mul_vec3(_self: R<Mat3>, v: R<Vec3>) -> V<Vec3> {
         V(_self.mul_vec3(*v))
     }
 
     /// Transforms a point in 2D, treating it as having a z of `1`.
+    #[ffi]
     fn transform_point2(_self: R<Mat3>, point: R<Vec2>) -> V<Vec2> {
         V(_self.transform_point2(*point))
     }
 
     /// Transforms a direction in 2D, ignoring translation.
+    #[ffi]
     fn transform_vector2(_self: R<Mat3>, vector: R<Vec2>) -> V<Vec2> {
         V(_self.transform_vector2(*vector))
     }
@@ -138,41 +155,47 @@ impl Mat3 {
     name = "mat4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
-    core,
-    ffi
+    core
 )]
 impl Mat4 {
     /// The identity matrix, which leaves vectors unchanged.
+    #[ffi]
     fn identity() -> V<Mat4> {
         V(Mat4::IDENTITY)
     }
 
     /// A matrix with the given columns.
+    #[ffi]
     fn from_cols(x: R<Vec4>, y: R<Vec4>, z: R<Vec4>, w: R<Vec4>) -> V<Mat4> {
         V(Mat4::from_cols(*x, *y, *z, *w))
     }
 
     /// The rotation matrix of a rotation.
+    #[ffi]
     fn from_quat(q: R<Quat>) -> V<Mat4> {
         V(Mat4::from_quat(*q))
     }
 
     /// A matrix that moves points by `translation`.
+    #[ffi]
     fn from_translation(translation: R<Vec3>) -> V<Mat4> {
         V(Mat4::from_translation(*translation))
     }
 
     /// A matrix that scales every axis by the matching component of `scale`.
+    #[ffi]
     fn from_scale(scale: R<Vec3>) -> V<Mat4> {
         V(Mat4::from_scale(*scale))
     }
 
     /// A matrix that rotates by `rotation`, then moves by `translation`.
+    #[ffi]
     fn from_rotation_translation(rotation: R<Quat>, translation: R<Vec3>) -> V<Mat4> {
         V(Mat4::from_rotation_translation(*rotation, *translation))
     }
 
     /// A matrix that scales by `scale`, then rotates by `rotation`, then moves by `translation`.
+    #[ffi]
     fn from_scale_rotation_translation(
         scale: R<Vec3>,
         rotation: R<Quat>,
@@ -204,21 +227,25 @@ impl Mat4 {
     }
 
     /// The matrix with rows and columns swapped.
+    #[ffi]
     fn transpose(_self: R<Mat4>) -> V<Mat4> {
         V(_self.transpose())
     }
 
     /// The matrix that undoes this one.
+    #[ffi]
     fn inverse(_self: R<Mat4>) -> V<Mat4> {
         V(_self.inverse())
     }
 
     /// The determinant of the matrix.
+    #[ffi]
     fn determinant(_self: R<Mat4>) -> f32 {
         _self.determinant()
     }
 
     /// Multiplies by a matrix, or transforms a vector, or scales every component by a number.
+    #[ffi]
     fn mul(_self: R<Mat4>, rhs: Union<R<Mat4>, Union<R<Vec4>, f32>>) -> Union<V<Mat4>, V<Vec4>> {
         match rhs.into_left() {
             Ok(m) => Union::new_left(V(*_self * *m)),
@@ -230,36 +257,43 @@ impl Mat4 {
     }
 
     /// Whether both matrices have exactly the same components.
+    #[ffi]
     fn eq(_self: R<Mat4>, other: R<Mat4>) -> bool {
         *_self == *other
     }
 
     /// Adds two matrices component-wise.
+    #[ffi]
     fn add(_self: R<Mat4>, other: R<Mat4>) -> V<Mat4> {
         V(*_self + *other)
     }
 
     /// Subtracts two matrices component-wise.
+    #[ffi]
     fn sub(_self: R<Mat4>, other: R<Mat4>) -> V<Mat4> {
         V(*_self - *other)
     }
 
     /// Divides every component by a number.
+    #[ffi]
     fn div(_self: R<Mat4>, rhs: f32) -> V<Mat4> {
         V(*_self / rhs)
     }
 
     /// Transforms a point in 3D, including translation and the projection divide.
+    #[ffi]
     fn transform_point3(_self: R<Mat4>, point: R<Vec3>) -> V<Vec3> {
         V(_self.transform_point3(*point))
     }
 
     /// Transforms a direction in 3D, ignoring translation.
+    #[ffi]
     fn transform_vector3(_self: R<Mat4>, vector: R<Vec3>) -> V<Vec3> {
         V(_self.transform_vector3(*vector))
     }
 
     /// Transforms a point in 3D by a projection matrix, including the perspective divide.
+    #[ffi]
     fn project_point3(_self: R<Mat4>, point: R<Vec3>) -> V<Vec3> {
         V(_self.project_point3(*point))
     }

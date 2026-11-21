@@ -3,7 +3,7 @@
 //! - The FFI library is loaded privately (`luaopen_ffi`, never a global or `require`-able), the first time a value of
 //!   such a type reaches Lua.
 //! - Each type is a C struct (`ffi.cdef`) with a metatype: fields are plain FFI fields; functions with an `extern "C"`
-//!   wrapper (`#[script_bindings(ffi)]`, see [`FfiFunction`]) are called through the FFI with C types, after checking
+//!   wrapper (`#[ffi]` in `#[script_bindings]` blocks, see [`FfiFunction`]) are called through the FFI with C types, after checking
 //!   their arguments are of the expected types, else (and for other functions) through BMS' typed functions, which read
 //!   cdata in place ([`cdata_at`], [`super::LuaArgs`]); operators call their functions the same way.
 //! - Values Rust returns are copied into new cdata ([`push_from_ptr`]); scripts can write every byte of a cdata at any
@@ -222,6 +222,35 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
             })
             .map(|n| (*n).clone())
             .collect::<Vec<_>>();
+        // every `#[ffi]` function's types need a C layout: it can't be a bound (see `FfiArg`), so it's checked here
+        let has_layout = |type_id| types.iter().any(|n| n.vtable.type_id == type_id);
+        let name = |type_id| {
+            registry
+                .native_types()
+                .find(|n| n.vtable.type_id == type_id)
+                .map_or_else(|| format!("{type_id:?}"), |n| n.vtable.type_name.to_owned())
+        };
+        for (owner, function) in registry.all_ffi_functions() {
+            let used = function.params.iter().chain(match &function.result {
+                FfiResult::One(result) => std::slice::from_ref(result),
+                FfiResult::Union(alternatives) => alternatives.as_slice(),
+            });
+            let missing = std::iter::once(owner)
+                .chain(used.filter_map(|t| match t {
+                    FfiType::Value(type_id) => Some(*type_id),
+                    FfiType::Scalar(_) => None,
+                }))
+                .find(|type_id| !has_layout(*type_id));
+            if let Some(missing) = missing {
+                return Err(mlua::Error::RuntimeError(format!(
+                    "`{}::{}` is an `#[ffi]` function, but `{}` has no C layout: declare it with `script_native!(world, ffi {} {{ .. }})`, or remove `#[ffi]`",
+                    name(owner),
+                    function.name,
+                    name(missing),
+                    name(missing),
+                )));
+            }
+        }
         let functions = types
             .iter()
             .map(|n| registry.ffi_functions(n.vtable.type_id).to_vec())
@@ -591,11 +620,17 @@ fn function_source(
             }
             ("uint8_t".to_owned(), call)
         }
-        FfiResult::One(FfiType::Scalar(c)) => (c.to_string(), format!("return f{pointer}({args})")),
+        FfiResult::One(FfiType::Scalar(c)) => {
+            // every wrapper takes the out-pointer, unused here
+            c_params.push("void*".to_owned());
+            (
+                c.to_string(),
+                format!("return f{pointer}({})", with_out("nil")),
+            )
+        }
         FfiResult::One(FfiType::Value(type_id)) => {
-            let type_id = *type_id;
-            let (lua_ctype, c_name) = ctype(type_id)?;
-            c_params.push(format!("{c_name}*"));
+            let (lua_ctype, _) = ctype(*type_id)?;
+            c_params.push("void*".to_owned());
             // written to the type's scratch value and copied from it: a result made here and passed to C would always
             // be allocated, a copy made by Lua can be optimised away. Nothing else points to the scratch value.
             let scratch = lua_ctype.replacen('C', "S", 1);
@@ -780,20 +815,19 @@ mod test {
             })
             .register("eq", |a: R<C>, b: R<C>| a.x == b.x);
         let value = FfiType::Value(std::any::TypeId::of::<C>());
-        world
+        let registry = world
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .0
-            .clone()
-            .write()
-            .register_ffi_function(
-                std::any::TypeId::of::<C>(),
-                FfiFunction {
-                    name: "add",
-                    function: add as *const (),
-                    params: vec![value, value],
-                    result: FfiResult::One(value),
-                },
-            );
+            .clone();
+        registry.clone().write().register_ffi_function(
+            std::any::TypeId::of::<C>(),
+            FfiFunction {
+                name: "add",
+                function: add as *const (),
+                params: vec![value, value],
+                result: FfiResult::One(value),
+            },
+        );
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
             let lua = Lua::new();
@@ -864,6 +898,25 @@ mod test {
             )
             .exec()
             .unwrap();
+            // an FFI function of a type without a C layout (`Holder`): an error when a state makes its C types
+            registry.clone().write().register_ffi_function(
+                std::any::TypeId::of::<C>(),
+                FfiFunction {
+                    name: "holder_of",
+                    function: add as *const (),
+                    params: vec![FfiType::Value(std::any::TypeId::of::<Holder>())],
+                    result: FfiResult::One(value),
+                },
+            );
+            let lua = Lua::new();
+            let function = super::super::native_function(
+                &lua,
+                (|x: f32| V(C { x })).into_dynamic_script_function(),
+            )
+            .unwrap();
+            lua.globals().set("value", function).unwrap();
+            let error = lua.load("return value(1)").exec().unwrap_err().to_string();
+            assert!(error.contains("::Holder` has no C layout"), "{error}");
         });
     }
 }

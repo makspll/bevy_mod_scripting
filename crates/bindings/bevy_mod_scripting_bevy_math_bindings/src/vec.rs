@@ -15,7 +15,7 @@ use bevy_mod_scripting_derive::script_bindings;
 macro_rules! float_vector_functions {
     ($ty:ty, $name:literal) => {
         #[script_bindings(
-            remote, ffi,
+            remote,
             name = $name,
             bms_bindings_path = "bevy_mod_scripting_bindings",
             namespace = "math",
@@ -23,21 +23,25 @@ macro_rules! float_vector_functions {
         )]
         impl $ty {
             /// A vector with all components set to `v`.
+            #[ffi]
             fn splat(v: f32) -> V<$ty> {
                 V(<$ty>::splat(v))
             }
 
             /// A vector with all components set to `0`.
+            #[ffi]
             fn zero() -> V<$ty> {
                 V(<$ty>::ZERO)
             }
 
             /// A vector with all components set to `1`.
+            #[ffi]
             fn one() -> V<$ty> {
                 V(<$ty>::ONE)
             }
 
             /// Adds a vector or a number to every component.
+            #[ffi]
             fn add(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self + *v,
@@ -46,6 +50,7 @@ macro_rules! float_vector_functions {
             }
 
             /// Subtracts a vector or a number from every component.
+            #[ffi]
             fn sub(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self - *v,
@@ -54,6 +59,7 @@ macro_rules! float_vector_functions {
             }
 
             /// Multiplies component-wise by a vector, or scales by a number.
+            #[ffi]
             fn mul(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self * *v,
@@ -62,6 +68,7 @@ macro_rules! float_vector_functions {
             }
 
             /// Divides component-wise by a vector, or by a number.
+            #[ffi]
             fn div(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self / *v,
@@ -70,6 +77,7 @@ macro_rules! float_vector_functions {
             }
 
             /// The component-wise remainder of dividing by a vector, or by a number.
+            #[ffi]
             fn rem(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self % *v,
@@ -78,46 +86,55 @@ macro_rules! float_vector_functions {
             }
 
             /// Subtracts every component from a number, for `n - v`.
+            #[ffi]
             fn rsub(_self: R<$ty>, lhs: f32) -> V<$ty> {
                 V(lhs - *_self)
             }
 
             /// Divides a number by every component, for `n / v`.
+            #[ffi]
             fn rdiv(_self: R<$ty>, lhs: f32) -> V<$ty> {
                 V(lhs / *_self)
             }
 
             /// Negates every component.
+            #[ffi]
             fn neg(_self: R<$ty>) -> V<$ty> {
                 V(-*_self)
             }
 
             /// Whether all components are equal.
+            #[ffi]
             fn eq(_self: R<$ty>, other: R<$ty>) -> bool {
                 *_self == *other
             }
 
             /// The length of the vector.
+            #[ffi]
             fn length(_self: R<$ty>) -> f32 {
                 _self.length()
             }
 
             /// The squared length of the vector, faster than [`length`](Self::length) when comparing lengths.
+            #[ffi]
             fn length_squared(_self: R<$ty>) -> f32 {
                 _self.length_squared()
             }
 
             /// The distance between two points.
+            #[ffi]
             fn distance(_self: R<$ty>, other: R<$ty>) -> f32 {
                 _self.distance(*other)
             }
 
             /// The squared distance between two points.
+            #[ffi]
             fn distance_squared(_self: R<$ty>, other: R<$ty>) -> f32 {
                 _self.distance_squared(*other)
             }
 
             /// The dot product of two vectors.
+            #[ffi]
             fn dot(_self: R<$ty>, other: R<$ty>) -> f32 {
                 _self.dot(*other)
             }
@@ -130,6 +147,7 @@ macro_rules! float_vector_functions {
             }
 
             /// The vector scaled to a length of `1`, or zero if that's not possible.
+            #[ffi]
             fn normalize_or_zero(_self: R<$ty>) -> V<$ty> {
                 V(_self.normalize_or_zero())
             }
@@ -140,91 +158,109 @@ macro_rules! float_vector_functions {
             }
 
             /// Linearly interpolates towards `other`, `t = 0` gives this vector and `t = 1` gives `other`.
+            #[ffi]
             fn lerp(_self: R<$ty>, other: R<$ty>, t: f32) -> V<$ty> {
                 V(_self.lerp(*other, t))
             }
 
             /// Moves towards `target` by at most `max_distance`, without overshooting.
+            #[ffi]
             fn move_towards(_self: R<$ty>, target: R<$ty>, max_distance: f32) -> V<$ty> {
                 V(_self.move_towards(*target, max_distance))
             }
 
             /// The absolute value of every component.
+            #[ffi]
             fn abs(_self: R<$ty>) -> V<$ty> {
                 V(_self.abs())
             }
 
             /// Rounds every component down.
+            #[ffi]
             fn floor(_self: R<$ty>) -> V<$ty> {
                 V(_self.floor())
             }
 
             /// Rounds every component up.
+            #[ffi]
             fn ceil(_self: R<$ty>) -> V<$ty> {
                 V(_self.ceil())
             }
 
             /// Rounds every component to the nearest integer.
+            #[ffi]
             fn round(_self: R<$ty>) -> V<$ty> {
                 V(_self.round())
             }
 
             /// The fractional part of every component, i.e. `x - floor(x)`.
+            #[ffi]
             fn fract(_self: R<$ty>) -> V<$ty> {
                 V(_self.fract_gl())
             }
 
             /// The sign of every component: `1`, `-1`, or NaN.
+            #[ffi]
             fn signum(_self: R<$ty>) -> V<$ty> {
                 V(_self.signum())
             }
 
             /// The smaller of each pair of components.
+            #[ffi]
             fn min(_self: R<$ty>, other: R<$ty>) -> V<$ty> {
                 V(_self.min(*other))
             }
 
             /// The larger of each pair of components.
+            #[ffi]
             fn max(_self: R<$ty>, other: R<$ty>) -> V<$ty> {
                 V(_self.max(*other))
             }
 
             /// Clamps every component between the components of `min` and `max`.
+            #[ffi]
             fn clamp(_self: R<$ty>, min: R<$ty>, max: R<$ty>) -> V<$ty> {
                 V(_self.clamp(*min, *max))
             }
 
             /// Scales the vector so that its length is between `min` and `max`.
+            #[ffi]
             fn clamp_length(_self: R<$ty>, min: f32, max: f32) -> V<$ty> {
                 V(_self.clamp_length(min, max))
             }
 
             /// Scales the vector down so that its length is at most `max`.
+            #[ffi]
             fn clamp_length_max(_self: R<$ty>, max: f32) -> V<$ty> {
                 V(_self.clamp_length_max(max))
             }
 
             /// The projection of this vector onto `other`.
+            #[ffi]
             fn project_onto(_self: R<$ty>, other: R<$ty>) -> V<$ty> {
                 V(_self.project_onto(*other))
             }
 
             /// The part of this vector perpendicular to `other`.
+            #[ffi]
             fn reject_from(_self: R<$ty>, other: R<$ty>) -> V<$ty> {
                 V(_self.reject_from(*other))
             }
 
             /// Reflects this vector off a surface with the given `normal`, which must be of length `1`.
+            #[ffi]
             fn reflect(_self: R<$ty>, normal: R<$ty>) -> V<$ty> {
                 V(_self.reflect(*normal))
             }
 
             /// The smallest component.
+            #[ffi]
             fn min_element(_self: R<$ty>) -> f32 {
                 _self.min_element()
             }
 
             /// The largest component.
+            #[ffi]
             fn max_element(_self: R<$ty>) -> f32 {
                 _self.max_element()
             }
@@ -243,7 +279,6 @@ float_vector_functions!(Vec4, "vec4_shared_functions");
 
 #[script_bindings(
     remote,
-    ffi,
     name = "vec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -263,66 +298,79 @@ impl Vec2 {
     /// let v = Vec2.new(3.0, 4.0);
     /// assert!(v.length() == 5.0);
     /// ```
+    #[ffi]
     fn new(x: f32, y: f32) -> V<Vec2> {
         V(Vec2::new(x, y))
     }
 
     /// The unit vector along the x axis.
+    #[ffi]
     fn unit_x() -> V<Vec2> {
         V(Vec2::X)
     }
 
     /// The unit vector along the y axis.
+    #[ffi]
     fn unit_y() -> V<Vec2> {
         V(Vec2::Y)
     }
 
     /// The unit vector of the given angle in radians, measured counterclockwise from the x axis.
+    #[ffi]
     fn from_angle(angle: f32) -> V<Vec2> {
         V(Vec2::from_angle(angle))
     }
 
     /// The angle of this vector in radians, measured counterclockwise from the x axis.
+    #[ffi]
     fn to_angle(_self: R<Vec2>) -> f32 {
         _self.to_angle()
     }
 
     /// The signed angle in radians to rotate this vector onto `other`.
+    #[ffi]
     fn angle_to(_self: R<Vec2>, other: R<Vec2>) -> f32 {
         _self.angle_to(*other)
     }
 
     /// The vector rotated by 90 degrees counterclockwise.
+    #[ffi]
     fn perp(_self: R<Vec2>) -> V<Vec2> {
         V(_self.perp())
     }
 
     /// The 2D cross product, positive if `other` is counterclockwise from this vector.
+    #[ffi]
     fn perp_dot(_self: R<Vec2>, other: R<Vec2>) -> f32 {
         _self.perp_dot(*other)
     }
 
     /// Rotates `other` by the angle of this vector, and scales it by its length.
+    #[ffi]
     fn rotate(_self: R<Vec2>, other: R<Vec2>) -> V<Vec2> {
         V(_self.rotate(*other))
     }
 
     /// A [`Vec3`](bevy_math::Vec3) with the given `z`.
+    #[ffi]
     fn extend(_self: R<Vec2>, z: f32) -> V<Vec3> {
         V(_self.extend(z))
     }
 
     /// Converts to an integer vector, rounding towards zero.
+    #[ffi]
     fn as_ivec2(_self: R<Vec2>) -> V<IVec2> {
         V(_self.as_ivec2())
     }
 
     /// Converts to an unsigned integer vector, rounding towards zero, negative values become `0`.
+    #[ffi]
     fn as_uvec2(_self: R<Vec2>) -> V<UVec2> {
         V(_self.as_uvec2())
     }
 
     /// Converts to a double precision vector.
+    #[ffi]
     fn as_dvec2(_self: R<Vec2>) -> V<DVec2> {
         V(_self.as_dvec2())
     }
@@ -330,7 +378,6 @@ impl Vec2 {
 
 #[script_bindings(
     remote,
-    ffi,
     name = "vec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -350,66 +397,79 @@ impl Vec3 {
     /// let v = Vec3.new(1.0, 2.0, 3.0);
     /// assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
     /// ```
+    #[ffi]
     fn new(x: f32, y: f32, z: f32) -> V<Vec3> {
         V(Vec3::new(x, y, z))
     }
 
     /// The unit vector along the x axis.
+    #[ffi]
     fn unit_x() -> V<Vec3> {
         V(Vec3::X)
     }
 
     /// The unit vector along the y axis, which is up in bevy.
+    #[ffi]
     fn unit_y() -> V<Vec3> {
         V(Vec3::Y)
     }
 
     /// The unit vector along the z axis.
+    #[ffi]
     fn unit_z() -> V<Vec3> {
         V(Vec3::Z)
     }
 
     /// The cross product, perpendicular to both vectors.
+    #[ffi]
     fn cross(_self: R<Vec3>, other: R<Vec3>) -> V<Vec3> {
         V(_self.cross(*other))
     }
 
     /// The angle in radians between two vectors, between `0` and `pi`.
+    #[ffi]
     fn angle_between(_self: R<Vec3>, other: R<Vec3>) -> f32 {
         _self.angle_between(*other)
     }
 
     /// Some vector perpendicular to this one.
+    #[ffi]
     fn any_orthogonal_vector(_self: R<Vec3>) -> V<Vec3> {
         V(_self.any_orthogonal_vector())
     }
 
     /// A [`Vec4`](bevy_math::Vec4) with the given `w`.
+    #[ffi]
     fn extend(_self: R<Vec3>, w: f32) -> V<Vec4> {
         V(_self.extend(w))
     }
 
     /// A [`Vec2`](bevy_math::Vec2) of the `x` and `y` components.
+    #[ffi]
     fn truncate(_self: R<Vec3>) -> V<Vec2> {
         V(_self.truncate())
     }
 
     /// Converts to an integer vector, rounding towards zero.
+    #[ffi]
     fn as_ivec3(_self: R<Vec3>) -> V<IVec3> {
         V(_self.as_ivec3())
     }
 
     /// Converts to an unsigned integer vector, rounding towards zero, negative values become `0`.
+    #[ffi]
     fn as_uvec3(_self: R<Vec3>) -> V<UVec3> {
         V(_self.as_uvec3())
     }
 
     /// Converts to a double precision vector.
+    #[ffi]
     fn as_dvec3(_self: R<Vec3>) -> V<DVec3> {
         V(_self.as_dvec3())
     }
 
     /// Converts to a [`Vec3A`](bevy_math::Vec3A), used by some bevy types such as bounding boxes.
+    #[ffi]
     fn to_vec3a(_self: R<Vec3>) -> V<Vec3A> {
         V(Vec3A::from(*_self))
     }
@@ -417,7 +477,6 @@ impl Vec3 {
 
 #[script_bindings(
     remote,
-    ffi,
     name = "vec4_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -425,11 +484,13 @@ impl Vec3 {
 )]
 impl Vec4 {
     /// Creates a new vector.
+    #[ffi]
     fn new(x: f32, y: f32, z: f32, w: f32) -> V<Vec4> {
         V(Vec4::new(x, y, z, w))
     }
 
     /// A [`Vec3`](bevy_math::Vec3) of the `x`, `y` and `z` components.
+    #[ffi]
     fn truncate(_self: R<Vec4>) -> V<Vec3> {
         V(_self.truncate())
     }
@@ -437,7 +498,6 @@ impl Vec4 {
 
 #[script_bindings(
     remote,
-    ffi,
     name = "vec3a_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -445,11 +505,13 @@ impl Vec4 {
 )]
 impl Vec3A {
     /// Creates a new vector.
+    #[ffi]
     fn new(x: f32, y: f32, z: f32) -> V<Vec3A> {
         V(Vec3A::new(x, y, z))
     }
 
     /// Converts to a [`Vec3`](bevy_math::Vec3).
+    #[ffi]
     fn to_vec3(_self: R<Vec3A>) -> V<Vec3> {
         V(Vec3::from(*_self))
     }
@@ -457,7 +519,6 @@ impl Vec3A {
 
 #[script_bindings(
     remote,
-    ffi,
     name = "dvec2_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -465,11 +526,13 @@ impl Vec3A {
 )]
 impl DVec2 {
     /// Creates a new double precision vector.
+    #[ffi]
     fn new(x: f64, y: f64) -> V<DVec2> {
         V(DVec2::new(x, y))
     }
 
     /// Converts to a single precision [`Vec2`](bevy_math::Vec2).
+    #[ffi]
     fn as_vec2(_self: R<DVec2>) -> V<Vec2> {
         V(_self.as_vec2())
     }
@@ -477,7 +540,6 @@ impl DVec2 {
 
 #[script_bindings(
     remote,
-    ffi,
     name = "dvec3_functions",
     bms_bindings_path = "bevy_mod_scripting_bindings",
     namespace = "math",
@@ -485,11 +547,13 @@ impl DVec2 {
 )]
 impl DVec3 {
     /// Creates a new double precision vector.
+    #[ffi]
     fn new(x: f64, y: f64, z: f64) -> V<DVec3> {
         V(DVec3::new(x, y, z))
     }
 
     /// Converts to a single precision [`Vec3`](bevy_math::Vec3).
+    #[ffi]
     fn as_vec3(_self: R<DVec3>) -> V<Vec3> {
         V(_self.as_vec3())
     }

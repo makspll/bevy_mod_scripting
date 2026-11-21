@@ -144,6 +144,21 @@ pub fn from_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///     fn spawn_enemy(ctxt: FunctionCallContext, hp: usize) -> Result<(), InteropError> { .. }
 /// }
 /// ```
+///
+/// # FFI functions
+///
+/// Functions marked `#[ffi]` also get an `extern "C"` wrapper, which languages call through their FFI (LuaJIT's) with C
+/// types, see `bevy_mod_scripting_bindings::native::FfiFunction`. Their parameters must implement `FfiArg` (scalars,
+/// `R<T>`, `V<T>`, or `Union`s of them), their result `FfiReturn`, else they don't compile; `T` needs a C layout
+/// (`script_native!(world, ffi T { .. })`), checked when a language makes its C types. A panic aborts the process.
+///
+/// ```rust,ignore
+/// #[script_bindings(remote, namespace = "math")]
+/// impl Vec3 {
+///     #[ffi]
+///     fn dot(_self: R<Vec3>, other: R<Vec3>) -> f32 { _self.dot(*other) }
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn script_bindings(
     args: proc_macro::TokenStream,

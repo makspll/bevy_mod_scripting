@@ -546,12 +546,24 @@ impl LuaReturn {
             // the function making the cdata, left on the stack for `push_ready`; a userdata if there's none
             // Safety: `l` is the state of the call
             #[cfg(any(feature = "luajit", feature = "luajit52"))]
-            Pending::Native(native)
-                if native.cdata
-                    && unsafe { cdata::push_ctype(l, native.vtable, native.read_only) }
-                        .unwrap_or(false) =>
-            {
-                Ready::Cdata(native)
+            Pending::Native(mut native) if native.cdata => {
+                // Safety: `l` is the state of the call
+                match unsafe { cdata::push_ctype(l, native.vtable, native.read_only) } {
+                    Ok(true) => Ready::Cdata(native),
+                    // a type registered after the C types were made: a userdata
+                    Ok(false) => {
+                        native.cdata = false;
+                        let pending = Pending::Native(native);
+                        // Safety: see above
+                        return unsafe { Self { pending, ..self }.prepare_plain(l) };
+                    }
+                    // i.e. an `#[ffi]` function of a type without a C layout
+                    Err(e) => {
+                        // Safety: never pushed
+                        unsafe { native.discard() };
+                        return Err(e);
+                    }
+                }
             }
             Pending::Native(native) => {
                 // left on the stack for `push_ready`
