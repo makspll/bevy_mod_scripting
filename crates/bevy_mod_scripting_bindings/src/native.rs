@@ -900,14 +900,6 @@ unsafe impl FfiScalar for i32 {
 unsafe impl FfiScalar for u32 {
     const C_TYPE: &'static str = "uint32_t";
 }
-// Safety: see above
-unsafe impl FfiScalar for i64 {
-    const C_TYPE: &'static str = "int64_t";
-}
-// Safety: see above
-unsafe impl FfiScalar for u64 {
-    const C_TYPE: &'static str = "uint64_t";
-}
 
 /// The C layout of a struct of the scalar fields `(name, size, alignment)` in order, aligned to at least `align`: the offset
 /// of each field, the size and the alignment. Used by [`crate::script_native`] to check a Rust type at compile time.

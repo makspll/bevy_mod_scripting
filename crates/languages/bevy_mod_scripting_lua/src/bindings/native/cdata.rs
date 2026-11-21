@@ -243,7 +243,10 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
         by_vtable.raw_set(vtable, info.clone())?;
         by_id.raw_set(id, vtable)?;
         from_ptrs.raw_set(vtable, info.raw_get::<mlua::Function>(2)?)?;
-        calibrate(&info.raw_get::<mlua::Value>(5)?, id)?;
+        // the same for every type and state of this build
+        if CTYPEID_OFFSET.load(Ordering::Acquire) == 0 {
+            calibrate(&info.raw_get::<mlua::Value>(5)?, id)?;
+        }
     }
     lua.set_named_registry_value(TYPES, by_vtable)?;
     // Safety: protected mode, raw sets of the tables on the top into the registry
@@ -455,7 +458,8 @@ fn function_source(
     };
     let name = function.name;
     Some(format!(
-        "local f{pointer} = cast(\"{c_result} (*)({})\", ptrs[{pointer}])\nlocal function w{pointer}({args}) if {guard} then {call} end return slow.{name}({args}) end\nmethods.{name} = w{pointer} statics.{name} = w{pointer}\n",
+        // in a block: a chunk has room for 200 locals only
+        "do local f{pointer} = cast(\"{c_result} (*)({})\", ptrs[{pointer}])\nlocal function w({args}) if {guard} then {call} end return slow.{name}({args}) end\nmethods.{name} = w statics.{name} = w end\n",
         c_params.join(", ")
     ))
 }
