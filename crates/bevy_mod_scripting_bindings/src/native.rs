@@ -854,7 +854,10 @@ pub enum FfiType {
 }
 
 /// A function of a native type callable through a language's FFI (i.e. LuaJIT's) with C types: an `extern "C"` wrapper of a
-/// registered function, made by `#[script_bindings(ffi)]`. Panics abort, as they can't unwind through C.
+/// registered function, made by `#[script_bindings(ffi)]`.
+///
+/// A panic of the function aborts the process, as it can't unwind through C: only for functions which don't panic (no
+/// integer arithmetic which may overflow, no indexing).
 #[derive(Clone, Debug)]
 pub struct FfiFunction {
     /// The name of the function, the same as the registered one's

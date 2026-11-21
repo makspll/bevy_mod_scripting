@@ -188,7 +188,8 @@ struct Args {
     /// If set, puts the type in the given script namespace (if it is not in one already), instead of the one named after its crate
     pub namespace: Option<syn::LitStr>,
     /// If true, functions whose parameters and result have C types also get an `extern "C"` wrapper, which languages call
-    /// through their FFI, see `bevy_mod_scripting_bindings::native::FfiFunction`
+    /// through their FFI, see `bevy_mod_scripting_bindings::native::FfiFunction`. A panic in a wrapper aborts the process:
+    /// only for impl blocks whose functions don't panic
     pub ffi: bool,
 
     pub shared_args: SharedArgs,
