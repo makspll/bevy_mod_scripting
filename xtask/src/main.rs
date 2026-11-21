@@ -1552,6 +1552,58 @@ impl Xtasks {
             })
             .collect::<Vec<_>>();
 
+        let testbeds = Self::BENCHER_TESTBEDS;
+
+        let group_to_benchmark_map: HashMap<_, Vec<_>> =
+            benchmarks
+                .iter()
+                .fold(HashMap::new(), |mut acc, (name, uuid)| {
+                    // one plot per group and language (the last word of script benchmarks' names), i.e. `interop Lua`
+                    let group = name.split('/').next().unwrap_or_default();
+                    let key = match name.rsplit(' ').next() {
+                        Some(language @ ("Lua" | "Rune")) => format!("{group} {language}"),
+                        _ => group.to_owned(),
+                    };
+                    acc.entry(key)
+                        .or_default()
+                        .push((name.clone(), uuid.clone()));
+                    acc
+                });
+
+        // bencher rejects plots with more than this many benchmarks
+        const MAX_BENCHMARKS_PER_PLOT: usize = 8;
+        // bencher rejects projects with more plots than this
+        const MAX_PLOTS: usize = 64;
+
+        // one plot per group chunk showing every testbed, so the plot count doesn't scale with testbeds.
+        // Groups with more benchmarks are split into several plots, so every benchmark gets one
+        let mut plots_to_create: Vec<(String, Vec<String>)> = Vec::new();
+        for (group, benchmarks) in group_to_benchmark_map.iter().sorted() {
+            if group.contains("build_time") {
+                continue;
+            }
+            let names_and_uuids = benchmarks.iter().sorted().collect::<Vec<_>>();
+            let chunks = names_and_uuids
+                .chunks(MAX_BENCHMARKS_PER_PLOT)
+                .collect::<Vec<_>>();
+            for (i, chunk) in chunks.iter().enumerate() {
+                let uuids = chunk.iter().map(|(_, uuid)| uuid.clone()).collect();
+                let plot_name = match chunks.len() {
+                    1 => group.clone(),
+                    n => format!("{group} ({}/{n})", i + 1),
+                };
+                plots_to_create.push((plot_name, uuids));
+            }
+        }
+
+        // checked before deleting anything, so a failure leaves the existing plots in place
+        if plots_to_create.len() > MAX_PLOTS {
+            bail!(
+                "{} plots needed but bencher allows {MAX_PLOTS}, merge benchmark groups",
+                plots_to_create.len()
+            );
+        }
+
         // delete all plots using bencher plot list bms to get "uuid's"
         // then bencher plot delete bms <uuid>
 
@@ -1592,76 +1644,34 @@ impl Xtasks {
             }
         }
 
-        let testbeds = Self::BENCHER_TESTBEDS;
-
-        let group_to_benchmark_map: HashMap<_, Vec<_>> =
-            benchmarks
-                .iter()
-                .fold(HashMap::new(), |mut acc, (name, uuid)| {
-                    // one plot per group and language (the last word of script benchmarks' names), i.e. `interop Lua`
-                    let group = name.split('/').next().unwrap_or_default();
-                    let key = match name.rsplit(' ').next() {
-                        Some(language @ ("Lua" | "Rune")) => format!("{group} {language}"),
-                        _ => group.to_owned(),
-                    };
-                    acc.entry(key)
-                        .or_default()
-                        .push((name.clone(), uuid.clone()));
-                    acc
-                });
-
         // create plot using
         // bencher plot create --x-axis date_time --branches main --testbeds <uuids> --benchmarks <uuids> --measures latency
+        for (plot_name, uuids) in plots_to_create {
+            let window_months = 12;
+            let window_seconds = window_months * 30 * 24 * 60 * 60;
+            let mut bencher_cmd = Command::new("bencher");
+            bencher_cmd
+                .stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit())
+                .args(["plot", "create", "bms"])
+                .args(["--title", &plot_name])
+                .args(["--x-axis", "version"])
+                .args(["--window", &window_seconds.to_string()])
+                .args(["--branches", Self::BENCHER_MAIN_BRANCH])
+                .args(testbeds.iter().flat_map(|(_, uuid)| ["--testbeds", *uuid]))
+                .args(["--measures", Self::BENCHER_LATENCY_MEASURE])
+                .args(["--token", &token.clone().unwrap_or_default()]);
 
-        // bencher rejects plots with more than this many benchmarks
-        const MAX_BENCHMARKS_PER_PLOT: usize = 8;
+            for benchmark_uuid in uuids {
+                bencher_cmd.arg("--benchmarks").arg(benchmark_uuid);
+            }
 
-        // groups with more benchmarks are split into several plots, so every benchmark gets one
-        for (group, benchmarks) in group_to_benchmark_map.iter().sorted() {
-            let names_and_uuids = benchmarks.iter().sorted().collect::<Vec<_>>();
-            let chunks = names_and_uuids
-                .chunks(MAX_BENCHMARKS_PER_PLOT)
-                .collect::<Vec<_>>();
-            for ((testbed_name, testbed_uuid), (i, chunk)) in
-                testbeds.iter().cartesian_product(chunks.iter().enumerate())
-            {
-                let uuids = chunk.iter().map(|(_, uuid)| uuid).collect::<Vec<_>>();
-                let without_gha = testbed_name.replace("-gha", "");
-                let plot_name = match chunks.len() {
-                    1 => format!("{without_gha} {group}"),
-                    n => format!("{without_gha} {group} ({}/{n})", i + 1),
-                };
+            let bencher_cmd = bencher_cmd
+                .output()
+                .with_context(|| "Could not create plot")?;
 
-                if plot_name.contains("build_time") {
-                    continue;
-                }
-
-                let window_months = 12;
-                let window_seconds = window_months * 30 * 24 * 60 * 60;
-                let mut bencher_cmd = Command::new("bencher");
-                bencher_cmd
-                    .stdout(std::process::Stdio::inherit())
-                    .stderr(std::process::Stdio::inherit())
-                    .args(["plot", "create", "bms"])
-                    .args(["--title", &plot_name])
-                    .args(["--x-axis", "version"])
-                    .args(["--window", &window_seconds.to_string()])
-                    .args(["--branches", Self::BENCHER_MAIN_BRANCH])
-                    .args(["--testbeds", testbed_uuid])
-                    .args(["--measures", Self::BENCHER_LATENCY_MEASURE])
-                    .args(["--token", &token.clone().unwrap_or_default()]);
-
-                for benchmark_uuid in uuids {
-                    bencher_cmd.arg("--benchmarks").arg(benchmark_uuid);
-                }
-
-                let bencher_cmd = bencher_cmd
-                    .output()
-                    .with_context(|| "Could not create plot")?;
-
-                if !bencher_cmd.status.success() {
-                    bail!("Failed to create plot: {:?}", bencher_cmd);
-                }
+            if !bencher_cmd.status.success() {
+                bail!("Failed to create plot: {:?}", bencher_cmd);
             }
         }
 
