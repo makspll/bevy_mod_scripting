@@ -41,6 +41,9 @@ static CTYPES: u8 = 0;
 /// Its address keys the table `{ [vtable] = { ctype, from_ptr, statics } }` in the registry, see [`type_info`].
 static TYPES: u8 = 0;
 
+/// The named registry value keeping the private FFI library alive, see [`private_ffi`].
+const FFI_MODULE: &str = "bms_ffi";
+
 /// The native value at `idx` if it's a cdata of a native type with a C layout: its vtable and its payload, alive while
 /// the value is on the stack. `[-0, +0, -]`, but needs 2 free slots.
 ///
@@ -282,6 +285,9 @@ fn private_ffi(lua: &Lua) -> mlua::Result<Table> {
             ffi::lua_call(l, 0, 1);
         })?
     };
+    // LuaJIT keeps the metatables and finalizers of C types alive through the module table only: it must stay
+    // reachable, in the registry, which scripts can't read
+    lua.set_named_registry_value(FFI_MODULE, &module)?;
     if let Some(loaded) = &loaded {
         loaded.raw_set("ffi", mlua::Nil)?;
     }
@@ -648,6 +654,11 @@ mod test {
                 local a = value(1)
                 assert(type(a) == "cdata" and a.x == 1, "a cdata")
                 assert(not pcall(require, "ffi") and package.loaded.ffi == nil, "no FFI library for scripts")
+                -- the library stays alive without `package.loaded`: collections must not free what C types need
+                collectgarbage() collectgarbage()
+                for i = 1, 1000 do a = a + value(0) end
+                collectgarbage()
+                a = value(1)
                 assert((a + a).x == 102 and a:add(a).x == 102, "an operator and a method with an FFI form")
                 assert((a + 3).x == 4 and a == value(1), "other arguments and functions through BMS")
                 local x = call_back(a, function() a.x = 5 end)
