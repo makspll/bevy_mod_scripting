@@ -507,10 +507,10 @@ pub(crate) fn register(world: &mut World) {
     register_vec3a_functions(world);
     register_dvec2_functions(world);
     register_dvec3_functions(world);
-    script_native!(world, ffi vector Vec2 { x: f32, y: f32 });
+    script_native!(world, ffi Vec2 { x: f32, y: f32 });
     script_native!(
         world,
-        ffi vector Vec3 {
+        ffi Vec3 {
             x: f32,
             y: f32,
             z: f32
@@ -519,7 +519,7 @@ pub(crate) fn register(world: &mut World) {
     // SIMD vectors: fields through `Deref`
     script_native!(
         world,
-        ffi vector deref Vec4 {
+        ffi deref Vec4 {
             x: f32,
             y: f32,
             z: f32,
@@ -528,16 +528,16 @@ pub(crate) fn register(world: &mut World) {
     );
     script_native!(
         world,
-        ffi vector deref Vec3A {
+        ffi deref Vec3A {
             x: f32,
             y: f32,
             z: f32
         }
     );
-    script_native!(world, ffi vector DVec2 { x: f64, y: f64 });
+    script_native!(world, ffi DVec2 { x: f64, y: f64 });
     script_native!(
         world,
-        ffi vector DVec3 {
+        ffi DVec3 {
             x: f64,
             y: f64,
             z: f64

@@ -308,8 +308,60 @@ fn ffi_kind(ty: &syn::Type) -> Option<FfiKind> {
     }
 }
 
-/// The registration of the `extern "C"` wrapper of a function whose parameters and result have FFI kinds (see
-/// [`ffi_kind`]), `None` for other functions. The wrapper runs the function's body like its registration does.
+/// How a parameter is passed to an `extern "C"` wrapper: its declaration, its conversion to the function's parameter and
+/// its `FfiType`.
+type FfiParam = (TokenStream, TokenStream, TokenStream);
+
+/// The ways the parameter `name` of the type `ty` is passed: one for a type with an FFI kind (see [`ffi_kind`]), one for
+/// each alternative of a `Union`, which get a wrapper each. `None` for anything else.
+fn ffi_params(
+    name: &syn::Ident,
+    ty: &syn::Type,
+    bms: &syn::Path,
+    span: Span,
+) -> Option<Vec<FfiParam>> {
+    if let syn::Type::Path(path) = ty
+        && let Some(segment) = path.path.segments.last()
+        && segment.ident == "Union"
+        && let syn::PathArguments::AngleBracketed(arguments) = &segment.arguments
+    {
+        let mut params = Vec::new();
+        for (alternative, side) in arguments.args.iter().zip(["new_left", "new_right"]) {
+            let syn::GenericArgument::Type(alternative) = alternative else {
+                return None;
+            };
+            let side = format_ident!("{side}");
+            for (param, conversion, kind) in ffi_params(name, alternative, bms, span)? {
+                let conversion = quote_spanned! {span=> #bms::Union::#side(#conversion) };
+                params.push((param, conversion, kind));
+            }
+        }
+        return Some(params);
+    }
+    let value = |inner: &syn::Type| quote_spanned! {span=> #bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>()) };
+    Some(vec![match ffi_kind(ty)? {
+        FfiKind::Scalar(c) => (
+            quote_spanned! {span=> #name: #ty },
+            quote_spanned! {span=> #name },
+            quote_spanned! {span=> #bms::native::FfiType::Scalar(#c) },
+        ),
+        FfiKind::Ref(inner) => (
+            quote_spanned! {span=> #name: *const #inner },
+            quote_spanned! {span=> #bms::R::from(unsafe { &*#name }) },
+            value(&inner),
+        ),
+        FfiKind::Value(inner) => (
+            quote_spanned! {span=> #name: *const #inner },
+            quote_spanned! {span=> #bms::V(unsafe { *#name }) },
+            value(&inner),
+        ),
+    }])
+}
+
+/// The registrations of the `extern "C"` wrappers of a function whose parameters and result have FFI kinds (see
+/// [`ffi_kind`]), `None` for other functions. A wrapper runs the function's body like its registration does. A function
+/// with `Union` parameters gets a wrapper for each combination of their alternatives (i.e. `add(R<Vec3>, R<Vec3>)` and
+/// `add(R<Vec3>, f32)`), so operators are FFI calls too.
 ///
 /// ```rust,ignore
 /// extern "C" fn wrapper(a0: *const Vec3, a1: *const Vec3, out: *mut Vec3) {
@@ -322,37 +374,23 @@ fn ffi_wrapper(fun: &syn::ImplItemFn, self_ty: &syn::Type, bms: &syn::Path) -> O
     if !fun.sig.generics.params.is_empty() || fun.sig.asyncness.is_some() {
         return None;
     }
-    let mut params = Vec::new();
-    let mut conversions = Vec::new();
-    let mut kinds = Vec::new();
+    // every combination of the ways the parameters are passed
+    let mut overloads: Vec<Vec<FfiParam>> = vec![Vec::new()];
     for (i, arg) in fun.sig.inputs.iter().enumerate() {
         let syn::FnArg::Typed(arg) = arg else {
             return None;
         };
-        let name = format_ident!("a{i}");
-        let (param, conversion, kind) = match ffi_kind(&arg.ty)? {
-            FfiKind::Scalar(c) => {
-                let ty = &arg.ty;
-                (
-                    quote_spanned! {span=> #name: #ty },
-                    quote_spanned! {span=> #name },
-                    quote_spanned! {span=> #bms::native::FfiType::Scalar(#c) },
-                )
-            }
-            FfiKind::Ref(inner) => (
-                quote_spanned! {span=> #name: *const #inner },
-                quote_spanned! {span=> #bms::R::from(unsafe { &*#name }) },
-                quote_spanned! {span=> #bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>()) },
-            ),
-            FfiKind::Value(inner) => (
-                quote_spanned! {span=> #name: *const #inner },
-                quote_spanned! {span=> #bms::V(unsafe { *#name }) },
-                quote_spanned! {span=> #bms::native::FfiType::Value(::std::any::TypeId::of::<#inner>()) },
-            ),
-        };
-        params.push(param);
-        conversions.push(conversion);
-        kinds.push(kind);
+        let alternatives = ffi_params(&format_ident!("a{i}"), &arg.ty, bms, span)?;
+        overloads = overloads
+            .into_iter()
+            .flat_map(|overload| {
+                alternatives.iter().map(move |alternative| {
+                    let mut overload = overload.clone();
+                    overload.push(alternative.clone());
+                    overload
+                })
+            })
+            .collect();
     }
     // a result is a scalar, or a value written to an out-pointer
     let syn::ReturnType::Type(_, out_type) = &fun.sig.output else {
@@ -376,25 +414,30 @@ fn ffi_wrapper(fun: &syn::ImplItemFn, self_ty: &syn::Type, bms: &syn::Path) -> O
     let args = &fun.sig.inputs;
     let body = &fun.block;
     let fun_name = syn::LitStr::new(&fun.sig.ident.to_string(), Span::call_site());
-    let params = params.into_iter().chain(out_param);
-    Some(quote_spanned! {span=>
-        {
-            // Safety (callers): pointers to valid values of their types, the out-pointer to memory for one; a panic aborts
-            #[allow(unused_unsafe, clippy::not_unsafe_ptr_arg_deref, clippy::unused_unit)]
-            extern "C" fn wrapper(#(#params),*) -> #ret_type {
-                let function = |#args| -> #out_type { #body };
-                let output = function(#(#conversions),*);
-                #finish
+    let wrappers = overloads.into_iter().map(|overload| {
+        let params = overload.iter().map(|(param, _, _)| param).chain(&out_param);
+        let conversions = overload.iter().map(|(_, conversion, _)| conversion);
+        let kinds = overload.iter().map(|(_, _, kind)| kind);
+        quote_spanned! {span=>
+            {
+                // Safety (callers): pointers to valid values of their types, the out-pointer to memory for one; a panic aborts
+                #[allow(unused_unsafe, clippy::not_unsafe_ptr_arg_deref, clippy::unused_unit)]
+                extern "C" fn wrapper(#(#params),*) -> #ret_type {
+                    let function = |#args| -> #out_type { #body };
+                    let output = function(#(#conversions),*);
+                    #finish
+                }
+                registry.register_ffi_function(
+                    ::std::any::TypeId::of::<#self_ty>(),
+                    #bms::native::FfiFunction {
+                        name: #fun_name,
+                        function: wrapper as *const (),
+                        params: vec![#(#kinds),*],
+                        result: #result,
+                    },
+                );
             }
-            registry.register_ffi_function(
-                ::std::any::TypeId::of::<#self_ty>(),
-                #bms::native::FfiFunction {
-                    name: #fun_name,
-                    function: wrapper as *const (),
-                    params: vec![#(#kinds),*],
-                    result: #result,
-                },
-            );
         }
-    })
+    });
+    Some(quote_spanned! {span=> #(#wrappers)* })
 }

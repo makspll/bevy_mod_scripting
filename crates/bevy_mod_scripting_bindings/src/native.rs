@@ -806,10 +806,6 @@ pub struct FfiLayout {
     pub align: usize,
     /// The fields, in order
     pub fields: Vec<FfiField>,
-    /// Whether arithmetic is component-wise (float vectors: `a + b` adds the fields, `v * 2` scales them), so languages may
-    /// compute it themselves. False for types whose operators mean more (a quaternion's `*`) or differ between languages
-    /// (integer division and overflow).
-    pub component_wise: bool,
 }
 
 /// A field of an [`FfiLayout`].
@@ -1326,7 +1322,7 @@ macro_rules! script_native {
             assert!(align == ::core::mem::align_of::<$ty>(), "the C struct of the fields has another alignment");
         };
     };
-    (@ffi_layout $vector:literal $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
+    (@ffi_layout $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
         let (offsets, size, align) = $crate::native::ffi_layout(
             [$((::core::mem::size_of::<$field_ty>(), ::core::mem::align_of::<$field_ty>())),*],
             ::core::mem::align_of::<$ty>(),
@@ -1344,7 +1340,6 @@ macro_rules! script_native {
             fields: (0..names.len())
                 .map(|i| $crate::native::FfiField { name: names[i], c_type: c_types[i], offset: offsets[i] })
                 .collect(),
-            component_wise: $vector,
         }
     }};
     (@deref $world:expr, $ffi:expr, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
@@ -1403,9 +1398,9 @@ macro_rules! script_native {
     }};
     // stored as plain C structs where a language can (LuaJIT cdata), fields reached through `Deref` (glam's SIMD types):
     // the size and alignment are checked at compile time, the offsets when registered
-    (@ffi_deref $world:expr, $vector:literal, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
+    (@ffi_deref $world:expr, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
         $crate::script_native!(@ffi_checks $ty { $($field: $field_ty),* });
-        let layout = $crate::script_native!(@ffi_layout $vector $ty { $($field: $field_ty),* });
+        let layout = $crate::script_native!(@ffi_layout $ty { $($field: $field_ty),* });
         let value = <$ty as ::core::default::Default>::default();
         let base = &value as *const $ty as usize;
         let offsets = [$(&value.$field as *const $field_ty as usize - base),*];
@@ -1417,7 +1412,7 @@ macro_rules! script_native {
         $crate::script_native!(@deref $world, Some(layout), $ty { $($field: $field_ty),* });
     }};
     // stored as plain C structs where a language can (LuaJIT cdata): the whole layout is checked at compile time
-    (@ffi_offset $world:expr, $vector:literal, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
+    (@ffi_offset $world:expr, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
         $crate::script_native!(@ffi_checks $ty { $($field: $field_ty),* });
         const _: () = {
             let (offsets, _, _) = $crate::native::ffi_layout(
@@ -1431,21 +1426,14 @@ macro_rules! script_native {
                 i += 1;
             }
         };
-        let layout = $crate::script_native!(@ffi_layout $vector $ty { $($field: $field_ty),* });
+        let layout = $crate::script_native!(@ffi_layout $ty { $($field: $field_ty),* });
         $crate::script_native!(@offset $world, Some(layout), $ty { $($field: $field_ty),* });
     }};
-    // `vector`: arithmetic is component-wise, languages may compute it themselves (see `FfiLayout::component_wise`)
-    ($world:expr, ffi vector deref $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
-        $crate::script_native!(@ffi_deref $world, true, $ty { $($field: $field_ty),* })
-    };
-    ($world:expr, ffi vector $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
-        $crate::script_native!(@ffi_offset $world, true, $ty { $($field: $field_ty),* })
-    };
     ($world:expr, ffi deref $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
-        $crate::script_native!(@ffi_deref $world, false, $ty { $($field: $field_ty),* })
+        $crate::script_native!(@ffi_deref $world, $ty { $($field: $field_ty),* })
     };
     ($world:expr, ffi $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
-        $crate::script_native!(@ffi_offset $world, false, $ty { $($field: $field_ty),* })
+        $crate::script_native!(@ffi_offset $world, $ty { $($field: $field_ty),* })
     };
     ($world:expr, deref $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
         $crate::script_native!(@deref $world, None, $ty { $($field: $field_ty),* })

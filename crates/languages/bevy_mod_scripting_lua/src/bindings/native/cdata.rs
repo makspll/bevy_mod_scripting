@@ -5,7 +5,7 @@
 //! - Each type is a C struct (`ffi.cdef`) with a metatype: fields are plain FFI fields; functions with an `extern "C"`
 //!   wrapper (`#[script_bindings(ffi)]`, see [`FfiFunction`]) are called through the FFI with C types, after checking
 //!   their arguments are of the expected types, else (and for other functions) through BMS' typed functions, which read
-//!   cdata in place ([`cdata_at`], [`super::LuaArgs`]); arithmetic of component-wise types is computed in Lua.
+//!   cdata in place ([`cdata_at`], [`super::LuaArgs`]); operators call their functions the same way.
 //! - Values Rust returns are copied into new cdata ([`push_from_ptr`]); scripts can write every byte of a cdata at any
 //!   time, so BMS' functions never borrow one: they get copies, written back for `M<T>` (see `CallScope::copy_plain`).
 //! - Types are told apart by LuaJIT's ctype id, which scripts can't change, see [`cdata_at`].
@@ -358,9 +358,9 @@ fn types_source(
     out.push_str("local made = {}\n");
     for (i, (native, functions)) in types.iter().zip(functions).enumerate() {
         // only types with a C layout are given
-        let Some(layout) = native.ffi.as_ref() else {
+        if native.ffi.is_none() {
             continue;
-        };
+        }
         let t = format!("C{}", i + 1);
         let name = layout_name(native);
         let _ = writeln!(
@@ -380,7 +380,7 @@ fn types_source(
         out.push_str(
             "local mt = { __index = function(v, k) local m = methods[k] if m ~= nil then return m end return index(v, k) end,\n__tostring = tostring_ }\n",
         );
-        operators_source(&mut out, native, layout.component_wise);
+        operators_source(&mut out, native);
         let _ = writeln!(
             out,
             "T = ffi.metatype(T, mt)\nmade.{name} = {{ T, function(p) return T(cast(P, p)[0]) end, statics, tonumber(T), T() }}\nend"
@@ -439,25 +439,19 @@ fn function_source(
     let name = function.name;
     Some(format!(
         // in a block: a chunk has room for 200 locals only
-        "do local f{pointer} = cast(\"{c_result} (*)({})\", ptrs[{pointer}])\nlocal function w({args}) if {guard} then {call} end return slow.{name}({args}) end\nmethods.{name} = w statics.{name} = w end\n",
+        // other arguments go to the function's FFI form made before this one (see `Union`), else through BMS
+        "do local f{pointer}, other = cast(\"{c_result} (*)({})\", ptrs[{pointer}]), methods.{name} or slow.{name}\nlocal function w({args}) if {guard} then {call} end return other({args}) end\nmethods.{name} = w statics.{name} = w end\n",
         c_params.join(", ")
     ))
 }
 
-/// The Lua source of the operators of a type's metatable `mt`: component-wise ones computed in Lua (`a + b`, `v * 2`,
-/// `-v`, `a == b`), the others through BMS' functions, like native values' (see `OPERATORS`).
-fn operators_source(out: &mut String, native: &NativeType, component_wise: bool) {
-    let fields = native
-        .ffi
-        .as_ref()
-        .map(|l| l.fields.iter().map(|f| f.name).collect::<Vec<_>>())
-        .unwrap_or_default();
-    let each =
-        |f: &dyn Fn(&str) -> String| fields.iter().map(|n| f(n)).collect::<Vec<_>>().join(", ");
+/// The Lua source of the operators of a type's metatable `mt`: they call the operator's function in `methods`, its FFI
+/// form if it has one, like native values' call BMS' (see `OPERATORS`).
+fn operators_source(out: &mut String, native: &NativeType) {
     let has = |name: &str| native.methods.contains_key(name);
-    // calls the BMS function `name`, else raises like BMS does for a missing operator function
+    // calls the function `name`, else raises like BMS does for a missing operator function
     let call = |name: Option<&str>, args: &str| match name {
-        Some(name) if has(name) => format!("return slow.{name}({args})"),
+        Some(name) if has(name) => format!("return methods.{name}({args})"),
         name => format!(
             "error(\"{} has no function `{}`\", 2)",
             native.vtable.type_name,
@@ -468,68 +462,34 @@ fn operators_source(out: &mut String, native: &NativeType, component_wise: bool)
         let meta = meta.to_str().unwrap_or_default();
         let forward = operator.script_function_name();
         let reflected = operator.reflected_script_function_name();
-        let binary_lua = match operator {
-            ScriptOperatorNames::Addition => Some("+"),
-            ScriptOperatorNames::Subtraction => Some("-"),
-            ScriptOperatorNames::Multiplication => Some("*"),
-            ScriptOperatorNames::Division => Some("/"),
-            _ => None,
-        };
         match operator {
             ScriptOperatorNames::DisplayPrint => continue,
-            _ if component_wise && binary_lua.is_some() => {
-                let op = binary_lua.unwrap_or_default();
-                let vv = each(&|n| format!("a.{n} {op} b.{n}"));
-                let vs = each(&|n| format!("a.{n} {op} b"));
-                let sv = each(&|n| format!("a {op} b.{n}"));
-                let other = call(Some(forward), "a, b");
-                let reflected = call(reflected, "b, a");
-                let _ = writeln!(
-                    out,
-                    "mt.{meta} = function(a, b)\nif istype(T, a) then\nif istype(T, b) then return T({vv}) end\nif type(b) == \"number\" then return T({vs}) end\n{other}\nend\nif type(a) == \"number\" then return T({sv}) end\n{reflected}\nend"
-                );
-            }
-            ScriptOperatorNames::Negation if component_wise => {
-                let neg = each(&|n| format!("-a.{n}"));
-                let _ = writeln!(out, "mt.{meta} = function(a) return T({neg}) end");
-            }
             ScriptOperatorNames::Equality => {
-                let fields_equal = fields
-                    .iter()
-                    .map(|n| format!("a.{n} == b.{n}"))
-                    .collect::<Vec<_>>()
-                    .join(" and ");
-                let same = match component_wise {
-                    true => {
-                        format!("if istype(T, a) and istype(T, b) then return {fields_equal} end\n")
-                    }
-                    false => String::new(),
-                };
                 let other = match has(forward) {
                     true => format!(
-                        "local ta, tb = type(a), type(b)\nif (ta == \"cdata\" or ta == \"userdata\") and (tb == \"cdata\" or tb == \"userdata\") then return slow.{forward}(a, b) end\n"
+                        "local ta, tb = type(a), type(b)\nif (ta == \"cdata\" or ta == \"userdata\") and (tb == \"cdata\" or tb == \"userdata\") then return methods.{forward}(a, b) end\n"
                     ),
                     false => String::new(),
                 };
-                let _ = writeln!(
-                    out,
-                    "mt.{meta} = function(a, b)\n{same}{other}return false\nend"
-                );
+                let _ = writeln!(out, "mt.{meta} = function(a, b)\n{other}return false\nend");
             }
             ScriptOperatorNames::Negation | ScriptOperatorNames::Length => {
                 if has(forward) {
-                    let _ = writeln!(out, "mt.{meta} = function(a) return slow.{forward}(a) end");
+                    let _ = writeln!(
+                        out,
+                        "mt.{meta} = function(a) return methods.{forward}(a) end"
+                    );
                 }
             }
             ScriptOperatorNames::LessThanComparison => {
                 if has(forward) {
                     let _ = writeln!(
                         out,
-                        "mt.{meta} = function(a, b) return slow.{forward}(a, b) end"
+                        "mt.{meta} = function(a, b) return methods.{forward}(a, b) end"
                     );
                     let _ = writeln!(
                         out,
-                        "mt.__le = function(a, b) return not slow.{forward}(b, a) end"
+                        "mt.__le = function(a, b) return not methods.{forward}(b, a) end"
                     );
                 }
             }
@@ -595,7 +555,8 @@ mod test {
     use bevy_ecs::world::World;
     use bevy_mod_scripting_bindings::{
         CurrentScriptAttachment, DynamicScriptFunction, FunctionCallContext, M, R, ScriptFunction,
-        V,
+        Union, V,
+        function::{namespace::NamespaceBuilder, script_function::AppScriptFunctionRegistry},
     };
     use bevy_mod_scripting_world::WorldAccessGuard;
 
@@ -615,7 +576,37 @@ mod test {
             .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
             .write()
             .register::<C>();
-        bevy_mod_scripting_bindings::script_native!(&mut world, ffi vector C { x: f32 });
+        bevy_mod_scripting_bindings::script_native!(&mut world, ffi C { x: f32 });
+        // `add` through BMS adds, its FFI form also adds 100, to tell which one ran
+        extern "C" fn add(a: *const C, b: *const C, out: *mut C) {
+            // Safety: called by the generated Lua with cdata of `C`
+            unsafe {
+                out.write(C {
+                    x: (*a).x + (*b).x + 100.0,
+                })
+            }
+        }
+        NamespaceBuilder::<C>::new(&mut world)
+            .register("add", |a: R<C>, b: Union<R<C>, f32>| match b.into_left() {
+                Ok(b) => V(C { x: a.x + b.x }),
+                Err(b) => V(C { x: a.x + b }),
+            })
+            .register("eq", |a: R<C>, b: R<C>| a.x == b.x);
+        let value = FfiType::Value(std::any::TypeId::of::<C>());
+        world
+            .get_resource_or_init::<AppScriptFunctionRegistry>()
+            .0
+            .clone()
+            .write()
+            .register_ffi_function(
+                std::any::TypeId::of::<C>(),
+                FfiFunction {
+                    name: "add",
+                    function: add as *const (),
+                    params: vec![value, value],
+                    result: value,
+                },
+            );
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
             let lua = Lua::new();
@@ -657,7 +648,8 @@ mod test {
                 local a = value(1)
                 assert(type(a) == "cdata" and a.x == 1, "a cdata")
                 assert(not pcall(require, "ffi") and package.loaded.ffi == nil, "no FFI library for scripts")
-                assert((a + a).x == 2 and (a * 3).x == 3 and a == value(1), "operators in Lua")
+                assert((a + a).x == 102 and a:add(a).x == 102, "an operator and a method with an FFI form")
+                assert((a + 3).x == 4 and a == value(1), "other arguments and functions through BMS")
                 local x = call_back(a, function() a.x = 5 end)
                 assert(x == 1 and a.x == 5, "the call reads its copy, the script's write stays")
                 call_back_mut(a, function() assert(a.x == 5) end)
