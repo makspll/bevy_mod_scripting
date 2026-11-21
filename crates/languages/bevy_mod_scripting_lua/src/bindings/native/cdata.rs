@@ -106,6 +106,12 @@ pub(crate) fn cdata_value(lua: &Lua, value: &mlua::Value) -> Option<ScriptValue>
     })
 }
 
+/// The registry key of the C type of `vtable`, or of its `const` form: addresses inside the vtable, which nothing else
+/// keys the registry with (the vtable's own address keys the metatable of the type's userdata form).
+fn ctype_key(vtable: &'static NativeVTable, read_only: bool) -> *mut c_void {
+    (vtable as *const NativeVTable as usize + if read_only { 3 } else { 2 }) as *mut c_void
+}
+
 /// Pushes the C type of `vtable` (its `const` form, whose values scripts can't write, if `read_only`), making the types
 /// first if this state has none yet. Calling it makes a zeroed value, see [`super::push_ready`]. `[-0, +(0|1), m]`: nothing for types registered after the types were made, which stay userdata.
 ///
@@ -119,25 +125,19 @@ pub(super) unsafe fn push_ctype(
     // where the info of a type keeps the types, see `types_source`
     let from_ptr = if read_only { 2 } else { 1 };
     unsafe {
-        // made already: `types[vtable][ctype]`, raw gets only
-        if ffi::lua_checkstack(l, 3) != 0 {
-            // [.., types]
-            if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&TYPES)) == ffi::LUA_TTABLE {
-                // [.., types, info | nil]
-                ffi::lua_pushlightuserdata(l, vtable as *const NativeVTable as *mut c_void);
-                let made = ffi::lua_rawget(l, -2) == ffi::LUA_TTABLE;
-                if made {
-                    // [.., types, info, ctype] -> [.., ctype]
-                    ffi::lua_rawgeti(l, -1, from_ptr);
-                    ffi::lua_replace(l, -3);
-                    ffi::lua_pop(l, 1);
-                } else {
-                    ffi::lua_pop(l, 2);
-                }
-                // without the type, the types were made before it was registered
-                return Ok(made);
+        // made already: one raw get from the registry
+        if ffi::lua_checkstack(l, 1) != 0 {
+            // [.., ctype | nil]
+            if raw_get_p(l, ffi::LUA_REGISTRYINDEX, ctype_key(vtable, read_only)) == LUA_TCDATA {
+                return Ok(true);
             }
             ffi::lua_pop(l, 1);
+            // without the type, the types were made before it was registered
+            let made = raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&TYPES)) == ffi::LUA_TTABLE;
+            ffi::lua_pop(l, 1);
+            if made {
+                return Ok(false);
+            }
         }
         // the first value of such a type in this state: make the types
         super::push_with_mlua(l, |lua, raw| {
@@ -264,6 +264,15 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
         // the same for every type and state of this build
         if CTYPEID_OFFSET.load(Ordering::Acquire) == 0 {
             calibrate(&info.raw_get::<mlua::Value>(5)?, id)?;
+        }
+        // the types themselves, found with one lookup when a value is returned, see `push_ctype`
+        for (index, read_only) in [(1, false), (2, true)] {
+            let ctype: mlua::Value = info.raw_get(index)?;
+            let slot = ctype_key(native.vtable, read_only);
+            // Safety: protected mode, a raw set of the value on the top into the registry
+            unsafe {
+                lua.exec_raw::<()>(ctype, |l| raw_set_p(l, ffi::LUA_REGISTRYINDEX, slot))?;
+            }
         }
     }
     // Safety: protected mode, raw sets of the tables on the top into the registry

@@ -1132,6 +1132,9 @@ unsafe fn call(
         // Safety: the index is on the stack
         match unsafe { ffi::lua_type(l, idx) } {
             ffi::LUA_TNUMBER | ffi::LUA_TBOOLEAN | ffi::LUA_TNIL => false,
+            // native values of types with a C layout, read in place; any other cdata locks for itself
+            #[cfg(any(feature = "luajit", feature = "luajit52"))]
+            cdata::LUA_TCDATA => false,
             ffi::LUA_TUSERDATA => {
                 // Safety: see above
                 let native = unsafe { native_base(l, idx) };
