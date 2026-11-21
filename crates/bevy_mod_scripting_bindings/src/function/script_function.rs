@@ -746,6 +746,9 @@ impl ScriptFunctionRegistry {
     }
 
     /// Registers a function of the type `type_id` callable through a language's FFI, replacing one with the same name.
+    ///
+    /// It's the FFI form of the function registered on the type with this name right now: registering another function
+    /// with the name, or removing it, drops the FFI form. Languages which made their types already keep it.
     pub fn register_ffi_function(&mut self, type_id: TypeId, function: crate::native::FfiFunction) {
         let functions = self.ffi_functions.entry(type_id).or_default();
         functions.retain(|f| f.name != function.name);
@@ -777,6 +780,10 @@ impl ScriptFunctionRegistry {
         name: &str,
         function: Option<&DynamicScriptFunction>,
     ) {
+        // an FFI form is of the function which was there, see `register_ffi_function`
+        if let Some(functions) = self.ffi_functions.get_mut(&type_id) {
+            functions.retain(|f| f.name != name);
+        }
         if let Some(native) = self.native_types.get_mut(&type_id) {
             let methods = &mut Arc::make_mut(native).methods;
             match function {
@@ -1063,10 +1070,20 @@ mod test {
                 .function
         };
         assert!(cached_member(&registry).is_some());
+        registry.register_ffi_function(
+            namespace,
+            crate::native::FfiFunction {
+                name: "test",
+                function: std::ptr::null(),
+                params: vec![],
+                result: crate::native::FfiType::Unit,
+            },
+        );
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_some());
-        // cached members go with the function
+        // cached members and the FFI form go with the function
         assert!(cached_member(&registry).is_none());
+        assert!(registry.ffi_functions(namespace).is_empty());
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_none());
     }
