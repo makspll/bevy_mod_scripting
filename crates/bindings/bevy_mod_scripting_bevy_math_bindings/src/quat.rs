@@ -78,6 +78,7 @@ impl Quat {
     }
 
     /// Composes two rotations when given a rotation, or rotates a vector when given a [`Vec3`](bevy_math::Vec3).
+    #[ffi]
     fn mul(_self: R<Quat>, rhs: Union<R<Quat>, R<Vec3>>) -> Union<V<Quat>, V<Vec3>> {
         match rhs.into_left() {
             Ok(q) => Union::new_left(V(*_self * *q)),
