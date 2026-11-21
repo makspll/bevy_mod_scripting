@@ -38,7 +38,9 @@ assert(approx(Vec3.unit_x():angle_between(Vec3.unit_y()), math.pi / 2), "angle_b
 
 -- normalization
 assert(approx(v:normalize():length(), 1), "normalize")
-assert(not pcall(function() return Vec3.zero():normalize() end), "normalize errors on zero")
+local normalized, err = pcall(function() return Vec3.zero():normalize() end)
+assert(not normalized and tostring(err):match("cannot normalize") and tostring(err):match("at line: [1-9]"),
+    "normalize errors on zero, at the line of the script")
 assert(Vec3.zero():normalize_or_zero() == Vec3.zero(), "normalize_or_zero")
 assert(Vec3.zero():try_normalize() == nil, "try_normalize")
 

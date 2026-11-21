@@ -48,12 +48,14 @@ impl Quat {
     }
 
     /// A rotation of `angle` radians around `axis`. Errors if the axis is zero or not finite.
+    #[ffi]
     fn from_axis_angle(axis: R<Vec3>, angle: f32) -> Result<V<Quat>, InteropError> {
         let axis = direction(*axis)?;
         Ok(V(Quat::from_axis_angle(axis, angle)))
     }
 
     /// The rotation that turns the direction `from` onto the direction `to`. Errors if either vector is zero or not finite.
+    #[ffi]
     fn from_rotation_arc(from: R<Vec3>, to: R<Vec3>) -> Result<V<Quat>, InteropError> {
         let from = direction(*from)?;
         let to = direction(*to)?;

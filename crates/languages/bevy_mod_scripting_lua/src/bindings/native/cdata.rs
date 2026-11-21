@@ -18,9 +18,12 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
 };
 
+use bevy_mod_scripting_bindings::function::namespace::FunctionScope;
 use bevy_mod_scripting_bindings::{
     InteropError, ScriptValue, WorldExtensions, dispatch,
-    native::{FfiFunction, FfiLayout, FfiResult, FfiType, NativeType, NativeVTable},
+    native::{
+        FfiFunction, FfiLayout, FfiResult, FfiType, NativeType, NativeVTable, take_ffi_error,
+    },
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
@@ -271,21 +274,28 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
         }
         slows.raw_set(layout_name(native), slow)?;
     }
+    // the vtable of each type, which `raise_ffi_error` is given
+    let owners = lua.create_table()?;
+    for native in &types {
+        let vtable = LightUserData(native.vtable as *const NativeVTable as *mut c_void);
+        owners.raw_set(layout_name(native), vtable)?;
+    }
     let pointers = pointers
         .into_iter()
         .map(|p| LightUserData(p as *mut c_void))
         .collect::<Vec<_>>();
     // Safety: the functions follow the Lua C API
-    let (index, tostring) = unsafe {
+    let (index, tostring, raise) = unsafe {
         (
             lua.create_c_function(cdata_index)?,
             lua.create_c_function(cdata_tostring)?,
+            lua.create_c_function(raise_ffi_error)?,
         )
     };
     let made: Table = lua
         .load(source)
         .set_name("=bms ffi types")
-        .call((ffi_module, pointers, slows, index, tostring))?;
+        .call((ffi_module, pointers, slows, index, tostring, raise, owners))?;
     // by vtable for Rust, by ctype id for C
     let by_vtable = lua.create_table()?;
     let by_id = lua.create_table()?;
@@ -466,7 +476,8 @@ fn types_source(
     };
     let mut pointers = Vec::new();
     let mut out = String::from(
-        "local ffi, ptrs, slows, index, tostring_ = ...\nlocal istype, cast = ffi.istype, ffi.cast\nffi.cdef[[\n",
+        // `E`: the flag fallible FFI functions write when they fail, see `function_source`
+        "local ffi, ptrs, slows, index, tostring_, raise, owners = ...\nlocal istype, cast = ffi.istype, ffi.cast\nlocal E = ffi.new(\"uint8_t[1]\")\nffi.cdef[[\n",
     );
     let layout_of = layout_lookup(types);
     let type_name = |type_id| {
@@ -504,7 +515,8 @@ fn types_source(
         let name = layout_name(native);
         let _ = writeln!(
             out,
-            "do\nlocal T, slow, methods, statics = {t}, slows.{name}, {{}}, {{}}"
+            // `O`: the type, for the errors of its FFI functions
+            "do\nlocal T, slow, methods, statics, O = {t}, slows.{name}, {{}}, {{}}, owners.{name}"
         );
         // functions with a C form
         for function in functions {
@@ -574,9 +586,23 @@ fn function_source(
         }
     }
     let args = params.join(", ");
+    // every wrapper takes the out-pointer and the `failed` pointer after the parameters
+    c_params.extend(["void*".to_owned(), "uint8_t*".to_owned()]);
+    let name = function.name;
+    let (failed, check) = match function.fallible {
+        // a failure writes the flag: the error kept by the wrapper is raised (not a tail call: it's reported at the line
+        // of the script below this chunk, see `caller_line`), `None` is nil
+        true => (
+            "E",
+            format!(
+                "local e = E[0] if e ~= 0 then E[0] = 0 if e == 2 then return nil end return (raise(\"{name}\", O)) end "
+            ),
+        ),
+        false => ("nil", String::new()),
+    };
     let with_out = |out: &str| match args.is_empty() {
-        true => out.to_owned(),
-        false => format!("{args}, {out}"),
+        true => format!("{out}, {failed}"),
+        false => format!("{args}, {out}, {failed}"),
     };
     // the scratch union of a `Union` result, made with the function
     let mut setup = String::new();
@@ -599,14 +625,13 @@ fn function_source(
                     }
                 }
             }
-            c_params.push("void*".to_owned());
             let _ = write!(
                 setup,
                 "local U = ffi.new(\"union {{ {} }}\") ",
                 members.join(" ")
             );
             // the index of the alternative written, the last one needs no check
-            let mut call = format!("local t = f{pointer}({}) ", with_out("U"));
+            let mut call = format!("local t = f{pointer}({}) {check}", with_out("U"));
             let last = reads.len().saturating_sub(1);
             for (i, read) in reads.iter().enumerate() {
                 match i == last {
@@ -620,27 +645,24 @@ fn function_source(
             }
             ("uint8_t".to_owned(), call)
         }
-        FfiResult::One(FfiType::Scalar(c)) => {
-            // every wrapper takes the out-pointer, unused here
-            c_params.push("void*".to_owned());
-            (
-                c.to_string(),
-                format!("return f{pointer}({})", with_out("nil")),
-            )
-        }
+        FfiResult::One(FfiType::Scalar(c)) => (
+            c.to_string(),
+            match function.fallible {
+                true => format!("local r = f{pointer}({}) {check}return r", with_out("nil")),
+                false => format!("return f{pointer}({})", with_out("nil")),
+            },
+        ),
         FfiResult::One(FfiType::Value(type_id)) => {
             let (lua_ctype, _) = ctype(*type_id)?;
-            c_params.push("void*".to_owned());
             // written to the type's scratch value and copied from it: a result made here and passed to C would always
             // be allocated, a copy made by Lua can be optimised away. Nothing else points to the scratch value.
             let scratch = lua_ctype.replacen('C', "S", 1);
-            let out_args = match args.is_empty() {
-                true => scratch.clone(),
-                false => format!("{args}, {scratch}"),
-            };
             (
                 "void".to_owned(),
-                format!("f{pointer}({out_args}) return {lua_ctype}({scratch})"),
+                format!(
+                    "f{pointer}({}) {check}return {lua_ctype}({scratch})",
+                    with_out(&scratch)
+                ),
             )
         }
     };
@@ -648,7 +670,6 @@ fn function_source(
         true => "true".to_owned(),
         false => guards.join(" and "),
     };
-    let name = function.name;
     Some(format!(
         // in a block: a chunk has room for 200 locals only
         // other arguments go to the function's FFI form made before this one (see `Union`), else through BMS
@@ -745,6 +766,32 @@ unsafe extern "C-unwind" fn cdata_index(l: *mut ffi::lua_State) -> c_int {
     }
 }
 
+/// Raises the error of the FFI function which just failed (see `FfiReturn`), like BMS raises the errors of functions: C
+/// functions called through the FFI can't raise, the generated Lua calls this when one wrote `FFI_ERROR`. Called with
+/// `[name of the function (1), vtable of its type (2)]`.
+unsafe extern "C-unwind" fn raise_ffi_error(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        let vtable = ffi::lua_touserdata(l, 2) as *const NativeVTable;
+        let name = match ffi::lua_tostring(l, 1) {
+            name if name.is_null() => "an FFI function".into(),
+            name => std::ffi::CStr::from_ptr(name).to_string_lossy(),
+        };
+        run(l, || {
+            let error = take_ffi_error()
+                .unwrap_or_else(|| InteropError::str("an FFI function failed without an error"));
+            Err(match vtable.as_ref() {
+                Some(vtable) => InteropError::function_interop_error(
+                    name,
+                    FunctionScope::OnType(vtable.type_id),
+                    error,
+                    Some(LUA_CALLER_CONTEXT),
+                ),
+                None => error,
+            })
+        })
+    }
+}
+
 /// `__tostring` of cdata, see [`dispatch::display`]. Called with `[v (1)]`.
 unsafe extern "C-unwind" fn cdata_tostring(l: *mut ffi::lua_State) -> c_int {
     unsafe {
@@ -800,7 +847,7 @@ mod test {
             .register::<Holder>();
         bevy_mod_scripting_bindings::script_native!(&mut world, Holder { c: C });
         // `add` through BMS adds, its FFI form also adds 100, to tell which one ran
-        extern "C" fn add(a: *const C, b: *const C, out: *mut C) {
+        extern "C" fn add(a: *const C, b: *const C, out: *mut C, _failed: *mut u8) {
             // Safety: called by the generated Lua with cdata of `C`
             unsafe {
                 out.write(C {
@@ -826,6 +873,7 @@ mod test {
                 function: add as *const (),
                 params: vec![value, value],
                 result: FfiResult::One(value),
+                fallible: false,
             },
         );
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
@@ -906,6 +954,7 @@ mod test {
                     function: add as *const (),
                     params: vec![FfiType::Value(std::any::TypeId::of::<Holder>())],
                     result: FfiResult::One(value),
+                    fallible: false,
                 },
             );
             let lua = Lua::new();

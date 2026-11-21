@@ -140,6 +140,7 @@ macro_rules! float_vector_functions {
             }
 
             /// The vector scaled to a length of `1`. Errors if the vector is zero, or not finite.
+            #[ffi]
             fn normalize(_self: R<$ty>) -> Result<V<$ty>, InteropError> {
                 _self.try_normalize().map(V).ok_or_else(|| {
                     InteropError::str("cannot normalize a vector of zero or non-finite length")
@@ -153,6 +154,7 @@ macro_rules! float_vector_functions {
             }
 
             /// The vector scaled to a length of `1`, or nil if that's not possible.
+            #[ffi]
             fn try_normalize(_self: R<$ty>) -> Option<V<$ty>> {
                 _self.try_normalize().map(V)
             }

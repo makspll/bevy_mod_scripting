@@ -1017,6 +1017,7 @@ mod test {
                 function: std::ptr::null(),
                 params: vec![],
                 result: crate::native::FfiResult::One(crate::native::FfiType::Scalar("float")),
+                fallible: false,
             },
         );
         let removed = registry.remove(namespace, "test");

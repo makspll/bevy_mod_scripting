@@ -1214,15 +1214,36 @@ unsafe fn raise_str(l: *mut ffi::lua_State, message: &'static std::ffi::CStr) ->
     }
 }
 
-/// The line of the script calling the C function running on `l`, which may be a coroutine mlua isn't on.
+/// The line of the script calling the C function running on `l`, which may be a coroutine mlua isn't on. On LuaJIT the
+/// generated FFI functions (`=bms ffi types`, see `cdata`) aren't the script: their frames are skipped, and so are frames
+/// without a line.
 unsafe fn caller_line(l: *mut ffi::lua_State) -> Option<u32> {
     unsafe {
         let mut ar: ffi::lua_Debug = std::mem::zeroed();
         #[cfg(feature = "luau")]
         let found = ffi::lua_getinfo(l, 1, c"l".as_ptr(), &mut ar) != 0;
-        #[cfg(not(feature = "luau"))]
+        #[cfg(not(any(feature = "luau", feature = "luajit", feature = "luajit52")))]
         let found = ffi::lua_getstack(l, 1, &mut ar) != 0
             && ffi::lua_getinfo(l, c"l".as_ptr(), &mut ar) != 0;
+        #[cfg(any(feature = "luajit", feature = "luajit52"))]
+        let found = {
+            let mut level = 1;
+            loop {
+                if ffi::lua_getstack(l, level, &mut ar) == 0
+                    || ffi::lua_getinfo(l, c"Sl".as_ptr(), &mut ar) == 0
+                {
+                    break false;
+                }
+                // nor are frames without a line (C functions, or calls LuaJIT dropped for tail calls): the nearest
+                // line of the script
+                let glue = !ar.source.is_null()
+                    && std::ffi::CStr::from_ptr(ar.source) == c"=bms ffi types";
+                if !glue && ar.currentline >= 0 {
+                    break true;
+                }
+                level += 1;
+            }
+        };
         found.then_some(ar.currentline.max(0) as u32)
     }
 }

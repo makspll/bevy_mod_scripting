@@ -849,6 +849,9 @@ pub struct FfiFunction {
     pub params: Vec<FfiType>,
     /// Its result
     pub result: FfiResult,
+    /// Whether it may fail (`Result`, `Option`): it takes a pointer to a byte after the out-pointer, which it writes
+    /// [`FFI_ERROR`] or [`FFI_NONE`] to when it does, else it's given null
+    pub fallible: bool,
 }
 
 /// The result of an [`FfiFunction`].
@@ -886,25 +889,103 @@ pub unsafe trait FfiArg {
 }
 
 /// The result of an `#[ffi]` function (see [`FfiFunction`]): a scalar returned, `V<T>` written to the out-pointer (`T` with
-/// an [`FfiLayout`], see [`FfiArg`]), or a `Union` of them, see [`FfiResult::Union`].
+/// an [`FfiLayout`], see [`FfiArg`]), a `Union` of them (see [`FfiResult::Union`]), or a `Result`/`Option` of one of
+/// those, which fails by writing [`FFI_ERROR`] or [`FFI_NONE`] to the `failed` pointer.
 ///
 /// # Safety
-/// `C` is FFI-safe and what [`Self::result`] says is returned, [`Self::into_c`] writes what it says is written.
+/// `C` is FFI-safe, valid when zeroed (returned when failing) and what [`Self::result`] says is returned,
+/// [`Self::into_c`] writes what it says is written.
 #[diagnostic::on_unimplemented(
     message = "`{Self}` can't be the result of an `#[ffi]` function",
     label = "not an FFI result",
-    note = "FFI results are `f32`, `f64`, `i32`, `u32`, `bool` and `V<T>` (`T` with a C layout, see `script_native!`'s `ffi` form), or `Union`s of them"
+    note = "FFI results are `f32`, `f64`, `i32`, `u32`, `bool` and `V<T>` (`T` with a C layout, see `script_native!`'s `ffi` form), `Union`s of them, or a `Result<_, InteropError>` or `Option` of one"
 )]
 pub unsafe trait FfiReturn {
     /// What the wrapper returns
     type C;
     /// How it's returned
     fn result() -> FfiResult;
-    /// The wrapper's return value, writing to `out` what [`Self::result`] says is written there.
+    /// Whether it may fail, see [`FfiFunction::fallible`]
+    fn fallible() -> bool {
+        false
+    }
+    /// The wrapper's return value, writing to `out` what [`Self::result`] says is written there, or [`FFI_ERROR`] (the
+    /// error kept for [`take_ffi_error`]) or [`FFI_NONE`] to `failed` when it fails.
     ///
     /// # Safety
-    /// `out` points to memory big and aligned enough for that.
-    unsafe fn into_c(self, out: *mut u8) -> Self::C;
+    /// `out` points to memory big and aligned enough for the result, `failed` to a byte if [`Self::fallible`].
+    unsafe fn into_c(self, out: *mut u8, failed: *mut u8) -> Self::C;
+}
+
+/// Written to the `failed` pointer of an [`FfiFunction`] when it returns an error, see [`take_ffi_error`].
+pub const FFI_ERROR: u8 = 1;
+/// Written to the `failed` pointer of an [`FfiFunction`] when it returns `None`.
+pub const FFI_NONE: u8 = 2;
+
+thread_local! {
+    /// The error of the last [`FfiFunction`] which failed on this thread
+    static FFI_ERROR_VALUE: std::cell::RefCell<Option<InteropError>> = const { std::cell::RefCell::new(None) };
+}
+
+/// Takes the error of the last [`FfiFunction`] which failed on this thread (with [`FFI_ERROR`]).
+pub fn take_ffi_error() -> Option<InteropError> {
+    FFI_ERROR_VALUE.with(|e| e.borrow_mut().take())
+}
+
+/// A zeroed `C`, returned by a failing [`FfiReturn`].
+///
+/// # Safety
+/// `C` is valid when zeroed.
+unsafe fn zeroed<C>() -> C {
+    // Safety: upheld by the caller
+    unsafe { std::mem::MaybeUninit::zeroed().assume_init() }
+}
+
+// Safety: `T`'s result, or a zeroed one and `FFI_ERROR` written to `failed`
+unsafe impl<T: FfiReturn> FfiReturn for Result<T, InteropError> {
+    type C = T::C;
+    fn result() -> FfiResult {
+        T::result()
+    }
+    fn fallible() -> bool {
+        true
+    }
+    unsafe fn into_c(self, out: *mut u8, failed: *mut u8) -> Self::C {
+        match self {
+            // Safety: upheld by the caller
+            Ok(value) => unsafe { value.into_c(out, failed) },
+            Err(error) => {
+                FFI_ERROR_VALUE.with(|e| *e.borrow_mut() = Some(error));
+                // Safety: upheld by the caller, `T::C` is valid when zeroed (see the trait)
+                unsafe {
+                    failed.write(FFI_ERROR);
+                    zeroed()
+                }
+            }
+        }
+    }
+}
+
+// Safety: `T`'s result, or a zeroed one and `FFI_NONE` written to `failed`
+unsafe impl<T: FfiReturn> FfiReturn for Option<T> {
+    type C = T::C;
+    fn result() -> FfiResult {
+        T::result()
+    }
+    fn fallible() -> bool {
+        true
+    }
+    unsafe fn into_c(self, out: *mut u8, failed: *mut u8) -> Self::C {
+        match self {
+            // Safety: upheld by the caller
+            Some(value) => unsafe { value.into_c(out, failed) },
+            // Safety: upheld by the caller, `T::C` is valid when zeroed (see the trait)
+            None => unsafe {
+                failed.write(FFI_NONE);
+                zeroed()
+            },
+        }
+    }
 }
 
 /// An alternative of a `Union` result, or a `Union` of them, see [`FfiResult::Union`].
@@ -946,7 +1027,7 @@ macro_rules! ffi_scalar {
             fn result() -> FfiResult {
                 FfiResult::One(FfiType::Scalar($c))
             }
-            unsafe fn into_c(self, _: *mut u8) -> Self::C {
+            unsafe fn into_c(self, _: *mut u8, _: *mut u8) -> Self::C {
                 self
             }
         }
@@ -997,7 +1078,7 @@ unsafe impl<T: Copy + 'static> FfiReturn for crate::V<T> {
     fn result() -> FfiResult {
         FfiResult::One(FfiType::Value(TypeId::of::<T>()))
     }
-    unsafe fn into_c(self, out: *mut u8) -> Self::C {
+    unsafe fn into_c(self, out: *mut u8, _: *mut u8) -> Self::C {
         // Safety: upheld by the caller
         unsafe { out.cast::<T>().write(self.0) }
     }
@@ -1040,7 +1121,7 @@ unsafe impl<A: FfiAlternative, B: FfiAlternative> FfiReturn for crate::Union<A, 
         <Self as FfiAlternative>::alternatives(&mut alternatives);
         FfiResult::Union(alternatives)
     }
-    unsafe fn into_c(self, out: *mut u8) -> Self::C {
+    unsafe fn into_c(self, out: *mut u8, _: *mut u8) -> Self::C {
         // Safety: upheld by the caller
         unsafe { self.write(out, 0) }
     }

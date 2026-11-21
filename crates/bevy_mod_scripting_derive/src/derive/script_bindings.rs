@@ -311,10 +311,10 @@ fn union_alternatives(ty: &syn::Type) -> Option<(&syn::Type, &syn::Type)> {
 /// `add(R<Vec3>, R<Vec3>)` and `add(R<Vec3>, f32)`), so operators are FFI calls too.
 ///
 /// ```rust,ignore
-/// extern "C" fn wrapper(a0: *const Vec3, a1: *const Vec3, out: *mut u8) -> () {
+/// extern "C" fn wrapper(a0: *const Vec3, a1: *const Vec3, out: *mut u8, failed: *mut u8) -> () {
 ///     let f = |a: V<Vec3>, b: V<Vec3>| -> V<Vec3> { .. };
 ///     let output = f(unsafe { <V<Vec3> as FfiArg>::from_c(a0) }, ..);
-///     unsafe { FfiReturn::into_c(output, out) }
+///     unsafe { FfiReturn::into_c(output, out, failed) }
 /// }
 /// ```
 fn ffi_wrapper(
@@ -366,10 +366,10 @@ fn ffi_wrapper(
                 // Safety (callers): arguments as `FfiArg::from_c` says, the out-pointer as `FfiReturn::into_c` says; a
                 // panic aborts
                 #[allow(unused_unsafe, clippy::not_unsafe_ptr_arg_deref, clippy::unused_unit)]
-                extern "C" fn wrapper(#(#params,)* out: *mut u8) -> #ret::C {
+                extern "C" fn wrapper(#(#params,)* out: *mut u8, failed: *mut u8) -> #ret::C {
                     let function = |#args| -> #out_type { #body };
                     let output = function(#(#conversions),*);
-                    unsafe { #ret::into_c(output, out) }
+                    unsafe { #ret::into_c(output, out, failed) }
                 }
                 registry.register_ffi_function(
                     ::std::any::TypeId::of::<#self_ty>(),
@@ -378,6 +378,7 @@ fn ffi_wrapper(
                         function: wrapper as *const (),
                         params: vec![#(#kinds),*],
                         result: #ret::result(),
+                        fallible: #ret::fallible(),
                     },
                 );
             }
