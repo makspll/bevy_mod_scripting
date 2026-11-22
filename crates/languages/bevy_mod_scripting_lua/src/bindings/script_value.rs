@@ -182,6 +182,10 @@ impl FromLua for LuaScriptValue {
             )
             .map(LuaScriptValue);
         };
+        // a type object (a type or registration) is its inner value, see `push_type_object`
+        if let Some(inner) = super::native::type_object_inner(&table)? {
+            return Self::from_lua(inner, lua);
+        }
         // released when the table is converted, nested tables are converted inside `pairs`
         let _depth = TableDepth::enter()?;
         // NOTE: lua tables keep integer keys in either an array part (iterated by `pairs` in
@@ -209,6 +213,15 @@ impl FromLua for LuaScriptValue {
                 ffi::LUA_TSTRING => Ok(LuaScriptValue(ScriptValue::String(
                     String::from_stack(idx, lua)?.into(),
                 ))),
+                // a type object (a type or registration) is its inner value, see `push_type_object`
+                ffi::LUA_TTABLE
+                    if ffi::lua_checkstack(state, 2) != 0
+                        && super::native::push_type_object_inner(state, idx) =>
+                {
+                    let value = Self::from_stack(-1, lua);
+                    ffi::lua_pop(state, 1);
+                    value
+                }
                 ffi::LUA_TTABLE => table_from_stack(idx, lua).map(LuaScriptValue),
                 // cdata of native types are copied into a reference, like native values
                 #[cfg(any(feature = "luajit", feature = "luajit52"))]
@@ -597,7 +610,7 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Float(f) => Value::Number(f),
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
             ScriptValue::Reference(r) => super::native::reference_into_lua(lua, r)?,
-            ScriptValue::Type(type_id) => LuaTypeRef(type_id).into_lua(lua)?,
+            ScriptValue::Type(type_id) => super::native::type_ref_into_lua(lua, type_id)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => match function.script_function::<mlua::Function>() {
                 // a function of this Lua state is handed back as it is: the script gets the function it

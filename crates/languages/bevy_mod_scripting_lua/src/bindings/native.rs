@@ -318,7 +318,11 @@ unsafe impl ArgSource for LuaArgs<'_> {
         // Safety: the index is on the stack; the items are pushed above every argument and stay there until the call returns,
         // so native items stay alive for borrows; raw gets and `next` over an unchanged table don't raise
         unsafe {
-            if ffi::lua_type(l, idx) != ffi::LUA_TTABLE || ffi::lua_checkstack(l, 2) == 0 {
+            // type objects are tables, but no lists
+            if ffi::lua_type(l, idx) != ffi::LUA_TTABLE
+                || ffi::lua_checkstack(l, 2) == 0
+                || is_type_object_at(l, idx)
+            {
                 return false;
             }
             // a sequence, exactly the keys `1..=len`, as tables become lists (see `TableBuilder`)
@@ -365,7 +369,11 @@ unsafe impl ArgSource for LuaArgs<'_> {
         // Safety: the index is on the stack, entries are pushed above every argument; `next` over an unchanged table doesn't
         // raise; values are popped after their entry, so natives aren't handed out (see `NoNatives`)
         unsafe {
-            if ffi::lua_type(l, idx) != ffi::LUA_TTABLE || ffi::lua_checkstack(l, 3) == 0 {
+            // type objects are tables, but no maps
+            if ffi::lua_type(l, idx) != ffi::LUA_TTABLE
+                || ffi::lua_checkstack(l, 3) == 0
+                || is_type_object_at(l, idx)
+            {
                 return None;
             }
             ffi::lua_pushnil(l);
@@ -1565,54 +1573,6 @@ unsafe fn function_value(
     .map_err(IntoInteropError::to_bms_error)
 }
 
-/// Pushes `cache[v][name]` if it's of the type `kind`: what was kept for the name on the value `v` by
-/// [`cache_for_value`]. `cache` (a table with weak keys) is at an index which stays valid when values are pushed.
-/// `[-0, +(0|1), -]`, needs 2 free slots.
-///
-/// Called with `[v (1), name (2), ..]`.
-unsafe fn cached_for_value(l: *mut ffi::lua_State, cache: c_int, kind: c_int) -> bool {
-    unsafe {
-        let top = ffi::lua_gettop(l);
-        // [.., cache[v]]
-        ffi::lua_pushvalue(l, 1);
-        if ffi::lua_rawget(l, cache) == ffi::LUA_TTABLE {
-            // [.., cache[v], cache[v][name]]
-            ffi::lua_pushvalue(l, 2);
-            if ffi::lua_rawget(l, -2) == kind {
-                ffi::lua_remove(l, -2);
-                return true;
-            }
-        }
-        ffi::lua_settop(l, top);
-        false
-    }
-}
-
-/// `cache[v][name] = result`, see [`cached_for_value`]. `[-0, +0, m]`, needs 3 free slots: called once no Rust value of
-/// the call is left.
-///
-/// Called with `[v (1), name (2), result (3), ..]`.
-unsafe fn cache_for_value(l: *mut ffi::lua_State, cache: c_int) {
-    unsafe {
-        let top = ffi::lua_gettop(l);
-        // [.., cache[v]]
-        ffi::lua_pushvalue(l, 1);
-        if ffi::lua_rawget(l, cache) != ffi::LUA_TTABLE {
-            ffi::lua_pop(l, 1);
-            ffi::lua_createtable(l, 0, 1);
-            // cache[v] = {}
-            ffi::lua_pushvalue(l, 1);
-            ffi::lua_pushvalue(l, -2);
-            ffi::lua_rawset(l, cache);
-        }
-        // cache[v][name] = result
-        ffi::lua_pushvalue(l, 2);
-        ffi::lua_pushvalue(l, 3);
-        ffi::lua_rawset(l, -3);
-        ffi::lua_settop(l, top);
-    }
-}
-
 /// `__index`, `v.name`: the getter in upvalue 1 (`getters`, read in place for direct fields), else the method in upvalue 2
 /// (`methods`), else the slow path.
 ///
@@ -1827,13 +1787,23 @@ static REFERENCE_METATABLE_GC: u8 = 0;
 const REFERENCE_SIZE: usize = size_of::<ReflectReference>() + ALIGN - 1;
 const _: () = assert!(align_of::<ReflectReference>() <= ALIGN);
 
-/// The reference at `idx`, if it's one: a userdata whose metatable holds the reference marker. Valid while the value is
-/// on the stack. `[-0, +0, -]`, but needs 2 free slots.
+/// The reference at `idx`, if it's one: a userdata whose metatable holds the reference marker, or a type object of a
+/// registration (see [`push_type_object`]). Valid while the value is on the stack. `[-0, +0, -]`, but needs 2 free slots
+/// (3 for type objects).
 pub(crate) unsafe fn reference_at<'a>(
     l: *mut ffi::lua_State,
     idx: c_int,
 ) -> Option<&'a ReflectReference> {
     unsafe {
+        if ffi::lua_type(l, idx) == ffi::LUA_TTABLE {
+            // its inner value, which the table keeps alive
+            if ffi::lua_checkstack(l, 3) == 0 || !push_type_object_inner(l, idx) {
+                return None;
+            }
+            let reference = reference_at(l, -1);
+            ffi::lua_pop(l, 1);
+            return reference;
+        }
         if ffi::lua_type(l, idx) != ffi::LUA_TUSERDATA {
             return None;
         }
@@ -1846,6 +1816,204 @@ pub(crate) unsafe fn reference_at<'a>(
         ffi::lua_pop(l, 2);
         // Safety: only BMS' reference metatables hold the marker, set on userdata initialised with a reference
         reference.then(|| &*(align_up(block) as *const ReflectReference))
+    }
+}
+
+/// Its address keys the inner value in the metatable of a type object, see [`push_type_object`].
+static TYPE_OBJECT_MARKER: u8 = 0;
+/// Its address keys the fields of the metatables of type objects in the registry, see [`push_type_object`].
+static TYPE_OBJECT_FIELDS: u8 = 0;
+
+/// Whether `reference` is a registration, which Lua gets as a type object (see [`push_type_object`]): `Vec3`,
+/// `world.get_type_by_name("Transform")`. Enum variants stay references, they're values.
+pub(crate) fn is_type_object(reference: &ReflectReference) -> bool {
+    let type_id = reference.base.type_id();
+    reference.reflect_path.is_empty()
+        && dispatch::members_depend_on_value(type_id)
+        && type_id != std::any::TypeId::of::<bevy_mod_scripting_bindings::EnumVariantRef>()
+}
+
+/// Makes the value on the top a type object: `[.., inner] -> [.., t]`, `[-1, +1, m]`, the inner value as it is if there's
+/// no room on the stack.
+///
+/// A type (`LuaTypeRef`) or registration (a reference) is an empty table with a metatable of its own, which holds the inner
+/// value and the fields every type object has: functions found through it (see [`type_object_index`]) are kept in the
+/// table which is its `__index`, so `Vec3.new` is a plain field after the first lookup, which LuaJIT compiles. Scripts
+/// can't write it or get the metatable, conversions to Rust unwrap it (see [`push_type_object_inner`]).
+pub(crate) unsafe fn push_type_object(l: *mut ffi::lua_State) {
+    unsafe {
+        if ffi::lua_checkstack(l, 8) == 0 {
+            return;
+        }
+        // [.., inner, t, mt]: mt[marker] = inner
+        ffi::lua_createtable(l, 0, 0);
+        ffi::lua_createtable(l, 0, 6);
+        ffi::lua_pushvalue(l, -3);
+        raw_set_p(l, -2, key(&TYPE_OBJECT_MARKER));
+        // [.., inner, t, mt, fields]
+        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&TYPE_OBJECT_FIELDS)) != ffi::LUA_TTABLE {
+            ffi::lua_pop(l, 1);
+            ffi::lua_createtable(l, 0, 5);
+            // scripts can't get or change it
+            ffi::lua_pushboolean(l, 0);
+            ffi::lua_setfield(l, -2, c"__metatable".as_ptr());
+            let functions: [(&std::ffi::CStr, ffi::lua_CFunction); 4] = [
+                (c"__index", type_object_index),
+                (c"__newindex", type_object_newindex),
+                (c"__tostring", type_object_tostring),
+                (c"__eq", type_object_eq),
+            ];
+            for (name, function) in functions {
+                ffi::lua_pushcfunction(l, function);
+                ffi::lua_setfield(l, -2, name.as_ptr());
+            }
+            ffi::lua_pushvalue(l, -1);
+            raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&TYPE_OBJECT_FIELDS));
+        }
+        // copied into mt: [.., mt, fields, k, v] -> [.., mt, fields, k, k, v] -> rawset -> [.., mt, fields, k]
+        ffi::lua_pushnil(l);
+        while ffi::lua_next(l, -2) != 0 {
+            ffi::lua_pushvalue(l, -2);
+            ffi::lua_insert(l, -2);
+            ffi::lua_rawset(l, -5);
+        }
+        ffi::lua_pop(l, 1);
+        // the functions found are kept in `c`, which is `t`'s `__index`: `t` stays empty, so every write reaches
+        // `__newindex`. Misses of `c` are looked up (`type_object_index`), its metatable `m` has the inner value too:
+        // [.., inner, t, mt, c, m, index] -> m.__index = index -> [.., inner, t, mt, c, m]
+        ffi::lua_createtable(l, 0, 0);
+        ffi::lua_createtable(l, 0, 2);
+        ffi::lua_pushstring(l, c"__index".as_ptr());
+        ffi::lua_rawget(l, -4);
+        ffi::lua_setfield(l, -2, c"__index".as_ptr());
+        ffi::lua_pushvalue(l, -5);
+        raw_set_p(l, -2, key(&TYPE_OBJECT_MARKER));
+        // [.., inner, t, mt, c] -> mt.__index = c -> [.., inner, t, mt]
+        ffi::lua_setmetatable(l, -2);
+        ffi::lua_setfield(l, -2, c"__index".as_ptr());
+        // [.., inner, t, mt] -> [.., inner, t] -> [.., t]
+        ffi::lua_setmetatable(l, -2);
+        ffi::lua_remove(l, -2);
+    }
+}
+
+/// Pushes the inner value of the type object at `idx` (see [`push_type_object`]) if it's one. `[-0, +(0|1), -]`, needs 2
+/// free slots.
+pub(crate) unsafe fn push_type_object_inner(l: *mut ffi::lua_State, idx: c_int) -> bool {
+    unsafe {
+        if ffi::lua_type(l, idx) != ffi::LUA_TTABLE || ffi::lua_getmetatable(l, idx) == 0 {
+            return false;
+        }
+        // [.., mt, inner | nil]
+        let found = raw_get_p(l, -1, key(&TYPE_OBJECT_MARKER)) != ffi::LUA_TNIL;
+        match found {
+            true => ffi::lua_remove(l, -2),
+            false => ffi::lua_pop(l, 2),
+        }
+        found
+    }
+}
+
+/// Whether the value at `idx` is a type object, see [`push_type_object`]. `[-0, +0, -]`, needs 2 free slots.
+pub(crate) unsafe fn is_type_object_at(l: *mut ffi::lua_State, idx: c_int) -> bool {
+    unsafe {
+        let found = push_type_object_inner(l, idx);
+        if found {
+            ffi::lua_pop(l, 1);
+        }
+        found
+    }
+}
+
+/// `__index` of the function tables of type objects (see [`push_type_object`]): the member of the inner value (see
+/// [`reference_index`], [`type_ref_index`]), kept in the table if it's a function: functions are registered before scripts
+/// run.
+///
+/// Called with `[functions (1), key (2)]`.
+unsafe extern "C-unwind" fn type_object_index(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 2);
+        if ffi::lua_checkstack(l, 4) == 0 || !push_type_object_inner(l, 1) {
+            raise_str(l, c"expected a type");
+        }
+        // [t, key, inner, index, inner, key] -> call -> [t, key, inner, value]
+        let index: ffi::lua_CFunction = match reference_at(l, 3) {
+            Some(_) => reference_index,
+            None => type_ref_index,
+        };
+        ffi::lua_pushcfunction(l, index);
+        ffi::lua_pushvalue(l, 3);
+        ffi::lua_pushvalue(l, 2);
+        ffi::lua_call(l, 2, 1);
+        if ffi::lua_type(l, -1) == ffi::LUA_TFUNCTION {
+            // [t, key, inner, value, key, value] -> rawset -> [t, key, inner, value]
+            ffi::lua_pushvalue(l, 2);
+            ffi::lua_pushvalue(l, -2);
+            ffi::lua_rawset(l, 1);
+        }
+        1
+    }
+}
+
+/// `__newindex` of type objects: they're read-only.
+unsafe extern "C-unwind" fn type_object_newindex(l: *mut ffi::lua_State) -> c_int {
+    unsafe { raise_str(l, c"types are read-only, their members can't be set") }
+}
+
+/// `__tostring` of type objects: registrations are displayed like references. Called with `[t (1)]`.
+unsafe extern "C-unwind" fn type_object_tostring(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 1);
+        if reference_at(l, 1).is_some() {
+            return reference_tostring(l);
+        }
+        ffi::lua_pushstring(l, c"type".as_ptr());
+        1
+    }
+}
+
+/// `__eq` of type objects: registrations are compared like references, types by their type. Called with `[a (1), b (2)]`.
+unsafe extern "C-unwind" fn type_object_eq(l: *mut ffi::lua_State) -> c_int {
+    unsafe {
+        ffi::lua_settop(l, 2);
+        if reference_at(l, 1).is_some() && reference_at(l, 2).is_some() {
+            return comparison::<EQ>(l);
+        }
+        // [a, b, inner a, inner b]
+        if !push_type_object_inner(l, 1) || !push_type_object_inner(l, 2) {
+            ffi::lua_pushboolean(l, 0);
+            return 1;
+        }
+        run(l, || {
+            with_raw(l, |_, raw| {
+                let type_id = |idx| {
+                    at_index::<mlua::UserDataRef<super::reference::LuaTypeRef>>(raw, l, idx)
+                        .ok()
+                        .map(|t| t.0)
+                };
+                let (a, b) = (type_id(3), type_id(4));
+                Ok(Ready::Boolean(a.is_some() && a == b))
+            })
+        })
+    }
+}
+
+/// A type as Lua gets it: a type object (see [`push_type_object`]) of a `LuaTypeRef`.
+pub(crate) fn type_ref_into_lua(lua: &Lua, type_id: std::any::TypeId) -> mlua::Result<mlua::Value> {
+    let inner = lua.create_userdata(super::reference::LuaTypeRef(type_id))?;
+    // Safety: protected mode, `[inner] -> [t]`
+    unsafe { lua.exec_raw::<mlua::Value>(inner, |l| push_type_object(l)) }
+}
+
+/// The inner value of `table` if it's a type object, see [`push_type_object`].
+pub(crate) fn type_object_inner(table: &mlua::Table) -> mlua::Result<Option<mlua::Value>> {
+    let Some(metatable) = table.metatable() else {
+        return Ok(None);
+    };
+    let marker = mlua::LightUserData(key(&TYPE_OBJECT_MARKER));
+    match metatable.raw_get::<mlua::Value>(marker)? {
+        mlua::Value::Nil => Ok(None),
+        inner => Ok(Some(inner)),
     }
 }
 
@@ -1950,9 +2118,10 @@ unsafe fn build_reference_metatable(l: *mut ffi::lua_State, mt_key: *mut c_void,
 
 /// Pushes `reference` as a new userdata, its metatable being on the top (see [`push_reference_metatable`]), which it
 /// takes: `[.., mt] -> [.., r]`, `[-1, +1, m]`. Only the reference is alive in this frame and it isn't dropped by it: if
-/// allocating raises, it's leaked, nothing is skipped.
+/// allocating raises, it's leaked, nothing is skipped. Registrations become type objects, see [`push_type_object`].
 unsafe fn push_reference_with_metatable(l: *mut ffi::lua_State, reference: ReflectReference) {
     let gc = reference.owns_heap();
+    let type_object = is_type_object(&reference);
     let reference = ManuallyDrop::new(reference);
     unsafe {
         let block = new_userdata(l, REFERENCE_SIZE, gc.then_some(Dtor::Reference));
@@ -1960,6 +2129,10 @@ unsafe fn push_reference_with_metatable(l: *mut ffi::lua_State, reference: Refle
         // [.., mt, r] -> [.., r, mt] -> setmetatable pops mt -> [.., r]
         ffi::lua_insert(l, -2);
         ffi::lua_setmetatable(l, -2);
+        // the userdata owns the reference: raising leaks nothing now
+        if type_object {
+            push_type_object(l);
+        }
     }
 }
 
@@ -2117,57 +2290,6 @@ unsafe extern "C-unwind" fn reference_pairs(l: *mut ffi::lua_State) -> c_int {
     }
 }
 
-/// Its address keys the cache of the functions of registrations in the registry, see [`cached_registration_member`].
-static REGISTRATION_MEMBERS: u8 = 0;
-
-/// Pushes the cached function `name` of the registration `r`, i.e. `Vec3.new`, if there is one. `[-0, +(0|1), -]`.
-///
-/// Members of registrations depend on the registration (see [`dispatch::index_name`]), so they are cached per registration
-/// value: `cache[r][name]`, the cache having weak keys. Kept for good: functions are registered before scripts run.
-///
-/// Called with `[r (1), name (2)]`.
-unsafe fn cached_registration_member(l: *mut ffi::lua_State) -> bool {
-    unsafe {
-        // [r, name, cache]
-        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS)) == ffi::LUA_TTABLE
-            && cached_for_value(l, 3, ffi::LUA_TFUNCTION)
-        {
-            // [r, name, cache, function] -> [r, name, function]
-            ffi::lua_replace(l, 3);
-            return true;
-        }
-        ffi::lua_settop(l, 2);
-        false
-    }
-}
-
-/// Caches the function on the top as `name` of the registration `r`, see [`cached_registration_member`]. `[-0, +0, m]`:
-/// called once no Rust value of the call is left.
-///
-/// Called with `[r (1), name (2), function (3)]`.
-unsafe fn cache_registration_member(l: *mut ffi::lua_State) {
-    unsafe {
-        if ffi::lua_checkstack(l, 4) == 0 {
-            return;
-        }
-        // [r, name, function, cache]
-        if raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS)) != ffi::LUA_TTABLE {
-            // the first one of this state: a table with weak keys
-            ffi::lua_settop(l, 3);
-            ffi::lua_newtable(l);
-            ffi::lua_newtable(l);
-            ffi::lua_pushstring(l, c"__mode".as_ptr());
-            ffi::lua_pushstring(l, c"k".as_ptr());
-            ffi::lua_rawset(l, -3);
-            ffi::lua_setmetatable(l, -2);
-            ffi::lua_pushvalue(l, -1);
-            raw_set_p(l, ffi::LUA_REGISTRYINDEX, key(&REGISTRATION_MEMBERS));
-        }
-        cache_for_value(l, 4);
-        ffi::lua_settop(l, 3);
-    }
-}
-
 /// The Lua function of a function of a type or registration (`Vec3.new`): these live in the registry, so it's made once.
 /// On LuaJIT it's the function's FFI form if it has one, see `cdata::ffi_static`.
 fn static_function_value(lua: &Lua, function: DynamicScriptFunction) -> mlua::Result<mlua::Value> {
@@ -2181,19 +2303,14 @@ fn static_function_value(lua: &Lua, function: DynamicScriptFunction) -> mlua::Re
     super::script_value::registered_function_into_lua(lua, function)
 }
 
-/// `__index` of types (`LuaTypeRef`, i.e. `world.spawn`), see [`dispatch::static_index`]: functions are cached per type
-/// value like the functions of registrations, see [`cached_registration_member`].
+/// `__index` of types (`LuaTypeRef`, i.e. `world.spawn`), see [`dispatch::static_index`]: functions are kept by the type
+/// objects of types, see [`type_object_index`].
 ///
 /// Called with `[t (1), key (2)]`.
 pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
-        let named = ffi::lua_type(l, 2) == ffi::LUA_TSTRING;
-        if named && cached_registration_member(l) {
-            return 1;
-        }
-        let mut cache = false;
-        let n = run(l, || {
+        run(l, || {
             let world = ThreadWorldContainer::try_get_context()?.world;
             with_raw(l, |lua, raw| {
                 let type_id =
@@ -2203,22 +2320,14 @@ pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) ->
                 let key = value_at(raw, l, 2)?;
                 let value = match dispatch::static_index(world, type_id, key, LUA_CALLER_CONTEXT)? {
                     // functions of types live in the registry (bound ones are cached there too)
-                    ScriptValue::Function(function) => {
-                        cache = named;
-                        static_function_value(lua, function)
-                    }
+                    ScriptValue::Function(function) => static_function_value(lua, function),
                     member => LuaScriptValue(member).into_lua(lua),
                 };
                 value
                     .map(Ready::Value)
                     .map_err(IntoInteropError::to_bms_error)
             })
-        });
-        // [t, name, function]: nothing Rust is left
-        if cache && n == 1 {
-            cache_registration_member(l);
-        }
-        n
+        })
     }
 }
 
@@ -2229,17 +2338,14 @@ pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) ->
 pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
-        // functions of registrations (`Vec3.new`) are cached per registration: found before anything else is looked up
+        // functions of registrations (`Vec3.new`) are kept by their type objects, see `type_object_index`
         let registration = ffi::lua_type(l, 2) == ffi::LUA_TSTRING
             && reference_at(l, 1).is_some_and(|receiver| {
                 receiver.reflect_path.is_empty()
                     && dispatch::members_depend_on_value(receiver.base.type_id())
             });
-        if registration && cached_registration_member(l) {
-            return 1;
-        }
         let mut cache = false;
-        let n = run(l, || {
+        run(l, || {
             let world = ThreadWorldContainer::try_get_context()?.world;
             // one mlua call for the lookup and the result
             // on the stack for the call
@@ -2290,12 +2396,7 @@ pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -
                     .map(Ready::Value)
                     .map_err(IntoInteropError::to_bms_error)
             })
-        });
-        // [r, name, function]: nothing Rust is left
-        if cache && n == 1 {
-            cache_registration_member(l);
-        }
-        n
+        })
     }
 }
 

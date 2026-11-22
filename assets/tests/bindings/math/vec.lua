@@ -16,6 +16,10 @@ assert(Vec3.one() == Vec3.new(1, 1, 1), "one")
 assert(Vec3.unit_y() == Vec3.new(0, 1, 0), "unit_y")
 assert(Vec2.new(1, 2).y == 2, "vec2 new")
 assert(Vec4.new(1, 2, 3, 4).w == 4, "vec4 new")
+-- types are tables which keep the functions found in them, read-only
+assert(type(Vec3) == "table" and getmetatable(Vec3) == false and Vec3.new == Vec3.new, "a type keeps its functions")
+---@diagnostic disable-next-line: assign-type-mismatch
+assert(not pcall(function() Vec3.new = 1 end) and Vec3.new(1, 2, 3) == v, "types are read-only")
 
 -- operators, with vectors and numbers
 assert(v + v == Vec3.new(2, 4, 6), "add vector")
