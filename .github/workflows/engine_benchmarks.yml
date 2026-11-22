@@ -1,0 +1,126 @@
+name: Engine benchmarks
+
+# Scenario benchmarks against Godot and Unity, see benches/engines/README.md.
+# Run by hand; results land in a PR updating the book's Engine Comparison page.
+on:
+  workflow_dispatch:
+    inputs:
+      stages:
+        description: "comma separated entity counts, empty for scenario.json"
+        required: false
+        default: ""
+  pull_request:
+    paths:
+      - "benches/engines/**"
+      - ".github/workflows/engine_benchmarks.yml"
+
+env:
+  # PRs run a short smoke test, manual runs the full ramp
+  STAGES: ${{ github.event_name == 'pull_request' && '1000,5000' || inputs.stages }}
+
+jobs:
+  bevy:
+    name: Bevy (${{ matrix.path }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        path: [rust, lua]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: engine-benchmarks
+      - name: Run
+        run: |
+          STAGES_ARG=${STAGES:+--stages $STAGES}
+          for s in s1 s2; do
+            cargo bench --bench engines --features luajit -- --path ${{ matrix.path }} --scenario $s $STAGES_ARG --out results
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-bevy-${{ matrix.path }}
+          path: results
+
+  godot:
+    name: Godot
+    runs-on: ubuntu-latest
+    env:
+      GODOT: "4.7.2-stable"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot
+        run: |
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/$GODOT/Godot_v${GODOT}_linux.x86_64.zip
+          unzip -q godot.zip && mv Godot_v${GODOT}_linux.x86_64 godot
+      - name: Run
+        run: |
+          STAGES_ARG=${STAGES:+--stages $STAGES}
+          for s in s1 s2; do
+            ./godot --headless --path benches/engines/godot --script res://main.gd -- --scenario $s $STAGES_ARG --out $PWD/results
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-godot
+          path: results
+
+  unity:
+    name: Unity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: benches/engines/unity/Library
+          key: unity-library-${{ hashFiles('benches/engines/unity/Packages/**', 'benches/engines/unity/ProjectSettings/**') }}
+      - name: Build player
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: benches/engines/unity
+          targetPlatform: StandaloneLinux64
+          buildMethod: BuildPlayer.Build
+      - name: Run
+        run: |
+          BIN=$(find benches/engines/unity/build -name 'bench.x86_64' | head -1)
+          sudo chmod +x "$BIN"
+          STAGES_ARG=${STAGES:+--stages $STAGES}
+          COMMON="-batchmode -nographics -logFile -"
+          for s in s1 s2; do
+            ARGS="--scenario $s --config benches/engines/scenario.json $STAGES_ARG --out results"
+            "$BIN" $COMMON --path mono --name unity_mono $ARGS
+            "$BIN" $COMMON --path ecs --name unity_ecs_burst $ARGS
+            "$BIN" $COMMON --burst-disable-compilation -job-worker-count 0 --path ecs --name unity_ecs $ARGS
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-unity
+          path: results
+
+  publish:
+    name: Publish
+    needs: [bevy, godot, unity]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: results
+      - name: Collect
+        run: python3 benches/engines/collect.py results docs/src/EngineComparison/results.json
+      - name: Open PR
+        if: github.event_name == 'workflow_dispatch'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: engine-benchmarks/results
+          title: "docs: update engine comparison results"
+          commit-message: "docs: update engine comparison results"
+          add-paths: docs/src/EngineComparison/results.json
+          body: Results of the [engine benchmarks run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
