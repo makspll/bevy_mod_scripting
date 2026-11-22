@@ -29,7 +29,7 @@ use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
 use mlua::{IntoLua, LightUserData, Lua, Table, ffi};
 
-use super::{LUA_CALLER_CONTEXT, LuaScriptValue, Ready, key, raw_get_p, raw_set_p, run, with_raw};
+use super::{LUA_CALLER_CONTEXT, Ready, key, raw_get_p, raw_set_p, run, with_raw};
 use crate::{IntoInteropError, IntoMluaError};
 
 /// LuaJIT's type tag of cdata, not in the Lua C API.
@@ -739,29 +739,18 @@ fn operators_source(out: &mut String, native: &NativeType) {
 }
 
 /// `__index` of cdata for names which are no fields or functions: through a reference to a copy, like native values'
-/// slow path, see [`dispatch::index`]. Called with `[v (1), key (2)]`.
+/// slow path, see [`super::member_at`]. Called with `[v (1), key (2)]`.
 unsafe extern "C-unwind" fn cdata_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
         run(l, || {
-            let receiver = cdata_script_value(l, 1)
-                .ok_or_else(|| InteropError::str("expected a BMS cdata"))?;
-            let ScriptValue::Reference(receiver) = receiver else {
-                return Err(InteropError::str("expected a reference"));
+            let Some(ScriptValue::Reference(receiver)) = cdata_script_value(l, 1) else {
+                return Err(InteropError::str("expected a BMS cdata"));
             };
-            let world = ThreadWorldContainer::try_get_context()?.world;
-            with_raw(l, |lua, raw| {
-                let key = super::value_at(raw, l, 2)?;
-                let value = match dispatch::index(world, receiver, key, LUA_CALLER_CONTEXT)? {
-                    dispatch::Member::Method(function) => {
-                        super::super::script_value::registered_function_into_lua(lua, function)
-                    }
-                    dispatch::Member::Static(value) => LuaScriptValue(value).into_lua(lua),
-                };
-                value
-                    .map(Ready::Value)
-                    .map_err(IntoInteropError::to_bms_error)
-            })
+            super::member_at(
+                l,
+                super::Receiver::Reference(std::borrow::Cow::Owned(receiver)),
+            )
         })
     }
 }

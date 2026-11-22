@@ -1557,22 +1557,6 @@ unsafe fn push_function(l: *mut ffi::lua_State, function: &DynamicScriptFunction
     }
 }
 
-/// A registered function as a value to return.
-unsafe fn function_value(
-    l: *mut ffi::lua_State,
-    function: DynamicScriptFunction,
-) -> Result<Ready, InteropError> {
-    // Safety: `l` is the state of the call
-    unsafe {
-        with_raw(l, |lua, _| {
-            let value = super::script_value::registered_function_into_lua(lua, function)?;
-            Ok::<_, mlua::Error>(MultiValue::from_vec(vec![value]))
-        })
-    }
-    .map(Ready::Values)
-    .map_err(IntoInteropError::to_bms_error)
-}
-
 /// `__index`, `v.name`: the getter in upvalue 1 (`getters`, read in place for direct fields), else the method in upvalue 2
 /// (`methods`), else the slow path.
 ///
@@ -1609,22 +1593,12 @@ unsafe extern "C-unwind" fn native_index(l: *mut ffi::lua_State) -> c_int {
         // [v, name]
         ffi::lua_pop(l, 1);
         run(l, || {
-            let receiver = script_value_at(l, 1)?;
-            let key = script_value_at(l, 2)?;
-            let ScriptValue::Reference(receiver) = receiver else {
+            let ScriptValue::Reference(receiver) = script_value_at(l, 1)? else {
                 return Err(InteropError::str(
                     "a native value is indexed with a reference to it",
                 ));
             };
-            let world = ThreadWorldContainer::try_get_context()?.world;
-            match dispatch::index(world, receiver, key, LUA_CALLER_CONTEXT)? {
-                dispatch::Member::Method(function) => function_value(l, function),
-                dispatch::Member::Static(value) => {
-                    let mut ret = LuaReturn::new();
-                    ret.script_value(value)?;
-                    ret.prepare(l)
-                }
-            }
+            member_at(l, Receiver::Reference(Cow::Owned(receiver)))
         })
     }
 }
@@ -2303,99 +2277,115 @@ fn static_function_value(lua: &Lua, function: DynamicScriptFunction) -> mlua::Re
     super::script_value::registered_function_into_lua(lua, function)
 }
 
-/// `__index` of types (`LuaTypeRef`, i.e. `world.spawn`), see [`dispatch::static_index`]: functions are kept by the type
-/// objects of types, see [`type_object_index`].
+/// What a member is looked up on, see [`member_at`].
+enum Receiver<'a> {
+    /// A reference: a value in the world, a copy of a native value or cdata, a registration
+    Reference(Cow<'a, ReflectReference>),
+    /// A type (`LuaTypeRef`)
+    Type(std::any::TypeId),
+}
+
+/// The member of `receiver` named by the key at 2, as the value to return: the one lookup of the `__index` of every BMS
+/// value (references, type objects, native values and cdata), see [`dispatch::index_name`], [`dispatch::index`] and
+/// [`dispatch::static_index`]. Functions of types and registrations are their static form (on LuaJIT their FFI form, see
+/// [`static_function_value`]), methods are unbound (`v:method()` passes the receiver), other members are returned like
+/// the results of functions.
+///
+/// # Safety
+/// `l` is the state of a call, the key is at 2.
+unsafe fn member_at(l: *mut ffi::lua_State, receiver: Receiver<'_>) -> Result<Ready, InteropError> {
+    let world = ThreadWorldContainer::try_get_context()?.world;
+    let of_type = match &receiver {
+        Receiver::Type(_) => true,
+        Receiver::Reference(reference) => {
+            reference.reflect_path.is_empty()
+                && dispatch::members_depend_on_value(reference.base.type_id())
+        }
+    };
+    // Safety: the key is on the stack for the call
+    let member = unsafe {
+        with_raw(l, |_, raw| {
+            Ok::<_, InteropError>(match receiver {
+                Receiver::Type(type_id) => dispatch::Member::Static(dispatch::static_index(
+                    world,
+                    type_id,
+                    value_at(raw, l, 2)?,
+                    LUA_CALLER_CONTEXT,
+                )?),
+                // a name isn't copied, see `dispatch::index_name`
+                Receiver::Reference(reference) if ffi::lua_type(l, 2) == ffi::LUA_TSTRING => {
+                    let mut len = 0;
+                    let name = ffi::lua_tolstring(l, 2, &mut len);
+                    let name = std::str::from_utf8(std::slice::from_raw_parts(name.cast(), len))
+                        .map_err(|_| InteropError::str("member names must be valid UTF-8"))?;
+                    dispatch::index_name(world, reference, name, LUA_CALLER_CONTEXT)?
+                }
+                Receiver::Reference(reference) => dispatch::index(
+                    world,
+                    reference.into_owned(),
+                    value_at(raw, l, 2)?,
+                    LUA_CALLER_CONTEXT,
+                )?,
+            })
+        })
+    }?;
+    let function = match member {
+        dispatch::Member::Method(function) => function,
+        dispatch::Member::Static(ScriptValue::Function(function)) if of_type => function,
+        dispatch::Member::Static(value) => {
+            return match value {
+                ScriptValue::Float(n) => Ok(Ready::Number(n)),
+                ScriptValue::Integer(i) => Ok(Ready::Integer(i)),
+                ScriptValue::Bool(b) => Ok(Ready::Boolean(b)),
+                value => {
+                    let mut ret = LuaReturn::new();
+                    ret.script_value(value)?;
+                    // Safety: `l` is the state of the call
+                    unsafe { ret.prepare(l) }
+                }
+            };
+        }
+    };
+    // Safety: `l` is the state of the call
+    unsafe {
+        with_raw(l, |lua, _| match of_type {
+            true => static_function_value(lua, function),
+            false => super::script_value::registered_function_into_lua(lua, function),
+        })
+    }
+    .map(Ready::Value)
+    .map_err(IntoInteropError::to_bms_error)
+}
+
+/// `__index` of types (`LuaTypeRef`, i.e. `world.spawn`), see [`member_at`]: functions are kept by the type objects of
+/// types, see [`type_object_index`].
 ///
 /// Called with `[t (1), key (2)]`.
 pub(super) unsafe extern "C-unwind" fn type_ref_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
         run(l, || {
-            let world = ThreadWorldContainer::try_get_context()?.world;
-            with_raw(l, |lua, raw| {
-                let type_id =
-                    at_index::<mlua::UserDataRef<super::reference::LuaTypeRef>>(raw, l, 1)
-                        .map_err(IntoInteropError::to_bms_error)?
-                        .0;
-                let key = value_at(raw, l, 2)?;
-                let value = match dispatch::static_index(world, type_id, key, LUA_CALLER_CONTEXT)? {
-                    // functions of types live in the registry (bound ones are cached there too)
-                    ScriptValue::Function(function) => static_function_value(lua, function),
-                    member => LuaScriptValue(member).into_lua(lua),
-                };
-                value
-                    .map(Ready::Value)
-                    .map_err(IntoInteropError::to_bms_error)
+            let type_id = with_raw(l, |_, raw| {
+                at_index::<mlua::UserDataRef<super::reference::LuaTypeRef>>(raw, l, 1).map(|t| t.0)
             })
+            .map_err(IntoInteropError::to_bms_error)?;
+            member_at(l, Receiver::Type(type_id))
         })
     }
 }
 
-/// `__index` of references, `r.name` (see [`dispatch::index_name`]) or `r[key]` (see [`dispatch::index`]): methods come
-/// back unbound, `r:method()` passes the reference itself.
+/// `__index` of references, `r.name` or `r[key]`, see [`member_at`]: methods come back unbound, `r:method()` passes the
+/// reference itself. Functions of registrations (`Vec3.new`) are kept by their type objects, see `type_object_index`.
 ///
 /// Called with `[r (1), key (2)]`.
 pub(super) unsafe extern "C-unwind" fn reference_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
-        // functions of registrations (`Vec3.new`) are kept by their type objects, see `type_object_index`
-        let registration = ffi::lua_type(l, 2) == ffi::LUA_TSTRING
-            && reference_at(l, 1).is_some_and(|receiver| {
-                receiver.reflect_path.is_empty()
-                    && dispatch::members_depend_on_value(receiver.base.type_id())
-            });
-        let mut cache = false;
         run(l, || {
-            let world = ThreadWorldContainer::try_get_context()?.world;
-            // one mlua call for the lookup and the result
             // on the stack for the call
             let receiver =
                 reference_at(l, 1).ok_or_else(|| InteropError::str("expected a reference"))?;
-            with_raw(l, |lua, raw| {
-                let member = if ffi::lua_type(l, 2) == ffi::LUA_TSTRING {
-                    cache = registration;
-                    let mut len = 0;
-                    let name = ffi::lua_tolstring(l, 2, &mut len);
-                    // the string is kept alive by the stack for the call
-                    let name = std::str::from_utf8(std::slice::from_raw_parts(name.cast(), len))
-                        .map_err(|_| InteropError::str("member names must be valid UTF-8"))?;
-                    dispatch::index_name(world, Cow::Borrowed(receiver), name, LUA_CALLER_CONTEXT)?
-                } else {
-                    let key = at_index::<LuaScriptValue>(raw, l, 2)
-                        .map_err(IntoInteropError::to_bms_error)?;
-                    dispatch::index(world, receiver.clone(), key.into(), LUA_CALLER_CONTEXT)?
-                };
-                // functions of registrations have FFI forms on LuaJIT, methods of references are called with references
-                let registration = cache;
-                let function_value = |function: DynamicScriptFunction| match registration {
-                    true => static_function_value(lua, function),
-                    false => super::script_value::registered_function_into_lua(lua, function),
-                };
-                let value = match member {
-                    dispatch::Member::Method(function) => function_value(function),
-                    dispatch::Member::Static(ScriptValue::Function(function)) if cache => {
-                        function_value(function)
-                    }
-                    dispatch::Member::Static(value) => {
-                        cache = false;
-                        match value {
-                            ScriptValue::Float(n) => return Ok(Ready::Number(n)),
-                            ScriptValue::Integer(i) => return Ok(Ready::Integer(i)),
-                            ScriptValue::Bool(b) => return Ok(Ready::Boolean(b)),
-                            ScriptValue::Reference(reference) => {
-                                // left on the stack for `push_ready`
-                                push_reference_metatable(l, reference.owns_heap())?;
-                                return Ok(Ready::Reference(reference));
-                            }
-                            // one value, tuples too
-                            value => LuaScriptValue(value).into_lua(lua),
-                        }
-                    }
-                };
-                value
-                    .map(Ready::Value)
-                    .map_err(IntoInteropError::to_bms_error)
-            })
+            member_at(l, Receiver::Reference(Cow::Borrowed(receiver)))
         })
     }
 }
