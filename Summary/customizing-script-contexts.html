@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "../searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-94c4b708.js"></script>
+        <script src="../toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -230,6 +230,50 @@ app.add_plugins(plugin);</code></pre>
     world.with_resource(|res: &amp;MyResource| println!("My resource: {res:?}"))?;
     Ok(())
 });</code></pre>
+<h2 id="sandboxing"><a class="header" href="#sandboxing">Sandboxing</a></h2>
+<p>BMS keeps scripts <strong>memory safe</strong>, it doesn’t confine them. By default a script is as trusted as your own code:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>Lua</th><th>Rune</th></tr>
+</thead>
+<tbody>
+<tr><td>Files and processes</td><td>yes: <code>io</code>, <code>os.execute</code></td><td>no: only Rune’s core modules are installed</td></tr>
+<tr><td>Loading other code</td><td>yes: <code>require</code> (Lua files), <code>dofile</code>, <code>load</code></td><td>no</td></tr>
+<tr><td>The world</td><td>everything the registered functions reach</td><td>the same</td></tr>
+<tr><td>CPU and memory</td><td>unlimited: <code>while true do end</code> hangs the frame</td><td>unlimited</td></tr>
+<tr><td>Memory safety</td><td>yes, <strong>except through bytecode</strong>, see below</td><td>yes</td></tr>
+</tbody>
+</table>
+</div>
+<pre class="mermaid">flowchart LR
+    S["script"] --&gt; B["BMS bindings"] --&gt; W["world: what its access allows"]
+    S --&gt; L["Lua standard library"] --&gt; OS["files, processes, other Lua files"]
+    S --&gt; BC["load(bytecode)"] --&gt; MEM["unchecked by the VM: memory unsafe"]
+    S -. "blocked by mlua's safe mode" .-&gt; X["debug, ffi, native modules, package.loadlib"]
+</pre>
+
+<p>Lua contexts are made with <code>mlua::Lua::new()</code>, which leaves out what breaks memory safety outright (<code>debug</code>, LuaJIT’s <code>ffi</code>, native modules). It does <strong>not</strong> stop <code>load</code> and <code>loadstring</code> from running bytecode, which neither Lua nor LuaJIT verify: <code>load(string.dump(f))</code> works, and so does a crafted chunk.</p>
+<p>The <code>unsafe_lua_modules</code> feature uses <code>Lua::unsafe_new()</code> instead: every library, <code>debug</code> and <code>ffi</code> included. Scripts can then do anything, also to BMS’ own values.</p>
+<h3 id="running-scripts-you-dont-trust"><a class="header" href="#running-scripts-you-dont-trust">Running scripts you don’t trust</a></h3>
+<p>Take away what they don’t need in a context initializer, which runs before the script is loaded:</p>
+<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default().add_context_initializer(|_attachment, context| {
+    let globals = context.globals();
+    // no files, processes, other code, or bytecode
+    for name in ["io", "os", "package", "require", "dofile", "loadfile", "load", "loadstring"] {
+        globals.set(name, mlua::Nil).map_err(IntoInteropError::to_bms_error)?;
+    }
+    let string: mlua::Table = globals.get("string").map_err(IntoInteropError::to_bms_error)?;
+    string.set("dump", mlua::Nil).map_err(IntoInteropError::to_bms_error)?;
+    Ok(())
+});</code></pre>
+<p>Then bound what’s left:</p>
+<ul>
+<li><strong>Memory</strong>: <code>context.set_memory_limit(bytes)</code> (not on LuaJIT, which allocates by itself).</li>
+<li><strong>CPU</strong>: an instruction hook, <code>context.set_hook(HookTriggers::new().every_nth_instruction(n), ..)</code>, returning an error once a budget is spent. LuaJIT doesn’t call hooks from compiled code.</li>
+<li><strong>The world</strong>: only register the functions untrusted scripts may call, and give them a <a href="./contexts.html">context</a> of their own. <a href="../ScriptSystems/introduction.html">Script systems</a> can only access what they declared.</li>
+</ul>
+<p>On LuaJIT, <code>#[ffi]</code> functions which panic abort the process, see <a href="../Development/LanguageInternals/luajit.html#safety-checklist">LuaJIT internals</a>.</p>
 
                     </main>
 

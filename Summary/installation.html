@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "../searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-94c4b708.js"></script>
+        <script src="../toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -227,7 +227,7 @@ Next, <a href="./managing-scripts.html">load and attach your first script</a>.</
 <tr><td><code>mlua_async</code></td><td>Enables <code>mlua/async</code></td></tr>
 <tr><td><code>mlua_serialize</code></td><td>Enables <code>mlua/serialize</code></td></tr>
 <tr><td><code>mlua_macros</code></td><td>Enables <code>mlua/macros</code></td></tr>
-<tr><td><code>unsafe_lua_modules</code></td><td>Allows loading native modules via <code>require</code> in Lua</td></tr>
+<tr><td><code>unsafe_lua_modules</code></td><td>Loads every Lua library (<code>debug</code>, LuaJIT’s <code>ffi</code>) and allows native modules via <code>require</code>: scripts are no longer memory safe, see <a href="./customizing-script-contexts.html#sandboxing">Sandboxing</a></td></tr>
 <tr><td><code>profile_with_tracy</code></td><td>Adds tracy profiling spans</td></tr>
 </tbody>
 </table>

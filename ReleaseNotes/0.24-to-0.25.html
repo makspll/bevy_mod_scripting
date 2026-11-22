@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "../searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-94c4b708.js"></script>
+        <script src="../toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -198,6 +198,27 @@
 <li><code>ValueOf&lt;M&gt;</code> is <code>ValueOf&lt;M, R = ReflectReference&gt;</code>: <code>ValueOf&lt;A&gt;</code> is unchanged, <code>new</code> and <code>into_inner</code> take and give the <code>R</code>.</li>
 <li><code>GetFunctionInfo</code> implementations provide <code>function_info(name, namespace)</code>, which needs no value. <code>get_function_info</code> calls it.</li>
 <li><code>Union&lt;T1, T2&gt;</code> only tries the types which could convert the value, see <code>FromScript::could_convert</code>. When only <code>T1</code> could, the error is <code>T1</code>’s rather than <code>T2</code>’s. Override <code>could_convert</code> in hand-written <code>FromScript</code> implementations to rule out the kinds of values they never convert.</li>
+<li><code>CallScope::world()</code> returns a <code>Result</code>: <code>scope.world()?</code>. Scopes of script functions look their world up when first needed, an error without a running script.</li>
+<li><code>IntoScript::into_ret</code> takes a <code>&amp;CallScope</code> instead of a <code>WorldGuard</code>.</li>
+</ul>
+<h3 id="native-types"><a class="header" href="#native-types">Native types</a></h3>
+<ul>
+<li><code>script_native!</code> is gone: native types are declared with <code>NativeType::of::&lt;T&gt;()</code>, a <code>NativeBuilder</code> with one <code>unsafe</code> method per kind of field (<code>field</code>, <code>value_field</code>, <code>deref_field</code>), then <code>.register(world)</code>:
+<pre><code class="language-rust ignore">// script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
+unsafe {
+    NativeType::of::&lt;Vec3&gt;()
+        .field("x", offset_of!(Vec3, x), |v| &amp;v.x)
+        .field("y", offset_of!(Vec3, y), |v| &amp;v.y)
+        .field("z", offset_of!(Vec3, z), |v| &amp;v.z)
+}
+.register(world);</code></pre>
+Fields of other native types (<code>Transform::translation</code>) use <code>value_field</code>, fields reached through <code>Deref</code> (glam’s SIMD types, which need <code>Default</code>) use <code>deref_field</code>.</li>
+<li><code>NativeType::with_struct_field</code> takes the field’s offset instead of a <code>FieldAt</code>, which is removed with <code>FieldProject</code>, <code>FieldConv</code>, <code>NativePlace::field</code> and <code>NativeType::inline</code>.</li>
+</ul>
+<h2 id="scripts"><a class="header" href="#scripts">Scripts</a></h2>
+<ul>
+<li>Native types (vectors, quaternions, matrices, <code>Transform</code>) are values, with no write-through: a field of a native type is read as a read-only copy, so <code>t.translation.x = 5</code> is an error. Write the whole field: <code>local p = t.translation:clone(); p.x = 5; t.translation = p</code>.</li>
+<li>Types (<code>Vec3</code>, <code>world.get_type_by_name(..)</code>) are read-only tables in Lua, <code>type(Vec3) == "table"</code>.</li>
 </ul>
 
                     </main>

@@ -1,0 +1,423 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>LuaJIT - Bevy Scripting</title>
+
+
+        <!-- Custom HTML head -->
+        <link rel="preload" href="../../fonts/Inter-Regular-b21e2305.woff2" as="font" type="font/woff2" crossorigin>
+
+        <meta name="description" content="Documentation for the Bevy Scripting library">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon-e7d2d2b5.svg">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../../css/chrome-d279d366.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../fonts/fonts-926f63d1.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../bms-theme-0d22199f.css">
+        <link rel="stylesheet" href="../../multi-code-block-02b41a69.css">
+        <link rel="stylesheet" href="../../lad-441894ef.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex-2b423db6.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc-5409e846.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Bevy Scripting</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/Development/LanguageInternals/luajit.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="luajit"><a class="header" href="#luajit">LuaJIT</a></h1>
+<p>On LuaJIT, native types with a C layout are <strong>cdata</strong>: C structs LuaJIT allocates itself, whose field accesses and FFI calls its JIT compiles to machine code. Everything else is as in <a href="./lua.html">Lua</a>. The code is in <code>bevy_mod_scripting_lua/src/bindings/native/cdata.rs</code>.</p>
+<h2 id="three-speeds"><a class="header" href="#three-speeds">Three speeds</a></h2>
+<pre class="mermaid">flowchart TD
+    OP["an operation on a Vec3"] --&gt; K{"what is it?"}
+    K -- "v.x, v.x = 1" --&gt; F1["struct field access&lt;br/&gt;compiled by the JIT, no call"]
+    K -- "a function marked ffi&lt;br/&gt;v:dot(w), v + w, Vec3.new(..)" --&gt; F2["FFI call to an extern C wrapper&lt;br/&gt;compiled by the JIT, no Lua C API"]
+    K -- "any other function" --&gt; F3["BMS typed call&lt;br/&gt;like Lua, the cdata found on the stack"]
+</pre>
+
+<h2 id="declaring-a-layout"><a class="header" href="#declaring-a-layout">Declaring a layout</a></h2>
+<pre><code class="language-rust ignore">// compile time: `Copy`, and the size and alignment of the C struct of these fields
+assert_ffi_layout!(Vec3 { x: f32, y: f32, z: f32 });
+// Safety: the fields are at their offsets, and any bits in them are a valid Vec3
+unsafe {
+    NativeType::of::&lt;Vec3&gt;()
+        .field("x", offset_of!(Vec3, x), |v| &amp;v.x)
+        .field("y", offset_of!(Vec3, y), |v| &amp;v.y)
+        .field("z", offset_of!(Vec3, z), |v| &amp;v.z)
+        .ffi()              // the fields so far, in order, are the C struct
+        .register(world);
+    // SIMD types reach their fields through Deref: the offsets are measured in the default value
+    NativeType::of::&lt;Vec3A&gt;()
+        .deref_field("x", |v| &amp;v.x)
+        .deref_field("y", |v| &amp;v.y)
+        .deref_field("z", |v| &amp;v.z)
+        .ffi()
+        .register(world);
+}</code></pre>
+<p><code>ffi</code> is an <code>unsafe</code> contract of its own: scripts can write every byte of a cdata, so every bit pattern of the fields must be a valid value (a vector, not a normalised direction). It panics when the type is declared if the fields aren’t where the C struct puts them; <code>assert_ffi_layout!</code> moves the size and alignment part to compile time. Each Lua state then declares:</p>
+<pre><code class="language-c">typedef struct __attribute__((aligned(16))) {
+    float x; float y; float z;
+    uint8_t _pad12; uint8_t _pad13; uint8_t _pad14; uint8_t _pad15;
+} bms_glam__f32__sse2__vec3a__Vec3A;   // named after the type's path
+</code></pre>
+<p>Two rules keep scripts from getting a pointer:</p>
+<ul>
+<li><strong>Padding is one scalar per byte.</strong> An array field would be read as a reference, which LuaJIT doesn’t bounds-check.</li>
+<li><strong>Fields of native types are flattened</strong> (<code>Mat3.x_axis</code> is <code>_x_axis_x</code>, <code>_x_axis_y</code>, <code>_x_axis_z</code>). A nested struct field would be read as a reference into the matrix, which doesn’t keep it alive. <code>m.x_axis</code> is a generated getter returning a <code>const</code> copy instead.</li>
+</ul>
+<p>Fields which aren’t <code>f32</code>, <code>f64</code>, <code>i32</code> or <code>u32</code> (a <code>bool</code>, where not every bit pattern is valid) keep the type a userdata.</p>
+<h2 id="recognising-a-cdata"><a class="header" href="#recognising-a-cdata">Recognising a cdata</a></h2>
+<p>Rust is handed a cdata by BMS functions which aren’t FFI calls. It must know the type without trusting the script.</p>
+<pre class="mermaid">flowchart LR
+    subgraph gc ["GCcdata, allocated by LuaJIT"]
+        direction LR
+        HD["GC header"] --- ID["ctype id (u16)"] --- PL["payload&lt;br/&gt;the Vec3 bytes"]
+    end
+    ID -- "registry[CTYPES][id]" --&gt; VT["vtable pointer&lt;br/&gt;lowest bit = const (read-only)"]
+    PL -- "lua_topointer" --&gt; PTR["*mut u8 for ArgSource::plain"]
+</pre>
+
+<p>Scripts can write every byte of the payload but not the ctype id. Ids which aren’t in the table (<code>1LL</code>, any other cdata) aren’t native values. Where the id sits depends on the LuaJIT build, so it’s found once from a probe value of a known type.</p>
+<p>A read-only copy is the <code>const</code> form of the struct: LuaJIT itself refuses writes to it, also in compiled code.</p>
+<h2 id="an-ffi-function"><a class="header" href="#an-ffi-function">An FFI function</a></h2>
+<p>An FFI form is registered next to a function, from a Rust function doing the same with C types:</p>
+<pre><code class="language-rust ignore">registry.register_ffi(TypeId::of::&lt;Vec3&gt;(), "dot", |a: R&lt;Vec3&gt;, b: R&lt;Vec3&gt;| a.dot(*b));</code></pre>
+<p><code>#[ffi]</code> in a <code>#[script_bindings]</code> block is exactly that call, with the function’s body as the closure:</p>
+<pre><code class="language-rust ignore">#[script_bindings(remote, namespace = "math")]
+impl Vec3 {
+    #[ffi]
+    fn dot(_self: R&lt;Vec3&gt;, other: R&lt;Vec3&gt;) -&gt; f32 { _self.dot(*other) }
+}</code></pre>
+<p>The <code>extern "C"</code> function is made by a trait, <code>FfiFn</code>, implemented for functions which capture nothing (so the function is its type, and the trampoline needs no pointer to it):</p>
+<pre><code class="language-rust ignore">unsafe impl&lt;Function, Return, A1, A2&gt; FfiFn&lt;fn(A1, A2) -&gt; Return&gt; for Function
+where Function: Fn(A1, A2) -&gt; Return + Copy + 'static, Return: FfiReturn, A1: FfiArg, A2: FfiArg
+{
+    fn ffi_function(self, name: &amp;'static str) -&gt; FfiFunction {
+        extern "C" fn trampoline&lt;..&gt;(a1: A1::C, a2: A2::C, out: *mut u8, failed: *mut u8) -&gt; Return::C {
+            let function: Function = /* zero-sized: conjured */;
+            let output = function(unsafe { A1::from_c(a1) }, unsafe { A2::from_c(a2) });
+            unsafe { output.into_c(out, failed) }
+        }
+        FfiFunction { name, function: trampoline::&lt;..&gt; as *const (), params: vec![A1::kind(), A2::kind()], .. }
+    }
+}</code></pre>
+<h3 id="one-form-per-c-signature"><a class="header" href="#one-form-per-c-signature">One form per C signature</a></h3>
+<p>A <code>Union&lt;R&lt;Vec3&gt;, f32&gt;</code> parameter is a pointer or a float in the same position: two C types, so two signatures. One signature for both would need a struct passed by value, which LuaJIT doesn’t compile. So <code>Union</code> is no FFI parameter, and a function taking one registers a form for each alternative:</p>
+<pre><code class="language-rust ignore">// fn add(_self: R&lt;Vec3&gt;, rhs: Union&lt;R&lt;Vec3&gt;, f32&gt;) -&gt; V&lt;Vec3&gt;   &lt;- not marked #[ffi]
+registry.register_ffi(TypeId::of::&lt;Vec3&gt;(), "add", |a: R&lt;Vec3&gt;, b: R&lt;Vec3&gt;| V(*a + *b));
+registry.register_ffi(TypeId::of::&lt;Vec3&gt;(), "add", |a: R&lt;Vec3&gt;, b: f32| V(*a + b));</code></pre>
+<p>The forms of one name chain: each checks its own argument types and falls through to the one registered before it, then to the BMS function.</p>
+<p>Each state generates Lua around the pointer:</p>
+<pre><code class="language-lua">local f1, other = cast("float (*)(const bms_Vec3*, const bms_Vec3*, void*, uint8_t*)", ptrs[1]), slow["dot"]
+local function w(a1, a2)
+    if istype(C1, a1) and istype(C1, a2) then return f1(a1, a2, nil, nil) end
+    return other(a1, a2) -- any other argument: through BMS, which reports the error
+end
+methods["dot"] = w
+</code></pre>
+<pre class="mermaid">flowchart TD
+    C["v:dot(w)"] --&gt; G{"guards:&lt;br/&gt;istype / type(x) == 'number'"}
+    G -- "pass" --&gt; FFI["f1(v, w): a C call with pointers to the cdata"]
+    G -- "fail" --&gt; SLOW["the BMS function&lt;br/&gt;(conversion or a proper error)"]
+    FFI --&gt; RES{"result"}
+    RES -- "scalar" --&gt; R1["returned by value"]
+    RES -- "V of T" --&gt; R2["written to the type's scratch value S&lt;br/&gt;return C(S)"]
+</pre>
+
+<p>What can cross is decided by traits, at compile time:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>Types</th><th>Passed as</th></tr>
+</thead>
+<tbody>
+<tr><td><code>FfiArg</code></td><td><code>f32</code>, <code>f64</code>, <code>i32</code>, <code>u32</code>, <code>bool</code></td><td>by value</td></tr>
+<tr><td></td><td><code>R&lt;T&gt;</code>, <code>V&lt;T&gt;</code></td><td><code>const T*</code> to the cdata</td></tr>
+<tr><td><code>FfiReturn</code></td><td>scalars</td><td>returned</td></tr>
+<tr><td></td><td><code>V&lt;T&gt;</code></td><td>written to the out-pointer</td></tr>
+<tr><td></td><td><code>Result&lt;_, InteropError&gt;</code>, <code>Option&lt;_&gt;</code></td><td>as above, failure through the <code>failed</code> byte</td></tr>
+</tbody>
+</table>
+</div>
+<p>There is no <code>M&lt;T&gt;</code>: an FFI function never writes its arguments. And no <code>Union</code>: see above.</p>
+<h3 id="why-a-scratch-value"><a class="header" href="#why-a-scratch-value">Why a scratch value</a></h3>
+<p>A result cdata passed to C as an out-pointer escapes, so the JIT must allocate it. Writing to a per-type scratch value and copying it in Lua (<code>C(S)</code>) lets the JIT remove the allocation when the result is only used for more arithmetic.</p>
+<h3 id="failing"><a class="header" href="#failing">Failing</a></h3>
+<p>C functions called through the FFI can’t raise Lua errors.</p>
+<pre class="mermaid">sequenceDiagram
+    participant L as generated Lua
+    participant W as extern "C" wrapper
+    participant T as thread-local error
+    L-&gt;&gt;W: f(v, S, E)
+    alt Ok
+        W--&gt;&gt;L: result in S
+    else Err(error)
+        W-&gt;&gt;T: keep the error
+        W--&gt;&gt;L: E[0] = 1
+        L-&gt;&gt;L: raise("normalize", O)
+        L-&gt;&gt;T: take the error
+        Note over L: raised like a BMS error, at the script's line
+    else None
+        W--&gt;&gt;L: E[0] = 2
+        Note over L: returns nil
+    end
+</pre>
+
+<h2 id="the-slow-path"><a class="header" href="#the-slow-path">The slow path</a></h2>
+<p>A cdata passed to a BMS function is found by its ctype id and copied into the <a href="./introduction.html#safety-the-callscope">CallScope</a> like any native value; <code>M&lt;T&gt;</code> is written back to the payload when the call ends. A value returned by BMS is copied into a new cdata made by calling the ctype.</p>
+<h2 id="the-first-value-in-a-state"><a class="header" href="#the-first-value-in-a-state">The first value in a state</a></h2>
+<pre class="mermaid">sequenceDiagram
+    participant R as Rust (returning a Vec3)
+    participant S as Lua state
+    R-&gt;&gt;S: registry[ctype key of Vec3]?
+    S--&gt;&gt;R: nil, no types made yet
+    R-&gt;&gt;S: luaopen_ffi, kept in the registry, removed from package.loaded
+    R-&gt;&gt;S: check every ffi function's types have a layout
+    R-&gt;&gt;S: run the generated chunk (cdef, metatypes, wrappers)
+    R-&gt;&gt;S: registry: ctype id to vtable, vtable to ctype
+    R-&gt;&gt;S: call the ctype, copy the value in
+</pre>
+
+<p>Types are made once per state. A type registered later stays a userdata there.</p>
+<h2 id="safety-checklist"><a class="header" href="#safety-checklist">Safety checklist</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Risk</th><th>Guard</th></tr>
+</thead>
+<tbody>
+<tr><td>Scripts making pointers, casts or their own ctypes</td><td>the <code>ffi</code> library is private: never a global, not <code>require</code>-able</td></tr>
+<tr><td>A reference cdata into a value (dangling, unchecked indexing)</td><td>no array or struct fields in the C structs: padding and nested fields are scalars</td></tr>
+<tr><td>An FFI function called with the wrong types</td><td>guards in the generated Lua before every FFI call</td></tr>
+<tr><td>A layout which isn’t the Rust type’s</td><td><code>ffi</code> checks size, alignment and offsets when the type is declared (<code>assert_ffi_layout!</code> at compile time), <code>sizeof</code>/<code>alignof</code> asserted in each state</td></tr>
+<tr><td>A function which doesn’t match its declared signature</td><td>made by the <code>FfiFn</code> trait from the Rust function’s own types; registering a raw pointer is <code>unsafe</code> (<code>register_ffi_function</code>)</td></tr>
+<tr><td>A script writing a cdata a call holds</td><td>calls get copies</td></tr>
+<tr><td>A panic in an <code>#[ffi]</code> function</td><td><strong>aborts the process</strong>: it can’t unwind through C. Only mark functions which don’t panic (no integer arithmetic, no indexing)</td></tr>
+<tr><td>Rust reading a foreign cdata</td><td>ctype id lookup, unknown ids are refused</td></tr>
+</tbody>
+</table>
+</div>
+<p>Like on Lua, bytecode and the <code>unsafe_lua_modules</code> feature (which hands scripts <code>ffi</code>) void all of this, see <a href="../../Summary/customizing-script-contexts.html#sandboxing">Sandboxing</a>.</p>
+<blockquote>
+<p>LuaJIT with your crate at <code>opt-level = 1</code> and dependencies optimised segfaults when userdata is collected (<a href="https://github.com/mlua-rs/mlua/issues/757">mlua#757</a>). Use <code>opt-level</code> 0, 2 or 3.</p>
+</blockquote>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../Development/LanguageInternals/lua.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="../../Development/LanguageInternals/rune.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../Development/LanguageInternals/lua.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="../../Development/LanguageInternals/rune.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-09f2665d.js"></script>
+
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../multi-code-block-b564eaca.js"></script>
+        <script src="../../mermaid-eefea253.min.js"></script>
+        <script src="../../mermaid-init-bc25465b.js"></script>
+        <script src="../../glossary-83c1ca5d.js"></script>
+
+
+
+    </div>
+    </body>
+</html>

@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "../searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-94c4b708.js"></script>
+        <script src="../toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -221,7 +221,7 @@ game.spawn({ name = "goblin", sped = 2 })         -- no field `sped`
 </ul>
 <p>See <a href="../Summary/controlling-script-bindings.html#typed-arguments">Typed arguments</a>.</p>
 <h2 id="native-types"><a class="header" href="#native-types">Native types</a></h2>
-<p>Vectors (<code>Vec2</code>, <code>Vec3</code>, <code>Vec4</code>, <code>Vec3A</code>, <code>DVec2</code>, <code>DVec3</code>, <code>IVec2</code>, <code>IVec3</code>, <code>UVec2</code>, <code>UVec3</code>) and <code>Quat</code> values made by functions are stored by Lua and Rune themselves, and functions read their arguments without converting them to <code>ScriptValue</code>s. <code>Transform</code> components are native handles: <code>world.get_component(e, Transform)</code> reads and writes the component directly (<code>t.translation.x = 5</code> included). Other types opt in with <code>script_native!</code>, see <a href="../Development/writing-bindings.html#native-types">Writing Bindings</a>. Scripts behave the same: native values are copies like the values functions return, and work wherever references to vectors do.</p>
+<p>Vectors (<code>Vec2</code>, <code>Vec3</code>, <code>Vec4</code>, <code>Vec3A</code>, <code>DVec2</code>, <code>DVec3</code>, <code>IVec2</code>, <code>IVec3</code>, <code>UVec2</code>, <code>UVec3</code>) and <code>Quat</code> values made by functions are stored by Lua and Rune themselves, and functions read their arguments without converting them to <code>ScriptValue</code>s. <code>Transform</code> components are native handles: <code>world.get_component(e, Transform)</code> reads and writes the component directly. Native types are values: a field of a native type is read as a read-only copy and written whole, so <code>t.translation.x = 5</code> is now an error, write <code>local p = t.translation:clone(); p.x = 5; t.translation = p</code>. Other types opt in with <code>NativeType::of::&lt;T&gt;()</code>, see <a href="../Development/writing-bindings.html#native-types">Writing Bindings</a>. Scripts behave the same: native values are copies like the values functions return, and work wherever references to vectors do.</p>
 <h2 id="other-changes"><a class="header" href="#other-changes">Other changes</a></h2>
 <ul>
 <li>Unions only try the types which could convert a value (<code>FromScript::could_convert</code>), instead of building an error for each type which can’t.</li>

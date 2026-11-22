@@ -38,10 +38,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "../../searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-94c4b708.js"></script>
+        <script src="../../toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -358,6 +358,31 @@ This component will NOT be retrieved.</p>
 <li><code>query</code>: The query to add the component to</li>
 </ul>
 <p><strong>Returns</strong>: The query with the component added</p>
+<h2 id="operators"><a class="header" href="#operators">Operators</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#iter"><code>iter</code></a></td><td>Builds the query and iterates its results without making a list or a table for them: each call of the returned function…</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="iter" class="lad-function"><a class="header" href="#iter"><code>iter</code></a></h3>
+<div class="lad-signature">
+<p><strong>iter</strong>(query: <a href="./scriptquerybuilder.html">ScriptQueryBuilder</a>) -&gt; fn() -&gt; Optional&lt;(<a href="./entity.html">Entity</a>, …Optional&lt;<a href="./reflectreference.html">ReflectReference</a>&gt;)&gt;</p>
+</div>
+
+<p>Builds the query and iterates its results without making a list or a table for them: each call of the returned
+function returns the entity and the components of the next result, in the order they were added to the query
+(absent optional components are nil), and nothing once there are none.</p>
+<p>In Lua: <code>for entity, a, b in world.query():component(A):component(B):iter() do ... end</code>, <code>pairs(query)</code> too.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>query</code>: The query to build.</li>
+</ul>
+<p><strong>Returns</strong>: The function returning the next result.</p>
 
                     </main>
 

@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "../searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-94c4b708.js"></script>
+        <script src="../toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -199,7 +199,7 @@ They live in <code>crates/bindings/bevy_mod_scripting_bevy_&lt;category&gt;_bind
 <h2 id="what-to-bind"><a class="header" href="#what-to-bind">What to bind</a></h2>
 <p>Every reflected type is already usable from scripts without any bindings:</p>
 <ul>
-<li>fields are read and written through references, i.e. <code>transform.translation.x = 2</code></li>
+<li>fields are read and written through references, i.e. <code>sprite.color = c</code> or <code>player.stats.hp = 2</code></li>
 <li>every type can be constructed with <code>Type.new({...})</code>, see <a href="../ScriptingReference/constructing-arbitrary-types.html">Constructing Arbitrary Types</a></li>
 <li>enum variants are available as <code>Type.Variant</code></li>
 <li>containers support <code>len</code>, <code>iter</code>, <code>push</code> etc., and every value can be printed</li>
@@ -220,12 +220,24 @@ They live in <code>crates/bindings/bevy_mod_scripting_bevy_&lt;category&gt;_bind
 </ul>
 <h3 id="native-types"><a class="header" href="#native-types">Native types</a></h3>
 <p>Hot value types, i.e. <code>Vec3</code>, can be stored by the languages themselves instead of being referenced through the world. Functions read them without converting to <code>ScriptValue</code>s:</p>
-<pre><code class="language-rust ignore">// fields are read and written with typed accessors
-script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
-// components (and resources) of native types are native handles: `get_component` returns one, `t.translation` is a
-// handle to the field, `t.translation.x = 5` writes the component
-script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });</code></pre>
-<p>Values of types with fields of native types (<code>Transform.from_xyz(..)</code>) stay references, so writes to their fields aren’t lost on a copy. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren’t native, i.e. references, are converted as usual.</p>
+<pre><code class="language-rust ignore">// Safety: the fields are at their offsets
+unsafe {
+    // `field`: converted like an argument (numbers, `bool`, `String`), read and written with typed accessors
+    NativeType::of::&lt;Vec3&gt;()
+        .field("x", offset_of!(Vec3, x), |v| &amp;v.x)
+        .field("y", offset_of!(Vec3, y), |v| &amp;v.y)
+        .field("z", offset_of!(Vec3, z), |v| &amp;v.z)
+        .register(world);
+    // `value_field`: another reflected type, i.e. a native one. Components (and resources) of native types are native
+    // handles: `get_component` returns one, `t.translation = v` writes the component
+    NativeType::of::&lt;Transform&gt;()
+        .value_field("translation", offset_of!(Transform, translation), |t| &amp;t.translation)
+        .value_field("rotation", offset_of!(Transform, rotation), |t| &amp;t.rotation)
+        .value_field("scale", offset_of!(Transform, scale), |t| &amp;t.scale)
+        .register(world);
+}</code></pre>
+<p>Nothing is inferred: each kind of field has its method on <code>NativeBuilder</code>, and every one is <code>unsafe</code>, as languages read and write the fields at the offsets given. The closure names the field, which gives its type. For LuaJIT’s C layouts and FFI functions (<code>ffi</code>, <code>register_ffi</code>), see <a href="./LanguageInternals/luajit.html">LuaJIT internals</a>.</p>
+<p>Native types are values, with no write-through: a field of a native type is read as a read-only copy (<code>t.translation.x = 5</code> is an error, not a lost write) and written whole (<code>t.translation = v</code>); <code>clone</code> gives a copy scripts can change. Functions get copies of the native values scripts hold (<code>M&lt;T&gt;</code> is written back when the call ends), so a script may use a value while a call has it. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren’t native, i.e. references, are converted as usual.</p>
 <h2 id="documentation"><a class="header" href="#documentation">Documentation</a></h2>
 <p>Doc comments end up in the generated docs and in editor declaration files, and are read by script writers rather than Rust developers:</p>
 <ul>

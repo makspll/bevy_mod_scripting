@@ -39,10 +39,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-94c4b708.js"></script>
+        <script src="toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -382,7 +382,7 @@ Next, <a href="#managing-scripts">load and attach your first script</a>.</p>
 <tr><td><code>mlua_async</code></td><td>Enables <code>mlua/async</code></td></tr>
 <tr><td><code>mlua_serialize</code></td><td>Enables <code>mlua/serialize</code></td></tr>
 <tr><td><code>mlua_macros</code></td><td>Enables <code>mlua/macros</code></td></tr>
-<tr><td><code>unsafe_lua_modules</code></td><td>Allows loading native modules via <code>require</code> in Lua</td></tr>
+<tr><td><code>unsafe_lua_modules</code></td><td>Loads every Lua library (<code>debug</code>, LuaJIT’s <code>ffi</code>) and allows native modules via <code>require</code>: scripts are no longer memory safe, see <a href="#sandboxing">Sandboxing</a></td></tr>
 <tr><td><code>profile_with_tracy</code></td><td>Adds tracy profiling spans</td></tr>
 </tbody>
 </table>
@@ -621,6 +621,50 @@ app.add_plugins(plugin);</code></pre>
     world.with_resource(|res: &amp;MyResource| println!("My resource: {res:?}"))?;
     Ok(())
 });</code></pre>
+<h2 id="sandboxing"><a class="header" href="#sandboxing">Sandboxing</a></h2>
+<p>BMS keeps scripts <strong>memory safe</strong>, it doesn’t confine them. By default a script is as trusted as your own code:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>Lua</th><th>Rune</th></tr>
+</thead>
+<tbody>
+<tr><td>Files and processes</td><td>yes: <code>io</code>, <code>os.execute</code></td><td>no: only Rune’s core modules are installed</td></tr>
+<tr><td>Loading other code</td><td>yes: <code>require</code> (Lua files), <code>dofile</code>, <code>load</code></td><td>no</td></tr>
+<tr><td>The world</td><td>everything the registered functions reach</td><td>the same</td></tr>
+<tr><td>CPU and memory</td><td>unlimited: <code>while true do end</code> hangs the frame</td><td>unlimited</td></tr>
+<tr><td>Memory safety</td><td>yes, <strong>except through bytecode</strong>, see below</td><td>yes</td></tr>
+</tbody>
+</table>
+</div>
+<pre class="mermaid">flowchart LR
+    S["script"] --&gt; B["BMS bindings"] --&gt; W["world: what its access allows"]
+    S --&gt; L["Lua standard library"] --&gt; OS["files, processes, other Lua files"]
+    S --&gt; BC["load(bytecode)"] --&gt; MEM["unchecked by the VM: memory unsafe"]
+    S -. "blocked by mlua's safe mode" .-&gt; X["debug, ffi, native modules, package.loadlib"]
+</pre>
+
+<p>Lua contexts are made with <code>mlua::Lua::new()</code>, which leaves out what breaks memory safety outright (<code>debug</code>, LuaJIT’s <code>ffi</code>, native modules). It does <strong>not</strong> stop <code>load</code> and <code>loadstring</code> from running bytecode, which neither Lua nor LuaJIT verify: <code>load(string.dump(f))</code> works, and so does a crafted chunk.</p>
+<p>The <code>unsafe_lua_modules</code> feature uses <code>Lua::unsafe_new()</code> instead: every library, <code>debug</code> and <code>ffi</code> included. Scripts can then do anything, also to BMS’ own values.</p>
+<h3 id="running-scripts-you-dont-trust"><a class="header" href="#running-scripts-you-dont-trust">Running scripts you don’t trust</a></h3>
+<p>Take away what they don’t need in a context initializer, which runs before the script is loaded:</p>
+<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default().add_context_initializer(|_attachment, context| {
+    let globals = context.globals();
+    // no files, processes, other code, or bytecode
+    for name in ["io", "os", "package", "require", "dofile", "loadfile", "load", "loadstring"] {
+        globals.set(name, mlua::Nil).map_err(IntoInteropError::to_bms_error)?;
+    }
+    let string: mlua::Table = globals.get("string").map_err(IntoInteropError::to_bms_error)?;
+    string.set("dump", mlua::Nil).map_err(IntoInteropError::to_bms_error)?;
+    Ok(())
+});</code></pre>
+<p>Then bound what’s left:</p>
+<ul>
+<li><strong>Memory</strong>: <code>context.set_memory_limit(bytes)</code> (not on LuaJIT, which allocates by itself).</li>
+<li><strong>CPU</strong>: an instruction hook, <code>context.set_hook(HookTriggers::new().every_nth_instruction(n), ..)</code>, returning an error once a budget is spent. LuaJIT doesn’t call hooks from compiled code.</li>
+<li><strong>The world</strong>: only register the functions untrusted scripts may call, and give them a <a href="#contexts">context</a> of their own. <a href="#script-systems">Script systems</a> can only access what they declared.</li>
+</ul>
+<p>On LuaJIT, <code>#[ffi]</code> functions which panic abort the process, see <a href="#safety-checklist-1">LuaJIT internals</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="controlling-script-bindings"><a class="header" href="#controlling-script-bindings">Controlling Script Bindings</a></h1>
 <p>A <strong>binding</strong> is anything a script can access to communicate with your Rust code, i.e. binding <code>script</code> code to <code>rust</code> code. Bindings are written once in Rust, and work in every supported language.</p>
@@ -1285,12 +1329,18 @@ local enemy = import_namespace("script.game").spawn_enemy(5)
 <pre><code class="language-lua">local bms = import_namespace("bms")
 local world = bms.world
 local Transform = import_namespace("transform").Transform
+local Vec3 = import_namespace("math").Vec3
 
 local transform = assert(world.get_component(assert(bms.current_entity()), Transform))
-transform.translation.x = 5        -- writes the component
+transform.translation = Vec3.new(5, 0, 0)   -- writes the component
 
-local copy = transform:clone()     -- a new allocation, independent of the component
-copy.translation.x = 0             -- the component keeps 5
+local copy = transform:clone()              -- a new value, independent of the component
+copy.translation = Vec3.new(0, 0, 0)        -- the component keeps 5
+</code></pre>
+<p>Writes go through references, but not into <a href="#native-types">native types</a> (vectors, quaternions, <code>Transform</code>): those are values. Reading a native field gives a read-only copy, so <code>transform.translation.x = 5</code> is an error instead of a lost write. Assign the whole field, starting from a <code>clone</code> to change one part:</p>
+<pre><code class="language-lua">local translation = transform.translation:clone()
+translation.x = 5
+transform.translation = translation
 </code></pre>
 <p>Access is checked when a reference is used, not when it is made: a reference to a removed component fails with an error, and so does writing a value something else is reading at the same time, i.e. inside a query iteration. Script systems can only access what they declared, and assets, whose access is checked for all assets at once, only from exclusive script systems.</p>
 <h2 id="assets"><a class="header" href="#assets">Assets</a></h2>
@@ -2638,7 +2688,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
 <h2 id="instantiations"><a class="header" href="#instantiations">Instantiations</a></h2>
-<p><a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#image">Image</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;</p>
+<p><a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#image">Image</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;</p>
 <h2 id="functions-12"><a class="header" href="#functions-12">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2651,10 +2701,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-11" class="lad-function"><a class="header" href="#new-11"><code>new</code></a></h3>
-<p class="lad-note">On <code>ArcMutexValue&lt;ShaderBuffer&gt;</code>, <code>ArcMutexValue&lt;TextureAtlasLayout&gt;</code>, <code>ArcMutexValue&lt;ScriptAsset&gt;</code>, <code>ArcMutexValue&lt;Image&gt;</code>, <code>ArcMutexValue&lt;Mesh&gt;</code>, <code>ArcMutexValue&lt;ColorMaterial&gt;</code>, <code>ArcMutexValue&lt;SpriteMeshMaterial&gt;</code></p>
+<p class="lad-note">On <code>ArcMutexValue&lt;TextureAtlasLayout&gt;</code>, <code>ArcMutexValue&lt;ShaderBuffer&gt;</code>, <code>ArcMutexValue&lt;ScriptAsset&gt;</code>, <code>ArcMutexValue&lt;Image&gt;</code>, <code>ArcMutexValue&lt;Mesh&gt;</code>, <code>ArcMutexValue&lt;ColorMaterial&gt;</code>, <code>ArcMutexValue&lt;SpriteMeshMaterial&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;&gt;) -&gt; <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;&gt;) -&gt; <a href="#arcmutexvaluet">ArcMutexValue</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -2838,7 +2888,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h2 id="instantiations-2"><a class="header" href="#instantiations-2">Instantiations</a></h2>
-<p><a href="#handlea">Handle</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#animationclip">AnimationClip</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;()&gt;, <a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;</p>
+<p><a href="#handlea">Handle</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#animationclip">AnimationClip</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handlea">Handle</a>&lt;()&gt;, <a href="#handlea">Handle</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handlea">Handle</a>&lt;<a href="#mesh">Mesh</a>&gt;</p>
 <h2 id="functions-16"><a class="header" href="#functions-16">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2851,7 +2901,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-15" class="lad-function"><a class="header" href="#new-15"><code>new</code></a></h3>
-<p class="lad-note">On <code>Handle&lt;ScriptAsset&gt;</code>, <code>Handle&lt;AnimationClip&gt;</code>, <code>Handle&lt;ShaderBuffer&gt;</code>, <code>Handle&lt;TextureAtlasLayout&gt;</code>, <code>Handle&lt;Image&gt;</code>, <code>Handle&lt;ColorMaterial&gt;</code>, <code>Handle&lt;()&gt;</code>, <code>Handle&lt;Mesh&gt;</code>, <code>Handle&lt;SpriteMeshMaterial&gt;</code></p>
+<p class="lad-note">On <code>Handle&lt;ScriptAsset&gt;</code>, <code>Handle&lt;Image&gt;</code>, <code>Handle&lt;SpriteMeshMaterial&gt;</code>, <code>Handle&lt;ColorMaterial&gt;</code>, <code>Handle&lt;AnimationClip&gt;</code>, <code>Handle&lt;TextureAtlasLayout&gt;</code>, <code>Handle&lt;()&gt;</code>, <code>Handle&lt;ShaderBuffer&gt;</code>, <code>Handle&lt;Mesh&gt;</code></p>
 
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#handlea">Handle</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;&gt;) -&gt; <a href="#handlea">Handle</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</p>
@@ -2911,7 +2961,7 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </table>
 </div>
 <h2 id="instantiations-3"><a class="header" href="#instantiations-3">Instantiations</a></h2>
-<p><a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;</p>
+<p><a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#colormaterial">ColorMaterial</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#mesh">Mesh</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#shaderbuffer">ShaderBuffer</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#image">Image</a>&gt;, <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#spritemeshmaterial">SpriteMeshMaterial</a>&gt;</p>
 <h2 id="functions-17"><a class="header" href="#functions-17">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2924,10 +2974,10 @@ Assets can be unloaded, and as such if the given handle is no longer active, thi
 </table>
 </div>
 <h3 id="new-16" class="lad-function"><a class="header" href="#new-16"><code>new</code></a></h3>
-<p class="lad-note">On <code>HandleTemplate&lt;ScriptAsset&gt;</code>, <code>HandleTemplate&lt;TextureAtlasLayout&gt;</code>, <code>HandleTemplate&lt;ShaderBuffer&gt;</code>, <code>HandleTemplate&lt;Mesh&gt;</code>, <code>HandleTemplate&lt;Image&gt;</code>, <code>HandleTemplate&lt;ColorMaterial&gt;</code>, <code>HandleTemplate&lt;SpriteMeshMaterial&gt;</code></p>
+<p class="lad-note">On <code>HandleTemplate&lt;TextureAtlasLayout&gt;</code>, <code>HandleTemplate&lt;ScriptAsset&gt;</code>, <code>HandleTemplate&lt;ColorMaterial&gt;</code>, <code>HandleTemplate&lt;Mesh&gt;</code>, <code>HandleTemplate&lt;ShaderBuffer&gt;</code>, <code>HandleTemplate&lt;Image&gt;</code>, <code>HandleTemplate&lt;SpriteMeshMaterial&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;&gt;) -&gt; <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#scriptasset">ScriptAsset</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;&gt;) -&gt; <a href="#handletemplatet">HandleTemplate</a>&lt;<a href="#textureatlaslayout">TextureAtlasLayout</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -4973,6 +5023,31 @@ This component will NOT be retrieved.</p>
 <li><code>query</code>: The query to add the component to</li>
 </ul>
 <p><strong>Returns</strong>: The query with the component added</p>
+<h2 id="operators-1"><a class="header" href="#operators-1">Operators</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#iter"><code>iter</code></a></td><td>Builds the query and iterates its results without making a list or a table for them: each call of the returned function…</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="iter" class="lad-function"><a class="header" href="#iter"><code>iter</code></a></h3>
+<div class="lad-signature">
+<p><strong>iter</strong>(query: <a href="#scriptquerybuilder">ScriptQueryBuilder</a>) -&gt; fn() -&gt; Optional&lt;(<a href="#entity">Entity</a>, …Optional&lt;<a href="#reflectreference">ReflectReference</a>&gt;)&gt;</p>
+</div>
+
+<p>Builds the query and iterates its results without making a list or a table for them: each call of the returned
+function returns the entity and the components of the next result, in the order they were added to the query
+(absent optional components are nil), and nothing once there are none.</p>
+<p>In Lua: <code>for entity, a, b in world.query():component(A):component(B):iter() do ... end</code>, <code>pairs(query)</code> too.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>query</code>: The query to build.</li>
+</ul>
+<p><strong>Returns</strong>: The function returning the next result.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="scriptqueryresult"><a class="header" href="#scriptqueryresult"><code>ScriptQueryResult</code></a></h1>
 <div class="lad-page"></div>
@@ -6201,18 +6276,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>A copy of these render layers without the given layer.</p>
-<h2 id="operators-1"><a class="header" href="#operators-1">Operators</a></h2>
+<h2 id="operators-2"><a class="header" href="#operators-2">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#iter"><code>iter</code></a></td><td>The numbers of all layers in these render layers.</td></tr>
+<tr><td><a href="#iter-1"><code>iter</code></a></td><td>The numbers of all layers in these render layers.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="iter" class="lad-function"><a class="header" href="#iter"><code>iter</code></a></h3>
+<h3 id="iter-1" class="lad-function"><a class="header" href="#iter-1"><code>iter</code></a></h3>
 <div class="lad-signature">
 <p><strong>iter</strong>(self: <a href="#renderlayers">RenderLayers</a>) -&gt; Vec&lt;<a href="#usize">usize</a>&gt;</p>
 </div>
@@ -7078,7 +7153,7 @@ assert!(red.to_srgba().red == 1.0);
 </div>
 
 <p>A copy of the color with its alpha set to <code>alpha</code>.</p>
-<h2 id="operators-2"><a class="header" href="#operators-2">Operators</a></h2>
+<h2 id="operators-3"><a class="header" href="#operators-3">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7538,7 +7613,7 @@ assert!(c.red == 1.0);
 </div>
 
 <p>The color as a <a href="#color-1"><code>Color</code></a>.</p>
-<h2 id="operators-3"><a class="header" href="#operators-3">Operators</a></h2>
+<h2 id="operators-4"><a class="header" href="#operators-4">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -7912,7 +7987,7 @@ assert!(c.alpha == 0.5);
 </div>
 
 <p>A copy of the color with its alpha set to <code>alpha</code>.</p>
-<h2 id="operators-4"><a class="header" href="#operators-4">Operators</a></h2>
+<h2 id="operators-5"><a class="header" href="#operators-5">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8503,12 +8578,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
+<tr><td><a href="#clone"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#generation"><code>generation</code></a></td><td>How many times the index of this entity has been reused.</td></tr>
 <tr><td><a href="#index-1"><code>index</code></a></td><td>The index of the entity. Indices of despawned entities are reused, so compare whole entities to tell them apart.</td></tr>
 <tr><td><a href="#to_bits"><code>to_bits</code></a></td><td>The entity as a single number, which can be turned back into the entity with <code>from_bits</code>.</td></tr>
 </tbody>
 </table>
 </div>
+<h3 id="clone" class="lad-function"><a class="header" href="#clone"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#entity">Entity</a>) -&gt; <a href="#entity">Entity</a></p>
+</div>
+
 <h3 id="generation" class="lad-function"><a class="header" href="#generation"><code>generation</code></a></h3>
 <div class="lad-signature">
 <p><strong>generation</strong>(self: <a href="#entity">Entity</a>) -&gt; <a href="#u32">u32</a></p>
@@ -8528,7 +8609,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p>The entity as a single number, which can be turned back into the entity with <code>from_bits</code>.</p>
 <p>Only meaningful while the app is running, don’t save it.</p>
-<h2 id="operators-5"><a class="header" href="#operators-5">Operators</a></h2>
+<h2 id="operators-6"><a class="header" href="#operators-6">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -8698,7 +8779,7 @@ assert!(name.as_str() == "player");
 </div>
 
 <p>Changes the name.</p>
-<h2 id="operators-6"><a class="header" href="#operators-6">Operators</a></h2>
+<h2 id="operators-7"><a class="header" href="#operators-7">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -9044,7 +9125,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h2 id="instantiations-7"><a class="header" href="#instantiations-7">Instantiations</a></h2>
-<p><a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;</p>
+<p><a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#keycode">KeyCode</a>&gt;</p>
 <h2 id="functions-88"><a class="header" href="#functions-88">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -9057,10 +9138,10 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-87" class="lad-function"><a class="header" href="#new-87"><code>new</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;&gt;) -&gt; <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;&gt;) -&gt; <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -9088,50 +9169,50 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="get_pressed" class="lad-function"><a class="header" href="#get_pressed"><code>get_pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>get_pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;) -&gt; Vec&lt;<a href="#mousebutton">MouseButton</a>&gt;</p>
+<p><strong>get_pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;) -&gt; Vec&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;</p>
 </div>
 
 <p>The buttons which are held down.</p>
 <h3 id="just_pressed" class="lad-function"><a class="header" href="#just_pressed"><code>just_pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>just_pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>) -&gt; <a href="#bool">bool</a></p>
+<p><strong>just_pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;, button: <a href="#gamepadbutton">GamepadButton</a>) -&gt; <a href="#bool">bool</a></p>
 </div>
 
 <p>Whether the button was pressed during the last update.</p>
 <h3 id="just_released" class="lad-function"><a class="header" href="#just_released"><code>just_released</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>just_released</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>) -&gt; <a href="#bool">bool</a></p>
+<p><strong>just_released</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;, button: <a href="#gamepadbutton">GamepadButton</a>) -&gt; <a href="#bool">bool</a></p>
 </div>
 
 <p>Whether the button was released during the last update.</p>
 <h3 id="press" class="lad-function"><a class="header" href="#press"><code>press</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>press</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>)</p>
+<p><strong>press</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;, button: <a href="#gamepadbutton">GamepadButton</a>)</p>
 </div>
 
 <p>Holds the button down, as if it was pressed.</p>
 <h3 id="pressed" class="lad-function"><a class="header" href="#pressed"><code>pressed</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>) -&gt; <a href="#bool">bool</a></p>
+<p><strong>pressed</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;, button: <a href="#gamepadbutton">GamepadButton</a>) -&gt; <a href="#bool">bool</a></p>
 </div>
 
 <p>Whether the button is held down.</p>
 <h3 id="release" class="lad-function"><a class="header" href="#release"><code>release</code></a></h3>
-<p class="lad-note">On <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code>, <code>ButtonInput&lt;GamepadButton&gt;</code></p>
+<p class="lad-note">On <code>ButtonInput&lt;GamepadButton&gt;</code>, <code>ButtonInput&lt;MouseButton&gt;</code>, <code>ButtonInput&lt;KeyCode&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>release</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#mousebutton">MouseButton</a>&gt;, button: <a href="#mousebutton">MouseButton</a>)</p>
+<p><strong>release</strong>(self: <a href="#buttoninputt">ButtonInput</a>&lt;<a href="#gamepadbutton">GamepadButton</a>&gt;, button: <a href="#gamepadbutton">GamepadButton</a>)</p>
 </div>
 
 <p>Lets go of the button, as if it was released.</p>
@@ -12217,7 +12298,7 @@ required to be the same.</p>
 </div>
 
 <p>Spherically interpolates between this direction and <code>other</code> by <code>t</code>, from 0 to 1.</p>
-<h2 id="operators-7"><a class="header" href="#operators-7">Operators</a></h2>
+<h2 id="operators-8"><a class="header" href="#operators-8">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12347,7 +12428,7 @@ required to be the same.</p>
 </div>
 
 <p>Spherically interpolates between this direction and <code>other</code> by <code>t</code>, from 0 to 1.</p>
-<h2 id="operators-8"><a class="header" href="#operators-8">Operators</a></h2>
+<h2 id="operators-9"><a class="header" href="#operators-9">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -12419,6 +12500,7 @@ required to be the same.</p>
 </thead>
 <tbody>
 <tr><td><a href="#as_vec2-1"><code>as_vec2</code></a></td><td>Converts to a single precision <code>Vec2</code>.</td></tr>
+<tr><td><a href="#clone-1"><code>clone</code></a></td><td></td></tr>
 </tbody>
 </table>
 </div>
@@ -12428,6 +12510,11 @@ required to be the same.</p>
 </div>
 
 <p>Converts to a single precision <a href="#vec2"><code>Vec2</code></a>.</p>
+<h3 id="clone-1" class="lad-function"><a class="header" href="#clone-1"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#dvec2">DVec2</a>) -&gt; <a href="#dvec2">DVec2</a></p>
+</div>
+
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="dvec3"><a class="header" href="#dvec3"><code>DVec3</code></a></h1>
 <div class="lad-page"></div>
@@ -12470,6 +12557,7 @@ required to be the same.</p>
 </thead>
 <tbody>
 <tr><td><a href="#as_vec3-1"><code>as_vec3</code></a></td><td>Converts to a single precision <code>Vec3</code>.</td></tr>
+<tr><td><a href="#clone-2"><code>clone</code></a></td><td></td></tr>
 </tbody>
 </table>
 </div>
@@ -12479,6 +12567,11 @@ required to be the same.</p>
 </div>
 
 <p>Converts to a single precision <a href="#vec3"><code>Vec3</code></a>.</p>
+<h3 id="clone-2" class="lad-function"><a class="header" href="#clone-2"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#dvec3">DVec3</a>) -&gt; <a href="#dvec3">DVec3</a></p>
+</div>
+
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="easefunction"><a class="header" href="#easefunction"><code>EaseFunction</code></a></h1>
 <div class="lad-page"></div>
@@ -13132,6 +13225,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#abs"><code>abs</code></a></td><td>The absolute value of every component.</td></tr>
 <tr><td><a href="#as_vec2-2"><code>as_vec2</code></a></td><td>Converts to a float vector.</td></tr>
 <tr><td><a href="#clamp"><code>clamp</code></a></td><td>Clamps every component between the components of <code>min</code> and <code>max</code>.</td></tr>
+<tr><td><a href="#clone-3"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#dot"><code>dot</code></a></td><td>The dot product of two vectors.</td></tr>
 <tr><td><a href="#length_squared"><code>length_squared</code></a></td><td>The squared length of the vector.</td></tr>
 <tr><td><a href="#max"><code>max</code></a></td><td>The larger of each pair of components.</td></tr>
@@ -13160,6 +13254,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>Clamps every component between the components of <code>min</code> and <code>max</code>.</p>
+<h3 id="clone-3" class="lad-function"><a class="header" href="#clone-3"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#ivec2">IVec2</a>) -&gt; <a href="#ivec2">IVec2</a></p>
+</div>
+
 <h3 id="dot" class="lad-function"><a class="header" href="#dot"><code>dot</code></a></h3>
 <div class="lad-signature">
 <p><strong>dot</strong>(self: <a href="#ivec2">IVec2</a>, other: <a href="#ivec2">IVec2</a>) -&gt; <a href="#i32">i32</a></p>
@@ -13202,7 +13301,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The components as a list.</p>
-<h2 id="operators-9"><a class="header" href="#operators-9">Operators</a></h2>
+<h2 id="operators-10"><a class="header" href="#operators-10">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13347,6 +13446,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#abs-1"><code>abs</code></a></td><td>The absolute value of every component.</td></tr>
 <tr><td><a href="#as_vec3-2"><code>as_vec3</code></a></td><td>Converts to a float vector.</td></tr>
 <tr><td><a href="#clamp-1"><code>clamp</code></a></td><td>Clamps every component between the components of <code>min</code> and <code>max</code>.</td></tr>
+<tr><td><a href="#clone-4"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#dot-1"><code>dot</code></a></td><td>The dot product of two vectors.</td></tr>
 <tr><td><a href="#length_squared-1"><code>length_squared</code></a></td><td>The squared length of the vector.</td></tr>
 <tr><td><a href="#max-1"><code>max</code></a></td><td>The larger of each pair of components.</td></tr>
@@ -13375,6 +13475,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>Clamps every component between the components of <code>min</code> and <code>max</code>.</p>
+<h3 id="clone-4" class="lad-function"><a class="header" href="#clone-4"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#ivec3">IVec3</a>) -&gt; <a href="#ivec3">IVec3</a></p>
+</div>
+
 <h3 id="dot-1" class="lad-function"><a class="header" href="#dot-1"><code>dot</code></a></h3>
 <div class="lad-signature">
 <p><strong>dot</strong>(self: <a href="#ivec3">IVec3</a>, other: <a href="#ivec3">IVec3</a>) -&gt; <a href="#i32">i32</a></p>
@@ -13417,7 +13522,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The components as a list.</p>
-<h2 id="operators-10"><a class="header" href="#operators-10">Operators</a></h2>
+<h2 id="operators-11"><a class="header" href="#operators-11">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13691,6 +13796,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
+<tr><td><a href="#clone-5"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#col"><code>col</code></a></td><td>The column at <code>index</code>, starting from <code>0</code>. Errors if <code>index</code> is out of range.</td></tr>
 <tr><td><a href="#determinant"><code>determinant</code></a></td><td>The determinant of the matrix.</td></tr>
 <tr><td><a href="#inverse"><code>inverse</code></a></td><td>The matrix that undoes this one.</td></tr>
@@ -13702,6 +13808,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
+<h3 id="clone-5" class="lad-function"><a class="header" href="#clone-5"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#mat3">Mat3</a>) -&gt; <a href="#mat3">Mat3</a></p>
+</div>
+
 <h3 id="col" class="lad-function"><a class="header" href="#col"><code>col</code></a></h3>
 <div class="lad-signature">
 <p><strong>col</strong>(self: <a href="#mat3">Mat3</a>, index: <a href="#usize">usize</a>) -&gt; <a href="#vec3">Vec3</a></p>
@@ -13750,7 +13861,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The matrix with rows and columns swapped.</p>
-<h2 id="operators-11"><a class="header" href="#operators-11">Operators</a></h2>
+<h2 id="operators-12"><a class="header" href="#operators-12">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -13934,6 +14045,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
+<tr><td><a href="#clone-6"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#col-1"><code>col</code></a></td><td>The column at <code>index</code>, starting from <code>0</code>. Errors if <code>index</code> is out of range.</td></tr>
 <tr><td><a href="#determinant-1"><code>determinant</code></a></td><td>The determinant of the matrix.</td></tr>
 <tr><td><a href="#inverse-1"><code>inverse</code></a></td><td>The matrix that undoes this one.</td></tr>
@@ -13945,6 +14057,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </tbody>
 </table>
 </div>
+<h3 id="clone-6" class="lad-function"><a class="header" href="#clone-6"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#mat4">Mat4</a>) -&gt; <a href="#mat4">Mat4</a></p>
+</div>
+
 <h3 id="col-1" class="lad-function"><a class="header" href="#col-1"><code>col</code></a></h3>
 <div class="lad-signature">
 <p><strong>col</strong>(self: <a href="#mat4">Mat4</a>, index: <a href="#usize">usize</a>) -&gt; <a href="#vec4">Vec4</a></p>
@@ -13993,7 +14110,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The matrix with rows and columns swapped.</p>
-<h2 id="operators-12"><a class="header" href="#operators-12">Operators</a></h2>
+<h2 id="operators-13"><a class="header" href="#operators-13">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14180,6 +14297,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#angle"><code>angle</code></a></td><td>The angle in radians this rotation turns by around its <code>axis</code>.</td></tr>
 <tr><td><a href="#angle_between"><code>angle_between</code></a></td><td>The angle in radians between two rotations.</td></tr>
 <tr><td><a href="#axis"><code>axis</code></a></td><td>The axis this rotation turns around.</td></tr>
+<tr><td><a href="#clone-7"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#conjugate"><code>conjugate</code></a></td><td>The rotation with the vector part negated, which is the inverse for unit quaternions.</td></tr>
 <tr><td><a href="#dot-2"><code>dot</code></a></td><td>The dot product of two rotations.</td></tr>
 <tr><td><a href="#inverse-2"><code>inverse</code></a></td><td>The rotation that undoes this one.</td></tr>
@@ -14212,6 +14330,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The axis this rotation turns around.</p>
+<h3 id="clone-7" class="lad-function"><a class="header" href="#clone-7"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#quat">Quat</a>) -&gt; <a href="#quat">Quat</a></p>
+</div>
+
 <h3 id="conjugate" class="lad-function"><a class="header" href="#conjugate"><code>conjugate</code></a></h3>
 <div class="lad-signature">
 <p><strong>conjugate</strong>(self: <a href="#quat">Quat</a>) -&gt; <a href="#quat">Quat</a></p>
@@ -14278,7 +14401,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The vector part of the quaternion, i.e. the x, y and z components.</p>
-<h2 id="operators-13"><a class="header" href="#operators-13">Operators</a></h2>
+<h2 id="operators-14"><a class="header" href="#operators-14">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14566,7 +14689,7 @@ the minimum and maximum corners.</p>
 </div>
 
 <p>The width of the rectangle.</p>
-<h2 id="operators-14"><a class="header" href="#operators-14">Operators</a></h2>
+<h2 id="operators-15"><a class="header" href="#operators-15">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -14789,7 +14912,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>Spherically interpolates between this rotation and <code>other</code> by <code>t</code>, from 0 to 1.</p>
-<h2 id="operators-15"><a class="header" href="#operators-15">Operators</a></h2>
+<h2 id="operators-16"><a class="header" href="#operators-16">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15045,6 +15168,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tbody>
 <tr><td><a href="#as_vec2-3"><code>as_vec2</code></a></td><td>Converts to a float vector.</td></tr>
 <tr><td><a href="#clamp-2"><code>clamp</code></a></td><td>Clamps every component between the components of <code>min</code> and <code>max</code>.</td></tr>
+<tr><td><a href="#clone-8"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#dot-3"><code>dot</code></a></td><td>The dot product of two vectors.</td></tr>
 <tr><td><a href="#length_squared-2"><code>length_squared</code></a></td><td>The squared length of the vector.</td></tr>
 <tr><td><a href="#max-2"><code>max</code></a></td><td>The larger of each pair of components.</td></tr>
@@ -15067,6 +15191,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>Clamps every component between the components of <code>min</code> and <code>max</code>.</p>
+<h3 id="clone-8" class="lad-function"><a class="header" href="#clone-8"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#uvec2">UVec2</a>) -&gt; <a href="#uvec2">UVec2</a></p>
+</div>
+
 <h3 id="dot-3" class="lad-function"><a class="header" href="#dot-3"><code>dot</code></a></h3>
 <div class="lad-signature">
 <p><strong>dot</strong>(self: <a href="#uvec2">UVec2</a>, other: <a href="#uvec2">UVec2</a>) -&gt; <a href="#u32">u32</a></p>
@@ -15109,7 +15238,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The components as a list.</p>
-<h2 id="operators-16"><a class="header" href="#operators-16">Operators</a></h2>
+<h2 id="operators-17"><a class="header" href="#operators-17">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15246,6 +15375,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tbody>
 <tr><td><a href="#as_vec3-3"><code>as_vec3</code></a></td><td>Converts to a float vector.</td></tr>
 <tr><td><a href="#clamp-3"><code>clamp</code></a></td><td>Clamps every component between the components of <code>min</code> and <code>max</code>.</td></tr>
+<tr><td><a href="#clone-9"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#dot-4"><code>dot</code></a></td><td>The dot product of two vectors.</td></tr>
 <tr><td><a href="#length_squared-3"><code>length_squared</code></a></td><td>The squared length of the vector.</td></tr>
 <tr><td><a href="#max-3"><code>max</code></a></td><td>The larger of each pair of components.</td></tr>
@@ -15268,6 +15398,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>Clamps every component between the components of <code>min</code> and <code>max</code>.</p>
+<h3 id="clone-9" class="lad-function"><a class="header" href="#clone-9"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#uvec3">UVec3</a>) -&gt; <a href="#uvec3">UVec3</a></p>
+</div>
+
 <h3 id="dot-4" class="lad-function"><a class="header" href="#dot-4"><code>dot</code></a></h3>
 <div class="lad-signature">
 <p><strong>dot</strong>(self: <a href="#uvec3">UVec3</a>, other: <a href="#uvec3">UVec3</a>) -&gt; <a href="#u32">u32</a></p>
@@ -15310,7 +15445,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The components as a list.</p>
-<h2 id="operators-17"><a class="header" href="#operators-17">Operators</a></h2>
+<h2 id="operators-18"><a class="header" href="#operators-18">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15461,6 +15596,7 @@ assert!(v.length() == 5.0);
 <tr><td><a href="#clamp-4"><code>clamp</code></a></td><td>Clamps every component between the components of <code>min</code> and <code>max</code>.</td></tr>
 <tr><td><a href="#clamp_length"><code>clamp_length</code></a></td><td>Scales the vector so that its length is between <code>min</code> and <code>max</code>.</td></tr>
 <tr><td><a href="#clamp_length_max"><code>clamp_length_max</code></a></td><td>Scales the vector down so that its length is at most <code>max</code>.</td></tr>
+<tr><td><a href="#clone-10"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#distance"><code>distance</code></a></td><td>The distance between two points.</td></tr>
 <tr><td><a href="#distance_squared"><code>distance_squared</code></a></td><td>The squared distance between two points.</td></tr>
 <tr><td><a href="#dot-5"><code>dot</code></a></td><td>The dot product of two vectors.</td></tr>
@@ -15547,6 +15683,11 @@ assert!(v.length() == 5.0);
 </div>
 
 <p>Scales the vector down so that its length is at most <code>max</code>.</p>
+<h3 id="clone-10" class="lad-function"><a class="header" href="#clone-10"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#vec2">Vec2</a>) -&gt; <a href="#vec2">Vec2</a></p>
+</div>
+
 <h3 id="distance" class="lad-function"><a class="header" href="#distance"><code>distance</code></a></h3>
 <div class="lad-signature">
 <p><strong>distance</strong>(self: <a href="#vec2">Vec2</a>, other: <a href="#vec2">Vec2</a>) -&gt; <a href="#f32">f32</a></p>
@@ -15721,7 +15862,7 @@ assert!(v.length() == 5.0);
 </div>
 
 <p>The vector scaled to a length of <code>1</code>, or nil if that’s not possible.</p>
-<h2 id="operators-18"><a class="header" href="#operators-18">Operators</a></h2>
+<h2 id="operators-19"><a class="header" href="#operators-19">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -15881,6 +16022,7 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 <tr><td><a href="#clamp-5"><code>clamp</code></a></td><td>Clamps every component between the components of <code>min</code> and <code>max</code>.</td></tr>
 <tr><td><a href="#clamp_length-1"><code>clamp_length</code></a></td><td>Scales the vector so that its length is between <code>min</code> and <code>max</code>.</td></tr>
 <tr><td><a href="#clamp_length_max-1"><code>clamp_length_max</code></a></td><td>Scales the vector down so that its length is at most <code>max</code>.</td></tr>
+<tr><td><a href="#clone-11"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#cross-1"><code>cross</code></a></td><td>The cross product, perpendicular to both vectors.</td></tr>
 <tr><td><a href="#distance-1"><code>distance</code></a></td><td>The distance between two points.</td></tr>
 <tr><td><a href="#distance_squared-1"><code>distance_squared</code></a></td><td>The squared distance between two points.</td></tr>
@@ -15972,6 +16114,11 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 </div>
 
 <p>Scales the vector down so that its length is at most <code>max</code>.</p>
+<h3 id="clone-11" class="lad-function"><a class="header" href="#clone-11"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#vec3">Vec3</a>) -&gt; <a href="#vec3">Vec3</a></p>
+</div>
+
 <h3 id="cross-1" class="lad-function"><a class="header" href="#cross-1"><code>cross</code></a></h3>
 <div class="lad-signature">
 <p><strong>cross</strong>(self: <a href="#vec3">Vec3</a>, other: <a href="#vec3">Vec3</a>) -&gt; <a href="#vec3">Vec3</a></p>
@@ -16140,7 +16287,7 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 </div>
 
 <p>The vector scaled to a length of <code>1</code>, or nil if that’s not possible.</p>
-<h2 id="operators-19"><a class="header" href="#operators-19">Operators</a></h2>
+<h2 id="operators-20"><a class="header" href="#operators-20">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -16240,10 +16387,16 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
+<tr><td><a href="#clone-12"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#to_vec3"><code>to_vec3</code></a></td><td>Converts to a <code>Vec3</code>.</td></tr>
 </tbody>
 </table>
 </div>
+<h3 id="clone-12" class="lad-function"><a class="header" href="#clone-12"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#vec3a">Vec3A</a>) -&gt; <a href="#vec3a">Vec3A</a></p>
+</div>
+
 <h3 id="to_vec3" class="lad-function"><a class="header" href="#to_vec3"><code>to_vec3</code></a></h3>
 <div class="lad-signature">
 <p><strong>to_vec3</strong>(self: <a href="#vec3a">Vec3A</a>) -&gt; <a href="#vec3">Vec3</a></p>
@@ -16318,6 +16471,7 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 <tr><td><a href="#clamp-6"><code>clamp</code></a></td><td>Clamps every component between the components of <code>min</code> and <code>max</code>.</td></tr>
 <tr><td><a href="#clamp_length-2"><code>clamp_length</code></a></td><td>Scales the vector so that its length is between <code>min</code> and <code>max</code>.</td></tr>
 <tr><td><a href="#clamp_length_max-2"><code>clamp_length_max</code></a></td><td>Scales the vector down so that its length is at most <code>max</code>.</td></tr>
+<tr><td><a href="#clone-13"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#distance-2"><code>distance</code></a></td><td>The distance between two points.</td></tr>
 <tr><td><a href="#distance_squared-2"><code>distance_squared</code></a></td><td>The squared distance between two points.</td></tr>
 <tr><td><a href="#dot-7"><code>dot</code></a></td><td>The dot product of two vectors.</td></tr>
@@ -16376,6 +16530,11 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 </div>
 
 <p>Scales the vector down so that its length is at most <code>max</code>.</p>
+<h3 id="clone-13" class="lad-function"><a class="header" href="#clone-13"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#vec4">Vec4</a>) -&gt; <a href="#vec4">Vec4</a></p>
+</div>
+
 <h3 id="distance-2" class="lad-function"><a class="header" href="#distance-2"><code>distance</code></a></h3>
 <div class="lad-signature">
 <p><strong>distance</strong>(self: <a href="#vec4">Vec4</a>, other: <a href="#vec4">Vec4</a>) -&gt; <a href="#f32">f32</a></p>
@@ -16526,7 +16685,7 @@ assert!(v + v == Vec3.new(2.0, 4.0, 6.0));
 </div>
 
 <p>The vector scaled to a length of <code>1</code>, or nil if that’s not possible.</p>
-<h2 id="operators-20"><a class="header" href="#operators-20">Operators</a></h2>
+<h2 id="operators-21"><a class="header" href="#operators-21">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -19212,7 +19371,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
 </ul>
 <p><strong>Returns</strong>: The constructed value.</p>
-<h2 id="operators-21"><a class="header" href="#operators-21">Operators</a></h2>
+<h2 id="operators-22"><a class="header" href="#operators-22">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -20886,7 +21045,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>Whether the duration is zero.</p>
-<h2 id="operators-22"><a class="header" href="#operators-22">Operators</a></h2>
+<h2 id="operators-23"><a class="header" href="#operators-23">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -21294,7 +21453,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);</code></pre>
 </table>
 </div>
 <h2 id="instantiations-8"><a class="header" href="#instantiations-8">Instantiations</a></h2>
-<p><a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;, <a href="#timet">Time</a>&lt;()&gt;, <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;, <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;</p>
+<p><a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;, <a href="#timet">Time</a>&lt;<a href="#real">Real</a>&gt;, <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;, <a href="#timet">Time</a>&lt;()&gt;</p>
 <h2 id="functions-204"><a class="header" href="#functions-204">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -21307,10 +21466,10 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);</code></pre>
 </table>
 </div>
 <h3 id="new-203" class="lad-function"><a class="header" href="#new-203"><code>new</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>new</strong>(payload: Fields&lt;<a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;&gt;) -&gt; <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;</p>
+<p><strong>new</strong>(payload: Fields&lt;<a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;&gt;) -&gt; <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;</p>
 </div>
 
 <p>Constructs a new instance of the type from a table of its fields.
@@ -21349,58 +21508,58 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="delta" class="lad-function"><a class="header" href="#delta"><code>delta</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#duration">Duration</a></p>
+<p><strong>delta</strong>(self: <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;) -&gt; <a href="#duration">Duration</a></p>
 </div>
 
 <p>The time that passed since the previous update.</p>
 <h3 id="delta_secs" class="lad-function"><a class="header" href="#delta_secs"><code>delta_secs</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta_secs</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f32">f32</a></p>
+<p><strong>delta_secs</strong>(self: <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;) -&gt; <a href="#f32">f32</a></p>
 </div>
 
 <p>The time that passed since the previous update, in seconds.</p>
 <h3 id="delta_secs_f64" class="lad-function"><a class="header" href="#delta_secs_f64"><code>delta_secs_f64</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>delta_secs_f64</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f64">f64</a></p>
+<p><strong>delta_secs_f64</strong>(self: <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;) -&gt; <a href="#f64">f64</a></p>
 </div>
 
 <p>The time that passed since the previous update, in seconds as a double precision number.</p>
 <h3 id="elapsed-2" class="lad-function"><a class="header" href="#elapsed-2"><code>elapsed</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#duration">Duration</a></p>
+<p><strong>elapsed</strong>(self: <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;) -&gt; <a href="#duration">Duration</a></p>
 </div>
 
 <p>The total time that passed since the clock started.</p>
 <h3 id="elapsed_secs-1" class="lad-function"><a class="header" href="#elapsed_secs-1"><code>elapsed_secs</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f32">f32</a></p>
+<p><strong>elapsed_secs</strong>(self: <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;) -&gt; <a href="#f32">f32</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds.</p>
 <h3 id="elapsed_secs_f64" class="lad-function"><a class="header" href="#elapsed_secs_f64"><code>elapsed_secs_f64</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs_f64</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f64">f64</a></p>
+<p><strong>elapsed_secs_f64</strong>(self: <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;) -&gt; <a href="#f64">f64</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds as a double precision number.</p>
 <h3 id="elapsed_secs_wrapped" class="lad-function"><a class="header" href="#elapsed_secs_wrapped"><code>elapsed_secs_wrapped</code></a></h3>
-<p class="lad-note">On <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Fixed&gt;</code></p>
+<p class="lad-note">On <code>Time&lt;Fixed&gt;</code>, <code>Time&lt;Real&gt;</code>, <code>Time&lt;Virtual&gt;</code>, <code>Time&lt;()&gt;</code></p>
 
 <div class="lad-signature">
-<p><strong>elapsed_secs_wrapped</strong>(self: <a href="#timet">Time</a>&lt;<a href="#virtual">Virtual</a>&gt;) -&gt; <a href="#f32">f32</a></p>
+<p><strong>elapsed_secs_wrapped</strong>(self: <a href="#timet">Time</a>&lt;<a href="#fixed">Fixed</a>&gt;) -&gt; <a href="#f32">f32</a></p>
 </div>
 
 <p>The total time that passed since the clock started, in seconds, wrapped to a period so it stays precise for long running apps.</p>
@@ -22063,7 +22222,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The local up direction, <code>+y</code>.</p>
-<h2 id="operators-23"><a class="header" href="#operators-23">Operators</a></h2>
+<h2 id="operators-24"><a class="header" href="#operators-24">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -22211,6 +22370,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </thead>
 <tbody>
 <tr><td><a href="#back-1"><code>back</code></a></td><td>The direction opposite to <code>forward</code>, <code>+z</code> in local space.</td></tr>
+<tr><td><a href="#clone-14"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#down-1"><code>down</code></a></td><td>The local down direction, <code>-y</code>.</td></tr>
 <tr><td><a href="#forward-1"><code>forward</code></a></td><td>The direction the transform faces, <code>-z</code> in local space.</td></tr>
 <tr><td><a href="#is_finite"><code>is_finite</code></a></td><td>Whether every component is a finite number.</td></tr>
@@ -22250,6 +22410,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The direction opposite to <code>forward</code>, <code>+z</code> in local space.</p>
+<h3 id="clone-14" class="lad-function"><a class="header" href="#clone-14"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="#transform-1">Transform</a>) -&gt; <a href="#transform-1">Transform</a></p>
+</div>
+
 <h3 id="down-1" class="lad-function"><a class="header" href="#down-1"><code>down</code></a></h3>
 <div class="lad-signature">
 <p><strong>down</strong>(self: <a href="#transform-1">Transform</a>) -&gt; <a href="#vec3">Vec3</a></p>
@@ -22430,7 +22595,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>A copy of this transform with a new position.</p>
-<h2 id="operators-24"><a class="header" href="#operators-24">Operators</a></h2>
+<h2 id="operators-25"><a class="header" href="#operators-25">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27292,13 +27457,6 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A callable dynamic function</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="dynamicfunctionmut"><a class="header" href="#dynamicfunctionmut"><code>DynamicFunctionMut</code></a></h1>
-<div class="lad-page"></div>
-
-<p>A stateful and callable dynamic function</p>
-<p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
-
 <h2 id="functions-267"><a class="header" href="#functions-267">Functions</a></h2>
 <div class="table-wrapper">
 <table>
@@ -27311,6 +27469,37 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </table>
 </div>
 <h3 id="new-266" class="lad-function"><a class="header" href="#new-266"><code>new</code></a></h3>
+<div class="lad-signature">
+<p><strong>new</strong>(payload: Fields&lt;<a href="#dynamicfunction">DynamicFunction</a>&gt;) -&gt; <a href="#dynamicfunction">DynamicFunction</a></p>
+</div>
+
+<p>Constructs a new instance of the type from a table of its fields.
+Missing fields are filled in from the type’s default, then from the defaults of the fields’ types.
+For enums use the <code>variant</code> key, or construct from a variant directly.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>payload</code>: The fields of the type, keyed by name or index, or a list of the fields in order.</li>
+</ul>
+<p><strong>Returns</strong>: The constructed value.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="dynamicfunctionmut"><a class="header" href="#dynamicfunctionmut"><code>DynamicFunctionMut</code></a></h1>
+<div class="lad-page"></div>
+
+<p>A stateful and callable dynamic function</p>
+<p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
+
+<h2 id="functions-268"><a class="header" href="#functions-268">Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Name</th><th>Summary</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#new-267"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="new-267" class="lad-function"><a class="header" href="#new-267"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#dynamicfunctionmut">DynamicFunctionMut</a>&gt;) -&gt; <a href="#dynamicfunctionmut">DynamicFunctionMut</a></p>
 </div>
@@ -27329,18 +27518,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-268"><a class="header" href="#functions-268">Functions</a></h2>
+<h2 id="functions-269"><a class="header" href="#functions-269">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-267"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-268"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-267" class="lad-function"><a class="header" href="#new-267"><code>new</code></a></h3>
+<h3 id="new-268" class="lad-function"><a class="header" href="#new-268"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#f32">f32</a>&gt;) -&gt; <a href="#f32">f32</a></p>
 </div>
@@ -27360,18 +27549,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A 64-bit floating point number</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-269"><a class="header" href="#functions-269">Functions</a></h2>
+<h2 id="functions-270"><a class="header" href="#functions-270">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-268"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-269"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-268" class="lad-function"><a class="header" href="#new-268"><code>new</code></a></h3>
+<h3 id="new-269" class="lad-function"><a class="header" href="#new-269"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#f64">f64</a>&gt;) -&gt; <a href="#f64">f64</a></p>
 </div>
@@ -27391,18 +27580,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>Function call context, if accepted by a function, means the function can access the world in arbitrary ways.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-270"><a class="header" href="#functions-270">Functions</a></h2>
+<h2 id="functions-271"><a class="header" href="#functions-271">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-269"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-270"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-269" class="lad-function"><a class="header" href="#new-269"><code>new</code></a></h3>
+<h3 id="new-270" class="lad-function"><a class="header" href="#new-270"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#functioncallcontext">FunctionCallContext</a>&gt;) -&gt; <a href="#functioncallcontext">FunctionCallContext</a></p>
 </div>
@@ -27422,18 +27611,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 128-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-271"><a class="header" href="#functions-271">Functions</a></h2>
+<h2 id="functions-272"><a class="header" href="#functions-272">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-270"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-271"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-270" class="lad-function"><a class="header" href="#new-270"><code>new</code></a></h3>
+<h3 id="new-271" class="lad-function"><a class="header" href="#new-271"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#i128">i128</a>&gt;) -&gt; <a href="#i128">i128</a></p>
 </div>
@@ -27453,18 +27642,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 16-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-272"><a class="header" href="#functions-272">Functions</a></h2>
+<h2 id="functions-273"><a class="header" href="#functions-273">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-271"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-272"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-271" class="lad-function"><a class="header" href="#new-271"><code>new</code></a></h3>
+<h3 id="new-272" class="lad-function"><a class="header" href="#new-272"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#i16">i16</a>&gt;) -&gt; <a href="#i16">i16</a></p>
 </div>
@@ -27484,18 +27673,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 32-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-273"><a class="header" href="#functions-273">Functions</a></h2>
+<h2 id="functions-274"><a class="header" href="#functions-274">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-272"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-273"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-272" class="lad-function"><a class="header" href="#new-272"><code>new</code></a></h3>
+<h3 id="new-273" class="lad-function"><a class="header" href="#new-273"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#i32">i32</a>&gt;) -&gt; <a href="#i32">i32</a></p>
 </div>
@@ -27515,18 +27704,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 64-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-274"><a class="header" href="#functions-274">Functions</a></h2>
+<h2 id="functions-275"><a class="header" href="#functions-275">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-273"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-274"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-273" class="lad-function"><a class="header" href="#new-273"><code>new</code></a></h3>
+<h3 id="new-274" class="lad-function"><a class="header" href="#new-274"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#i64">i64</a>&gt;) -&gt; <a href="#i64">i64</a></p>
 </div>
@@ -27546,18 +27735,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed 8-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-275"><a class="header" href="#functions-275">Functions</a></h2>
+<h2 id="functions-276"><a class="header" href="#functions-276">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-274"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-275"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-274" class="lad-function"><a class="header" href="#new-274"><code>new</code></a></h3>
+<h3 id="new-275" class="lad-function"><a class="header" href="#new-275"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#i8">i8</a>&gt;) -&gt; <a href="#i8">i8</a></p>
 </div>
@@ -27577,18 +27766,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A signed pointer-sized integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-276"><a class="header" href="#functions-276">Functions</a></h2>
+<h2 id="functions-277"><a class="header" href="#functions-277">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-275"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-276"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-275" class="lad-function"><a class="header" href="#new-275"><code>new</code></a></h3>
+<h3 id="new-276" class="lad-function"><a class="header" href="#new-276"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#isize">isize</a>&gt;) -&gt; <a href="#isize">isize</a></p>
 </div>
@@ -27622,7 +27811,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A reference to a reflectable type</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-277"><a class="header" href="#functions-278">Functions</a></h2>
+<h2 id="functions-278"><a class="header" href="#functions-279">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27630,11 +27819,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </thead>
 <tbody>
 <tr><td><a href="#clear-1"><code>clear</code></a></td><td>Clears the container, if the reference is an appropriate container type.</td></tr>
-<tr><td><a href="#clone"><code>clone</code></a></td><td>Creates an independent copy of the value, so that changing one doesn’t change the other.</td></tr>
-<tr><td><a href="#functions-278"><code>functions</code></a></td><td>Lists the functions available on the reference.</td></tr>
+<tr><td><a href="#clone-15"><code>clone</code></a></td><td>Creates an independent copy of the value, so that changing one doesn’t change the other.</td></tr>
+<tr><td><a href="#functions-279"><code>functions</code></a></td><td>Lists the functions available on the reference.</td></tr>
 <tr><td><a href="#insert"><code>insert</code></a></td><td>Inserts the value into the reference at the specified index, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#map_get"><code>map_get</code></a></td><td>Gets and clones the value under the specified key if the underlying type is a map type.</td></tr>
-<tr><td><a href="#new-276"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-277"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 <tr><td><a href="#pop"><code>pop</code></a></td><td>Pops the value from the reference, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#push"><code>push</code></a></td><td>Pushes the value into the reference, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#remove-1"><code>remove</code></a></td><td>Removes the value at the specified key from the reference, if the reference is an appropriate container type.</td></tr>
@@ -27654,7 +27843,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <li><code>reference</code>: The reference to clear.</li>
 </ul>
 <p><strong>Returns</strong>: Nothing if the reference was cleared</p>
-<h3 id="clone" class="lad-function"><a class="header" href="#clone"><code>clone</code></a></h3>
+<h3 id="clone-15" class="lad-function"><a class="header" href="#clone-15"><code>clone</code></a></h3>
 <div class="lad-signature">
 <p><strong>clone</strong>(reference: <a href="#reflectreference">ReflectReference</a>) -&gt; <a href="#scriptvalue">ScriptValue</a></p>
 </div>
@@ -27665,7 +27854,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <li><code>reference</code>: The value to copy.</li>
 </ul>
 <p><strong>Returns</strong>: The copy.</p>
-<h3 id="functions-278" class="lad-function"><a class="header" href="#functions-278"><code>functions</code></a></h3>
+<h3 id="functions-279" class="lad-function"><a class="header" href="#functions-279"><code>functions</code></a></h3>
 <div class="lad-signature">
 <p><strong>functions</strong>(reference: <a href="#reflectreference">ReflectReference</a>) -&gt; Vec&lt;<a href="#functioninfo">FunctionInfo</a>&gt;</p>
 </div>
@@ -27701,7 +27890,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <li><code>key</code>: The key to index with.</li>
 </ul>
 <p><strong>Returns</strong>: The value at the key, if the reference is a map.</p>
-<h3 id="new-276" class="lad-function"><a class="header" href="#new-276"><code>new</code></a></h3>
+<h3 id="new-277" class="lad-function"><a class="header" href="#new-277"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#reflectreference">ReflectReference</a>&gt;) -&gt; <a href="#reflectreference">ReflectReference</a></p>
 </div>
@@ -27772,7 +27961,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <li><code>reference</code>: The reference to get the variant name of.</li>
 </ul>
 <p><strong>Returns</strong>: The name of the variant, if the reference is an enum.</p>
-<h2 id="operators-25"><a class="header" href="#operators-25">Operators</a></h2>
+<h2 id="operators-26"><a class="header" href="#operators-26">Operators</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27782,7 +27971,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#debug"><code>debug</code></a></td><td>Displays a debug representation of this reference.</td></tr>
 <tr><td><a href="#display-1"><code>display</code></a></td><td>Displays this reference and its contents if possible.</td></tr>
 <tr><td><a href="#eq-23"><code>eq</code></a></td><td>Whether two values are equal, compared through reflection.</td></tr>
-<tr><td><a href="#iter-1"><code>iter</code></a></td><td>Iterates over the reference, if the reference is an appropriate container type.</td></tr>
+<tr><td><a href="#iter-2"><code>iter</code></a></td><td>Iterates over the reference, if the reference is an appropriate container type.</td></tr>
 <tr><td><a href="#len-1"><code>len</code></a></td><td>Retrieves the length of the reference, if the reference is an appropriate container type.</td></tr>
 </tbody>
 </table>
@@ -27826,7 +28015,7 @@ An enum value is equal to an enum variant, i.e. <code>MyEnum.Variant</code>, if 
 <li><code>other</code>: The value to compare with.</li>
 </ul>
 <p><strong>Returns</strong>: Whether the values are equal.</p>
-<h3 id="iter-1" class="lad-function"><a class="header" href="#iter-1"><code>iter</code></a></h3>
+<h3 id="iter-2" class="lad-function"><a class="header" href="#iter-2"><code>iter</code></a></h3>
 <div class="lad-signature">
 <p><strong>iter</strong>(reference: <a href="#reflectreference">ReflectReference</a>) -&gt; <a href="#dynamicfunctionmut">DynamicFunctionMut</a></p>
 </div>
@@ -27857,18 +28046,18 @@ An enum value is equal to an enum variant, i.e. <code>MyEnum.Variant</code>, if 
 <p>A value representing the union of all representable values</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-279"><a class="header" href="#functions-279">Functions</a></h2>
+<h2 id="functions-280"><a class="header" href="#functions-280">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-277"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-278"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-277" class="lad-function"><a class="header" href="#new-277"><code>new</code></a></h3>
+<h3 id="new-278" class="lad-function"><a class="header" href="#new-278"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#scriptvalue">ScriptValue</a>&gt;) -&gt; <a href="#scriptvalue">ScriptValue</a></p>
 </div>
@@ -27888,7 +28077,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A type itself, used to reach its static members, i.e. <code>Vec3</code> in <code>Vec3.new{}</code>. Functions on it are shared by all types</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-280"><a class="header" href="#functions-280">Functions</a></h2>
+<h2 id="functions-281"><a class="header" href="#functions-281">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -27898,7 +28087,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#add_asset-8"><code>add_asset</code></a></td><td>Adds a value of this type as a new asset, returning a strong handle to it.</td></tr>
 <tr><td><a href="#get_asset-8"><code>get_asset</code></a></td><td>The asset a handle points to, or nil if it isn’t loaded or added yet.</td></tr>
 <tr><td><a href="#load-8"><code>load</code></a></td><td>Starts loading an asset of this type from a path, returning a handle to it right away.</td></tr>
-<tr><td><a href="#new-278"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-279"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
@@ -27945,7 +28134,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <li><code>path</code>: The asset path, relative to the assets folder.</li>
 </ul>
 <p><strong>Returns</strong>: A handle to the asset, which is loaded in the background.</p>
-<h3 id="new-278" class="lad-function"><a class="header" href="#new-278"><code>new</code></a></h3>
+<h3 id="new-279" class="lad-function"><a class="header" href="#new-279"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(type: <a href="#statictyperef">StaticTypeRef</a>, payload: HashMap&lt;<a href="#string">String</a>, <a href="#scriptvalue">ScriptValue</a>&gt;) -&gt; <a href="#reflectreference">ReflectReference</a></p>
 </div>
@@ -27973,18 +28162,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>A heap allocated string</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-281"><a class="header" href="#functions-281">Functions</a></h2>
+<h2 id="functions-282"><a class="header" href="#functions-282">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-279"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-280"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-279" class="lad-function"><a class="header" href="#new-279"><code>new</code></a></h3>
+<h3 id="new-280" class="lad-function"><a class="header" href="#new-280"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#string">String</a>&gt;) -&gt; <a href="#string">String</a></p>
 </div>
@@ -28004,18 +28193,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 128-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-282"><a class="header" href="#functions-282">Functions</a></h2>
+<h2 id="functions-283"><a class="header" href="#functions-283">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-280"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-281"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-280" class="lad-function"><a class="header" href="#new-280"><code>new</code></a></h3>
+<h3 id="new-281" class="lad-function"><a class="header" href="#new-281"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#u128">u128</a>&gt;) -&gt; <a href="#u128">u128</a></p>
 </div>
@@ -28035,18 +28224,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 16-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-283"><a class="header" href="#functions-283">Functions</a></h2>
+<h2 id="functions-284"><a class="header" href="#functions-284">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-281"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-282"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-281" class="lad-function"><a class="header" href="#new-281"><code>new</code></a></h3>
+<h3 id="new-282" class="lad-function"><a class="header" href="#new-282"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#u16">u16</a>&gt;) -&gt; <a href="#u16">u16</a></p>
 </div>
@@ -28066,18 +28255,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 32-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-284"><a class="header" href="#functions-284">Functions</a></h2>
+<h2 id="functions-285"><a class="header" href="#functions-285">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-282"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-283"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-282" class="lad-function"><a class="header" href="#new-282"><code>new</code></a></h3>
+<h3 id="new-283" class="lad-function"><a class="header" href="#new-283"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#u32">u32</a>&gt;) -&gt; <a href="#u32">u32</a></p>
 </div>
@@ -28097,18 +28286,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 64-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-285"><a class="header" href="#functions-285">Functions</a></h2>
+<h2 id="functions-286"><a class="header" href="#functions-286">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-283"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-284"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-283" class="lad-function"><a class="header" href="#new-283"><code>new</code></a></h3>
+<h3 id="new-284" class="lad-function"><a class="header" href="#new-284"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#u64">u64</a>&gt;) -&gt; <a href="#u64">u64</a></p>
 </div>
@@ -28128,18 +28317,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned 8-bit integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-286"><a class="header" href="#functions-286">Functions</a></h2>
+<h2 id="functions-287"><a class="header" href="#functions-287">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-284"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-285"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-284" class="lad-function"><a class="header" href="#new-284"><code>new</code></a></h3>
+<h3 id="new-285" class="lad-function"><a class="header" href="#new-285"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#u8">u8</a>&gt;) -&gt; <a href="#u8">u8</a></p>
 </div>
@@ -28159,18 +28348,18 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>An unsigned pointer-sized integer</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-287"><a class="header" href="#functions-287">Functions</a></h2>
+<h2 id="functions-288"><a class="header" href="#functions-288">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>Name</th><th>Summary</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#new-285"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
+<tr><td><a href="#new-286"><code>new</code></a></td><td>Constructs a new instance of the type from a table of its fields.</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="new-285" class="lad-function"><a class="header" href="#new-285"><code>new</code></a></h3>
+<h3 id="new-286" class="lad-function"><a class="header" href="#new-286"><code>new</code></a></h3>
 <div class="lad-signature">
 <p><strong>new</strong>(payload: Fields&lt;<a href="#usize">usize</a>&gt;) -&gt; <a href="#usize">usize</a></p>
 </div>
@@ -28190,7 +28379,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <p>The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bevy App.</p>
 <p class="lad-note">Opaque: scripts can't access its fields, only its functions.</p>
 
-<h2 id="functions-288"><a class="header" href="#functions-288">Functions</a></h2>
+<h2 id="functions-289"><a class="header" href="#functions-289">Functions</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28796,6 +28985,7 @@ The type that will be instantiated to back this component will be <code>DynamicC
 <li><a href="#setup">Setup</a>: preparing a local development environment</li>
 <li><a href="#writing-bindings">Writing Bindings</a>: adding bindings for Bevy crates</li>
 <li><a href="#adding-new-languages-to-bms">New Languages</a>: what it takes to support another scripting language</li>
+<li><a href="#language-internals">Language Internals</a>: how Lua, LuaJIT and Rune call Rust functions and store values, safely and fast</li>
 <li><a href="#rfcs">RFCs</a>: design proposals and their discussion</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
@@ -28825,7 +29015,7 @@ They live in <code>crates/bindings/bevy_mod_scripting_bevy_&lt;category&gt;_bind
 <h2 id="what-to-bind"><a class="header" href="#what-to-bind">What to bind</a></h2>
 <p>Every reflected type is already usable from scripts without any bindings:</p>
 <ul>
-<li>fields are read and written through references, i.e. <code>transform.translation.x = 2</code></li>
+<li>fields are read and written through references, i.e. <code>sprite.color = c</code> or <code>player.stats.hp = 2</code></li>
 <li>every type can be constructed with <code>Type.new({...})</code>, see <a href="#constructing-arbitrary-types">Constructing Arbitrary Types</a></li>
 <li>enum variants are available as <code>Type.Variant</code></li>
 <li>containers support <code>len</code>, <code>iter</code>, <code>push</code> etc., and every value can be printed</li>
@@ -28846,12 +29036,24 @@ They live in <code>crates/bindings/bevy_mod_scripting_bevy_&lt;category&gt;_bind
 </ul>
 <h3 id="native-types"><a class="header" href="#native-types">Native types</a></h3>
 <p>Hot value types, i.e. <code>Vec3</code>, can be stored by the languages themselves instead of being referenced through the world. Functions read them without converting to <code>ScriptValue</code>s:</p>
-<pre><code class="language-rust ignore">// fields are read and written with typed accessors
-script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
-// components (and resources) of native types are native handles: `get_component` returns one, `t.translation` is a
-// handle to the field, `t.translation.x = 5` writes the component
-script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });</code></pre>
-<p>Values of types with fields of native types (<code>Transform.from_xyz(..)</code>) stay references, so writes to their fields aren’t lost on a copy. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren’t native, i.e. references, are converted as usual.</p>
+<pre><code class="language-rust ignore">// Safety: the fields are at their offsets
+unsafe {
+    // `field`: converted like an argument (numbers, `bool`, `String`), read and written with typed accessors
+    NativeType::of::&lt;Vec3&gt;()
+        .field("x", offset_of!(Vec3, x), |v| &amp;v.x)
+        .field("y", offset_of!(Vec3, y), |v| &amp;v.y)
+        .field("z", offset_of!(Vec3, z), |v| &amp;v.z)
+        .register(world);
+    // `value_field`: another reflected type, i.e. a native one. Components (and resources) of native types are native
+    // handles: `get_component` returns one, `t.translation = v` writes the component
+    NativeType::of::&lt;Transform&gt;()
+        .value_field("translation", offset_of!(Transform, translation), |t| &amp;t.translation)
+        .value_field("rotation", offset_of!(Transform, rotation), |t| &amp;t.rotation)
+        .value_field("scale", offset_of!(Transform, scale), |t| &amp;t.scale)
+        .register(world);
+}</code></pre>
+<p>Nothing is inferred: each kind of field has its method on <code>NativeBuilder</code>, and every one is <code>unsafe</code>, as languages read and write the fields at the offsets given. The closure names the field, which gives its type. For LuaJIT’s C layouts and FFI functions (<code>ffi</code>, <code>register_ffi</code>), see <a href="#luajit">LuaJIT internals</a>.</p>
+<p>Native types are values, with no write-through: a field of a native type is read as a read-only copy (<code>t.translation.x = 5</code> is an error, not a lost write) and written whole (<code>t.translation = v</code>); <code>clone</code> gives a copy scripts can change. Functions get copies of the native values scripts hold (<code>M&lt;T&gt;</code> is written back when the call ends), so a script may use a value while a call has it. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren’t native, i.e. references, are converted as usual.</p>
 <h2 id="documentation"><a class="header" href="#documentation">Documentation</a></h2>
 <p>Doc comments end up in the generated docs and in editor declaration files, and are read by script writers rather than Rust developers:</p>
 <ul>
@@ -28992,6 +29194,608 @@ Languages with no support for dynamic functions are not compatible with BMS.</p>
 <li>type registrations, i.e. the entries of <code>import_namespace</code>, which are references and are indexed with <code>dispatch::index</code> like any other value</li>
 </ul>
 <p>Binding the type is done by BMS, so languages never handle <code>StaticTypeRef</code> arguments themselves.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="language-internals"><a class="header" href="#language-internals">Language Internals</a></h1>
+<p>How a script value reaches a Rust function and back, and why that is both fast and safe. This page is what every language shares, the language pages are what each does with it:</p>
+<ul>
+<li><a href="#lua">Lua</a>: raw userdata and C closures on the Lua stack</li>
+<li><a href="#luajit">LuaJIT</a>: cdata and FFI calls the JIT compiles</li>
+<li><a href="#rune">Rune</a>: <code>Any</code> values and protocols</li>
+</ul>
+<h2 id="what-a-script-holds"><a class="header" href="#what-a-script-holds">What a script holds</a></h2>
+<p>Every value a script has is one of four things. Which one decides how fast it is and what a write does.</p>
+<pre class="mermaid">flowchart TD
+    V["a value in a script"] --&gt; P["primitive&lt;br/&gt;number, bool, string"]
+    V --&gt; N["native value&lt;br/&gt;Vec3, Quat, Entity"]
+    V --&gt; H["native handle (place)&lt;br/&gt;a Transform component"]
+    V --&gt; R["reference&lt;br/&gt;anything reflected"]
+    P --&gt; PL["the language's own value"]
+    N --&gt; NL["stored BY the language&lt;br/&gt;a copy the script owns"]
+    H --&gt; HL["entity + component id&lt;br/&gt;reads and writes the world"]
+    R --&gt; RL["base + reflection path&lt;br/&gt;reads and writes through reflection"]
+</pre>
+
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>Where the data is</th><th>A read</th><th>A write</th></tr>
+</thead>
+<tbody>
+<tr><td>Primitive</td><td>the language</td><td>free</td><td>free</td></tr>
+<tr><td>Native value</td><td>the language (types declared with <code>NativeBuilder</code>)</td><td>a typed accessor, or in place</td><td>changes the script’s copy</td></tr>
+<tr><td>Native handle</td><td>the world</td><td>claims access, reads the component</td><td>claims access, writes the component</td></tr>
+<tr><td>Reference</td><td>the world or an allocation</td><td>reflection</td><td>reflection</td></tr>
+</tbody>
+</table>
+</div>
+<p>Native types are <strong>values</strong>: there is no write-through. A native field (<code>t.translation</code>) is read as a <strong>read-only copy</strong>, so <code>t.translation.x = 5</code> is an error instead of a lost write, and <code>t.translation = v</code> writes the whole field.</p>
+<h2 id="a-native-value-in-memory"><a class="header" href="#a-native-value-in-memory">A native value in memory</a></h2>
+<p>A language stores a native value as a header followed by the value. The header is how a typed function knows what it was given.</p>
+<pre class="mermaid">flowchart LR
+    subgraph storage ["NativeStorage, allocated by the language"]
+        direction LR
+        A["NativeHeader&lt;br/&gt;vtable: NativeVTable&lt;br/&gt;read_only: Cell of bool"] --- B["padding"] --- C["the value&lt;br/&gt;i.e. Vec3 { x, y, z }"]
+    end
+    A -. "type id, layout,&lt;br/&gt;clone, drop" .-&gt; VT["NativeVTable&lt;br/&gt;one per type, never freed"]
+</pre>
+
+<p>A handle uses the same storage with the type’s <em>place</em> vtable, and a <code>NativePlace</code> where the value would be:</p>
+<pre class="mermaid">flowchart LR
+    subgraph storage ["NativeStorage of a handle"]
+        direction LR
+        A["NativeHeader&lt;br/&gt;vtable.place = true"] --- C["NativePlace&lt;br/&gt;entity + component id, or resource id"]
+    end
+    C -. "resolved for each call" .-&gt; W["the component in the world"]
+</pre>
+
+<h2 id="how-a-call-works"><a class="header" href="#how-a-call-works">How a call works</a></h2>
+<p>Functions never see the language. They read arguments from an <code>ArgSource</code> and write the result to a <code>ReturnSink</code>, which each language implements over its own values.</p>
+<pre class="mermaid">flowchart TD
+    S["script: v:dot(w)"] --&gt; L["language glue&lt;br/&gt;makes an ArgSource over its values"]
+    L --&gt; F["DynamicScriptFunction::call_with(args, sink)"]
+    F --&gt; A{"each parameter:&lt;br/&gt;T::from_arg(args, i, scope)"}
+    A -- "number / integer / boolean" --&gt; FAST["read directly"]
+    A -- "native value of T" --&gt; COPY["copied into the CallScope"]
+    A -- "handle of T" --&gt; CLAIM["access claimed,&lt;br/&gt;pointer into the world"]
+    A -- "anything else" --&gt; SLOW["args.script_value(i)&lt;br/&gt;then T::from_script"]
+    FAST --&gt; BODY["the Rust function runs"]
+    COPY --&gt; BODY
+    CLAIM --&gt; BODY
+    SLOW --&gt; BODY
+    BODY --&gt; RET{"result.into_ret(sink)"}
+    RET -- "number / bool" --&gt; RN["sink.number(..)"]
+    RET -- "native type" --&gt; RV["sink.native(vtable, write)&lt;br/&gt;written into the language's storage"]
+    RET -- "anything else" --&gt; RS["sink.script_value(..)"]
+</pre>
+
+<p>The slow arm is always there: a function works with every language and every argument, the fast arms only skip building <code>ScriptValue</code>s.</p>
+<pre><code class="language-rust ignore">pub unsafe trait ArgSource {
+    fn number(&amp;self, i: usize) -&gt; Option&lt;f64&gt;;
+    fn native(&amp;self, i: usize) -&gt; Option&lt;*mut u8&gt;;           // base of a NativeStorage
+    fn plain(&amp;self, i: usize, ty: TypeId) -&gt; Option&lt;(*mut u8, bool)&gt;; // no header (LuaJIT cdata)
+    fn script_value(&amp;self, i: usize) -&gt; Result&lt;ScriptValue, InteropError&gt;; // the slow path
+    // integer, boolean, string, list, map ..
+}</code></pre>
+<h2 id="safety-the-callscope"><a class="header" href="#safety-the-callscope">Safety: the CallScope</a></h2>
+<p>Every call runs in a <code>CallScope</code>. It owns everything a call borrows, and gives it all back when the call ends, also when the function panics.</p>
+<pre class="mermaid">flowchart LR
+    subgraph scope ["CallScope (lives for one call)"]
+        direction TB
+        CL["claims&lt;br/&gt;world accesses, released on drop"]
+        CP["copies&lt;br/&gt;of native values, 4 inline slots of 64 bytes"]
+        WG["world guard&lt;br/&gt;looked up only when needed"]
+    end
+    R["R of T / M of T arguments"] -- "borrow from, can't outlive" --&gt; scope
+</pre>
+
+<h3 id="script-owned-values-are-copied"><a class="header" href="#script-owned-values-are-copied">Script-owned values are copied</a></h3>
+<p>A script can write a value it owns at any time, also <em>while</em> a call holds it (a callback back into the script). So a call never points into the script’s value: <code>R&lt;T&gt;</code> and <code>M&lt;T&gt;</code> point to the scope’s copy, and <code>M&lt;T&gt;</code> is written back when the scope ends.</p>
+<pre class="mermaid">sequenceDiagram
+    participant S as Script
+    participant L as Language value (a)
+    participant C as CallScope
+    participant F as Rust function
+    S-&gt;&gt;F: call_back_mut(a, callback)
+    F-&gt;&gt;C: M of T::from_arg
+    C-&gt;&gt;L: copy a
+    C--&gt;&gt;F: mutable borrow of the copy
+    F-&gt;&gt;S: callback()
+    S-&gt;&gt;L: a.x = 5 (allowed, nothing points here)
+    S--&gt;&gt;F: returns
+    F-&gt;&gt;C: copy.x += 1
+    F--&gt;&gt;C: call ends
+    C-&gt;&gt;L: write the copy back
+    Note over L: the last write wins
+</pre>
+
+<p>A copy is a <code>memcpy</code> for plain types and the vtable’s <code>clone</code> for the others. <code>V&lt;T&gt;</code> needs no scope copy at all: it’s read once.</p>
+<h3 id="world-values-are-claimed"><a class="header" href="#world-values-are-claimed">World values are claimed</a></h3>
+<p>A handle or reference points into the world, where systems and other arguments may point too. The scope claims read or write access to the component for the call, and conflicting claims are errors.</p>
+<pre class="mermaid">sequenceDiagram
+    participant F as Rust function
+    participant C as CallScope
+    participant W as World access map
+    F-&gt;&gt;C: M of Transform::from_arg (a handle)
+    C-&gt;&gt;W: claim write access to the component
+    alt already read or written
+        W--&gt;&gt;F: error: conflicting access
+    else free
+        W--&gt;&gt;C: claimed
+        C--&gt;&gt;F: mutable borrow of the Transform in the world
+        F--&gt;&gt;C: call ends
+        C-&gt;&gt;W: release
+    end
+</pre>
+
+<h3 id="read-only-copies"><a class="header" href="#read-only-copies">Read-only copies</a></h3>
+<p>Reading a native field returns a copy with <code>read_only</code> set in its header. Passing it as <code>M&lt;T&gt;</code>, or writing one of its fields, is an error.</p>
+<pre class="mermaid">flowchart LR
+    T["t (handle to Transform)"] -- "t.translation" --&gt; C["Vec3 copy&lt;br/&gt;read_only = true"]
+    C -- "c.x" --&gt; OK["reads fine"]
+    C -- "c.x = 5" --&gt; ERR["error: read-only copy of a field"]
+    C -- "c:clone()" --&gt; M["Vec3 copy&lt;br/&gt;read_only = false"]
+    M -- "t.translation = m" --&gt; T
+</pre>
+
+<h3 id="the-slow-path-of-a-native-value"><a class="header" href="#the-slow-path-of-a-native-value">The slow path of a native value</a></h3>
+<p>Anything untyped (a <code>ScriptValue</code> parameter, reflection, <code>tostring</code>) gets a reference to a fresh copy of the value. Write access to such a copy is refused, so a change is never silently lost.</p>
+<h2 id="what-makes-it-fast"><a class="header" href="#what-makes-it-fast">What makes it fast</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Cost</th><th>Avoided by</th></tr>
+</thead>
+<tbody>
+<tr><td>Building a <code>ScriptValue</code> per argument</td><td><code>ArgSource</code> reads the language’s value directly</td></tr>
+<tr><td>An allocation per returned vector</td><td>the language stores the value (<code>ReturnSink::native</code>)</td></tr>
+<tr><td>Reflection for <code>v.x</code></td><td>typed accessors, or the field read in place (<code>DirectField</code>)</td></tr>
+<tr><td>Looking up the world per call</td><td>lazy scopes: <code>CallScope::with_lazy</code> only finds the world when an argument needs it</td></tr>
+<tr><td>Registry locks per result</td><td>each function caches the native types it returns (<code>NativeReturnType</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<p>Native types and their functions are registered before any script runs: languages look them up once and keep them.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="lua"><a class="header" href="#lua">Lua</a></h1>
+<p>How the Lua glue implements the <a href="#language-internals">shared model</a>. The code is in <code>bevy_mod_scripting_lua/src/bindings/native.rs</code>. On LuaJIT, some native values are cdata instead, see <a href="#luajit">LuaJIT</a>.</p>
+<p>mlua owns the state, loads scripts and calls into Lua. The hot paths below go around it, with the raw C API.</p>
+<h2 id="what-each-value-is-in-lua"><a class="header" href="#what-each-value-is-in-lua">What each value is in Lua</a></h2>
+<pre class="mermaid">flowchart TD
+    subgraph lua ["Lua"]
+        NV["native value&lt;br/&gt;raw userdata"]
+        RF["reference&lt;br/&gt;raw userdata"]
+        TO["type (Vec3)&lt;br/&gt;table"]
+        FN["function&lt;br/&gt;C closure"]
+    end
+    NV -- "metatable, one per type" --&gt; NMT["{ __index, __newindex, operators,&lt;br/&gt;marker, __metatable = false }"]
+    RF -- "one of two metatables" --&gt; RMT["{ __index, __newindex, operators,&lt;br/&gt;marker, __metatable = false, (__gc) }"]
+    TO -- "metatable, one per table" --&gt; TMT["{ inner value, __index = cache,&lt;br/&gt;__newindex raises }"]
+    FN -- "upvalue 1" --&gt; HD["holder userdata&lt;br/&gt;DynamicScriptFunction"]
+</pre>
+
+<p>Values are told apart by a <strong>marker</strong> in their metatable, keyed by a light userdata. Lua code can’t make light userdata and can’t reach these metatables (<code>__metatable</code> is <code>false</code>), so only BMS’ values have it.</p>
+<h3 id="native-values"><a class="header" href="#native-values">Native values</a></h3>
+<pre class="mermaid">flowchart LR
+    subgraph ud ["userdata block (lua_newuserdata)"]
+        direction LR
+        P["align padding"] --- H["NativeHeader"] --- V["value"]
+    end
+</pre>
+
+<p>Lua only aligns userdata to its own maximum, so the block has room to round up (<code>align_up</code>).</p>
+<h3 id="references-1"><a class="header" href="#references-1">References</a></h3>
+<p>A <code>ReflectReference</code> written into a raw userdata, no box. There are two metatables: references to whole components and resources own no heap memory, so theirs has no <code>__gc</code>, which makes collecting them much cheaper.</p>
+<h3 id="types-27"><a class="header" href="#types-27">Types</a></h3>
+<p><code>Vec3</code> is an empty table. The functions found through it are kept in the table which is its <code>__index</code>, so <code>Vec3.new</code> is a plain field after the first lookup.</p>
+<pre class="mermaid">flowchart LR
+    T["t = Vec3&lt;br/&gt;(always empty)"] -- "metatable" --&gt; MT["mt&lt;br/&gt;marker = inner value&lt;br/&gt;__newindex = raise&lt;br/&gt;__metatable = false"]
+    MT -- "__index" --&gt; C["c: function cache&lt;br/&gt;new, zero, .."]
+    C -- "metatable" --&gt; M["m&lt;br/&gt;__index = type_object_index"]
+    M -. "miss: look up, store in c" .-&gt; C
+</pre>
+
+<p><code>t</code> stays empty so every write reaches <code>__newindex</code>.</p>
+<h2 id="a-function-call"><a class="header" href="#a-function-call">A function call</a></h2>
+<p>A registered function is a C closure (<code>native_entry</code>) reading its arguments off the stack where they are.</p>
+<pre class="mermaid">flowchart TD
+    S["v:dot(w)"] --&gt; E["native_entry&lt;br/&gt;stack: [v, w]"]
+    E --&gt; Q{"any argument which isn't a&lt;br/&gt;number, bool, nil or native?"}
+    Q -- "no" --&gt; NOLOCK["mlua is never touched"]
+    Q -- "yes" --&gt; LOCK["mlua locked once&lt;br/&gt;for the call"]
+    NOLOCK --&gt; CW["function.call_with(LuaArgs, LuaReturn)"]
+    LOCK --&gt; CW
+    CW --&gt; PEND["result kept as plain data&lt;br/&gt;(Pending)"]
+    PEND --&gt; PREP["prepare: the metatable pushed&lt;br/&gt;(made in protected mode if new)"]
+    PREP --&gt; DROP["every Rust value of the call is dropped"]
+    DROP --&gt; PUSH["push_ready: userdata allocated,&lt;br/&gt;result copied in"]
+</pre>
+
+<p>Arguments stay on the stack for the whole call, so nothing they point to can be collected.</p>
+<h3 id="errors-are-longjmps"><a class="header" href="#errors-are-longjmps">Errors are <code>longjmp</code>s</a></h3>
+<p>A Lua error jumps over the C frames between the raise and the <code>pcall</code>. A Rust destructor in between would be skipped. So everything which can raise runs in one of two places:</p>
+<pre class="mermaid">flowchart LR
+    subgraph cfn ["a C function of BMS"]
+        direction LR
+        A["Rust work&lt;br/&gt;values with destructors alive&lt;br/&gt;NOTHING here may raise"] --&gt; B["all dropped"] --&gt; C["push the result / raise the error&lt;br/&gt;only plain data left"]
+    end
+    PM["protected mode (mlua exec_raw)&lt;br/&gt;making metatables and holders"] -. "called from" .-&gt; A
+</pre>
+
+<pre><code class="language-rust ignore">unsafe fn run(l: *mut lua_State, f: impl FnOnce() -&gt; Result&lt;Ready, InteropError&gt;) -&gt; c_int {
+    let ready = match catch_unwind(AssertUnwindSafe(f)) {
+        Ok(Ok(ready)) =&gt; ready,
+        Ok(Err(error)) =&gt; unsafe { raise(l, error) },       // nothing left to drop
+        Err(payload) =&gt; unsafe { resume_panic(l, payload) }, // like mlua's callbacks
+    };
+    unsafe { push_ready(l, ready) } // plain values only
+}</code></pre>
+<h2 id="reading-a-field"><a class="header" href="#reading-a-field">Reading a field</a></h2>
+<p><code>__index</code> of a native value tries the cheapest thing first.</p>
+<pre class="mermaid">flowchart TD
+    I["v.name"] --&gt; G{"getters[name]"}
+    G -- "an integer:&lt;br/&gt;offset and kind, packed" --&gt; D["direct: read the f32/f64/i32/u32/bool&lt;br/&gt;at the offset in the userdata"]
+    G -- "a holder" --&gt; A["call the typed getter&lt;br/&gt;(native fields: returns a read-only copy)"]
+    G -- "nil" --&gt; M{"methods[name]"}
+    M -- "a function" --&gt; MF["returned as it is"]
+    M -- "nil" --&gt; SL["slow path: member_at&lt;br/&gt;on a reference to a copy"]
+</pre>
+
+<p><code>__newindex</code> mirrors it: a direct field is written in place unless the value is read-only or the new value isn’t a number, in which case the typed setter produces the error.</p>
+<p>The direct path trusts that the value at index 1 is a userdata of this type. That holds because the function is only reachable as the <code>__index</code> of this metatable, which scripts can’t get.</p>
+<h2 id="member-lookup"><a class="header" href="#member-lookup">Member lookup</a></h2>
+<p>Every <code>__index</code> slow path ends in one function, <code>member_at</code>:</p>
+<pre class="mermaid">flowchart LR
+    R["reference_index"] --&gt; MA["member_at"]
+    T["type_ref_index"] --&gt; MA
+    N["native_index (slow path)"] --&gt; MA
+    CD["cdata_index (LuaJIT)"] --&gt; MA
+    MA --&gt; D["dispatch::index_name / index / static_index"]
+    D -- "function of a type" --&gt; ST["static form, cached by the type object"]
+    D -- "method" --&gt; UB["unbound: v:method() passes v"]
+    D -- "number / bool" --&gt; PR["pushed directly"]
+    D -- "anything else" --&gt; LR2["like a function result"]
+</pre>
+
+<h2 id="lists-maps-and-strings"><a class="header" href="#lists-maps-and-strings">Lists, maps and strings</a></h2>
+<p>Typed parameters read tables off the stack without building <code>ScriptValue</code>s:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Parameter</th><th>Read as</th></tr>
+</thead>
+<tbody>
+<tr><td><code>String</code></td><td>borrowed from the Lua string, copied once</td></tr>
+<tr><td><code>Vec&lt;T&gt;</code></td><td>a sequence (keys exactly <code>1..=n</code>): the items are pushed and stay on the stack for the call, each read with <code>T::from_arg</code></td></tr>
+<tr><td><code>HashMap&lt;String, V&gt;</code></td><td>string keys only: each value is read then popped, so native values in it aren’t handed out as pointers (<code>NoNatives</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<p>Anything else (holes, mixed keys) takes the slow path and converts as before.</p>
+<h2 id="garbage-collection"><a class="header" href="#garbage-collection">Garbage collection</a></h2>
+<pre class="mermaid">sequenceDiagram
+    participant GC as Lua GC
+    participant U as userdata (native value or reference)
+    participant F as script finalizer (resurrects it)
+    GC-&gt;&gt;U: __gc
+    U-&gt;&gt;U: drop the Rust value in place
+    U-&gt;&gt;U: remove the metatable (tombstone)
+    GC-&gt;&gt;F: __gc of a table holding it
+    F-&gt;&gt;U: use the resurrected value
+    U--&gt;&gt;F: error: no marker, not a BMS value anymore
+</pre>
+
+<p>A panicking destructor is caught: nothing unwinds through the collector. On Luau, userdata destructors (<code>lua_newuserdatadtor</code>) do the same job.</p>
+<h2 id="safety-checklist"><a class="header" href="#safety-checklist">Safety checklist</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Risk</th><th>Guard</th></tr>
+</thead>
+<tbody>
+<tr><td>A foreign userdata read as a native value</td><td>marker in a metatable scripts can’t reach</td></tr>
+<tr><td><code>longjmp</code> skipping a Rust destructor</td><td>raise only once everything is dropped, or in protected mode</td></tr>
+<tr><td>A script writing a value a call holds</td><td>calls get copies (<a href="#safety-the-callscope">CallScope</a>)</td></tr>
+<tr><td>Use after <code>__gc</code></td><td>tombstones</td></tr>
+<tr><td>Stack overflow</td><td><code>lua_checkstack</code> before every push which isn’t covered by <code>LUA_MINSTACK</code></td></tr>
+<tr><td>Out of memory while pushing</td><td>allocation outside protected mode only when mlua says it can’t fail (no memory limit set)</td></tr>
+</tbody>
+</table>
+</div>
+<p>The <code>debug</code> library reaches every metatable and upvalue, and bytecode (<code>load</code>) isn’t verified by the VM: none of this holds for scripts which have either. mlua’s safe state doesn’t load <code>debug</code>, but does allow bytecode, see <a href="#sandboxing">Sandboxing</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="luajit"><a class="header" href="#luajit">LuaJIT</a></h1>
+<p>On LuaJIT, native types with a C layout are <strong>cdata</strong>: C structs LuaJIT allocates itself, whose field accesses and FFI calls its JIT compiles to machine code. Everything else is as in <a href="#lua">Lua</a>. The code is in <code>bevy_mod_scripting_lua/src/bindings/native/cdata.rs</code>.</p>
+<h2 id="three-speeds"><a class="header" href="#three-speeds">Three speeds</a></h2>
+<pre class="mermaid">flowchart TD
+    OP["an operation on a Vec3"] --&gt; K{"what is it?"}
+    K -- "v.x, v.x = 1" --&gt; F1["struct field access&lt;br/&gt;compiled by the JIT, no call"]
+    K -- "a function marked ffi&lt;br/&gt;v:dot(w), v + w, Vec3.new(..)" --&gt; F2["FFI call to an extern C wrapper&lt;br/&gt;compiled by the JIT, no Lua C API"]
+    K -- "any other function" --&gt; F3["BMS typed call&lt;br/&gt;like Lua, the cdata found on the stack"]
+</pre>
+
+<h2 id="declaring-a-layout"><a class="header" href="#declaring-a-layout">Declaring a layout</a></h2>
+<pre><code class="language-rust ignore">// compile time: `Copy`, and the size and alignment of the C struct of these fields
+assert_ffi_layout!(Vec3 { x: f32, y: f32, z: f32 });
+// Safety: the fields are at their offsets, and any bits in them are a valid Vec3
+unsafe {
+    NativeType::of::&lt;Vec3&gt;()
+        .field("x", offset_of!(Vec3, x), |v| &amp;v.x)
+        .field("y", offset_of!(Vec3, y), |v| &amp;v.y)
+        .field("z", offset_of!(Vec3, z), |v| &amp;v.z)
+        .ffi()              // the fields so far, in order, are the C struct
+        .register(world);
+    // SIMD types reach their fields through Deref: the offsets are measured in the default value
+    NativeType::of::&lt;Vec3A&gt;()
+        .deref_field("x", |v| &amp;v.x)
+        .deref_field("y", |v| &amp;v.y)
+        .deref_field("z", |v| &amp;v.z)
+        .ffi()
+        .register(world);
+}</code></pre>
+<p><code>ffi</code> is an <code>unsafe</code> contract of its own: scripts can write every byte of a cdata, so every bit pattern of the fields must be a valid value (a vector, not a normalised direction). It panics when the type is declared if the fields aren’t where the C struct puts them; <code>assert_ffi_layout!</code> moves the size and alignment part to compile time. Each Lua state then declares:</p>
+<pre><code class="language-c">typedef struct __attribute__((aligned(16))) {
+    float x; float y; float z;
+    uint8_t _pad12; uint8_t _pad13; uint8_t _pad14; uint8_t _pad15;
+} bms_glam__f32__sse2__vec3a__Vec3A;   // named after the type's path
+</code></pre>
+<p>Two rules keep scripts from getting a pointer:</p>
+<ul>
+<li><strong>Padding is one scalar per byte.</strong> An array field would be read as a reference, which LuaJIT doesn’t bounds-check.</li>
+<li><strong>Fields of native types are flattened</strong> (<code>Mat3.x_axis</code> is <code>_x_axis_x</code>, <code>_x_axis_y</code>, <code>_x_axis_z</code>). A nested struct field would be read as a reference into the matrix, which doesn’t keep it alive. <code>m.x_axis</code> is a generated getter returning a <code>const</code> copy instead.</li>
+</ul>
+<p>Fields which aren’t <code>f32</code>, <code>f64</code>, <code>i32</code> or <code>u32</code> (a <code>bool</code>, where not every bit pattern is valid) keep the type a userdata.</p>
+<h2 id="recognising-a-cdata"><a class="header" href="#recognising-a-cdata">Recognising a cdata</a></h2>
+<p>Rust is handed a cdata by BMS functions which aren’t FFI calls. It must know the type without trusting the script.</p>
+<pre class="mermaid">flowchart LR
+    subgraph gc ["GCcdata, allocated by LuaJIT"]
+        direction LR
+        HD["GC header"] --- ID["ctype id (u16)"] --- PL["payload&lt;br/&gt;the Vec3 bytes"]
+    end
+    ID -- "registry[CTYPES][id]" --&gt; VT["vtable pointer&lt;br/&gt;lowest bit = const (read-only)"]
+    PL -- "lua_topointer" --&gt; PTR["*mut u8 for ArgSource::plain"]
+</pre>
+
+<p>Scripts can write every byte of the payload but not the ctype id. Ids which aren’t in the table (<code>1LL</code>, any other cdata) aren’t native values. Where the id sits depends on the LuaJIT build, so it’s found once from a probe value of a known type.</p>
+<p>A read-only copy is the <code>const</code> form of the struct: LuaJIT itself refuses writes to it, also in compiled code.</p>
+<h2 id="an-ffi-function"><a class="header" href="#an-ffi-function">An FFI function</a></h2>
+<p>An FFI form is registered next to a function, from a Rust function doing the same with C types:</p>
+<pre><code class="language-rust ignore">registry.register_ffi(TypeId::of::&lt;Vec3&gt;(), "dot", |a: R&lt;Vec3&gt;, b: R&lt;Vec3&gt;| a.dot(*b));</code></pre>
+<p><code>#[ffi]</code> in a <code>#[script_bindings]</code> block is exactly that call, with the function’s body as the closure:</p>
+<pre><code class="language-rust ignore">#[script_bindings(remote, namespace = "math")]
+impl Vec3 {
+    #[ffi]
+    fn dot(_self: R&lt;Vec3&gt;, other: R&lt;Vec3&gt;) -&gt; f32 { _self.dot(*other) }
+}</code></pre>
+<p>The <code>extern "C"</code> function is made by a trait, <code>FfiFn</code>, implemented for functions which capture nothing (so the function is its type, and the trampoline needs no pointer to it):</p>
+<pre><code class="language-rust ignore">unsafe impl&lt;Function, Return, A1, A2&gt; FfiFn&lt;fn(A1, A2) -&gt; Return&gt; for Function
+where Function: Fn(A1, A2) -&gt; Return + Copy + 'static, Return: FfiReturn, A1: FfiArg, A2: FfiArg
+{
+    fn ffi_function(self, name: &amp;'static str) -&gt; FfiFunction {
+        extern "C" fn trampoline&lt;..&gt;(a1: A1::C, a2: A2::C, out: *mut u8, failed: *mut u8) -&gt; Return::C {
+            let function: Function = /* zero-sized: conjured */;
+            let output = function(unsafe { A1::from_c(a1) }, unsafe { A2::from_c(a2) });
+            unsafe { output.into_c(out, failed) }
+        }
+        FfiFunction { name, function: trampoline::&lt;..&gt; as *const (), params: vec![A1::kind(), A2::kind()], .. }
+    }
+}</code></pre>
+<h3 id="one-form-per-c-signature"><a class="header" href="#one-form-per-c-signature">One form per C signature</a></h3>
+<p>A <code>Union&lt;R&lt;Vec3&gt;, f32&gt;</code> parameter is a pointer or a float in the same position: two C types, so two signatures. One signature for both would need a struct passed by value, which LuaJIT doesn’t compile. So <code>Union</code> is no FFI parameter, and a function taking one registers a form for each alternative:</p>
+<pre><code class="language-rust ignore">// fn add(_self: R&lt;Vec3&gt;, rhs: Union&lt;R&lt;Vec3&gt;, f32&gt;) -&gt; V&lt;Vec3&gt;   &lt;- not marked #[ffi]
+registry.register_ffi(TypeId::of::&lt;Vec3&gt;(), "add", |a: R&lt;Vec3&gt;, b: R&lt;Vec3&gt;| V(*a + *b));
+registry.register_ffi(TypeId::of::&lt;Vec3&gt;(), "add", |a: R&lt;Vec3&gt;, b: f32| V(*a + b));</code></pre>
+<p>The forms of one name chain: each checks its own argument types and falls through to the one registered before it, then to the BMS function.</p>
+<p>Each state generates Lua around the pointer:</p>
+<pre><code class="language-lua">local f1, other = cast("float (*)(const bms_Vec3*, const bms_Vec3*, void*, uint8_t*)", ptrs[1]), slow["dot"]
+local function w(a1, a2)
+    if istype(C1, a1) and istype(C1, a2) then return f1(a1, a2, nil, nil) end
+    return other(a1, a2) -- any other argument: through BMS, which reports the error
+end
+methods["dot"] = w
+</code></pre>
+<pre class="mermaid">flowchart TD
+    C["v:dot(w)"] --&gt; G{"guards:&lt;br/&gt;istype / type(x) == 'number'"}
+    G -- "pass" --&gt; FFI["f1(v, w): a C call with pointers to the cdata"]
+    G -- "fail" --&gt; SLOW["the BMS function&lt;br/&gt;(conversion or a proper error)"]
+    FFI --&gt; RES{"result"}
+    RES -- "scalar" --&gt; R1["returned by value"]
+    RES -- "V of T" --&gt; R2["written to the type's scratch value S&lt;br/&gt;return C(S)"]
+</pre>
+
+<p>What can cross is decided by traits, at compile time:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>Types</th><th>Passed as</th></tr>
+</thead>
+<tbody>
+<tr><td><code>FfiArg</code></td><td><code>f32</code>, <code>f64</code>, <code>i32</code>, <code>u32</code>, <code>bool</code></td><td>by value</td></tr>
+<tr><td></td><td><code>R&lt;T&gt;</code>, <code>V&lt;T&gt;</code></td><td><code>const T*</code> to the cdata</td></tr>
+<tr><td><code>FfiReturn</code></td><td>scalars</td><td>returned</td></tr>
+<tr><td></td><td><code>V&lt;T&gt;</code></td><td>written to the out-pointer</td></tr>
+<tr><td></td><td><code>Result&lt;_, InteropError&gt;</code>, <code>Option&lt;_&gt;</code></td><td>as above, failure through the <code>failed</code> byte</td></tr>
+</tbody>
+</table>
+</div>
+<p>There is no <code>M&lt;T&gt;</code>: an FFI function never writes its arguments. And no <code>Union</code>: see above.</p>
+<h3 id="why-a-scratch-value"><a class="header" href="#why-a-scratch-value">Why a scratch value</a></h3>
+<p>A result cdata passed to C as an out-pointer escapes, so the JIT must allocate it. Writing to a per-type scratch value and copying it in Lua (<code>C(S)</code>) lets the JIT remove the allocation when the result is only used for more arithmetic.</p>
+<h3 id="failing"><a class="header" href="#failing">Failing</a></h3>
+<p>C functions called through the FFI can’t raise Lua errors.</p>
+<pre class="mermaid">sequenceDiagram
+    participant L as generated Lua
+    participant W as extern "C" wrapper
+    participant T as thread-local error
+    L-&gt;&gt;W: f(v, S, E)
+    alt Ok
+        W--&gt;&gt;L: result in S
+    else Err(error)
+        W-&gt;&gt;T: keep the error
+        W--&gt;&gt;L: E[0] = 1
+        L-&gt;&gt;L: raise("normalize", O)
+        L-&gt;&gt;T: take the error
+        Note over L: raised like a BMS error, at the script's line
+    else None
+        W--&gt;&gt;L: E[0] = 2
+        Note over L: returns nil
+    end
+</pre>
+
+<h2 id="the-slow-path"><a class="header" href="#the-slow-path">The slow path</a></h2>
+<p>A cdata passed to a BMS function is found by its ctype id and copied into the <a href="#safety-the-callscope">CallScope</a> like any native value; <code>M&lt;T&gt;</code> is written back to the payload when the call ends. A value returned by BMS is copied into a new cdata made by calling the ctype.</p>
+<h2 id="the-first-value-in-a-state"><a class="header" href="#the-first-value-in-a-state">The first value in a state</a></h2>
+<pre class="mermaid">sequenceDiagram
+    participant R as Rust (returning a Vec3)
+    participant S as Lua state
+    R-&gt;&gt;S: registry[ctype key of Vec3]?
+    S--&gt;&gt;R: nil, no types made yet
+    R-&gt;&gt;S: luaopen_ffi, kept in the registry, removed from package.loaded
+    R-&gt;&gt;S: check every ffi function's types have a layout
+    R-&gt;&gt;S: run the generated chunk (cdef, metatypes, wrappers)
+    R-&gt;&gt;S: registry: ctype id to vtable, vtable to ctype
+    R-&gt;&gt;S: call the ctype, copy the value in
+</pre>
+
+<p>Types are made once per state. A type registered later stays a userdata there.</p>
+<h2 id="safety-checklist-1"><a class="header" href="#safety-checklist-1">Safety checklist</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Risk</th><th>Guard</th></tr>
+</thead>
+<tbody>
+<tr><td>Scripts making pointers, casts or their own ctypes</td><td>the <code>ffi</code> library is private: never a global, not <code>require</code>-able</td></tr>
+<tr><td>A reference cdata into a value (dangling, unchecked indexing)</td><td>no array or struct fields in the C structs: padding and nested fields are scalars</td></tr>
+<tr><td>An FFI function called with the wrong types</td><td>guards in the generated Lua before every FFI call</td></tr>
+<tr><td>A layout which isn’t the Rust type’s</td><td><code>ffi</code> checks size, alignment and offsets when the type is declared (<code>assert_ffi_layout!</code> at compile time), <code>sizeof</code>/<code>alignof</code> asserted in each state</td></tr>
+<tr><td>A function which doesn’t match its declared signature</td><td>made by the <code>FfiFn</code> trait from the Rust function’s own types; registering a raw pointer is <code>unsafe</code> (<code>register_ffi_function</code>)</td></tr>
+<tr><td>A script writing a cdata a call holds</td><td>calls get copies</td></tr>
+<tr><td>A panic in an <code>#[ffi]</code> function</td><td><strong>aborts the process</strong>: it can’t unwind through C. Only mark functions which don’t panic (no integer arithmetic, no indexing)</td></tr>
+<tr><td>Rust reading a foreign cdata</td><td>ctype id lookup, unknown ids are refused</td></tr>
+</tbody>
+</table>
+</div>
+<p>Like on Lua, bytecode and the <code>unsafe_lua_modules</code> feature (which hands scripts <code>ffi</code>) void all of this, see <a href="#sandboxing">Sandboxing</a>.</p>
+<blockquote>
+<p>LuaJIT with your crate at <code>opt-level = 1</code> and dependencies optimised segfaults when userdata is collected (<a href="https://github.com/mlua-rs/mlua/issues/757">mlua#757</a>). Use <code>opt-level</code> 0, 2 or 3.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rune"><a class="header" href="#rune">Rune</a></h1>
+<p>How the Rune glue implements the <a href="#language-internals">shared model</a>. The code is in <code>bevy_mod_scripting_rune/src/{types,native,names}.rs</code>.</p>
+<p>Rune is a safe Rust VM: there is no stack to manage and no <code>longjmp</code>. Errors are <code>Result</code>s, values are reference counted and borrow checked at runtime. The glue is mostly about Rune’s static member resolution.</p>
+<h2 id="what-each-value-is-in-rune"><a class="header" href="#what-each-value-is-in-rune">What each value is in Rune</a></h2>
+<pre class="mermaid">flowchart TD
+    subgraph rune ["Rune values (Any types)"]
+        NA["RuneNative&lt;br/&gt;a native value or handle"]
+        RR["RuneRef&lt;br/&gt;a reference"]
+        RT["RuneType&lt;br/&gt;a type"]
+        NS["RuneNamespace"]
+        RFN["RuneFunction"]
+    end
+    NA --&gt; NB["NativeBox: [NativeHeader][value] on the heap&lt;br/&gt;+ Arc of NativeType: its fields and methods"]
+    RR --&gt; RF["ReflectReference"]
+    RFN --&gt; DF["DynamicScriptFunction"]
+</pre>
+
+<p>A <code>RuneNative</code> keeps the <code>NativeType</code> it was made with, so reading a field or calling a method takes no registry lookup.</p>
+<pre class="mermaid">flowchart LR
+    subgraph nb ["NativeBox (one allocation)"]
+        direction LR
+        H["NativeHeader&lt;br/&gt;vtable, read_only"] --- P["padding"] --- V["value"]
+    end
+    RN["RuneNative"] --&gt; nb
+    RN --&gt; NT["Arc of NativeType&lt;br/&gt;fields: name to typed get/set&lt;br/&gt;methods: name to function"]
+</pre>
+
+<h2 id="members-are-resolved-by-name-hash"><a class="header" href="#members-are-resolved-by-name-hash">Members are resolved by name hash</a></h2>
+<p>Rune looks <code>v.name</code> and <code>v.name()</code> up by the hash of the name, in a table fixed when the context is built, with no fallback for unknown names. So every identifier in the script’s source is registered as a field and a method of each BMS type; whether the member exists is checked when it’s used.</p>
+<pre class="mermaid">flowchart LR
+    SRC["script source"] -- "names::source_names" --&gt; NAMES["every identifier&lt;br/&gt;translation, x, dot, .."]
+    NAMES -- "register_types" --&gt; MOD["Rune module:&lt;br/&gt;field + method name on&lt;br/&gt;RuneRef, RuneType, RuneNamespace, RuneNative"]
+    MOD --&gt; VM["v.translation resolves&lt;br/&gt;to a closure knowing the name"]
+    VM --&gt; D["BMS looks the member up"]
+</pre>
+
+<p><code>v["name"]</code> goes through the index protocol, which gets the name as a value and needs no registration.</p>
+<h2 id="a-function-call-1"><a class="header" href="#a-function-call-1">A function call</a></h2>
+<pre class="mermaid">flowchart TD
+    S["v.dot(w)"] --&gt; RAW["raw function dot&lt;br/&gt;the VM's values as a slice"]
+    RAW --&gt; B["receiver borrowed: BorrowRef of RuneNative"]
+    B --&gt; M{"native.methods[dot]"}
+    M -- "found" --&gt; ARGS["RuneArgs: borrows every native argument&lt;br/&gt;for the call (guards)"]
+    M -- "not found" --&gt; SH{"shared reference functions"}
+    SH -- "found" --&gt; ARGS
+    SH -- "not found" --&gt; CP["through a reference to a copy"]
+    ARGS --&gt; CW["function.call_with(RuneArgs, RuneReturn)"]
+    CW --&gt; RET["RuneReturn: a number, a new RuneNative,&lt;br/&gt;or a converted ScriptValue"]
+</pre>
+
+<p>The arguments of short calls stay in a stack array, longer ones use a <code>Vec</code>.</p>
+<pre><code class="language-rust ignore">pub(crate) enum RuneArg&lt;'a&gt; {
+    Value(&amp;'a Value),       // a value of the VM
+    Native(&amp;'a RuneNative), // the receiver of a protocol, already borrowed
+    Ref(&amp;'a RuneRef),
+}</code></pre>
+<h3 id="guards"><a class="header" href="#guards">Guards</a></h3>
+<p><code>ArgSource::native</code> hands out pointers into <code>NativeBox</code>es. Rune’s own borrow tracking keeps them valid: every native argument is borrowed (<code>BorrowRef</code>) for the whole call, so nothing the call runs can take or drop the value.</p>
+<pre class="mermaid">sequenceDiagram
+    participant VM as Rune VM
+    participant A as RuneArgs
+    participant F as Rust function
+    VM-&gt;&gt;A: values of the call
+    A-&gt;&gt;VM: borrow_ref each RuneNative
+    Note over A: guards held until the call returns
+    A-&gt;&gt;F: call_with
+    F-&gt;&gt;A: args.native(i)
+    A--&gt;&gt;F: base of the NativeBox
+    F-&gt;&gt;F: R of T / M of T: a copy in the CallScope
+    F--&gt;&gt;A: returns, M of T written back
+    A-&gt;&gt;VM: guards released
+</pre>
+
+<p>The call still works on copies (<a href="#safety-the-callscope">CallScope</a>): the guards keep the storage alive, the copies keep a callback’s writes from aliasing a <code>&amp;mut</code>.</p>
+<h2 id="fields-and-operators"><a class="header" href="#fields-and-operators">Fields and operators</a></h2>
+<pre class="mermaid">flowchart TD
+    G["v.name"] --&gt; F{"native.fields[name]"}
+    F -- "found" --&gt; TG["the typed getter&lt;br/&gt;(a native field: a read-only copy)"]
+    F -- "not found" --&gt; RC["a reference to a copy:&lt;br/&gt;methods as values, anything else"]
+    O["v + w"] --&gt; OM{"native.methods[add]"}
+    OM -- "found" --&gt; TC["typed call, both values as they are"]
+    OM -- "not found" --&gt; DS["dispatch::binary on a copy"]
+</pre>
+
+<p><code>v.name += x</code> reads, applies the operator and writes: Rune has a protocol for each compound assignment. Equality with a value which is neither a native value nor a reference is <code>false</code> without a call.</p>
+<h2 id="compared-to-lua"><a class="header" href="#compared-to-lua">Compared to Lua</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>Lua</th><th>LuaJIT</th><th>Rune</th></tr>
+</thead>
+<tbody>
+<tr><td>Native storage</td><td>userdata</td><td>cdata (types with a C layout)</td><td><code>NativeBox</code> in an <code>Any</code></td></tr>
+<tr><td>Field read</td><td>in place (<code>DirectField</code>)</td><td>compiled struct access</td><td>typed getter</td></tr>
+<tr><td>Type’s functions found</td><td>metatable, made once per state</td><td>generated Lua, made once per state</td><td>the value’s <code>Arc&lt;NativeType&gt;</code></td></tr>
+<tr><td>Lists, maps, strings</td><td>read off the stack</td><td>read off the stack</td><td>converted (<code>ScriptValue</code>)</td></tr>
+<tr><td>Errors</td><td><code>longjmp</code>, raised last</td><td>same, FFI failures through a flag</td><td><code>Result</code></td></tr>
+<tr><td>What keeps an argument alive</td><td>the stack</td><td>the stack</td><td><code>BorrowRef</code> guards</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="safety-checklist-2"><a class="header" href="#safety-checklist-2">Safety checklist</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Risk</th><th>Guard</th></tr>
+</thead>
+<tbody>
+<tr><td>A value dropped or taken while a call points to its storage</td><td><code>BorrowRef</code> guards for the call; a failed borrow is an error</td></tr>
+<tr><td>A script writing a value a call holds</td><td>calls get copies</td></tr>
+<tr><td>Writing through a copy of a field</td><td><code>read_only</code> in the <code>NativeHeader</code></td></tr>
+<tr><td>Unknown members</td><td>checked by BMS when used, every name resolves</td></tr>
+</tbody>
+</table>
+</div>
+<p>The only <code>unsafe</code> here is reading and writing <code>NativeStorage</code> through the vtable.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rfcs"><a class="header" href="#rfcs">RFCs</a></h1>
 <p>An RFC is a request for comments from contributors, users and various other stakeholders. When an RFC is created it is usually done with the intention of gathering opinions and knowledge around the topic.</p>
@@ -29686,7 +30490,7 @@ impl NamespaceMembers {
 + let reference = ReflectReference::new_allocated(value);
 </code></pre>
 <p><code>new_allocated_boxed</code> and <code>new_allocated_boxed_partial_reflect</code> (renamed from <code>new_allocated_boxed_parial_reflect</code>) change the same way.</p>
-<h3 id="functions-289"><a class="header" href="#functions-289">Functions</a></h3>
+<h3 id="functions-290"><a class="header" href="#functions-290">Functions</a></h3>
 <ul>
 <li>Registering a function name twice replaces it, there are no overloads (<code>overwrite*</code>, <code>iter_overloads</code>, <code>remove_all_overloads</code> are removed). Take a <code>Union</code> or <code>ScriptValue</code> for arguments of different types.</li>
 <li><code>ScriptFunctionRegistry</code> is keyed by <code>TypeId</code> instead of a namespace: <code>register(type_id, ..)</code>, <code>get_function(type_id, name)</code>, <code>iter_namespace</code> → <code>iter_type</code>.</li>
@@ -29897,7 +30701,7 @@ builder:run_if(c.any_with_component(game.Enemy))
 <li>Broadcast callbacks are no longer delivered twice to loaded scripts while another script is loading.</li>
 </ul>
 <p>See <a href="#determinism">Determinism</a> for what BMS can’t control.</p>
-<h2 id="rune"><a class="header" href="#rune">Rune</a></h2>
+<h2 id="rune-1"><a class="header" href="#rune-1">Rune</a></h2>
 <p><a href="https://rune-rs.github.io/">Rune</a> is the second supported language, behind the <code>rune</code> feature. It replaces Rhai, which is removed:</p>
 <pre><code class="language-rust ignore">pub fn on_script_loaded() {
     let bms = import_namespace("bms");
@@ -29961,12 +30765,33 @@ builder:run_if(c.any_with_component(game.Enemy))
 <li><code>LadFile::types</code> holds <code>LadType</code>s: <code>LadType::Reference(Box&lt;LadTypeDefinition&gt;)</code> for the types so far (serialized as before), and <code>LadType::Data(LadDataType)</code> for <code>ScriptData</code> types, whose <code>LadDataShape</code> is <code>fields</code> or a <code>union</code> of kinds. Use <code>get_reference_type</code> / <code>reference_types</code> where a <code>LadTypeDefinition</code> was expected.</li>
 <li>New <code>LadTypeKind::Function { params, returns }</code> and <code>LadTypeKind::Literal</code>: implementations of <code>ArgumentVisitor</code> add <code>visit_function</code> and <code>visit_literal</code>.</li>
 </ul>
-<h3 id="functions-290"><a class="header" href="#functions-290">Functions</a></h3>
+<h3 id="functions-291"><a class="header" href="#functions-291">Functions</a></h3>
 <ul>
 <li>Conversions moved from <code>function</code> to <code>conversions</code>: <code>function::{from, into, from_ref, into_ref}</code> are <code>conversions::{from, into, from_ref, into_ref}</code> (<code>FromScript</code>, <code>IntoScript</code>, <code>V</code>, <code>R</code>, <code>M</code>, <code>Union</code>, <code>FromScriptErased</code>, <code>IntoScriptErased</code>). The crate root re-exports are unchanged, i.e. <code>bevy_mod_scripting_bindings::V</code>.</li>
 <li><code>ValueOf&lt;M&gt;</code> is <code>ValueOf&lt;M, R = ReflectReference&gt;</code>: <code>ValueOf&lt;A&gt;</code> is unchanged, <code>new</code> and <code>into_inner</code> take and give the <code>R</code>.</li>
 <li><code>GetFunctionInfo</code> implementations provide <code>function_info(name, namespace)</code>, which needs no value. <code>get_function_info</code> calls it.</li>
 <li><code>Union&lt;T1, T2&gt;</code> only tries the types which could convert the value, see <code>FromScript::could_convert</code>. When only <code>T1</code> could, the error is <code>T1</code>’s rather than <code>T2</code>’s. Override <code>could_convert</code> in hand-written <code>FromScript</code> implementations to rule out the kinds of values they never convert.</li>
+<li><code>CallScope::world()</code> returns a <code>Result</code>: <code>scope.world()?</code>. Scopes of script functions look their world up when first needed, an error without a running script.</li>
+<li><code>IntoScript::into_ret</code> takes a <code>&amp;CallScope</code> instead of a <code>WorldGuard</code>.</li>
+</ul>
+<h3 id="native-types-1"><a class="header" href="#native-types-1">Native types</a></h3>
+<ul>
+<li><code>script_native!</code> is gone: native types are declared with <code>NativeType::of::&lt;T&gt;()</code>, a <code>NativeBuilder</code> with one <code>unsafe</code> method per kind of field (<code>field</code>, <code>value_field</code>, <code>deref_field</code>), then <code>.register(world)</code>:
+<pre><code class="language-rust ignore">// script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
+unsafe {
+    NativeType::of::&lt;Vec3&gt;()
+        .field("x", offset_of!(Vec3, x), |v| &amp;v.x)
+        .field("y", offset_of!(Vec3, y), |v| &amp;v.y)
+        .field("z", offset_of!(Vec3, z), |v| &amp;v.z)
+}
+.register(world);</code></pre>
+Fields of other native types (<code>Transform::translation</code>) use <code>value_field</code>, fields reached through <code>Deref</code> (glam’s SIMD types, which need <code>Default</code>) use <code>deref_field</code>.</li>
+<li><code>NativeType::with_struct_field</code> takes the field’s offset instead of a <code>FieldAt</code>, which is removed with <code>FieldProject</code>, <code>FieldConv</code>, <code>NativePlace::field</code> and <code>NativeType::inline</code>.</li>
+</ul>
+<h2 id="scripts-2"><a class="header" href="#scripts-2">Scripts</a></h2>
+<ul>
+<li>Native types (vectors, quaternions, matrices, <code>Transform</code>) are values, with no write-through: a field of a native type is read as a read-only copy, so <code>t.translation.x = 5</code> is an error. Write the whole field: <code>local p = t.translation:clone(); p.x = 5; t.translation = p</code>.</li>
+<li>Types (<code>Vec3</code>, <code>world.get_type_by_name(..)</code>) are read-only tables in Lua, <code>type(Vec3) == "table"</code>.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="0250---typed-arguments"><a class="header" href="#0250---typed-arguments">0.25.0 - Typed arguments</a></h1>
@@ -30006,8 +30831,8 @@ game.spawn({ name = "goblin", sped = 2 })         -- no field `sped`
 <li><code>ValueOf&lt;A, R&gt;</code> takes the conversion: <code>ValueOf&lt;A, ScriptValue&gt;</code> is any value, typed as whatever was passed, i.e. <code>fn boxed(v: ValueOf&lt;A, ScriptValue&gt;) -&gt; V&lt;MyBox&lt;A&gt;&gt;</code> gives a <code>MyBox&lt;integer&gt;</code> for <code>boxed(5)</code>.</li>
 </ul>
 <p>See <a href="#typed-arguments">Typed arguments</a>.</p>
-<h2 id="native-types-1"><a class="header" href="#native-types-1">Native types</a></h2>
-<p>Vectors (<code>Vec2</code>, <code>Vec3</code>, <code>Vec4</code>, <code>Vec3A</code>, <code>DVec2</code>, <code>DVec3</code>, <code>IVec2</code>, <code>IVec3</code>, <code>UVec2</code>, <code>UVec3</code>) and <code>Quat</code> values made by functions are stored by Lua and Rune themselves, and functions read their arguments without converting them to <code>ScriptValue</code>s. <code>Transform</code> components are native handles: <code>world.get_component(e, Transform)</code> reads and writes the component directly (<code>t.translation.x = 5</code> included). Other types opt in with <code>script_native!</code>, see <a href="#native-types">Writing Bindings</a>. Scripts behave the same: native values are copies like the values functions return, and work wherever references to vectors do.</p>
+<h2 id="native-types-2"><a class="header" href="#native-types-2">Native types</a></h2>
+<p>Vectors (<code>Vec2</code>, <code>Vec3</code>, <code>Vec4</code>, <code>Vec3A</code>, <code>DVec2</code>, <code>DVec3</code>, <code>IVec2</code>, <code>IVec3</code>, <code>UVec2</code>, <code>UVec3</code>) and <code>Quat</code> values made by functions are stored by Lua and Rune themselves, and functions read their arguments without converting them to <code>ScriptValue</code>s. <code>Transform</code> components are native handles: <code>world.get_component(e, Transform)</code> reads and writes the component directly. Native types are values: a field of a native type is read as a read-only copy and written whole, so <code>t.translation.x = 5</code> is now an error, write <code>local p = t.translation:clone(); p.x = 5; t.translation = p</code>. Other types opt in with <code>NativeType::of::&lt;T&gt;()</code>, see <a href="#native-types">Writing Bindings</a>. Scripts behave the same: native values are copies like the values functions return, and work wherever references to vectors do.</p>
 <h2 id="other-changes-3"><a class="header" href="#other-changes-3">Other changes</a></h2>
 <ul>
 <li>Unions only try the types which could convert a value (<code>FromScript::could_convert</code>), instead of building an error for each type which can’t.</li>

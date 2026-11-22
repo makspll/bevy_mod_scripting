@@ -38,10 +38,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "../../searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-94c4b708.js"></script>
+        <script src="../../toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -290,6 +290,7 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 <tr><td><a href="#angle"><code>angle</code></a></td><td>The angle in radians this rotation turns by around its <code>axis</code>.</td></tr>
 <tr><td><a href="#angle_between"><code>angle_between</code></a></td><td>The angle in radians between two rotations.</td></tr>
 <tr><td><a href="#axis"><code>axis</code></a></td><td>The axis this rotation turns around.</td></tr>
+<tr><td><a href="#clone"><code>clone</code></a></td><td></td></tr>
 <tr><td><a href="#conjugate"><code>conjugate</code></a></td><td>The rotation with the vector part negated, which is the inverse for unit quaternions.</td></tr>
 <tr><td><a href="#dot"><code>dot</code></a></td><td>The dot product of two rotations.</td></tr>
 <tr><td><a href="#inverse"><code>inverse</code></a></td><td>The rotation that undoes this one.</td></tr>
@@ -322,6 +323,11 @@ For enums use the <code>variant</code> key, or construct from a variant directly
 </div>
 
 <p>The axis this rotation turns around.</p>
+<h3 id="clone" class="lad-function"><a class="header" href="#clone"><code>clone</code></a></h3>
+<div class="lad-signature">
+<p><strong>clone</strong>(arg1: <a href="./quat.html">Quat</a>) -&gt; <a href="./quat.html">Quat</a></p>
+</div>
+
 <h3 id="conjugate" class="lad-function"><a class="header" href="#conjugate"><code>conjugate</code></a></h3>
 <div class="lad-signature">
 <p><strong>conjugate</strong>(self: <a href="./quat.html">Quat</a>) -&gt; <a href="./quat.html">Quat</a></p>

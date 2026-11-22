@@ -38,10 +38,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7ffb7f29.js";
+            window.path_to_searchindex_js = "../searchindex-2b423db6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-94c4b708.js"></script>
+        <script src="../toc-5409e846.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -202,12 +202,18 @@
 <pre><code class="language-lua">local bms = import_namespace("bms")
 local world = bms.world
 local Transform = import_namespace("transform").Transform
+local Vec3 = import_namespace("math").Vec3
 
 local transform = assert(world.get_component(assert(bms.current_entity()), Transform))
-transform.translation.x = 5        -- writes the component
+transform.translation = Vec3.new(5, 0, 0)   -- writes the component
 
-local copy = transform:clone()     -- a new allocation, independent of the component
-copy.translation.x = 0             -- the component keeps 5
+local copy = transform:clone()              -- a new value, independent of the component
+copy.translation = Vec3.new(0, 0, 0)        -- the component keeps 5
+</code></pre>
+<p>Writes go through references, but not into <a href="../Development/writing-bindings.html#native-types">native types</a> (vectors, quaternions, <code>Transform</code>): those are values. Reading a native field gives a read-only copy, so <code>transform.translation.x = 5</code> is an error instead of a lost write. Assign the whole field, starting from a <code>clone</code> to change one part:</p>
+<pre><code class="language-lua">local translation = transform.translation:clone()
+translation.x = 5
+transform.translation = translation
 </code></pre>
 <p>Access is checked when a reference is used, not when it is made: a reference to a removed component fails with an error, and so does writing a value something else is reading at the same time, i.e. inside a query iteration. Script systems can only access what they declared, and assets, whose access is checked for all assets at once, only from exclusive script systems.</p>
 <h2 id="assets"><a class="header" href="#assets">Assets</a></h2>
