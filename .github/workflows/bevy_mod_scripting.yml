@@ -176,6 +176,26 @@ jobs:
         run: |
           xvfb-run ${{ matrix.run_args.command }}
 
+  # once every benchmark job (one per language and OS) published, so the benchmarks they add get plots. Only main
+  # publishes benchmarks. Failed jobs don't stop it, the others still published
+  sync-bencher-plots:
+    name: Sync bencher plots
+    needs: [check]
+    if: ${{ always() && needs.check.result != 'cancelled' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.7
+        with:
+          shared-key: xtask
+          save-if: false
+      - uses: bencherdev/bencher@main
+      - name: Sync plots
+        run: |
+          cargo xtask bencher-sync-plots
+
   rollup-check:
     name: Required Checks Successful
     needs: [check]
