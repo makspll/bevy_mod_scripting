@@ -1282,18 +1282,17 @@ impl NativeType {
         self
     }
 
-    /// Adds the struct field `name` of `T` of type `F`, at `at`. Reading it gives a copy, read-only if `F` is a native type
+    /// Adds the struct field `name` of `T` of type `F`, at `offset`. Reading it gives a copy, read-only if `F` is a native type
     /// (`t.translation.x = 5` is an error, `t.translation = v` writes the field). See [`crate::script_native`].
     ///
     /// `ret` and `arg` convert the field's values, see [`FieldConv`].
     ///
     /// # Safety
-    /// [`FieldAt::Offset`]: every `T` has an `F` at the offset. [`FieldAt::Deref`]: the projection, given a pointer to a
-    /// valid `T`, returns a pointer to a valid `F` reachable from it, valid as long as the `T` is.
+    /// Every `T` has an `F` at `offset`.
     pub unsafe fn with_struct_field<T, F>(
         mut self,
         name: &'static str,
-        at: FieldAt,
+        offset: usize,
         ret: FieldRet<F>,
         arg: FieldArg<F>,
     ) -> Self
@@ -1311,11 +1310,7 @@ impl NativeType {
             // the world is only looked up when needed (places, conversions)
             bevy_mod_scripting_world::CallScope::with_lazy(|scope| {
                 let value = <crate::R<T> as crate::FromScript>::from_arg(args, 0, scope)?;
-                let value = &*value as *const T as *const u8;
-                let field = match at {
-                    FieldAt::Offset(offset) => value.wrapping_add(offset),
-                    FieldAt::Deref(project) => project(value),
-                };
+                let field = (&*value as *const T as *const u8).wrapping_add(offset);
                 // Safety: an `F` of the T, see the function's contract
                 let field = unsafe { &*(field as *const F) };
                 // a copy: native values have no write-through, a native field is read-only so writes to it aren't lost
@@ -1332,14 +1327,7 @@ impl NativeType {
                 let mut target = <crate::M<T> as crate::FromScript>::from_arg(args, 0, scope)?;
                 let value = arg(args, 1, scope)?;
                 let target = &mut *target as *mut T as *mut u8;
-                let offset = match at {
-                    FieldAt::Offset(offset) => Some(offset),
-                    // only the offset comes from the projection, which reads through a shared reference: the write goes
-                    // through the exclusive borrow, so only to a field inside this value
-                    FieldAt::Deref(project) => field_offset::<T, F>(target, project(target)),
-                }
-                .ok_or_else(|| InteropError::string(format!("the field `{name}` is read only")))?;
-                // Safety: an `F` inside the T (see the function's contract, checked for `Deref`), borrowed exclusively
+                // Safety: an `F` inside the T (see the function's contract), borrowed exclusively
                 unsafe { *(target.add(offset) as *mut F) = value };
                 sink.unit();
                 Ok(())
@@ -1352,12 +1340,7 @@ impl NativeType {
                 get,
                 set: Some(set),
                 type_id: Some(TypeId::of::<F>()),
-                direct: match at {
-                    FieldAt::Offset(offset) => {
-                        DirectKind::of::<F>().map(|kind| DirectField { offset, kind })
-                    }
-                    FieldAt::Deref(_) => None,
-                },
+                direct: DirectKind::of::<F>().map(|kind| DirectField { offset, kind }),
             },
         );
         self
@@ -1447,17 +1430,31 @@ pub fn native_vtable(world: &WorldGuard, type_id: TypeId) -> Option<&'static Nat
         .map(|t| t.vtable)
 }
 
-/// Gives the field of a value, from a pointer to it, see [`FieldAt::Deref`].
-pub type FieldProject = fn(*const u8) -> *const u8;
-
-/// Where a field of a native type is, see [`NativeType::with_struct_field`].
-#[derive(Clone, Copy)]
-pub enum FieldAt {
-    /// At this offset in every value (`offset_of!`): written in place, and a place (a proxy) on places.
-    Offset(usize),
-    /// Reached through `Deref`, i.e. glam's SIMD vectors: read through the projection, written only when it's inside the
-    /// value, and a reference on places (its location may depend on the value, so it's never cached).
-    Deref(FieldProject),
+/// The offset of the field `F` of `T` reached through `Deref`, for [`crate::script_native`]'s `deref` form: measured in
+/// the default value (glam's SIMD vectors deref to themselves), checked to be inside it and aligned in every value.
+///
+/// # Safety
+/// `project` gives the field of the `T` it's given a pointer to, and `T`'s `Deref` puts it at the same offset in every
+/// value, inside the value: a `Deref` to the value itself (i.e. casting `self` to a `repr(C)` view of it). Not when the
+/// target depends on the value (an enum with an inline or a boxed target) or is elsewhere (a `Box`).
+///
+/// # Panics
+/// If the field isn't inside the default value, or wouldn't be aligned in every value.
+#[doc(hidden)]
+pub unsafe fn deref_field_offset<T: Default, F>(project: fn(*const T) -> *const F) -> usize {
+    let value = T::default();
+    let base = &value as *const T;
+    let offset =
+        field_offset::<T, F>(base as *const u8, project(base) as *const u8).filter(|offset| {
+            offset.is_multiple_of(align_of::<F>())
+                && align_of::<T>().is_multiple_of(align_of::<F>())
+        });
+    assert!(
+        offset.is_some(),
+        "`Deref` of {} doesn't put a field inside the value, it can't be declared with `deref`",
+        std::any::type_name::<T>()
+    );
+    offset.unwrap_or_default()
 }
 
 /// Converts the value of a field read by a script, see [`FieldConv`].
@@ -1563,8 +1560,12 @@ where
 /// ```rust,ignore
 /// script_native!(world, bevy_math::Vec3 { x: f32, y: f32, z: f32 });
 /// script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });
-/// // fields reached through `Deref`, i.e. glam's SIMD vectors: read and written, but never places (proxies)
-/// script_native!(world, deref bevy_math::Vec4 { x: f32, y: f32, z: f32, w: f32 });
+/// // fields reached through `Deref`, i.e. glam's SIMD vectors (`Default` types): their offsets are measured once, in the
+/// // default value, so they're read and written in place like any field.
+/// // Safety: only for a `Deref` to the value itself, the target at the same offset in every value (glam casts `self` to a
+/// // `repr(C)` view of its components). Never when the target depends on the value (an enum holding it inline or boxed) or
+/// // is elsewhere (a `Box`, an `Arc`): see `native::deref_field_offset`
+/// unsafe { script_native!(world, deref bevy_math::Vec4 { x: f32, y: f32, z: f32, w: f32 }) };
 /// ```
 ///
 /// Values of types with fields of native types aren't stored natively (writes to `t.translation.x` would be lost on a copy),
@@ -1650,19 +1651,26 @@ macro_rules! script_native {
         use $crate::native::{FieldConvScript as _, FieldConvValue as _};
         let native = $crate::native::NativeType::new::<$ty>();
         $(
-            // Safety: the projection gives the field `$field` of the value, a `$field_ty` (the compiler checks both),
-            // through `Deref`: borrowed from the value, so valid as long as it is
+            // NOT in an `unsafe` block: the caller's, see `deref_field_offset` (`$ty`'s `Deref` puts the field at the same
+            // offset in every value); the blocks below are nested in it
+            #[allow(unused_unsafe)]
+            let offset = $crate::native::deref_field_offset::<$ty, $field_ty>(|value| {
+                // Safety: a pointer to a valid `$ty`, the field is borrowed from it
+                unsafe { &(&*value).$field as *const $field_ty }
+            });
+            // Safety: every value has a `$field_ty` (the compiler checks the type) at the offset
+            #[allow(unused_unsafe)]
             let native = unsafe {
                 native.with_struct_field::<$ty, $field_ty>(
                     stringify!($field),
-                    $crate::native::FieldAt::Deref(|value| {
-                        &(&*(value as *const $ty)).$field as *const $field_ty as *const u8
-                    }),
+                    offset,
                     (&$crate::native::FieldConv::<$field_ty>::new()).ret(),
                     (&$crate::native::FieldConv::<$field_ty>::new()).arg(),
                 )
             };
         )*
+        // nested in the caller's `unsafe` block in the `deref` forms
+        #[allow(unused_unsafe)]
         let native = match $ffi {
             // Safety: checked by the `ffi` form
             Some(layout) => unsafe { native.with_ffi(layout) },
@@ -1687,12 +1695,14 @@ macro_rules! script_native {
             let native = unsafe {
                 native.with_struct_field::<$ty, $field_ty>(
                     stringify!($field),
-                    $crate::native::FieldAt::Offset(::core::mem::offset_of!($ty, $field)),
+                    ::core::mem::offset_of!($ty, $field),
                     (&$crate::native::FieldConv::<$field_ty>::new()).ret(),
                     (&$crate::native::FieldConv::<$field_ty>::new()).arg(),
                 )
             };
         )*
+        // nested in the caller's `unsafe` block in the `deref` forms
+        #[allow(unused_unsafe)]
         let native = match $ffi {
             // Safety: checked by the `ffi` form
             Some(layout) => unsafe { native.with_ffi(layout) },
@@ -2369,31 +2379,45 @@ mod test {
         });
     }
 
-    /// A `Deref` whose target is in the value or on the heap, depending on the value.
-    #[derive(Reflect, Clone, Debug)]
-    enum Small {
-        Inline(Inner),
-        Boxed(#[reflect(ignore)] Box<Inner>),
+    /// A `Deref` to a field of the value itself, like glam's SIMD vectors, after a field of its own.
+    #[derive(Reflect, Clone, Debug, Default)]
+    struct Small {
+        pad: u32,
+        inner: Inner,
     }
 
     impl std::ops::Deref for Small {
         type Target = Inner;
         fn deref(&self) -> &Inner {
-            match self {
-                Small::Inline(inner) => inner,
-                Small::Boxed(inner) => inner,
-            }
+            &self.inner
         }
     }
 
-    /// Fields reached through `Deref` (i.e. glam's SIMD vectors) are found per value: written when they're inside the value,
-    /// only read when they're elsewhere, also for values of one type.
+    /// A `Deref` to elsewhere, which can't be declared with `deref`.
+    #[derive(Reflect, Clone, Debug, Default)]
+    struct Boxed(#[reflect(ignore)] Box<Inner>);
+
+    impl std::ops::Deref for Boxed {
+        type Target = Inner;
+        fn deref(&self) -> &Inner {
+            &self.0
+        }
+    }
+
+    /// Fields reached through `Deref` (i.e. glam's SIMD vectors) are at the offset measured in the default value: read and
+    /// written in place like any field. A `Deref` to elsewhere is refused when it's declared.
     #[test]
     fn fields_through_deref() {
         let mut world = World::default();
-        crate::script_native!(&mut world, deref Small { x: f32 });
-        let inline = (|| V(Small::Inline(Inner { x: 0.0 }))).into_dynamic_script_function();
-        let boxed = (|| V(Small::Boxed(Box::new(Inner { x: 0.0 })))).into_dynamic_script_function();
+        // Safety: `Small` derefs to a field of itself
+        unsafe { crate::script_native!(&mut world, deref Small { x: f32 }) };
+        let make = (|| {
+            V(Small {
+                pad: 7,
+                inner: Inner { x: 0.0 },
+            })
+        })
+        .into_dynamic_script_function();
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldAccessGuard::with_static_guard(&mut world, cache, |world| {
             let field = {
@@ -2401,41 +2425,44 @@ mod test {
                 let registry = registry.read();
                 registry.native_type(TypeId::of::<Small>()).unwrap().fields["x"].clone()
             };
-            // the inline value first: nothing about it is kept for the boxed one
-            for (make, writable) in [(&inline, true), (&boxed, false), (&inline, true)] {
-                let (result, value) = call(
-                    make,
-                    Args {
-                        natives: &[],
-                        numbers: &[],
-                    },
-                );
-                result.unwrap();
-                let value = value.native.unwrap();
-                let (result, _) = call(
-                    field.set.as_ref().unwrap(),
-                    Args {
-                        natives: &[&value],
-                        numbers: &[4.0],
-                    },
-                );
-                assert_eq!(
-                    result.is_ok(),
-                    writable,
-                    "only fields inside the value are written"
-                );
-                let (result, got) = call(
-                    &field.get,
-                    Args {
-                        natives: &[&value],
-                        numbers: &[],
-                    },
-                );
-                result.unwrap();
-                let expected = if writable { 4.0 } else { 0.0 };
-                assert_eq!(got.value, Some(ScriptValue::Float(expected)));
-            }
+            let offset = std::mem::offset_of!(Small, inner) + std::mem::offset_of!(Inner, x);
+            assert_eq!(
+                field.direct.map(|d| d.offset),
+                Some(offset),
+                "in place, at the measured offset"
+            );
+            let (result, value) = call(
+                &make,
+                Args {
+                    natives: &[],
+                    numbers: &[],
+                },
+            );
+            result.unwrap();
+            let value = value.native.unwrap();
+            let (result, _) = call(
+                field.set.as_ref().unwrap(),
+                Args {
+                    natives: &[&value],
+                    numbers: &[4.0],
+                },
+            );
+            result.unwrap();
+            let (result, got) = call(
+                &field.get,
+                Args {
+                    natives: &[&value],
+                    numbers: &[],
+                },
+            );
+            result.unwrap();
+            assert_eq!(got.value, Some(ScriptValue::Float(4.0)));
         });
+        let boxed = std::panic::catch_unwind(|| {
+            // Safety: not upheld, which is caught when it's declared
+            unsafe { crate::script_native!(&mut World::default(), deref Boxed { x: f32 }) };
+        });
+        assert!(boxed.is_err(), "a `Deref` to elsewhere can't be declared");
     }
 
     #[test]

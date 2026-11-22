@@ -583,23 +583,27 @@ pub(crate) fn register(world: &mut World) {
         }
     );
     // SIMD vectors: fields through `Deref`
-    script_native!(
-        world,
-        ffi deref Vec4 {
-            x: f32,
-            y: f32,
-            z: f32,
-            w: f32
-        }
-    );
-    script_native!(
-        world,
-        ffi deref Vec3A {
-            x: f32,
-            y: f32,
-            z: f32
-        }
-    );
+    // Safety: glam's `Deref` casts the vector itself to a `repr(C)` struct of its components, at the same offset in every
+    // value
+    unsafe {
+        script_native!(
+            world,
+            ffi deref Vec4 {
+                x: f32,
+                y: f32,
+                z: f32,
+                w: f32
+            }
+        );
+        script_native!(
+            world,
+            ffi deref Vec3A {
+                x: f32,
+                y: f32,
+                z: f32
+            }
+        );
+    }
     script_native!(world, ffi DVec2 { x: f64, y: f64 });
     script_native!(
         world,

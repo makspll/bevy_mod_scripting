@@ -183,13 +183,17 @@ impl Quat {
 pub(crate) fn register(world: &mut World) {
     register_quat_functions(world);
     // a SIMD type: fields through `Deref`
-    bevy_mod_scripting_bindings::script_native!(
-        world,
-        ffi deref Quat {
-            x: f32,
-            y: f32,
-            z: f32,
-            w: f32
-        }
-    );
+    // Safety: glam's `Deref` casts the quaternion itself to a `repr(C)` struct of its components, at the same offset in
+    // every value
+    unsafe {
+        bevy_mod_scripting_bindings::script_native!(
+            world,
+            ffi deref Quat {
+                x: f32,
+                y: f32,
+                z: f32,
+                w: f32
+            }
+        );
+    }
 }
