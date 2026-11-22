@@ -2617,7 +2617,15 @@ mod test {
             .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
             .write()
             .register::<P>();
-        bevy_mod_scripting_bindings::script_native!(&mut world, P { x: f32 });
+        // Safety: the field is at its offset
+        unsafe {
+            bevy_mod_scripting_bindings::native::NativeType::of::<P>().field(
+                "x",
+                std::mem::offset_of!(P, x),
+                |p| &p.x,
+            )
+        }
+        .register(&mut world);
         NamespaceBuilder::<P>::new(&mut world)
             .register("eq", |a: R<P>, b: R<P>| a.x == b.x)
             .register("lt", |a: R<P>, b: R<P>| a.x < b.x);

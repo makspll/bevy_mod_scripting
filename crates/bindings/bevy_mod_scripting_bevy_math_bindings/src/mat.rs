@@ -1,11 +1,15 @@
 //! Matrices: [`Mat3`] and [`Mat4`].
 
+use std::{any::TypeId, mem::offset_of};
+
 // `script_bindings` expects these in scope
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{Mat3, Mat4, Quat, Vec2, Vec3, Vec4};
 use bevy_mod_scripting_bindings::{
-    InteropError,
+    InteropError, assert_ffi_layout,
     conversions::from::{R, Union, V},
+    function::script_function::AppScriptFunctionRegistry,
+    native::NativeType,
 };
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -96,7 +100,6 @@ impl Mat3 {
     }
 
     /// Multiplies by a matrix, or transforms a vector, or scales every component by a number.
-    #[ffi]
     fn mul(_self: R<Mat3>, rhs: Union<R<Mat3>, Union<R<Vec3>, f32>>) -> Union<V<Mat3>, V<Vec3>> {
         match rhs.into_left() {
             Ok(m) => Union::new_left(V(*_self * *m)),
@@ -245,7 +248,6 @@ impl Mat4 {
     }
 
     /// Multiplies by a matrix, or transforms a vector, or scales every component by a number.
-    #[ffi]
     fn mul(_self: R<Mat4>, rhs: Union<R<Mat4>, Union<R<Vec4>, f32>>) -> Union<V<Mat4>, V<Vec4>> {
         match rhs.into_left() {
             Ok(m) => Union::new_left(V(*_self * *m)),
@@ -303,22 +305,47 @@ impl Mat4 {
 pub(crate) fn register(world: &mut World) {
     register_mat3_functions(world);
     register_mat4_functions(world);
+    // `mul` takes a `Union`: an FFI form for each alternative
+    {
+        let mut registry = world
+            .get_resource_or_init::<AppScriptFunctionRegistry>()
+            .0
+            .clone();
+        let mut registry = registry.write();
+        let (mat3, mat4) = (TypeId::of::<Mat3>(), TypeId::of::<Mat4>());
+        registry.register_ffi(mat3, "mul", |a: R<Mat3>, b: R<Mat3>| V(*a * *b));
+        registry.register_ffi(mat3, "mul", |a: R<Mat3>, b: R<Vec3>| V(*a * *b));
+        registry.register_ffi(mat3, "mul", |a: R<Mat3>, b: f32| V(*a * b));
+        registry.register_ffi(mat4, "mul", |a: R<Mat4>, b: R<Mat4>| V(*a * *b));
+        registry.register_ffi(mat4, "mul", |a: R<Mat4>, b: R<Vec4>| V(*a * *b));
+        registry.register_ffi(mat4, "mul", |a: R<Mat4>, b: f32| V(*a * b));
+    }
     // stored by the languages as values (LuaJIT: cdata): the columns are read as read-only copies and written whole
-    bevy_mod_scripting_bindings::script_native!(
-        world,
-        ffi Mat3 {
-            x_axis: Vec3,
-            y_axis: Vec3,
-            z_axis: Vec3
-        }
-    );
-    bevy_mod_scripting_bindings::script_native!(
-        world,
-        ffi Mat4 {
-            x_axis: Vec4,
-            y_axis: Vec4,
-            z_axis: Vec4,
-            w_axis: Vec4
-        }
-    );
+    assert_ffi_layout!(Mat3 {
+        x_axis: Vec3,
+        y_axis: Vec3,
+        z_axis: Vec3
+    });
+    assert_ffi_layout!(Mat4 {
+        x_axis: Vec4,
+        y_axis: Vec4,
+        z_axis: Vec4,
+        w_axis: Vec4
+    });
+    // Safety: the columns are at their offsets, matrices have no invalid values
+    unsafe {
+        NativeType::of::<Mat3>()
+            .value_field("x_axis", offset_of!(Mat3, x_axis), |m| &m.x_axis)
+            .value_field("y_axis", offset_of!(Mat3, y_axis), |m| &m.y_axis)
+            .value_field("z_axis", offset_of!(Mat3, z_axis), |m| &m.z_axis)
+            .ffi()
+            .register(world);
+        NativeType::of::<Mat4>()
+            .value_field("x_axis", offset_of!(Mat4, x_axis), |m| &m.x_axis)
+            .value_field("y_axis", offset_of!(Mat4, y_axis), |m| &m.y_axis)
+            .value_field("z_axis", offset_of!(Mat4, z_axis), |m| &m.z_axis)
+            .value_field("w_axis", offset_of!(Mat4, w_axis), |m| &m.w_axis)
+            .ffi()
+            .register(world);
+    }
 }

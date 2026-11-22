@@ -1,11 +1,15 @@
 //! Rotations as quaternions: [`Quat`].
 
+use std::any::TypeId;
+
 // `script_bindings` expects these in scope
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{EulerRot, Mat3, Quat, Vec3};
 use bevy_mod_scripting_bindings::{
     InteropError,
     conversions::from::{R, Union, V},
+    function::script_function::AppScriptFunctionRegistry,
+    native::NativeType,
 };
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -80,7 +84,6 @@ impl Quat {
     }
 
     /// Composes two rotations when given a rotation, or rotates a vector when given a [`Vec3`](bevy_math::Vec3).
-    #[ffi]
     fn mul(_self: R<Quat>, rhs: Union<R<Quat>, R<Vec3>>) -> Union<V<Quat>, V<Vec3>> {
         match rhs.into_left() {
             Ok(q) => Union::new_left(V(*_self * *q)),
@@ -182,18 +185,33 @@ impl Quat {
 /// Registers the functions of quaternions, which are stored natively by the languages.
 pub(crate) fn register(world: &mut World) {
     register_quat_functions(world);
+    // `mul` takes a `Union`: an FFI form for each alternative
+    {
+        let mut registry = world
+            .get_resource_or_init::<AppScriptFunctionRegistry>()
+            .0
+            .clone();
+        let mut registry = registry.write();
+        let quat = TypeId::of::<Quat>();
+        registry.register_ffi(quat, "mul", |a: R<Quat>, b: R<Quat>| V(*a * *b));
+        registry.register_ffi(quat, "mul", |a: R<Quat>, b: R<Vec3>| V(*a * *b));
+    }
+    bevy_mod_scripting_bindings::assert_ffi_layout!(Quat {
+        x: f32,
+        y: f32,
+        z: f32,
+        w: f32
+    });
     // a SIMD type: fields through `Deref`
     // Safety: glam's `Deref` casts the quaternion itself to a `repr(C)` struct of its components, at the same offset in
-    // every value
+    // every value. Any bits are a quaternion: functions needing a normalised one check it.
     unsafe {
-        bevy_mod_scripting_bindings::script_native!(
-            world,
-            ffi deref Quat {
-                x: f32,
-                y: f32,
-                z: f32,
-                w: f32
-            }
-        );
+        NativeType::of::<Quat>()
+            .deref_field("x", |q| &q.x)
+            .deref_field("y", |q| &q.y)
+            .deref_field("z", |q| &q.z)
+            .deref_field("w", |q| &q.w)
+            .ffi()
+            .register(world);
     }
 }

@@ -1,11 +1,19 @@
 //! Float vectors: [`Vec2`], [`Vec3`] and [`Vec4`], plus conversions for [`Vec3A`], [`DVec2`] and [`DVec3`].
 
+use std::{
+    any::TypeId,
+    mem::offset_of,
+    ops::{Add, Div, Mul, Rem, Sub},
+};
+
 // `script_bindings` expects these in scope
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{DVec2, DVec3, IVec2, IVec3, UVec2, UVec3, Vec2, Vec3, Vec3A, Vec4};
 use bevy_mod_scripting_bindings::{
-    InteropError,
+    InteropError, assert_ffi_layout,
     conversions::from::{R, Union, V},
+    function::script_function::AppScriptFunctionRegistry,
+    native::NativeType,
 };
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -41,7 +49,6 @@ macro_rules! float_vector_functions {
             }
 
             /// Adds a vector or a number to every component.
-            #[ffi]
             fn add(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self + *v,
@@ -50,7 +57,6 @@ macro_rules! float_vector_functions {
             }
 
             /// Subtracts a vector or a number from every component.
-            #[ffi]
             fn sub(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self - *v,
@@ -59,7 +65,6 @@ macro_rules! float_vector_functions {
             }
 
             /// Multiplies component-wise by a vector, or scales by a number.
-            #[ffi]
             fn mul(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self * *v,
@@ -68,7 +73,6 @@ macro_rules! float_vector_functions {
             }
 
             /// Divides component-wise by a vector, or by a number.
-            #[ffi]
             fn div(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self / *v,
@@ -77,7 +81,6 @@ macro_rules! float_vector_functions {
             }
 
             /// The component-wise remainder of dividing by a vector, or by a number.
-            #[ffi]
             fn rem(_self: R<$ty>, rhs: Union<R<$ty>, f32>) -> V<$ty> {
                 V(match rhs.into_left() {
                     Ok(v) => *_self % *v,
@@ -561,9 +564,43 @@ impl DVec3 {
     }
 }
 
+/// Registers the FFI forms of the operators of the float vector `T`: one for each way their `Union` parameter is passed,
+/// a vector or a number.
+fn register_operator_ffi<T>(world: &mut World)
+where
+    T: Copy
+        + 'static
+        + Add<Output = T>
+        + Add<f32, Output = T>
+        + Sub<Output = T>
+        + Sub<f32, Output = T>
+        + Mul<Output = T>
+        + Mul<f32, Output = T>
+        + Div<Output = T>
+        + Div<f32, Output = T>
+        + Rem<Output = T>
+        + Rem<f32, Output = T>,
+{
+    let mut registry = world
+        .get_resource_or_init::<AppScriptFunctionRegistry>()
+        .0
+        .clone();
+    let mut registry = registry.write();
+    let ty = TypeId::of::<T>();
+    registry.register_ffi(ty, "add", |a: R<T>, b: R<T>| V(*a + *b));
+    registry.register_ffi(ty, "add", |a: R<T>, b: f32| V(*a + b));
+    registry.register_ffi(ty, "sub", |a: R<T>, b: R<T>| V(*a - *b));
+    registry.register_ffi(ty, "sub", |a: R<T>, b: f32| V(*a - b));
+    registry.register_ffi(ty, "mul", |a: R<T>, b: R<T>| V(*a * *b));
+    registry.register_ffi(ty, "mul", |a: R<T>, b: f32| V(*a * b));
+    registry.register_ffi(ty, "div", |a: R<T>, b: R<T>| V(*a / *b));
+    registry.register_ffi(ty, "div", |a: R<T>, b: f32| V(*a / b));
+    registry.register_ffi(ty, "rem", |a: R<T>, b: R<T>| V(*a % *b));
+    registry.register_ffi(ty, "rem", |a: R<T>, b: f32| V(*a % b));
+}
+
 /// Registers the functions of all float vectors, which are stored natively by the languages.
 pub(crate) fn register(world: &mut World) {
-    use bevy_mod_scripting_bindings::script_native;
     register_vec2_shared_functions(world);
     register_vec3_shared_functions(world);
     register_vec4_shared_functions(world);
@@ -573,44 +610,74 @@ pub(crate) fn register(world: &mut World) {
     register_vec3a_functions(world);
     register_dvec2_functions(world);
     register_dvec3_functions(world);
-    script_native!(world, ffi Vec2 { x: f32, y: f32 });
-    script_native!(
-        world,
-        ffi Vec3 {
-            x: f32,
-            y: f32,
-            z: f32
-        }
-    );
+    register_operator_ffi::<Vec2>(world);
+    register_operator_ffi::<Vec3>(world);
+    register_operator_ffi::<Vec4>(world);
+
+    assert_ffi_layout!(Vec2 { x: f32, y: f32 });
+    assert_ffi_layout!(Vec3 {
+        x: f32,
+        y: f32,
+        z: f32
+    });
+    assert_ffi_layout!(Vec4 {
+        x: f32,
+        y: f32,
+        z: f32,
+        w: f32
+    });
+    assert_ffi_layout!(Vec3A {
+        x: f32,
+        y: f32,
+        z: f32
+    });
+    assert_ffi_layout!(DVec2 { x: f64, y: f64 });
+    assert_ffi_layout!(DVec3 {
+        x: f64,
+        y: f64,
+        z: f64
+    });
+    // Safety: the fields are at their offsets, vectors have no invalid values
+    unsafe {
+        NativeType::of::<Vec2>()
+            .field("x", offset_of!(Vec2, x), |v| &v.x)
+            .field("y", offset_of!(Vec2, y), |v| &v.y)
+            .ffi()
+            .register(world);
+        NativeType::of::<Vec3>()
+            .field("x", offset_of!(Vec3, x), |v| &v.x)
+            .field("y", offset_of!(Vec3, y), |v| &v.y)
+            .field("z", offset_of!(Vec3, z), |v| &v.z)
+            .ffi()
+            .register(world);
+        NativeType::of::<DVec2>()
+            .field("x", offset_of!(DVec2, x), |v| &v.x)
+            .field("y", offset_of!(DVec2, y), |v| &v.y)
+            .ffi()
+            .register(world);
+        NativeType::of::<DVec3>()
+            .field("x", offset_of!(DVec3, x), |v| &v.x)
+            .field("y", offset_of!(DVec3, y), |v| &v.y)
+            .field("z", offset_of!(DVec3, z), |v| &v.z)
+            .ffi()
+            .register(world);
+    }
     // SIMD vectors: fields through `Deref`
     // Safety: glam's `Deref` casts the vector itself to a `repr(C)` struct of its components, at the same offset in every
-    // value
+    // value, and vectors have no invalid values
     unsafe {
-        script_native!(
-            world,
-            ffi deref Vec4 {
-                x: f32,
-                y: f32,
-                z: f32,
-                w: f32
-            }
-        );
-        script_native!(
-            world,
-            ffi deref Vec3A {
-                x: f32,
-                y: f32,
-                z: f32
-            }
-        );
+        NativeType::of::<Vec4>()
+            .deref_field("x", |v| &v.x)
+            .deref_field("y", |v| &v.y)
+            .deref_field("z", |v| &v.z)
+            .deref_field("w", |v| &v.w)
+            .ffi()
+            .register(world);
+        NativeType::of::<Vec3A>()
+            .deref_field("x", |v| &v.x)
+            .deref_field("y", |v| &v.y)
+            .deref_field("z", |v| &v.z)
+            .ffi()
+            .register(world);
     }
-    script_native!(world, ffi DVec2 { x: f64, y: f64 });
-    script_native!(
-        world,
-        ffi DVec3 {
-            x: f64,
-            y: f64,
-            z: f64
-        }
-    );
 }

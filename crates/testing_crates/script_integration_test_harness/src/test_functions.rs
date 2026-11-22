@@ -44,7 +44,15 @@ pub struct NativeTestValue {
 
 pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
-    bevy_mod_scripting_bindings::script_native!(world, NativeTestValue { label: String });
+    // Safety: the field is at its offset
+    unsafe {
+        bevy_mod_scripting_bindings::native::NativeType::of::<NativeTestValue>().field(
+            "label",
+            std::mem::offset_of!(NativeTestValue, label),
+            |v| &v.label,
+        )
+    }
+    .register(world);
     NamespaceBuilder::<World>::new_unregistered(world)
         .register("_make_native_test_value", |label: String| {
             V(NativeTestValue { label })

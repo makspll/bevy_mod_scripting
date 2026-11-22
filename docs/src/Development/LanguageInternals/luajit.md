@@ -15,18 +15,33 @@ flowchart TD
 ## Declaring a layout
 
 ```rust,ignore
-script_native!(world, ffi Vec3 { x: f32, y: f32, z: f32 });
-// SIMD types reach their fields through Deref: the offsets are measured in the default value
-unsafe { script_native!(world, ffi deref Vec3A { x: f32, y: f32, z: f32 }) };
+// compile time: `Copy`, and the size and alignment of the C struct of these fields
+assert_ffi_layout!(Vec3 { x: f32, y: f32, z: f32 });
+// Safety: the fields are at their offsets, and any bits in them are a valid Vec3
+unsafe {
+    NativeType::of::<Vec3>()
+        .field("x", offset_of!(Vec3, x), |v| &v.x)
+        .field("y", offset_of!(Vec3, y), |v| &v.y)
+        .field("z", offset_of!(Vec3, z), |v| &v.z)
+        .ffi()              // the fields so far, in order, are the C struct
+        .register(world);
+    // SIMD types reach their fields through Deref: the offsets are measured in the default value
+    NativeType::of::<Vec3A>()
+        .deref_field("x", |v| &v.x)
+        .deref_field("y", |v| &v.y)
+        .deref_field("z", |v| &v.z)
+        .ffi()
+        .register(world);
+}
 ```
 
-The `ffi` form checks at compile time that the type is `Copy` and that its size, alignment and field offsets are exactly those of the C struct of its fields. Each Lua state then declares:
+`ffi` is an `unsafe` contract of its own: scripts can write every byte of a cdata, so every bit pattern of the fields must be a valid value (a vector, not a normalised direction). It panics when the type is declared if the fields aren't where the C struct puts them; `assert_ffi_layout!` moves the size and alignment part to compile time. Each Lua state then declares:
 
 ```c
 typedef struct __attribute__((aligned(16))) {
     float x; float y; float z;
     uint8_t _pad12; uint8_t _pad13; uint8_t _pad14; uint8_t _pad15;
-} bms_Vec3A;
+} bms_glam__f32__sse2__vec3a__Vec3A;   // named after the type's path
 ```
 
 Two rules keep scripts from getting a pointer:
@@ -54,7 +69,15 @@ Scripts can write every byte of the payload but not the ctype id. Ids which aren
 
 A read-only copy is the `const` form of the struct: LuaJIT itself refuses writes to it, also in compiled code.
 
-## An `#[ffi]` function
+## An FFI function
+
+An FFI form is registered next to a function, from a Rust function doing the same with C types:
+
+```rust,ignore
+registry.register_ffi(TypeId::of::<Vec3>(), "dot", |a: R<Vec3>, b: R<Vec3>| a.dot(*b));
+```
+
+`#[ffi]` in a `#[script_bindings]` block is exactly that call, with the function's body as the closure:
 
 ```rust,ignore
 #[script_bindings(remote, namespace = "math")]
@@ -64,17 +87,36 @@ impl Vec3 {
 }
 ```
 
-The derive adds an `extern "C"` wrapper next to the normal registration:
+The `extern "C"` function is made by a trait, `FfiFn`, implemented for functions which capture nothing (so the function is its type, and the trampoline needs no pointer to it):
 
 ```rust,ignore
-extern "C" fn wrapper(a0: *const Vec3, a1: *const Vec3, out: *mut u8, failed: *mut u8) -> f32 {
-    let function = |_self: R<Vec3>, other: R<Vec3>| -> f32 { _self.dot(*other) };
-    let output = function(unsafe { FfiArg::from_c(a0) }, unsafe { FfiArg::from_c(a1) });
-    unsafe { FfiReturn::into_c(output, out, failed) }
+unsafe impl<Function, Return, A1, A2> FfiFn<fn(A1, A2) -> Return> for Function
+where Function: Fn(A1, A2) -> Return + Copy + 'static, Return: FfiReturn, A1: FfiArg, A2: FfiArg
+{
+    fn ffi_function(self, name: &'static str) -> FfiFunction {
+        extern "C" fn trampoline<..>(a1: A1::C, a2: A2::C, out: *mut u8, failed: *mut u8) -> Return::C {
+            let function: Function = /* zero-sized: conjured */;
+            let output = function(unsafe { A1::from_c(a1) }, unsafe { A2::from_c(a2) });
+            unsafe { output.into_c(out, failed) }
+        }
+        FfiFunction { name, function: trampoline::<..> as *const (), params: vec![A1::kind(), A2::kind()], .. }
+    }
 }
 ```
 
-and each state generates Lua around the pointer:
+### One form per C signature
+
+A `Union<R<Vec3>, f32>` parameter is a pointer or a float in the same position: two C types, so two signatures. One signature for both would need a struct passed by value, which LuaJIT doesn't compile. So `Union` is no FFI parameter, and a function taking one registers a form for each alternative:
+
+```rust,ignore
+// fn add(_self: R<Vec3>, rhs: Union<R<Vec3>, f32>) -> V<Vec3>   <- not marked #[ffi]
+registry.register_ffi(TypeId::of::<Vec3>(), "add", |a: R<Vec3>, b: R<Vec3>| V(*a + *b));
+registry.register_ffi(TypeId::of::<Vec3>(), "add", |a: R<Vec3>, b: f32| V(*a + b));
+```
+
+The forms of one name chain: each checks its own argument types and falls through to the one registered before it, then to the BMS function.
+
+Each state generates Lua around the pointer:
 
 ```lua
 local f1, other = cast("float (*)(const bms_Vec3*, const bms_Vec3*, void*, uint8_t*)", ptrs[1]), slow["dot"]
@@ -93,7 +135,6 @@ flowchart TD
     FFI --> RES{"result"}
     RES -- "scalar" --> R1["returned by value"]
     RES -- "V of T" --> R2["written to the type's scratch value S<br/>return C(S)"]
-    RES -- "Union" --> R3["written to a scratch C union<br/>the wrapper returns which alternative"]
 ```
 
 What can cross is decided by traits, at compile time:
@@ -102,13 +143,11 @@ What can cross is decided by traits, at compile time:
 |---|---|---|
 | `FfiArg` | `f32`, `f64`, `i32`, `u32`, `bool` | by value |
 | | `R<T>`, `V<T>` | `const T*` to the cdata |
-| | `Union<A, B>` | one wrapper per alternative |
 | `FfiReturn` | scalars | returned |
 | | `V<T>` | written to the out-pointer |
-| | `Union<A, B>` | written to a C union, the index returned |
 | | `Result<_, InteropError>`, `Option<_>` | as above, failure through the `failed` byte |
 
-There is no `M<T>`: an FFI function never writes its arguments.
+There is no `M<T>`: an FFI function never writes its arguments. And no `Union`: see above.
 
 ### Why a scratch value
 
@@ -165,9 +204,9 @@ Types are made once per state. A type registered later stays a userdata there.
 |---|---|
 | Scripts making pointers, casts or their own ctypes | the `ffi` library is private: never a global, not `require`-able |
 | A reference cdata into a value (dangling, unchecked indexing) | no array or struct fields in the C structs: padding and nested fields are scalars |
-| A wrapper called with the wrong types | guards in the generated Lua before every FFI call |
-| A layout which isn't the Rust type's | compile-time checks in `script_native!`, `sizeof`/`alignof` asserted in each state |
-| A wrapper which doesn't match its declared signature | made by the derive; registering one by hand is `unsafe` (`register_ffi_function`) |
+| An FFI function called with the wrong types | guards in the generated Lua before every FFI call |
+| A layout which isn't the Rust type's | `ffi` checks size, alignment and offsets when the type is declared (`assert_ffi_layout!` at compile time), `sizeof`/`alignof` asserted in each state |
+| A function which doesn't match its declared signature | made by the `FfiFn` trait from the Rust function's own types; registering a raw pointer is `unsafe` (`register_ffi_function`) |
 | A script writing a cdata a call holds | calls get copies |
 | A panic in an `#[ffi]` function | **aborts the process**: it can't unwind through C. Only mark functions which don't panic (no integer arithmetic, no indexing) |
 | Rust reading a foreign cdata | ctype id lookup, unknown ids are refused |

@@ -257,70 +257,17 @@ impl Args {
     }
 }
 
-/// How a parameter is passed to an `extern "C"` wrapper: its declaration, its conversion to the function's parameter and
-/// its `FfiType`.
-type FfiParam = (TokenStream, TokenStream, TokenStream);
-
-/// The ways the parameter `name` of the type `ty` is passed: one for most types, through `FfiArg` (which errors clearly for
-/// types that can't be), one for each alternative of a `Union` as written, which get a wrapper each.
-fn ffi_params(name: &syn::Ident, ty: &syn::Type, bms: &syn::Path) -> Vec<FfiParam> {
-    if let Some((left, right)) = union_alternatives(ty) {
-        let mut params = Vec::new();
-        for (alternative, side) in [(left, "new_left"), (right, "new_right")] {
-            let side = format_ident!("{side}");
-            for (param, conversion, kind) in ffi_params(name, alternative, bms) {
-                let span = alternative.span();
-                let conversion = quote_spanned! {span=> #bms::Union::#side(#conversion) };
-                params.push((param, conversion, kind));
-            }
-        }
-        return params;
-    }
-    let span = ty.span();
-    let arg = quote_spanned! {span=> <#ty as #bms::native::FfiArg> };
-    vec![(
-        quote_spanned! {span=> #name: #arg::C },
-        // Safety (callers): see `FfiArg::from_c`
-        quote_spanned! {span=> unsafe { #arg::from_c(#name) } },
-        quote_spanned! {span=> #arg::kind() },
-    )]
-}
-
-/// The two alternatives of a `Union<L, R>`, `None` for other types.
-fn union_alternatives(ty: &syn::Type) -> Option<(&syn::Type, &syn::Type)> {
-    let syn::Type::Path(path) = ty else {
-        return None;
-    };
-    let segment = path.path.segments.last()?;
-    let syn::PathArguments::AngleBracketed(arguments) = &segment.arguments else {
-        return None;
-    };
-    let mut types = arguments.args.iter().filter_map(|a| match a {
-        syn::GenericArgument::Type(ty) => Some(ty),
-        _ => None,
-    });
-    match (segment.ident == "Union", types.next(), types.next()) {
-        (true, Some(left), Some(right)) => Some((left, right)),
-        _ => None,
-    }
-}
-
-/// The registrations of the `extern "C"` wrappers of an `#[ffi]` function: its parameters through `FfiArg`, its result
-/// through `FfiReturn` (compile errors for types that can't be passed). A wrapper runs the function's body like its
-/// registration does. A function with `Union` parameters gets a wrapper for each combination of their alternatives (i.e.
-/// `add(R<Vec3>, R<Vec3>)` and `add(R<Vec3>, f32)`), so operators are FFI calls too.
+/// The registration of the FFI form of an `#[ffi]` function: its body as a closure, which `FfiFn` turns into an
+/// `extern "C"` function (a compile error if a parameter or the result can't be passed, i.e. a `Union`: those functions
+/// register a form for each alternative by hand).
 ///
 /// ```rust,ignore
-/// extern "C" fn wrapper(a0: *const Vec3, a1: *const Vec3, out: *mut u8, failed: *mut u8) -> () {
-///     let f = |a: V<Vec3>, b: V<Vec3>| -> V<Vec3> { .. };
-///     let output = f(unsafe { <V<Vec3> as FfiArg>::from_c(a0) }, ..);
-///     unsafe { FfiReturn::into_c(output, out, failed) }
-/// }
+/// registry.register_ffi(TypeId::of::<Vec3>(), "dot", |_self: R<Vec3>, other: R<Vec3>| -> f32 { _self.dot(*other) });
 /// ```
 fn ffi_wrapper(
     fun: &syn::ImplItemFn,
     self_ty: &syn::Type,
-    bms: &syn::Path,
+    _bms: &syn::Path,
 ) -> syn::Result<TokenStream> {
     let span = fun.sig.ident.span();
     if !fun.sig.generics.params.is_empty() || fun.sig.asyncness.is_some() {
@@ -329,63 +276,23 @@ fn ffi_wrapper(
             "`#[ffi]` functions can't be generic or async",
         ));
     }
-    // every combination of the ways the parameters are passed
-    let mut overloads: Vec<Vec<FfiParam>> = vec![Vec::new()];
-    for (i, arg) in fun.sig.inputs.iter().enumerate() {
-        let syn::FnArg::Typed(arg) = arg else {
-            return Err(syn::Error::new(
-                arg.span(),
-                "`#[ffi]` functions take no `self`, use `_self: R<Self>`",
-            ));
-        };
-        let alternatives = ffi_params(&format_ident!("a{i}"), &arg.ty, bms);
-        overloads = overloads
-            .into_iter()
-            .flat_map(|overload| {
-                alternatives.iter().map(move |alternative| {
-                    let mut overload = overload.clone();
-                    overload.push(alternative.clone());
-                    overload
-                })
-            })
-            .collect();
+    if let Some(receiver) = fun.sig.receiver() {
+        return Err(syn::Error::new(
+            receiver.span(),
+            "`#[ffi]` functions take no `self`, use `_self: R<Self>`",
+        ));
     }
     let syn::ReturnType::Type(_, out_type) = &fun.sig.output else {
         return Err(syn::Error::new(span, "`#[ffi]` functions return a value"));
     };
-    let ret = quote_spanned! {out_type.span()=> <#out_type as #bms::native::FfiReturn> };
     let args = &fun.sig.inputs;
     let body = &fun.block;
     let fun_name = syn::LitStr::new(&fun.sig.ident.to_string(), Span::call_site());
-    let wrappers = overloads.into_iter().map(|overload| {
-        let params = overload.iter().map(|(param, _, _)| param);
-        let conversions = overload.iter().map(|(_, conversion, _)| conversion);
-        let kinds = overload.iter().map(|(_, _, kind)| kind);
-        quote_spanned! {span=>
-            {
-                // Safety (callers): arguments as `FfiArg::from_c` says, the out-pointer as `FfiReturn::into_c` says; a
-                // panic aborts
-                #[allow(unused_unsafe, clippy::not_unsafe_ptr_arg_deref, clippy::unused_unit)]
-                extern "C" fn wrapper(#(#params,)* out: *mut u8, failed: *mut u8) -> #ret::C {
-                    let function = |#args| -> #out_type { #body };
-                    let output = function(#(#conversions),*);
-                    unsafe { #ret::into_c(output, out, failed) }
-                }
-                // Safety: the wrapper takes and returns what `FfiArg` and `FfiReturn` say for its types
-                unsafe {
-                    registry.register_ffi_function(
-                        ::std::any::TypeId::of::<#self_ty>(),
-                        #bms::native::FfiFunction {
-                            name: #fun_name,
-                            function: wrapper as *const (),
-                            params: vec![#(#kinds),*],
-                            result: #ret::result(),
-                            fallible: #ret::fallible(),
-                        },
-                    )
-                };
-            }
-        }
-    });
-    Ok(quote_spanned! {span=> #(#wrappers)* })
+    Ok(quote_spanned! {span=>
+        registry.register_ffi(
+            ::std::any::TypeId::of::<#self_ty>(),
+            #fun_name,
+            |#args| -> #out_type #body,
+        );
+    })
 }

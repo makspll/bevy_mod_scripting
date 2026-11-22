@@ -6,7 +6,7 @@
 //!   ([`FromScript::from_arg`](crate::FromScript::from_arg)'s slow arm). Rust callers use [`ScriptValueArgs`] and
 //!   [`ScriptValueReturn`] (see [`DynamicScriptFunction::call`]).
 //! - A [`NativeType`] is stored by the language itself, i.e. in a Lua userdata, as `[NativeHeader][value]`, see [`NativeStorage`].
-//!   Its fields are read and written through typed accessor functions, see [`crate::script_native`].
+//!   Its fields are read and written through typed accessor functions, see [`NativeBuilder`].
 //!
 //! Everything which isn't typed sees a copy of a native value (a reference to an allocation, see
 //! [`crate::ReflectAllocationId::is_native_copy`]), which nothing can change in place (write access to it is refused, `M<T>`
@@ -740,12 +740,12 @@ pub struct NativeType {
     /// The functions registered on the type, kept up to date by the registry so languages can look them up without cloning
     pub methods: HashMap<Cow<'static, str>, DynamicScriptFunction>,
     /// The C layout of the values, if languages may store them as plain C structs (i.e. LuaJIT cdata), see
-    /// [`crate::script_native`]'s `ffi` form.
+    /// [`NativeBuilder::ffi`].
     pub ffi: Option<FfiLayout>,
 }
 
 /// The C layout of the values of a [`NativeType`]: a struct of scalar fields, checked against the Rust type when declared
-/// (see [`crate::script_native`]). Values with a layout are `Copy` and plain bytes, so languages may store them without a
+/// (see [`NativeBuilder::ffi`]). Values with a layout are `Copy` and plain bytes, so languages may store them without a
 /// [`NativeHeader`]: typed calls read them with [`ArgSource::plain`].
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FfiLayout {
@@ -841,8 +841,12 @@ pub enum FfiType {
     Value(TypeId),
 }
 
-/// A function of a native type callable through a language's FFI (i.e. LuaJIT's) with C types: an `extern "C"` wrapper of a
-/// registered function, made for functions marked `#[ffi]` in `#[script_bindings]` blocks (see [`FfiArg`] and [`FfiReturn`]).
+/// A function of a native type callable through a language's FFI (i.e. LuaJIT's) with C types: an `extern "C"` form of a
+/// registered function, made from a Rust function by [`FfiFn`] (see [`FfiArg`] and [`FfiReturn`]), which is what
+/// `ScriptFunctionRegistry::register_ffi` and `#[ffi]` in `#[script_bindings]` blocks use.
+///
+/// A function has one FFI form for each C signature: a function taking a [`crate::Union`] is registered once for each
+/// alternative, i.e. `add(R<Vec3>, R<Vec3>)` and `add(R<Vec3>, f32)`.
 ///
 /// A panic of the function aborts the process, as it can't unwind through C: only for functions which don't panic (no
 /// integer arithmetic which may overflow, no indexing).
@@ -854,34 +858,26 @@ pub struct FfiFunction {
     pub function: *const (),
     /// Its parameters, in order
     pub params: Vec<FfiType>,
-    /// Its result
-    pub result: FfiResult,
+    /// Its result: a scalar returned, or a value written to an out-pointer after the parameters
+    pub result: FfiType,
     /// Whether it may fail (`Result`, `Option`): it takes a pointer to a byte after the out-pointer, which it writes
     /// [`FFI_ERROR`] or [`FFI_NONE`] to when it does, else it's given null
     pub fallible: bool,
 }
 
-/// The result of an [`FfiFunction`].
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum FfiResult {
-    /// A scalar returned, or a value written to an out-pointer after the parameters
-    One(FfiType),
-    /// One of the alternatives of a `Union` (nested ones flattened, in order), written to an out-pointer after the
-    /// parameters to memory big and aligned enough for each (a C union of them): the wrapper returns the index of the
-    /// alternative written, as a `uint8_t`
-    Union(Vec<FfiType>),
-}
-
-/// A parameter of an `#[ffi]` function (see [`FfiFunction`]): a scalar passed by value, or `R<T>`/`V<T>` passed as a pointer
-/// to the value. `T` needs an [`FfiLayout`] (`script_native!`'s `ffi` form), which languages check when they make their
+/// A parameter of an FFI function (see [`FfiFunction`]): a scalar passed by value, or `R<T>`/`V<T>` passed as a pointer
+/// to the value. `T` needs an [`FfiLayout`] ([`NativeBuilder::ffi`]), which languages check when they make their
 /// C types: it can't be a bound, the orphan rule would keep binding crates from declaring it for other crates' types.
+///
+/// A [`crate::Union`] is no parameter: each alternative has another C type, so each is registered as an FFI form of its
+/// own.
 ///
 /// # Safety
 /// `C` is FFI-safe and the parameter of the C type [`Self::kind`] says.
 #[diagnostic::on_unimplemented(
-    message = "`{Self}` can't be a parameter of an `#[ffi]` function",
+    message = "`{Self}` can't be a parameter of an FFI function",
     label = "not an FFI parameter",
-    note = "FFI parameters are `f32`, `f64`, `i32`, `u32`, `bool`, `R<T>` and `V<T>` (`T` with a C layout, see `script_native!`'s `ffi` form), or `Union`s of them"
+    note = "FFI parameters are `f32`, `f64`, `i32`, `u32`, `bool`, `R<T>` and `V<T>` (`T` with a C layout, see `NativeBuilder::ffi`). A function taking a `Union` has an FFI form for each alternative: register them with `ScriptFunctionRegistry::register_ffi`"
 )]
 pub unsafe trait FfiArg {
     /// How the wrapper takes it
@@ -895,23 +891,23 @@ pub unsafe trait FfiArg {
     unsafe fn from_c(c: Self::C) -> Self;
 }
 
-/// The result of an `#[ffi]` function (see [`FfiFunction`]): a scalar returned, `V<T>` written to the out-pointer (`T` with
-/// an [`FfiLayout`], see [`FfiArg`]), a `Union` of them (see [`FfiResult::Union`]), or a `Result`/`Option` of one of
-/// those, which fails by writing [`FFI_ERROR`] or [`FFI_NONE`] to the `failed` pointer.
+/// The result of an FFI function (see [`FfiFunction`]): a scalar returned, `V<T>` written to the out-pointer (`T` with
+/// an [`FfiLayout`], see [`FfiArg`]), or a `Result`/`Option` of one of those, which fails by writing [`FFI_ERROR`] or
+/// [`FFI_NONE`] to the `failed` pointer.
 ///
 /// # Safety
 /// `C` is FFI-safe, valid when zeroed (returned when failing) and what [`Self::result`] says is returned,
 /// [`Self::into_c`] writes what it says is written.
 #[diagnostic::on_unimplemented(
-    message = "`{Self}` can't be the result of an `#[ffi]` function",
+    message = "`{Self}` can't be the result of an FFI function",
     label = "not an FFI result",
-    note = "FFI results are `f32`, `f64`, `i32`, `u32`, `bool` and `V<T>` (`T` with a C layout, see `script_native!`'s `ffi` form), `Union`s of them, or a `Result<_, InteropError>` or `Option` of one"
+    note = "FFI results are `f32`, `f64`, `i32`, `u32`, `bool` and `V<T>` (`T` with a C layout, see `NativeBuilder::ffi`), or a `Result<_, InteropError>` or `Option` of one"
 )]
 pub unsafe trait FfiReturn {
     /// What the wrapper returns
     type C;
     /// How it's returned
-    fn result() -> FfiResult;
+    fn result() -> FfiType;
     /// Whether it may fail, see [`FfiFunction::fallible`]
     fn fallible() -> bool {
         false
@@ -951,7 +947,7 @@ unsafe fn zeroed<C>() -> C {
 // Safety: `T`'s result, or a zeroed one and `FFI_ERROR` written to `failed`
 unsafe impl<T: FfiReturn> FfiReturn for Result<T, InteropError> {
     type C = T::C;
-    fn result() -> FfiResult {
+    fn result() -> FfiType {
         T::result()
     }
     fn fallible() -> bool {
@@ -976,7 +972,7 @@ unsafe impl<T: FfiReturn> FfiReturn for Result<T, InteropError> {
 // Safety: `T`'s result, or a zeroed one and `FFI_NONE` written to `failed`
 unsafe impl<T: FfiReturn> FfiReturn for Option<T> {
     type C = T::C;
-    fn result() -> FfiResult {
+    fn result() -> FfiType {
         T::result()
     }
     fn fallible() -> bool {
@@ -995,27 +991,6 @@ unsafe impl<T: FfiReturn> FfiReturn for Option<T> {
     }
 }
 
-/// An alternative of a `Union` result, or a `Union` of them, see [`FfiResult::Union`].
-///
-/// # Safety
-/// [`Self::write`] writes a value of the C type of the alternative whose index it returns.
-#[diagnostic::on_unimplemented(
-    message = "`{Self}` can't be an alternative of the `Union` result of an `#[ffi]` function",
-    label = "not an FFI result",
-    note = "FFI results are `f32`, `f64`, `i32`, `u32`, `bool` and `V<T>` (`T` with a C layout, see `script_native!`'s `ffi` form), or `Union`s of them"
-)]
-pub unsafe trait FfiAlternative {
-    /// The number of alternatives
-    const COUNT: u8;
-    /// Their C types, in order
-    fn alternatives(out: &mut Vec<FfiType>);
-    /// Writes the value to `out`, evaluating to its index among the alternatives, counted from `base`.
-    ///
-    /// # Safety
-    /// `out` points to memory big and aligned enough for every alternative.
-    unsafe fn write(self, out: *mut u8, base: u8) -> u8;
-}
-
 macro_rules! ffi_scalar {
     ($($ty:ty => $c:literal),*) => {$(
         // Safety: passed and returned by value as the C type of the same size and representation
@@ -1031,23 +1006,11 @@ macro_rules! ffi_scalar {
         // Safety: see above
         unsafe impl FfiReturn for $ty {
             type C = $ty;
-            fn result() -> FfiResult {
-                FfiResult::One(FfiType::Scalar($c))
+            fn result() -> FfiType {
+                FfiType::Scalar($c)
             }
             unsafe fn into_c(self, _: *mut u8, _: *mut u8) -> Self::C {
                 self
-            }
-        }
-        // Safety: see above
-        unsafe impl FfiAlternative for $ty {
-            const COUNT: u8 = 1;
-            fn alternatives(out: &mut Vec<FfiType>) {
-                out.push(FfiType::Scalar($c));
-            }
-            unsafe fn write(self, out: *mut u8, base: u8) -> u8 {
-                // Safety: upheld by the caller
-                unsafe { out.cast::<$ty>().write(self) };
-                base
             }
         }
     )*};
@@ -1082,55 +1045,12 @@ unsafe impl<T: Copy + 'static> FfiArg for crate::V<T> {
 // Safety: the value is written to the out-pointer
 unsafe impl<T: Copy + 'static> FfiReturn for crate::V<T> {
     type C = ();
-    fn result() -> FfiResult {
-        FfiResult::One(FfiType::Value(TypeId::of::<T>()))
+    fn result() -> FfiType {
+        FfiType::Value(TypeId::of::<T>())
     }
     unsafe fn into_c(self, out: *mut u8, _: *mut u8) -> Self::C {
         // Safety: upheld by the caller
         unsafe { out.cast::<T>().write(self.0) }
-    }
-}
-
-// Safety: see above
-unsafe impl<T: Copy + 'static> FfiAlternative for crate::V<T> {
-    const COUNT: u8 = 1;
-    fn alternatives(out: &mut Vec<FfiType>) {
-        out.push(FfiType::Value(TypeId::of::<T>()));
-    }
-    unsafe fn write(self, out: *mut u8, base: u8) -> u8 {
-        // Safety: upheld by the caller
-        unsafe { out.cast::<T>().write(self.0) };
-        base
-    }
-}
-
-// Safety: the alternative held, with the index of the side's alternatives
-unsafe impl<A: FfiAlternative, B: FfiAlternative> FfiAlternative for crate::Union<A, B> {
-    const COUNT: u8 = A::COUNT + B::COUNT;
-    fn alternatives(out: &mut Vec<FfiType>) {
-        A::alternatives(out);
-        B::alternatives(out);
-    }
-    unsafe fn write(self, out: *mut u8, base: u8) -> u8 {
-        // Safety: upheld by the caller
-        match self.into_left() {
-            Ok(a) => unsafe { a.write(out, base) },
-            Err(b) => unsafe { b.write(out, base + A::COUNT) },
-        }
-    }
-}
-
-// Safety: written to a C union of the alternatives, the index returned
-unsafe impl<A: FfiAlternative, B: FfiAlternative> FfiReturn for crate::Union<A, B> {
-    type C = u8;
-    fn result() -> FfiResult {
-        let mut alternatives = Vec::new();
-        <Self as FfiAlternative>::alternatives(&mut alternatives);
-        FfiResult::Union(alternatives)
-    }
-    unsafe fn into_c(self, out: *mut u8, _: *mut u8) -> Self::C {
-        // Safety: upheld by the caller
-        unsafe { self.write(out, 0) }
     }
 }
 
@@ -1139,13 +1059,18 @@ unsafe impl Send for FfiFunction {}
 // Safety: see above
 unsafe impl Sync for FfiFunction {}
 
-/// A scalar a field of an [`FfiLayout`] may have, every bit pattern of which is a valid value (languages may write any).
-///
-/// # Safety
-/// `C_TYPE` is the C type of the same size, alignment and representation.
-pub unsafe trait FfiScalar: Copy + 'static {
-    /// The C type
-    const C_TYPE: &'static str;
+/// The C type of `F` if it's a scalar a field of an [`FfiLayout`] may have: the same size, alignment and representation,
+/// and every bit pattern a valid value (languages may write any), which rules out `bool`.
+fn c_scalar<F: 'static>() -> Option<&'static str> {
+    let id = TypeId::of::<F>();
+    [
+        (TypeId::of::<f32>(), "float"),
+        (TypeId::of::<f64>(), "double"),
+        (TypeId::of::<i32>(), "int32_t"),
+        (TypeId::of::<u32>(), "uint32_t"),
+    ]
+    .into_iter()
+    .find_map(|(t, c)| (t == id).then_some(c))
 }
 
 /// Whether a Rust field name can name a field of a C struct: not a keyword of C or a type name C declarations use.
@@ -1159,7 +1084,7 @@ fn is_c_field_name(name: &str) -> bool {
     !RESERVED.contains(&name) && !name.starts_with("r#")
 }
 
-/// The size of a C type of an [`FfiScalar`].
+/// The size of the C type of a scalar, see [`c_scalar`].
 fn c_size(c_type: &str) -> Option<usize> {
     match c_type {
         "float" | "int32_t" | "uint32_t" => Some(4),
@@ -1169,92 +1094,108 @@ fn c_size(c_type: &str) -> Option<usize> {
     }
 }
 
-/// Picks the [`FfiType`] of a field of type `F` of an [`FfiLayout`] (autoref specialization, like [`FieldConv`]):
-/// [`FfiFieldScalar`] for [`FfiScalar`]s, else [`FfiFieldValue`], a native type, whose layout is looked up when the C
-/// struct is made (see [`FfiLayout::c_fields`]).
+/// The C layout of a struct of fields of the given `(size, alignment)`, in order, aligned to at least `align`: its size
+/// and alignment. The offset of each field is written to `offsets`, as far as it has room.
 ///
-/// ```rust,ignore
-/// use bevy_mod_scripting_bindings::native::{FfiFieldKind, FfiFieldScalar as _, FfiFieldValue as _};
-/// let ty = (&FfiFieldKind::<f32>::new()).ffi_type();
-/// ```
-pub struct FfiFieldKind<F>(std::marker::PhantomData<F>);
-
-impl<F> FfiFieldKind<F> {
-    /// The kind of `F`
-    pub const fn new() -> Self {
-        Self(std::marker::PhantomData)
-    }
-}
-
-impl<F> Default for FfiFieldKind<F> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// Scalar fields, see [`FfiFieldKind`].
-pub trait FfiFieldScalar {
-    /// The field's type
-    fn ffi_type(&self) -> FfiType;
-}
-
-impl<F: FfiScalar> FfiFieldScalar for FfiFieldKind<F> {
-    fn ffi_type(&self) -> FfiType {
-        FfiType::Scalar(F::C_TYPE)
-    }
-}
-
-/// Fields of native types, see [`FfiFieldKind`].
-pub trait FfiFieldValue {
-    /// The field's type
-    fn ffi_type(&self) -> FfiType;
-}
-
-impl<F: 'static> FfiFieldValue for &FfiFieldKind<F> {
-    fn ffi_type(&self) -> FfiType {
-        FfiType::Value(TypeId::of::<F>())
-    }
-}
-
-// Safety: the C types of the same size and representation
-unsafe impl FfiScalar for f32 {
-    const C_TYPE: &'static str = "float";
-}
-// Safety: see above
-unsafe impl FfiScalar for f64 {
-    const C_TYPE: &'static str = "double";
-}
-// Safety: see above
-unsafe impl FfiScalar for i32 {
-    const C_TYPE: &'static str = "int32_t";
-}
-// Safety: see above
-unsafe impl FfiScalar for u32 {
-    const C_TYPE: &'static str = "uint32_t";
-}
-
-/// The C layout of a struct of the scalar fields `(name, size, alignment)` in order, aligned to at least `align`: the offset
-/// of each field, the size and the alignment. Used by [`crate::script_native`] to check a Rust type at compile time.
-pub const fn ffi_layout<const N: usize>(
-    fields: [(usize, usize); N],
+/// It's what a type declared with [`NativeBuilder::ffi`] must have, checked when it's declared, and at compile time by
+/// [`crate::assert_ffi_layout`].
+pub const fn c_layout(
+    fields: &[(usize, usize)],
     align: usize,
-) -> ([usize; N], usize, usize) {
-    let mut offsets = [0; N];
+    offsets: &mut [usize],
+) -> (usize, usize) {
     let mut offset: usize = 0;
     let mut max_align = align;
     let mut i = 0;
-    while i < N {
+    while i < fields.len() {
         let (size, field_align) = fields[i];
         offset = offset.div_ceil(field_align) * field_align;
-        offsets[i] = offset;
+        if i < offsets.len() {
+            offsets[i] = offset;
+        }
         offset += size;
         if field_align > max_align {
             max_align = field_align;
         }
         i += 1;
     }
-    (offsets, offset.div_ceil(max_align) * max_align, max_align)
+    (offset.div_ceil(max_align) * max_align, max_align)
 }
+
+/// Makes the `extern "C"` form of a Rust function, see [`FfiFunction`]: implemented for functions and closures which
+/// capture nothing, of up to 5 parameters which are [`FfiArg`]s, returning an [`FfiReturn`].
+///
+/// ```rust,ignore
+/// // `v:dot(w)` as a C call, next to the registered `dot`
+/// registry.register_ffi(TypeId::of::<Vec3>(), "dot", |a: R<Vec3>, b: R<Vec3>| a.dot(*b));
+/// // a function taking a `Union` has a form for each alternative
+/// registry.register_ffi(TypeId::of::<Vec3>(), "add", |a: R<Vec3>, b: R<Vec3>| V(*a + *b));
+/// registry.register_ffi(TypeId::of::<Vec3>(), "add", |a: R<Vec3>, b: f32| V(*a + b));
+/// ```
+///
+/// A panic of the function aborts the process, as it can't unwind through C.
+///
+/// # Safety
+/// [`Self::ffi_function`] gives an `extern "C"` function with the parameters and result it says.
+#[diagnostic::on_unimplemented(
+    message = "this function has no FFI form",
+    note = "FFI functions capture nothing, take up to 5 `FfiArg`s (`f32`, `f64`, `i32`, `u32`, `bool`, `R<T>`, `V<T>`) and return an `FfiReturn`"
+)]
+pub unsafe trait FfiFn<Marker>: Copy + 'static {
+    /// The FFI form of the function, registered as `name`
+    fn ffi_function(self, name: &'static str) -> FfiFunction;
+}
+
+macro_rules! impl_ffi_fn {
+    ($($arg:ident),*) => {
+        // Safety: the trampoline takes each parameter as `FfiArg::C`, then the out-pointer and the `failed` pointer, and
+        // returns `FfiReturn::C`
+        unsafe impl<Function, Return, $($arg),*> FfiFn<fn($($arg),*) -> Return> for Function
+        where
+            Function: Fn($($arg),*) -> Return + Copy + 'static,
+            Return: FfiReturn,
+            $($arg: FfiArg,)*
+        {
+            fn ffi_function(self, name: &'static str) -> FfiFunction {
+                // the trampoline makes its own: the function is its type
+                let _ = self;
+                #[allow(non_snake_case, clippy::not_unsafe_ptr_arg_deref)]
+                extern "C" fn trampoline<Function, Return, $($arg),*>(
+                    $($arg: $arg::C,)*
+                    out: *mut u8,
+                    failed: *mut u8,
+                ) -> Return::C
+                where
+                    Function: Fn($($arg),*) -> Return + Copy + 'static,
+                    Return: FfiReturn,
+                    $($arg: FfiArg,)*
+                {
+                    const { assert!(size_of::<Function>() == 0, "FFI functions capture nothing") };
+                    // Safety: a type without bytes (asserted) which has a value (`ffi_function` was given one) and is
+                    // `Copy`: this is that value
+                    let function = unsafe { std::ptr::NonNull::<Function>::dangling().as_ptr().read() };
+                    // Safety (callers): arguments as `FfiArg::from_c` says, the pointers as `FfiReturn::into_c` says
+                    let output = function($(unsafe { $arg::from_c($arg) }),*);
+                    unsafe { output.into_c(out, failed) }
+                }
+                FfiFunction {
+                    name,
+                    function: trampoline::<Function, Return, $($arg),*> as *const (),
+                    params: vec![$($arg::kind()),*],
+                    result: Return::result(),
+                    fallible: Return::fallible(),
+                }
+            }
+        }
+    };
+}
+
+impl_ffi_fn!();
+impl_ffi_fn!(A1);
+impl_ffi_fn!(A1, A2);
+impl_ffi_fn!(A1, A2, A3);
+impl_ffi_fn!(A1, A2, A3, A4);
+impl_ffi_fn!(A1, A2, A3, A4, A5);
 
 impl NativeType {
     /// A native type with no fields yet.
@@ -1301,9 +1242,9 @@ impl NativeType {
     }
 
     /// Adds the struct field `name` of `T` of type `F`, at `offset`. Reading it gives a copy, read-only if `F` is a native type
-    /// (`t.translation.x = 5` is an error, `t.translation = v` writes the field). See [`crate::script_native`].
+    /// (`t.translation.x = 5` is an error, `t.translation = v` writes the field). What [`NativeBuilder`]'s fields are made with.
     ///
-    /// `ret` and `arg` convert the field's values, see [`FieldConv`].
+    /// `ret` and `arg` convert the field's values.
     ///
     /// # Safety
     /// Every `T` has an `F` at `offset`.
@@ -1371,6 +1312,227 @@ impl NativeType {
             .0
             .clone();
         registry.write().register_native_type(self);
+    }
+
+    /// Starts declaring the native type `T`, field by field, see [`NativeBuilder`].
+    pub fn of<T>() -> NativeBuilder<T>
+    where
+        T: bevy_reflect::FromReflect + bevy_reflect::Typed + Clone + 'static,
+    {
+        NativeBuilder {
+            native: Self::new::<T>(),
+            fields: Vec::new(),
+            _type: std::marker::PhantomData,
+        }
+    }
+}
+
+/// Declares a [`NativeType`]: a type languages store themselves, whose fields are read and written with typed accessors.
+///
+/// Every method which adds something is `unsafe`: languages read and write the fields at the offsets given, unchecked.
+///
+/// ```rust,ignore
+/// // Safety: the fields are at their offsets
+/// unsafe {
+///     NativeType::of::<Vec3>()
+///         .field("x", offset_of!(Vec3, x), |v| &v.x)
+///         .field("y", offset_of!(Vec3, y), |v| &v.y)
+///         .field("z", offset_of!(Vec3, z), |v| &v.z)
+/// }
+/// .register(world);
+/// ```
+///
+/// Each kind of field has its method, nothing is inferred:
+///
+/// | Method | The field is | Scripts get |
+/// |---|---|---|
+/// | [`field`](Self::field) | converted like an argument: a number, a `bool`, a `String` | the value, read and written in place where the language can |
+/// | [`value_field`](Self::value_field) | a reflected type passed as `V<F>`, i.e. another native type | a read-only copy, written whole |
+/// | [`deref_field`](Self::deref_field) | like `field`, reached through `Deref` (glam's SIMD types) | the same as `field` |
+///
+/// Native types are values, with no write-through: a field of a native type is read as a read-only copy and written whole
+/// (`t.translation.x = 5` is an error, `t.translation = v` writes the field), `clone` (registered with the type) gives a
+/// copy scripts can change. Components and resources of native types are native handles ([`NativePlace`]):
+/// `world.get_component(e, Transform)` returns one, which reads and writes the world.
+///
+/// [`ffi`](Self::ffi) also lets languages with an FFI (LuaJIT) store the values as plain C structs.
+pub struct NativeBuilder<T> {
+    native: NativeType,
+    /// The fields declared so far, for [`Self::ffi`]
+    fields: Vec<BuilderField>,
+    _type: std::marker::PhantomData<fn(T)>,
+}
+
+/// A field of a [`NativeBuilder`].
+struct BuilderField {
+    name: &'static str,
+    ty: FfiType,
+    offset: usize,
+    size: usize,
+    align: usize,
+}
+
+impl<T> NativeBuilder<T>
+where
+    T: bevy_reflect::FromReflect + bevy_reflect::Typed + Clone + 'static,
+{
+    fn add<F>(
+        mut self,
+        name: &'static str,
+        offset: usize,
+        ret: FieldRet<F>,
+        arg: FieldArg<F>,
+    ) -> Self
+    where
+        F: Reflect + Clone + 'static,
+    {
+        self.fields.push(BuilderField {
+            name,
+            ty: match c_scalar::<F>() {
+                Some(c) => FfiType::Scalar(c),
+                None => FfiType::Value(TypeId::of::<F>()),
+            },
+            offset,
+            size: size_of::<F>(),
+            align: align_of::<F>(),
+        });
+        // Safety: the caller's, see the methods adding fields
+        self.native = unsafe {
+            self.native
+                .with_struct_field::<T, F>(name, offset, ret, arg)
+        };
+        self
+    }
+
+    /// Adds the field `name` at `offset`, whose values are converted like arguments and results: numbers, `bool`s,
+    /// `String`s. `field` names it (`|v| &v.x`), which gives its type.
+    ///
+    /// # Safety
+    /// Every `T` has an `F` at `offset` (i.e. `offset_of!(T, x)` for the field `field` gives).
+    pub unsafe fn field<F>(self, name: &'static str, offset: usize, field: fn(&T) -> &F) -> Self
+    where
+        F: Reflect + Clone + crate::IntoScript + for<'s> crate::FromScript<This<'s> = F>,
+    {
+        let _ = field;
+        self.add::<F>(
+            name,
+            offset,
+            |value, sink, scope, native| value.into_ret(sink, scope, native),
+            |args, index, scope| F::from_arg(args, index, scope),
+        )
+    }
+
+    /// Adds the field `name` at `offset`, whose values are passed as `V<F>`: reflected types, i.e. other native types
+    /// (`Transform::translation`). Scripts read it as a read-only copy and write it whole.
+    ///
+    /// # Safety
+    /// Every `T` has an `F` at `offset` (i.e. `offset_of!(T, x)` for the field `field` gives).
+    pub unsafe fn value_field<F>(
+        self,
+        name: &'static str,
+        offset: usize,
+        field: fn(&T) -> &F,
+    ) -> Self
+    where
+        F: Reflect + Clone,
+        crate::V<F>: crate::IntoScript + for<'s> crate::FromScript<This<'s> = crate::V<F>>,
+    {
+        let _ = field;
+        self.add::<F>(
+            name,
+            offset,
+            |value, sink, scope, native| {
+                crate::IntoScript::into_ret(crate::V(value), sink, scope, native)
+            },
+            |args, index, scope| {
+                <crate::V<F> as crate::FromScript>::from_arg(args, index, scope).map(|v| v.0)
+            },
+        )
+    }
+
+    /// Adds the field `name` reached through `T`'s `Deref`, like [`Self::field`]: its offset is measured once, in the
+    /// default value, so it's read and written in place like any field.
+    ///
+    /// # Safety
+    /// `T`'s `Deref` is to the value itself, the field at the same offset in every value: glam's SIMD types cast `self`
+    /// to a `repr(C)` view of their components. Never when the target depends on the value (an enum holding it inline or
+    /// boxed) or is elsewhere (a `Box`, an `Arc`).
+    ///
+    /// # Panics
+    /// If the field isn't inside the default value, or wouldn't be aligned in every value.
+    pub unsafe fn deref_field<F>(self, name: &'static str, field: fn(&T) -> &F) -> Self
+    where
+        T: Default,
+        F: Reflect + Clone + crate::IntoScript + for<'s> crate::FromScript<This<'s> = F>,
+    {
+        // Safety: the caller's
+        unsafe {
+            let offset = deref_field_offset(field);
+            self.field(name, offset, field)
+        }
+    }
+
+    /// Declares the C layout of the values, the fields declared so far in order (see [`FfiLayout`]): languages with an
+    /// FFI (LuaJIT) then store them as plain C structs, which scripts can write byte by byte at any time. Fields which
+    /// aren't `f32`, `f64`, `i32`, `u32` or a native type with such fields keep the values as they were.
+    ///
+    /// Check the layout at compile time too, with [`crate::assert_ffi_layout`].
+    ///
+    /// # Safety
+    /// Every bit pattern of the fields is a valid `T`: there's no invariant between or within them (a vector, not a
+    /// normalised direction), and no field left out.
+    ///
+    /// # Panics
+    /// If `T` isn't laid out like the C struct of the fields: another size or alignment, or a field somewhere else.
+    pub unsafe fn ffi(mut self) -> Self
+    where
+        T: Copy,
+    {
+        let sizes = self
+            .fields
+            .iter()
+            .map(|f| (f.size, f.align))
+            .collect::<Vec<_>>();
+        let mut offsets = vec![0; sizes.len()];
+        let (size, align) = c_layout(&sizes, align_of::<T>(), &mut offsets);
+        let type_name = std::any::type_name::<T>();
+        assert!(
+            size == size_of::<T>()
+                && align == align_of::<T>()
+                && self.fields.iter().map(|f| f.offset).eq(offsets),
+            "{type_name} isn't laid out like the C struct of its fields, it can't be declared with `ffi`",
+        );
+        self.native.ffi = Some(FfiLayout {
+            name: format!(
+                "bms_{}",
+                type_name.replace(|c: char| !c.is_ascii_alphanumeric(), "_")
+            )
+            .into(),
+            size,
+            align,
+            fields: self
+                .fields
+                .iter()
+                .map(|f| FfiField {
+                    name: f.name,
+                    ty: f.ty,
+                    offset: f.offset,
+                })
+                .collect(),
+        });
+        self
+    }
+
+    /// The native type declared.
+    pub fn build(self) -> NativeType {
+        self.native
+    }
+
+    /// Registers the native type, and `clone` on it (see [`register_clone`]): values of it made by typed functions are
+    /// then stored natively by the languages.
+    pub fn register(self, world: &mut World) {
+        self.native.register(world);
+        register_clone::<T>(world);
     }
 }
 
@@ -1448,28 +1610,27 @@ pub fn native_vtable(world: &WorldGuard, type_id: TypeId) -> Option<&'static Nat
         .map(|t| t.vtable)
 }
 
-/// The offset of the field `F` of `T` reached through `Deref`, for [`crate::script_native`]'s `deref` form: measured in
+/// The offset of the field `F` of `T` reached through `Deref`, for [`NativeBuilder::deref_field`]: measured in
 /// the default value (glam's SIMD vectors deref to themselves), checked to be inside it and aligned in every value.
 ///
 /// # Safety
-/// `project` gives the field of the `T` it's given a pointer to, and `T`'s `Deref` puts it at the same offset in every
+/// `project` gives a field of the `T` it's given, and `T`'s `Deref` puts it at the same offset in every
 /// value, inside the value: a `Deref` to the value itself (i.e. casting `self` to a `repr(C)` view of it). Not when the
 /// target depends on the value (an enum with an inline or a boxed target) or is elsewhere (a `Box`).
 ///
 /// # Panics
 /// If the field isn't inside the default value, or wouldn't be aligned in every value.
-#[doc(hidden)]
-pub unsafe fn deref_field_offset<T: Default, F>(project: fn(*const T) -> *const F) -> usize {
+unsafe fn deref_field_offset<T: Default, F>(project: fn(&T) -> &F) -> usize {
     let value = T::default();
     let base = &value as *const T;
-    let offset =
-        field_offset::<T, F>(base as *const u8, project(base) as *const u8).filter(|offset| {
+    let offset = field_offset::<T, F>(base as *const u8, project(&value) as *const F as *const u8)
+        .filter(|offset| {
             offset.is_multiple_of(align_of::<F>())
                 && align_of::<T>().is_multiple_of(align_of::<F>())
         });
     assert!(
         offset.is_some(),
-        "`Deref` of {} doesn't put a field inside the value, it can't be declared with `deref`",
+        "`Deref` of {} doesn't put a field inside the value, it can't be declared with `deref_field`",
         std::any::type_name::<T>()
     );
     offset.unwrap_or_default()
@@ -1490,73 +1651,6 @@ pub type FieldArg<F> = for<'s, 'w> fn(
     &'s bevy_mod_scripting_world::CallScope<'w>,
 ) -> Result<F, InteropError>;
 
-/// Picks how [`crate::script_native`] converts the values of a field of type `F` (autoref specialization):
-/// [`FieldConvScript`] for types converted like arguments and results (numbers, strings), else [`FieldConvValue`] (`V<F>`,
-/// i.e. native types).
-///
-/// ```rust,ignore
-/// use bevy_mod_scripting_bindings::native::{FieldConv, FieldConvScript as _, FieldConvValue as _};
-/// let ret = (&FieldConv::<f32>::new()).ret();
-/// ```
-pub struct FieldConv<F>(std::marker::PhantomData<F>);
-
-impl<F> FieldConv<F> {
-    /// The converter of `F`
-    pub fn new() -> Self {
-        Self(std::marker::PhantomData)
-    }
-}
-
-impl<F> Default for FieldConv<F> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// Fields converted like arguments and results, see [`FieldConv`].
-pub trait FieldConvScript<F> {
-    /// The conversion of a read value
-    fn ret(&self) -> FieldRet<F>;
-    /// The conversion of a written value
-    fn arg(&self) -> FieldArg<F>;
-}
-
-impl<F> FieldConvScript<F> for FieldConv<F>
-where
-    F: crate::IntoScript + for<'s> crate::FromScript<This<'s> = F>,
-{
-    fn ret(&self) -> FieldRet<F> {
-        |value, sink, scope, native| value.into_ret(sink, scope, native)
-    }
-    fn arg(&self) -> FieldArg<F> {
-        |args, index, scope| F::from_arg(args, index, scope)
-    }
-}
-
-/// Fields converted as `V<F>`, i.e. of native types, see [`FieldConv`].
-pub trait FieldConvValue<F> {
-    /// The conversion of a read value
-    fn ret(&self) -> FieldRet<F>;
-    /// The conversion of a written value
-    fn arg(&self) -> FieldArg<F>;
-}
-
-impl<F> FieldConvValue<F> for &FieldConv<F>
-where
-    crate::V<F>: crate::IntoScript + for<'s> crate::FromScript<This<'s> = crate::V<F>>,
-{
-    fn ret(&self) -> FieldRet<F> {
-        |value, sink, scope, native| {
-            crate::IntoScript::into_ret(crate::V(value), sink, scope, native)
-        }
-    }
-    fn arg(&self) -> FieldArg<F> {
-        |args, index, scope| {
-            <crate::V<F> as crate::FromScript>::from_arg(args, index, scope).map(|v| v.0)
-        }
-    }
-}
-
 /// Registers `clone` on the native type `T`, unless it has one: a copy scripts can change, i.e. of the read-only copy
 /// reading a field gives (`local p = t.translation:clone(); p.x = 5; t.translation = p`).
 pub fn register_clone<T>(world: &mut World)
@@ -1573,207 +1667,47 @@ where
     }
 }
 
-/// Declares a [`NativeType`] with typed accessors for the given struct fields, and registers it.
-///
-/// ```rust,ignore
-/// script_native!(world, bevy_math::Vec3 { x: f32, y: f32, z: f32 });
-/// script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });
-/// // fields reached through `Deref`, i.e. glam's SIMD vectors (`Default` types): their offsets are measured once, in the
-/// // default value, so they're read and written in place like any field.
-/// // Safety: only for a `Deref` to the value itself, the target at the same offset in every value (glam casts `self` to a
-/// // `repr(C)` view of its components). Never when the target depends on the value (an enum holding it inline or boxed) or
-/// // is elsewhere (a `Box`, an `Arc`): see `native::deref_field_offset`
-/// unsafe { script_native!(world, deref bevy_math::Vec4 { x: f32, y: f32, z: f32, w: f32 }) };
-/// ```
-///
-/// Native types are values, with no write-through: a field of a native type is read as a read-only copy and written whole
-/// (`t.translation.x = 5` is an error, `t.translation = v` writes the field), `clone` gives a copy scripts can change.
-/// Components and resources of native types are native handles ([`NativePlace`]): `world.get_component(e, Transform)`
-/// returns one, which reads and writes the world.
-///
-/// Fields are checked to be of the declared type, exactly:
+/// Checks at compile time that `$ty` is laid out like the C struct of the given fields, as a type declared with
+/// [`NativeBuilder::ffi`] must be: it and its fields are `Copy`, and it has the size and alignment of the C struct
+/// (aligned like the type). The offsets of the fields are checked when the type is declared, as fields reached through
+/// `Deref` have none at compile time.
 ///
 /// ```rust
-/// # use bevy_ecs::world::World;
-/// #[derive(bevy_reflect::Reflect, Clone, Default)]
-/// struct Inner {
-///     x: f32,
+/// #[derive(Clone, Copy)]
+/// struct Health {
+///     current: f32,
+///     max: f32,
 /// }
-/// // the type of the failing example below, which compiles
-/// #[derive(bevy_reflect::Reflect, Clone, Default)]
-/// struct Outer {
-///     #[reflect(ignore)]
-///     inner: Box<Inner>,
-/// }
-/// let mut world = World::default();
-/// bevy_mod_scripting_bindings::script_native!(&mut world, Inner { x: f32 });
+/// bevy_mod_scripting_bindings::assert_ffi_layout!(Health { current: f32, max: f32 });
 /// ```
 ///
-/// ```rust,compile_fail,E0308
-/// # use bevy_ecs::world::World;
-/// #[derive(bevy_reflect::Reflect, Clone, Default)]
-/// struct Inner {
-///     x: f32,
+/// ```rust,compile_fail
+/// #[derive(Clone, Copy)]
+/// struct Health {
+///     current: f32,
+///     max: f32,
+///     regenerates: bool,
 /// }
-/// #[derive(bevy_reflect::Reflect, Clone, Default)]
-/// struct Outer {
-///     #[reflect(ignore)]
-///     inner: Box<Inner>,
-/// }
-/// let mut world = World::default();
-/// // a `Box<Inner>` isn't an `Inner`, its pointer would be read as one
-/// bevy_mod_scripting_bindings::script_native!(&mut world, Outer { inner: Inner });
+/// // a field is missing: the C struct of these is smaller
+/// bevy_mod_scripting_bindings::assert_ffi_layout!(Health { current: f32, max: f32 });
 /// ```
 #[macro_export]
-macro_rules! script_native {
-    // the C layout of `ffi` forms, the same as the type's: a `Copy` struct of fields at the same offsets, scalars or
-    // native types with a layout of scalars (checked when the C struct is made, see `FfiLayout::c_fields`)
-    (@ffi_checks $ty:ty { $($field:ident : $field_ty:ty),* }) => {
+macro_rules! assert_ffi_layout {
+    ($ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
         const _: fn() = || {
             fn copy<T: Copy>() {}
             copy::<$ty>();
             $(copy::<$field_ty>();)*
         };
         const _: () = {
-            let (_, size, align) = $crate::native::ffi_layout(
-                [$((::core::mem::size_of::<$field_ty>(), ::core::mem::align_of::<$field_ty>())),*],
+            let (size, align) = $crate::native::c_layout(
+                &[$((::core::mem::size_of::<$field_ty>(), ::core::mem::align_of::<$field_ty>())),*],
                 ::core::mem::align_of::<$ty>(),
+                &mut [],
             );
             assert!(size == ::core::mem::size_of::<$ty>(), "the C struct of the fields has another size");
             assert!(align == ::core::mem::align_of::<$ty>(), "the C struct of the fields has another alignment");
         };
-    };
-    (@ffi_layout $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
-        let (offsets, size, align) = $crate::native::ffi_layout(
-            [$((::core::mem::size_of::<$field_ty>(), ::core::mem::align_of::<$field_ty>())),*],
-            ::core::mem::align_of::<$ty>(),
-        );
-        #[allow(unused_imports)]
-        use $crate::native::{FfiFieldScalar as _, FfiFieldValue as _};
-        let names = [$(stringify!($field)),*];
-        let types = [$((&$crate::native::FfiFieldKind::<$field_ty>::new()).ffi_type()),*];
-        $crate::native::FfiLayout {
-            name: format!(
-                "bms_{}",
-                stringify!($ty).replace(|c: char| !c.is_ascii_alphanumeric(), "_")
-            )
-            .into(),
-            size,
-            align,
-            fields: (0..names.len())
-                .map(|i| $crate::native::FfiField { name: names[i], ty: types[i], offset: offsets[i] })
-                .collect(),
-        }
-    }};
-    (@deref $world:expr, $ffi:expr, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
-        #[allow(unused_imports)]
-        use $crate::native::{FieldConvScript as _, FieldConvValue as _};
-        let native = $crate::native::NativeType::new::<$ty>();
-        $(
-            // NOT in an `unsafe` block: the caller's, see `deref_field_offset` (`$ty`'s `Deref` puts the field at the same
-            // offset in every value); the blocks below are nested in it
-            #[allow(unused_unsafe)]
-            let offset = $crate::native::deref_field_offset::<$ty, $field_ty>(|value| {
-                // Safety: a pointer to a valid `$ty`, the field is borrowed from it
-                unsafe { &(&*value).$field as *const $field_ty }
-            });
-            // Safety: every value has a `$field_ty` (the compiler checks the type) at the offset
-            #[allow(unused_unsafe)]
-            let native = unsafe {
-                native.with_struct_field::<$ty, $field_ty>(
-                    stringify!($field),
-                    offset,
-                    (&$crate::native::FieldConv::<$field_ty>::new()).ret(),
-                    (&$crate::native::FieldConv::<$field_ty>::new()).arg(),
-                )
-            };
-        )*
-        // nested in the caller's `unsafe` block in the `deref` forms
-        #[allow(unused_unsafe)]
-        let native = match $ffi {
-            // Safety: checked by the `ffi` form
-            Some(layout) => unsafe { native.with_ffi(layout) },
-            None => native,
-        };
-        native.register($world);
-        $crate::native::register_clone::<$ty>($world);
-    }};
-    (@offset $world:expr, $ffi:expr, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
-        #[allow(unused_imports)]
-        use $crate::native::{FieldConvScript as _, FieldConvValue as _};
-        let native = $crate::native::NativeType::new::<$ty>();
-        $(
-            // a field of the type itself (`offset_of!` below doesn't go through `Deref`), of exactly this type: a raw
-            // pointer isn't coerced, a reference would be (`&Box<F>` to `&F`)
-            const _: fn(&$ty) -> *const $field_ty = |value| ::core::ptr::addr_of!(value.$field);
-            // and one which can be borrowed: not packed (misaligned) or in a union
-            const _: fn(&$ty) = |value| {
-                let _ = &value.$field;
-            };
-            // Safety: every value has a `$field_ty` (checked above) at the offset
-            let native = unsafe {
-                native.with_struct_field::<$ty, $field_ty>(
-                    stringify!($field),
-                    ::core::mem::offset_of!($ty, $field),
-                    (&$crate::native::FieldConv::<$field_ty>::new()).ret(),
-                    (&$crate::native::FieldConv::<$field_ty>::new()).arg(),
-                )
-            };
-        )*
-        // nested in the caller's `unsafe` block in the `deref` forms
-        #[allow(unused_unsafe)]
-        let native = match $ffi {
-            // Safety: checked by the `ffi` form
-            Some(layout) => unsafe { native.with_ffi(layout) },
-            None => native,
-        };
-        native.register($world);
-        $crate::native::register_clone::<$ty>($world);
-    }};
-    // stored as plain C structs where a language can (LuaJIT cdata), fields reached through `Deref` (glam's SIMD types):
-    // the size and alignment are checked at compile time, the offsets when registered
-    (@ffi_deref $world:expr, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
-        $crate::script_native!(@ffi_checks $ty { $($field: $field_ty),* });
-        let layout = $crate::script_native!(@ffi_layout $ty { $($field: $field_ty),* });
-        let value = <$ty as ::core::default::Default>::default();
-        let base = &value as *const $ty as usize;
-        let offsets = [$(&value.$field as *const $field_ty as usize - base),*];
-        assert!(
-            layout.fields.iter().map(|f| f.offset).eq(offsets),
-            "the fields of {} aren't where its C struct puts them",
-            stringify!($ty)
-        );
-        $crate::script_native!(@deref $world, Some(layout), $ty { $($field: $field_ty),* });
-    }};
-    // stored as plain C structs where a language can (LuaJIT cdata): the whole layout is checked at compile time
-    (@ffi_offset $world:expr, $ty:ty { $($field:ident : $field_ty:ty),* }) => {{
-        $crate::script_native!(@ffi_checks $ty { $($field: $field_ty),* });
-        const _: () = {
-            let (offsets, _, _) = $crate::native::ffi_layout(
-                [$((::core::mem::size_of::<$field_ty>(), ::core::mem::align_of::<$field_ty>())),*],
-                ::core::mem::align_of::<$ty>(),
-            );
-            let actual = [$(::core::mem::offset_of!($ty, $field)),*];
-            let mut i = 0;
-            while i < actual.len() {
-                assert!(actual[i] == offsets[i], "a field isn't where the C struct of the fields puts it");
-                i += 1;
-            }
-        };
-        let layout = $crate::script_native!(@ffi_layout $ty { $($field: $field_ty),* });
-        $crate::script_native!(@offset $world, Some(layout), $ty { $($field: $field_ty),* });
-    }};
-    ($world:expr, ffi deref $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
-        $crate::script_native!(@ffi_deref $world, $ty { $($field: $field_ty),* })
-    };
-    ($world:expr, ffi $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
-        $crate::script_native!(@ffi_offset $world, $ty { $($field: $field_ty),* })
-    };
-    ($world:expr, deref $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
-        $crate::script_native!(@deref $world, None, $ty { $($field: $field_ty),* })
-    };
-    ($world:expr, $ty:ty { $($field:ident : $field_ty:ty),* $(,)? }) => {
-        $crate::script_native!(@offset $world, None, $ty { $($field: $field_ty),* })
     };
 }
 
@@ -2049,7 +1983,7 @@ mod test {
         unsafe { &*(NativeStorage::value(native.base()) as *const T) }
     }
 
-    /// The whole chain a language goes through: registering a native type with `script_native!`, making values with typed
+    /// The whole chain a language goes through: registering a native type with `NativeBuilder`, making values with typed
     /// functions, fields, a value passed twice, non native arguments (the slow path), and copies into references.
     #[test]
     fn native_values_through_the_whole_chain() {
@@ -2074,13 +2008,13 @@ mod test {
         .into_dynamic_script_function();
 
         let mut world = World::default();
-        crate::script_native!(
-            &mut world,
-            Labelled {
-                value: f32,
-                label: String
-            }
-        );
+        // Safety: the fields are at their offsets
+        unsafe {
+            NativeType::of::<Labelled>()
+                .field("value", std::mem::offset_of!(Labelled, value), |l| &l.value)
+                .field("label", std::mem::offset_of!(Labelled, label), |l| &l.label)
+        }
+        .register(&mut world);
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldAccessGuard::with_static_guard(&mut world, cache, |world| {
             // a native value returned by a typed call
@@ -2095,7 +2029,7 @@ mod test {
             let made = made.native.unwrap();
             assert_eq!(value_in::<Labelled>(&made).label, "made");
 
-            // fields, through the accessors `script_native!` registered
+            // fields, through the accessors `NativeBuilder` registered
             let fields = {
                 let registry = world.script_function_registry();
                 let registry = registry.read();
@@ -2214,14 +2148,16 @@ mod test {
             registry.register::<Outer>();
             registry.register::<Inner>();
         }
-        crate::script_native!(
-            &mut world,
-            Outer {
-                inner: Inner,
-                n: f32
-            }
-        );
-        crate::script_native!(&mut world, Inner { x: f32 });
+        // Safety: the fields are at their offsets
+        unsafe {
+            NativeType::of::<Outer>()
+                .value_field("inner", std::mem::offset_of!(Outer, inner), |o| &o.inner)
+                .field("n", std::mem::offset_of!(Outer, n), |o| &o.n)
+                .register(&mut world);
+            NativeType::of::<Inner>()
+                .field("x", std::mem::offset_of!(Inner, x), |i| &i.x)
+                .register(&mut world);
+        }
         let outer_value = |x| Outer {
             inner: Inner { x },
             n: 2.0,
@@ -2429,7 +2365,7 @@ mod test {
     fn fields_through_deref() {
         let mut world = World::default();
         // Safety: `Small` derefs to a field of itself
-        unsafe { crate::script_native!(&mut world, deref Small { x: f32 }) };
+        unsafe { NativeType::of::<Small>().deref_field("x", |s| &s.x) }.register(&mut world);
         let make = (|| {
             V(Small {
                 pad: 7,
@@ -2479,7 +2415,7 @@ mod test {
         });
         let boxed = std::panic::catch_unwind(|| {
             // Safety: not upheld, which is caught when it's declared
-            unsafe { crate::script_native!(&mut World::default(), deref Boxed { x: f32 }) };
+            unsafe { NativeType::of::<Boxed>().deref_field("x", |b| &b.x) };
         });
         assert!(boxed.is_err(), "a `Deref` to elsewhere can't be declared");
     }

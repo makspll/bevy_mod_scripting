@@ -44,12 +44,25 @@ Do not write getters or setters for public fields.
 Hot value types, i.e. `Vec3`, can be stored by the languages themselves instead of being referenced through the world. Functions read them without converting to `ScriptValue`s:
 
 ```rust,ignore
-// fields are read and written with typed accessors
-script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
-// components (and resources) of native types are native handles: `get_component` returns one, `t.translation = v`
-// writes the component
-script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });
+// Safety: the fields are at their offsets
+unsafe {
+    // `field`: converted like an argument (numbers, `bool`, `String`), read and written with typed accessors
+    NativeType::of::<Vec3>()
+        .field("x", offset_of!(Vec3, x), |v| &v.x)
+        .field("y", offset_of!(Vec3, y), |v| &v.y)
+        .field("z", offset_of!(Vec3, z), |v| &v.z)
+        .register(world);
+    // `value_field`: another reflected type, i.e. a native one. Components (and resources) of native types are native
+    // handles: `get_component` returns one, `t.translation = v` writes the component
+    NativeType::of::<Transform>()
+        .value_field("translation", offset_of!(Transform, translation), |t| &t.translation)
+        .value_field("rotation", offset_of!(Transform, rotation), |t| &t.rotation)
+        .value_field("scale", offset_of!(Transform, scale), |t| &t.scale)
+        .register(world);
+}
 ```
+
+Nothing is inferred: each kind of field has its method on `NativeBuilder`, and every one is `unsafe`, as languages read and write the fields at the offsets given. The closure names the field, which gives its type. For LuaJIT's C layouts and FFI functions (`ffi`, `register_ffi`), see [LuaJIT internals](./LanguageInternals/luajit.md).
 
 Native types are values, with no write-through: a field of a native type is read as a read-only copy (`t.translation.x = 5` is an error, not a lost write) and written whole (`t.translation = v`); `clone` gives a copy scripts can change. Functions get copies of the native values scripts hold (`M<T>` is written back when the call ends), so a script may use a value while a call has it. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren't native, i.e. references, are converted as usual.
 

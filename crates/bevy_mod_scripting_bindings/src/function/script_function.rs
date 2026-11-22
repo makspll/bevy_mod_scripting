@@ -687,6 +687,29 @@ impl ScriptFunctionRegistry {
         self.native_types.insert(type_id, Arc::new(native));
     }
 
+    /// Registers the FFI form of the function `name` of the type `type_id`, made from a Rust function which does the same
+    /// with C types (see [`crate::native::FfiFn`]): languages with an FFI (LuaJIT) call it instead when the arguments are
+    /// of its types. A function taking a [`crate::Union`] has a form for each alternative:
+    ///
+    /// ```rust,ignore
+    /// registry.register_ffi(TypeId::of::<Vec3>(), "add", |a: R<Vec3>, b: R<Vec3>| V(*a + *b));
+    /// registry.register_ffi(TypeId::of::<Vec3>(), "add", |a: R<Vec3>, b: f32| V(*a + b));
+    /// ```
+    ///
+    /// Register it after the function itself (see [`Self::register_ffi_function`]). The types of `R<T>` and `V<T>` need a
+    /// C layout (`NativeBuilder::ffi`), which languages check when they make their C types.
+    ///
+    /// A panic of `function` aborts the process: only for functions which don't panic.
+    pub fn register_ffi<Marker>(
+        &mut self,
+        type_id: TypeId,
+        name: &'static str,
+        function: impl crate::native::FfiFn<Marker>,
+    ) {
+        // Safety: `FfiFn` gives a function of the signature it says
+        unsafe { self.register_ffi_function(type_id, function.ffi_function(name)) }
+    }
+
     /// Registers a function of the type `type_id` callable through a language's FFI, replacing one with the same name and
     /// parameters: a function has an FFI form for each way its parameters are passed (see [`crate::Union`]).
     ///
@@ -1027,7 +1050,7 @@ mod test {
                     name: "test",
                     function: std::ptr::null(),
                     params: vec![],
-                    result: crate::native::FfiResult::One(crate::native::FfiType::Scalar("float")),
+                    result: crate::native::FfiType::Scalar("float"),
                     fallible: false,
                 },
             )

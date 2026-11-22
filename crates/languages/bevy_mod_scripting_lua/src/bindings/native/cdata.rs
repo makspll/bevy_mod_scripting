@@ -3,7 +3,7 @@
 //! - The FFI library is loaded privately (`luaopen_ffi`, never a global or `require`-able), the first time a value of
 //!   such a type reaches Lua.
 //! - Each type is a C struct (`ffi.cdef`) with a metatype: fields are plain FFI fields; functions with an `extern "C"`
-//!   wrapper (`#[ffi]` in `#[script_bindings]` blocks, see [`FfiFunction`]) are called through the FFI with C types, after checking
+//!   form (`ScriptFunctionRegistry::register_ffi`, see [`FfiFunction`]) are called through the FFI with C types, after checking
 //!   their arguments are of the expected types, else (and for other functions) through BMS' typed functions, which find
 //!   cdata on the stack ([`cdata_at`], [`super::LuaArgs`]); operators call their functions the same way.
 //! - Values Rust returns are copied into new cdata (see `Ready::Cdata`); scripts can write every byte of a cdata at any
@@ -21,9 +21,7 @@ use std::{
 use bevy_mod_scripting_bindings::function::namespace::FunctionScope;
 use bevy_mod_scripting_bindings::{
     InteropError, ScriptValue, WorldExtensions, dispatch,
-    native::{
-        FfiFunction, FfiLayout, FfiResult, FfiType, NativeType, NativeVTable, take_ffi_error,
-    },
+    native::{FfiFunction, FfiLayout, FfiType, NativeType, NativeVTable, take_ffi_error},
 };
 use bevy_mod_scripting_bindings_domain::ScriptOperatorNames;
 use bevy_mod_scripting_world::ThreadWorldContainer;
@@ -234,10 +232,10 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
                 .map_or_else(|| format!("{type_id:?}"), |n| n.vtable.type_name.to_owned())
         };
         for (owner, function) in registry.all_ffi_functions() {
-            let used = function.params.iter().chain(match &function.result {
-                FfiResult::One(result) => std::slice::from_ref(result),
-                FfiResult::Union(alternatives) => alternatives.as_slice(),
-            });
+            let used = function
+                .params
+                .iter()
+                .chain(std::iter::once(&function.result));
             let missing = std::iter::once(owner)
                 .chain(used.filter_map(|t| match t {
                     FfiType::Value(type_id) => Some(*type_id),
@@ -246,10 +244,9 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
                 .find(|type_id| !has_layout(*type_id));
             if let Some(missing) = missing {
                 return Err(mlua::Error::RuntimeError(format!(
-                    "`{}::{}` is an `#[ffi]` function, but `{}` has no C layout: declare it with `script_native!(world, ffi {} {{ .. }})`, or remove `#[ffi]`",
+                    "`{}::{}` has an FFI form, but `{}` has no C layout: declare one with `NativeBuilder::ffi`, or don't register the FFI form",
                     name(owner),
                     function.name,
-                    name(missing),
                     name(missing),
                 )));
             }
@@ -606,55 +603,15 @@ fn function_source(
         true => format!("{out}, {failed}"),
         false => format!("{args}, {out}, {failed}"),
     };
-    // the scratch union of a `Union` result, made with the function
-    let mut setup = String::new();
     let (c_result, call) = match &function.result {
-        FfiResult::Union(alternatives) => {
-            let mut members = Vec::new();
-            let mut reads = Vec::new();
-            for (i, alternative) in alternatives.iter().enumerate() {
-                let i = i + 1;
-                match alternative {
-                    FfiType::Scalar(c) => {
-                        members.push(format!("{c} a{i};"));
-                        reads.push(format!("U.a{i}"));
-                    }
-                    FfiType::Value(type_id) => {
-                        let (lua_ctype, c_name) = ctype(*type_id)?;
-                        members.push(format!("{c_name} a{i};"));
-                        // copied, like a single result from its scratch value
-                        reads.push(format!("{lua_ctype}(U.a{i})"));
-                    }
-                }
-            }
-            let _ = write!(
-                setup,
-                "local U = ffi.new(\"union {{ {} }}\") ",
-                members.join(" ")
-            );
-            // the index of the alternative written, the last one needs no check
-            let mut call = format!("local t = f{pointer}({}) {check}", with_out("U"));
-            let last = reads.len().saturating_sub(1);
-            for (i, read) in reads.iter().enumerate() {
-                match i == last {
-                    true => {
-                        let _ = write!(call, "return {read}");
-                    }
-                    false => {
-                        let _ = write!(call, "if t == {i} then return {read} end ");
-                    }
-                }
-            }
-            ("uint8_t".to_owned(), call)
-        }
-        FfiResult::One(FfiType::Scalar(c)) => (
+        FfiType::Scalar(c) => (
             c.to_string(),
             match function.fallible {
                 true => format!("local r = f{pointer}({}) {check}return r", with_out("nil")),
                 false => format!("return f{pointer}({})", with_out("nil")),
             },
         ),
-        FfiResult::One(FfiType::Value(type_id)) => {
+        FfiType::Value(type_id) => {
             let (lua_ctype, _) = ctype(*type_id)?;
             // written to the type's scratch value and copied from it: a result made here and passed to C would always
             // be allocated, a copy made by Lua can be optimised away. Nothing else points to the scratch value.
@@ -674,8 +631,9 @@ fn function_source(
     };
     Some(format!(
         // in a block: a chunk has room for 200 locals only
-        // other arguments go to the function's FFI form made before this one (see `Union`), else through BMS
-        "do {setup}local f{pointer}, other = cast(\"{c_result} (*)({})\", ptrs[{pointer}]), methods[{name:?}] or slow[{name:?}]\nlocal function w({args}) if {guard} then {call} end return other({args}) end\nmethods[{name:?}] = w statics[{name:?}] = w end\n",
+        // other arguments go to the function's FFI form made before this one (a function taking a `Union` has one for
+        // each alternative), else through BMS
+        "do local f{pointer}, other = cast(\"{c_result} (*)({})\", ptrs[{pointer}]), methods[{name:?}] or slow[{name:?}]\nlocal function w({args}) if {guard} then {call} end return other({args}) end\nmethods[{name:?}] = w statics[{name:?}] = w end\n",
         c_params.join(", ")
     ))
 }
@@ -826,7 +784,14 @@ mod test {
             .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
             .write()
             .register::<C>();
-        bevy_mod_scripting_bindings::script_native!(&mut world, ffi C { x: f32 });
+        bevy_mod_scripting_bindings::assert_ffi_layout!(C { x: f32 });
+        // Safety: the field is at its offset, any bits are a `C`
+        unsafe {
+            NativeType::of::<C>()
+                .field("x", std::mem::offset_of!(C, x), |c| &c.x)
+                .ffi()
+        }
+        .register(&mut world);
         // a type with a field of the cdata type: reading it gives a read-only copy, a `const` cdata
         #[derive(bevy_reflect::Reflect, Clone, Default)]
         struct Holder {
@@ -836,21 +801,11 @@ mod test {
             .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
             .write()
             .register::<Holder>();
-        bevy_mod_scripting_bindings::script_native!(&mut world, Holder { c: C });
-        // `add` through BMS adds, its FFI form also adds 100, to tell which one ran
-        extern "C" fn add(a: *const C, b: *const C, out: *mut C, _failed: *mut u8) {
-            // Safety: called by the generated Lua with cdata of `C`
-            unsafe {
-                out.write(C {
-                    x: (*a).x + (*b).x + 100.0,
-                })
-            }
+        // Safety: the field is at its offset
+        unsafe {
+            NativeType::of::<Holder>().value_field("c", std::mem::offset_of!(Holder, c), |h| &h.c)
         }
-        // a function named like a keyword of Lua, its FFI form also subtracts 100
-        extern "C" fn not(a: *const C, out: *mut C, _failed: *mut u8) {
-            // Safety: called by the generated Lua with a cdata of `C`
-            unsafe { out.write(C { x: -(*a).x - 100.0 }) }
-        }
+        .register(&mut world);
         // a type with padding after its fields
         #[derive(bevy_reflect::Reflect, Clone, Copy, Default)]
         struct Padded {
@@ -861,7 +816,15 @@ mod test {
             .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
             .write()
             .register::<Padded>();
-        bevy_mod_scripting_bindings::script_native!(&mut world, ffi Padded { x: f64, y: f32 });
+        bevy_mod_scripting_bindings::assert_ffi_layout!(Padded { x: f64, y: f32 });
+        // Safety: the fields are at their offsets, any bits are a `Padded`
+        unsafe {
+            NativeType::of::<Padded>()
+                .field("x", std::mem::offset_of!(Padded, x), |p| &p.x)
+                .field("y", std::mem::offset_of!(Padded, y), |p| &p.y)
+                .ffi()
+        }
+        .register(&mut world);
         NamespaceBuilder::<C>::new(&mut world)
             .register("add", |a: R<C>, b: Union<R<C>, f32>| match b.into_left() {
                 Ok(b) => V(C { x: a.x + b.x }),
@@ -874,23 +837,18 @@ mod test {
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .0
             .clone();
-        for (name, function, params) in [
-            ("add", add as *const (), vec![value, value]),
-            ("not", not as *const (), vec![value]),
-        ] {
-            // Safety: the functions take pointers to their parameters, then the out-pointer and the `failed` pointer
-            unsafe {
-                registry.clone().write().register_ffi_function(
-                    std::any::TypeId::of::<C>(),
-                    FfiFunction {
-                        name,
-                        function,
-                        params,
-                        result: FfiResult::One(value),
-                        fallible: false,
-                    },
-                )
-            };
+        // `add` through BMS adds, its FFI form (for a `C` on the right) also adds 100, to tell which one ran; `not` is
+        // named like a keyword of Lua, its FFI form also subtracts 100
+        {
+            let mut registry = registry.clone();
+            let mut registry = registry.write();
+            let c = std::any::TypeId::of::<C>();
+            registry.register_ffi(c, "add", |a: R<C>, b: R<C>| {
+                V(C {
+                    x: a.x + b.x + 100.0,
+                })
+            });
+            registry.register_ffi(c, "not", |a: R<C>| V(C { x: -a.x - 100.0 }));
         }
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
@@ -977,9 +935,9 @@ mod test {
                     std::any::TypeId::of::<C>(),
                     FfiFunction {
                         name: "holder_of",
-                        function: add as *const (),
+                        function: std::ptr::null(),
                         params: vec![FfiType::Value(std::any::TypeId::of::<Holder>())],
-                        result: FfiResult::One(value),
+                        result: value,
                         fallible: false,
                     },
                 )

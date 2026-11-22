@@ -298,7 +298,9 @@ impl UVec3 {
 
 /// Registers the functions of all integer vectors, which are stored natively by the languages.
 pub(crate) fn register(world: &mut World) {
-    use bevy_mod_scripting_bindings::script_native;
+    use std::mem::offset_of;
+
+    use bevy_mod_scripting_bindings::{assert_ffi_layout, native::NativeType};
     register_ivec2_shared_functions(world);
     register_ivec3_shared_functions(world);
     register_uvec2_shared_functions(world);
@@ -307,22 +309,41 @@ pub(crate) fn register(world: &mut World) {
     register_ivec3_functions(world);
     register_uvec2_functions(world);
     register_uvec3_functions(world);
-    script_native!(world, ffi IVec2 { x: i32, y: i32 });
-    script_native!(
-        world,
-        ffi IVec3 {
-            x: i32,
-            y: i32,
-            z: i32
-        }
-    );
-    script_native!(world, ffi UVec2 { x: u32, y: u32 });
-    script_native!(
-        world,
-        ffi UVec3 {
-            x: u32,
-            y: u32,
-            z: u32
-        }
-    );
+    assert_ffi_layout!(IVec2 { x: i32, y: i32 });
+    assert_ffi_layout!(IVec3 {
+        x: i32,
+        y: i32,
+        z: i32
+    });
+    assert_ffi_layout!(UVec2 { x: u32, y: u32 });
+    assert_ffi_layout!(UVec3 {
+        x: u32,
+        y: u32,
+        z: u32
+    });
+    // Safety: the fields are at their offsets, vectors have no invalid values
+    unsafe {
+        NativeType::of::<IVec2>()
+            .field("x", offset_of!(IVec2, x), |v| &v.x)
+            .field("y", offset_of!(IVec2, y), |v| &v.y)
+            .ffi()
+            .register(world);
+        NativeType::of::<IVec3>()
+            .field("x", offset_of!(IVec3, x), |v| &v.x)
+            .field("y", offset_of!(IVec3, y), |v| &v.y)
+            .field("z", offset_of!(IVec3, z), |v| &v.z)
+            .ffi()
+            .register(world);
+        NativeType::of::<UVec2>()
+            .field("x", offset_of!(UVec2, x), |v| &v.x)
+            .field("y", offset_of!(UVec2, y), |v| &v.y)
+            .ffi()
+            .register(world);
+        NativeType::of::<UVec3>()
+            .field("x", offset_of!(UVec3, x), |v| &v.x)
+            .field("y", offset_of!(UVec3, y), |v| &v.y)
+            .field("z", offset_of!(UVec3, z), |v| &v.z)
+            .ffi()
+            .register(world);
+    }
 }

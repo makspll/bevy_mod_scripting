@@ -147,10 +147,11 @@ pub fn from_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// # FFI functions
 ///
-/// Functions marked `#[ffi]` also get an `extern "C"` wrapper, which languages call through their FFI (LuaJIT's) with C
-/// types, see `bevy_mod_scripting_bindings::native::FfiFunction`. Their parameters must implement `FfiArg` (scalars,
-/// `R<T>`, `V<T>`, or `Union`s of them), their result `FfiReturn`, else they don't compile; `T` needs a C layout
-/// (`script_native!(world, ffi T { .. })`), checked when a language makes its C types. A panic aborts the process.
+/// Functions marked `#[ffi]` also get an FFI form, which languages call through their FFI (LuaJIT's) with C types: the
+/// body is registered with `ScriptFunctionRegistry::register_ffi`, see `bevy_mod_scripting_bindings::native::FfiFn`.
+/// Their parameters must implement `FfiArg` (scalars, `R<T>`, `V<T>`), their result `FfiReturn`, else they don't
+/// compile; `T` needs a C layout (`NativeBuilder::ffi`), checked when a language makes its C types. A function taking a
+/// `Union` isn't marked: register a form for each alternative with `register_ffi`. A panic aborts the process.
 ///
 /// ```rust,ignore
 /// #[script_bindings(remote, namespace = "math")]

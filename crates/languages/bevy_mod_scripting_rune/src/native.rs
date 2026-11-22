@@ -434,7 +434,7 @@ mod test {
     use bevy_ecs::world::World;
     use bevy_mod_scripting_bindings::{
         CurrentScriptAttachment, R, Union, V, WorldAccessGuard,
-        function::namespace::NamespaceBuilder, script_native,
+        function::namespace::NamespaceBuilder,
     };
     use bevy_reflect::Reflect;
 
@@ -478,13 +478,13 @@ mod test {
                 })
             })
             .register("eq", |a: R<Labelled>, b: R<Labelled>| a.value == b.value);
-        script_native!(
-            &mut world,
-            Labelled {
-                value: f64,
-                label: String
-            }
-        );
+        // Safety: the fields are at their offsets
+        unsafe {
+            NativeType::of::<Labelled>()
+                .field("value", std::mem::offset_of!(Labelled, value), |l| &l.value)
+                .field("label", std::mem::offset_of!(Labelled, label), |l| &l.label)
+        }
+        .register(&mut world);
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldAccessGuard::with_static_guard(&mut world, cache, |world| {
             let function = |name: &str| {

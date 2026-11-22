@@ -257,15 +257,18 @@ impl Transform {
 }
 
 /// Registers the functions of [`Transform`], and its native form: components are native handles, see
-/// [`bevy_mod_scripting_bindings::script_native`].
+/// [`bevy_mod_scripting_bindings::native::NativeBuilder`].
 pub(crate) fn register(world: &mut World) {
+    use std::mem::offset_of;
     register_transform_functions(world);
-    bevy_mod_scripting_bindings::script_native!(
-        world,
-        Transform {
-            translation: Vec3,
-            rotation: Quat,
-            scale: Vec3
-        }
-    );
+    // Safety: the fields are at their offsets
+    unsafe {
+        bevy_mod_scripting_bindings::native::NativeType::of::<Transform>()
+            .value_field("translation", offset_of!(Transform, translation), |t| {
+                &t.translation
+            })
+            .value_field("rotation", offset_of!(Transform, rotation), |t| &t.rotation)
+            .value_field("scale", offset_of!(Transform, scale), |t| &t.scale)
+    }
+    .register(world);
 }

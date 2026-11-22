@@ -25,7 +25,7 @@ flowchart TD
 | | Where the data is | A read | A write |
 |---|---|---|---|
 | Primitive | the language | free | free |
-| Native value | the language (`script_native!` types) | a typed accessor, or in place | changes the script's copy |
+| Native value | the language (types declared with `NativeBuilder`) | a typed accessor, or in place | changes the script's copy |
 | Native handle | the world | claims access, reads the component | claims access, writes the component |
 | Reference | the world or an allocation | reflection | reflection |
 
