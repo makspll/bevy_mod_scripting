@@ -83,25 +83,34 @@ public static class Shared
     public static float Lerp(float[] range, double t) => range[0] + (range[1] - range[0]) * (float)t;
 }
 
-public static class Bench
+public class Bench : MonoBehaviour
 {
+    // quitting while the player is still starting up crashes it, so the run happens in the first frame
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void Run()
+    static void Init()
     {
-        var args = ParseArgs();
-        if (!args.ContainsKey("scenario"))
+        if (ParseArgs().ContainsKey("scenario"))
+            new GameObject("bench").AddComponent<Bench>();
+    }
+
+    bool done;
+
+    void Update()
+    {
+        if (done)
             return;
+        done = true;
+        int code = 0;
         try
         {
-            RunBench(args);
+            RunBench(ParseArgs());
         }
         catch (Exception e)
         {
             UnityEngine.Debug.LogException(e);
-            Application.Quit(1);
-            return;
+            code = 1;
         }
-        Application.Quit(0);
+        Application.Quit(code);
     }
 
     static Dictionary<string, string> ParseArgs()
