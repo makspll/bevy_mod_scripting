@@ -9,14 +9,9 @@ on:
         description: "comma separated entity counts, empty for scenario.json"
         required: false
         default: ""
-  pull_request:
-    paths:
-      - "benches/engines/**"
-      - ".github/workflows/engine_benchmarks.yml"
 
 env:
-  # PRs run a short smoke test, manual runs the full ramp
-  STAGES: ${{ github.event_name == 'pull_request' && '1000,5000' || inputs.stages }}
+  STAGES: ${{ inputs.stages }}
 
 jobs:
   bevy:
@@ -128,7 +123,6 @@ jobs:
           path: charts
       # the book page reads the latest results (and videos) from this release
       - name: Upload to the bench-media release
-        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
