@@ -171,4 +171,4 @@ A panicking destructor is caught: nothing unwinds through the collector. On Luau
 | Stack overflow | `lua_checkstack` before every push which isn't covered by `LUA_MINSTACK` |
 | Out of memory while pushing | allocation outside protected mode only when mlua says it can't fail (no memory limit set) |
 
-The `debug` library reaches every metatable and upvalue: none of this holds for scripts which have it. mlua's safe state doesn't load it.
+The `debug` library reaches every metatable and upvalue, and bytecode (`load`) isn't verified by the VM: none of this holds for scripts which have either. mlua's safe state doesn't load `debug`, but does allow bytecode, see [Sandboxing](../../Summary/customizing-script-contexts.md#sandboxing).
