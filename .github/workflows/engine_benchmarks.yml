@@ -112,12 +112,14 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: results
-      - name: Collect
-        run: python3 benches/engines/collect.py results results.js
+      - name: Render charts
+        run: |
+          pip install matplotlib
+          python3 benches/engines/collect.py results charts
       - uses: actions/upload-artifact@v4
         with:
-          name: results-js
-          path: results.js
+          name: charts
+          path: charts
       # the book page reads the latest results (and videos) from this release
       - name: Upload to the bench-media release
         if: github.event_name == 'workflow_dispatch'
@@ -126,4 +128,4 @@ jobs:
         run: |
           gh release view bench-media >/dev/null 2>&1 || gh release create bench-media --latest=false \
             --title "Engine benchmark results" --notes "Latest engine benchmark results, overwritten by every run."
-          gh release upload bench-media results.js --clobber
+          gh release upload bench-media charts/*.png --clobber

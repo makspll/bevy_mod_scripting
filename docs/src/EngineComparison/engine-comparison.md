@@ -6,47 +6,14 @@ Each engine implements them the fastest way it naturally can. The rules and the 
 - **S1 Fountain:** spawning and despawning, vector math over every ball, and one engine-to-script callback per wall hit.
 - **S2 Infection:** a spatial grid, sparse queries over infected agents, adding and removing components, and random access by entity.
 
-Each frame is split into phases, and each phase is timed separately. Every point is the median over 60 frames at that entity count, on a GitHub hosted runner. Compare the paths with each other; the absolute numbers are noisy. A ✔ means the run's checksum matched the Rust baseline, so it did the same work.
+Each frame is split into phases, and each phase is timed separately. Every point is the median over 60 frames at that entity count, on a GitHub hosted runner. Compare the paths with each other; the absolute numbers are noisy. A path whose checksum did not match the Rust baseline is marked "(diverged)", meaning it did different work.
 
-<div id="engine-comparison">Loading results…</div>
+The charts come from the latest manual run of the `Engine benchmarks` workflow.
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://github.com/makspll/bevy_mod_scripting/releases/download/bench-media/results.js"></script>
-<script>
-(() => {
-  const root = document.getElementById("engine-comparison");
-  const data = window.ENGINE_RESULTS;
-  if (!data || !data.runs.length) {
-    root.textContent = "No results yet.";
-    return;
-  }
-  root.innerHTML = `<p>Generated ${data.generated}</p>`;
-  const label = (r) => `${r.engine}/${r.path}${r.verified === false ? " ✘" : r.verified ? " ✔" : ""}`;
-  for (const scenario of ["s1", "s2"]) {
-    const runs = data.runs.filter((r) => r.scenario === scenario);
-    if (!runs.length) continue;
-    root.insertAdjacentHTML("beforeend", `<h2>${scenario === "s1" ? "S1 Fountain" : "S2 Infection"}</h2>`);
-    const phases = ["frame", ...Object.keys(runs[0].stages[0]).filter((k) => !["target", "alive", "frame"].includes(k))];
-    for (const phase of phases) {
-      const canvas = document.createElement("canvas");
-      root.appendChild(canvas);
-      new Chart(canvas, {
-        type: "line",
-        data: {
-          datasets: runs.map((r) => ({
-            label: label(r),
-            data: r.stages.map((s) => ({ x: s.target, y: s[phase].median })),
-          })),
-        },
-        options: {
-          plugins: { title: { display: true, text: `${phase} (ms, median)` } },
-          scales: {
-            x: { type: "logarithmic", title: { display: true, text: "entities" } },
-            y: { type: "logarithmic", title: { display: true, text: "ms" } },
-          },
-        },
-      });
-    }
-  }
-})();
-</script>
+## S1 Fountain
+
+![S1 Fountain](https://github.com/makspll/bevy_mod_scripting/releases/download/bench-media/s1.png)
+
+## S2 Infection
+
+![S2 Infection](https://github.com/makspll/bevy_mod_scripting/releases/download/bench-media/s2.png)
