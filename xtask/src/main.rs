@@ -1184,14 +1184,22 @@ impl Xtasks {
             unsafe { std::env::set_var("RUST_LOG", "bevy_mod_scripting=error") };
         }
 
-        let mut args = vec!["--timings".to_owned()];
+        // mlua's Lua dialects are exclusive features, so LuaJIT is benchmarked by a second build without Rune
+        let mut luajit_features = features
+            .clone()
+            .without(Feature::Lua54)
+            .without(Feature::Rune);
+        luajit_features.0.insert(Feature::Luajit);
 
-        if let Some(name) = name {
-            args.extend(["--".to_owned(), name]);
-        };
+        let filter_args = name
+            .map(|name| vec!["--".to_owned(), name])
+            .unwrap_or_default();
+        let args = std::iter::once("--timings".to_owned())
+            .chain(filter_args.clone())
+            .collect::<Vec<_>>();
 
         let mut output = run_workspace_command(
-            // run with just lua54
+            // lua54 and rune
             &app_settings.clone().with_features(features),
             "bench",
             "Failed to run benchmarks",
@@ -1211,7 +1219,19 @@ impl Xtasks {
 
         info!("Gathering build time for crates: {}", crates.join(","));
 
+        // read before the LuaJIT build, the build times come from the first build only
         let additional_benchmark_lines = xtask::read_cargo_timings_report(&workspace_dir, crates)?;
+
+        let luajit_output = run_workspace_command(
+            &app_settings.clone().with_features(luajit_features),
+            "bench",
+            "Failed to run LuaJIT benchmarks",
+            filter_args,
+            None,
+            capture_streams_in_output,
+        )
+        .with_context(|| "when executing LuaJIT criterion benchmarks")?;
+        output.stdout.extend(luajit_output.stdout);
 
         if !capture_streams_in_output {
             stdout().write(additional_benchmark_lines.as_bytes())?;
@@ -1558,10 +1578,12 @@ impl Xtasks {
             benchmarks
                 .iter()
                 .fold(HashMap::new(), |mut acc, (name, uuid)| {
-                    // one plot per group and language (the last word of script benchmarks' names), i.e. `interop Lua`
+                    // one plot per group and language (the last word of script benchmarks' names), i.e. `interop LuaJIT`
                     let group = name.split('/').next().unwrap_or_default();
                     let key = match name.rsplit(' ').next() {
-                        Some(language @ ("Lua" | "Rune")) => format!("{group} {language}"),
+                        Some(language @ ("Lua54" | "LuaJIT" | "Rune")) => {
+                            format!("{group} {language}")
+                        }
                         _ => group.to_owned(),
                     };
                     acc.entry(key)

@@ -1,3 +1,4 @@
+// #bench interop reference/nested method call
 pub fn pre_bench() {
     let Vec3 = import_namespace("math").Vec3;
     let Mat3 = import_namespace("math").Mat3;

@@ -32,7 +32,7 @@ Although Bevy doesn't directly support scripting, efforts are underway to incorp
 ## Benchmarks
 BMS applies continuous benchmarking and the latest benchmark results can be found over at [bencher.dev](https://bencher.dev/console/projects/bms/plots).
 
-The tested scripts themselves are placed in the `assets/benchmarks` directory.
+The tested scripts themselves are placed in the `assets/benchmarks` directory, each names itself on its first line (`-- #bench interop/field get`). Lua benchmarks run on both Lua 5.4 and LuaJIT.
 
 ## Support
 

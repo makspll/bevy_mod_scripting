@@ -1,6 +1,48 @@
 # Benchmarks renamed on bencher.dev, so their history follows them: `cargo xtask bencher-migrate`, which runs on main
 # before results are published. One `old name -> new name` per line, as bencher shows them (`group/name Language`,
-# the group is the folder under `assets/benchmarks` with `_` as spaces). Renames already done are skipped. A new name
-# that PR runs already published is archived under another name first if it has no results on main.
-interop/nested method call Lua -> interop reference/nested method call Lua
+# script benchmarks declare `group/name` in their `#bench` header). Renames already done are skipped. A new name
+# that PR runs already published is archived under another name first if it has no results on main. A rename fails
+# when neither name exists, so when renaming a benchmark again, replace its old line rather than chaining a new one.
 interop/nested method call Rune -> interop reference/nested method call Rune
+# `Lua` became `Lua54` when LuaJIT benchmarks were added
+component/access Lua -> component/access Lua54
+component/get Lua -> component/get Lua54
+function/call Lua -> function/call Lua54
+function/call 4 args Lua -> function/call 4 args Lua54
+function/call table args Lua -> function/call table args Lua54
+function/call typed args Lua -> function/call typed args Lua54
+interop/field get Lua -> interop/field get Lua54
+interop/field set Lua -> interop/field set Lua54
+interop/method call Lua -> interop/method call Lua54
+interop/method call returning value Lua -> interop/method call returning value Lua54
+interop/operator Lua -> interop/operator Lua54
+interop reference/field get Lua -> interop reference/field get Lua54
+interop reference/field set Lua -> interop reference/field set Lua54
+interop reference/method call Lua -> interop reference/method call Lua54
+interop reference/nested method call Lua -> interop reference/nested method call Lua54
+interop reference/operator Lua -> interop reference/operator Lua54
+math/vec mat ops Lua -> math/vec mat ops Lua54
+query/10 entities Lua -> query/10 entities Lua54
+query/100 entities Lua -> query/100 entities Lua54
+query/1000 entities Lua -> query/1000 entities Lua54
+query/1000 entities iter Lua -> query/1000 entities iter Lua54
+reflection/10 Lua -> reflection/10 Lua54
+reflection/100 Lua -> reflection/100 Lua54
+resource/access Lua -> resource/access Lua54
+resource/get Lua -> resource/get Lua54
+loading/empty Lua -> loading/empty Lua54
+callbacks/event handler 1 scripts Lua -> callbacks/event handler 1 scripts Lua54
+callbacks/event handler 100 scripts Lua -> callbacks/event handler 100 scripts Lua54
+callbacks/command Lua -> callbacks/command Lua54
+script_systems/query 10 entities Lua -> script systems/query 10 entities Lua54
+script_systems/query 100 entities Lua -> script systems/query 100 entities Lua54
+script_systems/query 1000 entities Lua -> script systems/query 1000 entities Lua54
+script_systems/query and iterate 10 entities Lua -> script systems/query and iterate 10 entities Lua54
+script_systems/query and iterate 100 entities Lua -> script systems/query and iterate 100 entities Lua54
+script_systems/query and iterate 1000 entities Lua -> script systems/query and iterate 1000 entities Lua54
+conversions/ScriptValue::List -> conversions/ScriptValue::List Lua54
+conversions/ScriptValue::Map -> conversions/ScriptValue::Map Lua54
+conversions/ScriptValue::Reference::from_into -> conversions/ScriptValue::Reference::from_into Lua54
+conversions/Val<T>::from_into -> conversions/Val<T>::from_into Lua54
+conversions/Ref<T>::from -> conversions/Ref<T>::from Lua54
+conversions/Mut<T>::from -> conversions/Mut<T>::from Lua54

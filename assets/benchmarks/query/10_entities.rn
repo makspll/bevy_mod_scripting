@@ -1,3 +1,4 @@
+// #bench query/10 entities
 fn types(world) {
     #{
         world: world,
