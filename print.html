@@ -39,10 +39,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-2b423db6.js";
+            window.path_to_searchindex_js = "searchindex-f94298c4.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-5409e846.js"></script>
+        <script src="toc-fb9fc823.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1184,6 +1184,20 @@ If completions for BMS types are missing, i.e. <code>Vec3.</code> suggests nothi
 </div>
 <p>Run one with <code>cargo run --example &lt;name&gt; --features lua54</code> (<code>docgen</code> needs <code>lua_language_server_files</code>).</p>
 <p>For example scripts, see the regression test suite in <a href="https://github.com/makspll/bevy_mod_scripting/tree/main/assets/tests"><code>assets/tests</code></a>, which covers every scripting function in Lua and Rune.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="engine-comparison"><a class="header" href="#engine-comparison">Engine Comparison</a></h1>
+<p>The same two simulations run in BMS (Bevy with LuaJIT scripts), plain Rust Bevy, Godot (GDScript) and Unity (ECS with and without Burst, and a plain C# manager).
+Each engine implements them the fastest way it naturally can. The rules and the code are in <a href="https://github.com/makspll/bevy_mod_scripting/tree/main/benches/engines"><code>benches/engines</code></a>.</p>
+<ul>
+<li><strong>S1 Fountain:</strong> spawning and despawning, vector math over every ball, and one engine-to-script callback per wall hit.</li>
+<li><strong>S2 Infection:</strong> a spatial grid, sparse queries over infected agents, adding and removing components, and random access by entity.</li>
+</ul>
+<p>Each frame is split into phases, and each phase is timed separately. Every point is the median over 60 frames at that entity count, on a GitHub hosted runner. Compare the paths with each other; the absolute numbers are noisy. A path whose checksum did not match the Rust baseline is marked “(diverged)”, meaning it did different work.</p>
+<p>The charts come from the latest manual run of the <code>Engine benchmarks</code> workflow.</p>
+<h2 id="s1-fountain"><a class="header" href="#s1-fountain">S1 Fountain</a></h2>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="https://github.com/makspll/bevy_mod_scripting/releases/download/bench-media/s1.png" alt="S1 Fountain"><span class="img-wrapper"><img src="https://github.com/makspll/bevy_mod_scripting/releases/download/bench-media/s1.png" alt="S1 Fountain"></span></label></p>
+<h2 id="s2-infection"><a class="header" href="#s2-infection">S2 Infection</a></h2>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="https://github.com/makspll/bevy_mod_scripting/releases/download/bench-media/s2.png" alt="S2 Infection"><span class="img-wrapper"><img src="https://github.com/makspll/bevy_mod_scripting/releases/download/bench-media/s2.png" alt="S2 Infection"></span></label></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
 <p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
