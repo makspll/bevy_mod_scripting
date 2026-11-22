@@ -83,34 +83,34 @@ public static class Shared
     public static float Lerp(float[] range, double t) => range[0] + (range[1] - range[0]) * (float)t;
 }
 
-public class Bench : MonoBehaviour
+/// No default ECS world: the benchmark creates its own, and the default one crashes the player's first frame under
+/// `-nographics`.
+public class NoDefaultWorld : Unity.Entities.ICustomBootstrap
 {
-    // quitting while the player is still starting up crashes it, so the run happens in the first frame
+    public bool Initialize(string defaultWorldName) => true;
+}
+
+public static class Bench
+{
+    // runs before the first frame and exits without rendering one
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Init()
     {
-        if (ParseArgs().ContainsKey("scenario"))
-            new GameObject("bench").AddComponent<Bench>();
-    }
-
-    bool done;
-
-    void Update()
-    {
-        if (done)
+        var args = ParseArgs();
+        if (!args.ContainsKey("scenario"))
             return;
-        done = true;
         int code = 0;
         try
         {
-            RunBench(ParseArgs());
+            RunBench(args);
         }
         catch (Exception e)
         {
-            UnityEngine.Debug.LogException(e);
+            Console.Error.WriteLine(e);
             code = 1;
         }
-        Application.Quit(code);
+        Console.Error.Flush();
+        Environment.Exit(code);
     }
 
     static Dictionary<string, string> ParseArgs()
