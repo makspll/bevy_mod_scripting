@@ -680,7 +680,7 @@ pub struct NativeField {
 }
 
 /// A primitive field at an offset of every value of a [`NativeType`], which languages read and write in place in the values
-/// they store (not in places), checking the value's borrow flag.
+/// they store (not in places), unless the value is a read-only copy (see [`NativeHeader::read_only`]).
 ///
 /// The accessors do the same: reading converts to the language's number or boolean, writing a number truncates it with `as`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -780,6 +780,10 @@ impl FfiLayout {
     ) -> Option<Vec<(Cow<'static, str>, &'static str, usize)>> {
         let mut out = Vec::with_capacity(self.fields.len());
         for field in &self.fields {
+            // the name is a field of the C struct
+            if !is_c_field_name(field.name) {
+                return None;
+            }
             match field.ty {
                 FfiType::Scalar(c) => out.push((field.name.into(), c, field.offset)),
                 FfiType::Value(type_id) => {
@@ -798,7 +802,8 @@ impl FfiLayout {
 
     /// The C declaration of the struct, i.e. `typedef struct __attribute__((aligned(4))) { float x; float y; float z; }
     /// bms_Vec3;`, aligned like the Rust type, with the fields of [`Self::c_fields`] and padding where the Rust type has
-    /// some. `None` if a field can't be flattened.
+    /// some (a `uint8_t _padN` for each byte: scalars only, see [`Self::c_fields`]). `None` if a field can't be flattened
+    /// or named in C.
     pub fn c_declaration<'a>(
         &'a self,
         layout_of: &dyn Fn(TypeId) -> Option<&'a FfiLayout>,
@@ -807,8 +812,10 @@ impl FfiLayout {
         let mut fields = String::new();
         let mut end = 0;
         let pad = |fields: &mut String, from: usize, to: usize| {
-            if to > from {
-                let _ = write!(fields, "uint8_t _pad{from}[{}]; ", to - from);
+            // a scalar for each byte: an array field would be read as a reference, which is neither bounds-checked nor
+            // keeps the value alive
+            for at in from..to {
+                let _ = write!(fields, "uint8_t _pad{at}; ");
             }
         };
         for (name, c_type, offset) in self.c_fields(layout_of)? {
@@ -1139,6 +1146,17 @@ unsafe impl Sync for FfiFunction {}
 pub unsafe trait FfiScalar: Copy + 'static {
     /// The C type
     const C_TYPE: &'static str;
+}
+
+/// Whether a Rust field name can name a field of a C struct: not a keyword of C or a type name C declarations use.
+fn is_c_field_name(name: &str) -> bool {
+    const RESERVED: &[&str] = &[
+        "auto", "bool", "char", "complex", "default", "double", "float", "inline", "int", "long",
+        "register", "restrict", "short", "signed", "sizeof", "typedef", "union", "unsigned",
+        "void", "volatile", "int8_t", "int16_t", "int32_t", "int64_t", "uint8_t", "uint16_t",
+        "uint32_t", "uint64_t", "size_t",
+    ];
+    !RESERVED.contains(&name) && !name.starts_with("r#")
 }
 
 /// The size of a C type of an [`FfiScalar`].
@@ -1568,9 +1586,10 @@ where
 /// unsafe { script_native!(world, deref bevy_math::Vec4 { x: f32, y: f32, z: f32, w: f32 }) };
 /// ```
 ///
-/// Values of types with fields of native types aren't stored natively (writes to `t.translation.x` would be lost on a copy),
-/// but components and resources of every native type are: `world.get_component(e, Transform)` returns a native handle
-/// ([`NativePlace`]) whose `t.translation` is a place too, read and written through.
+/// Native types are values, with no write-through: a field of a native type is read as a read-only copy and written whole
+/// (`t.translation.x = 5` is an error, `t.translation = v` writes the field), `clone` gives a copy scripts can change.
+/// Components and resources of native types are native handles ([`NativePlace`]): `world.get_component(e, Transform)`
+/// returns one, which reads and writes the world.
 ///
 /// Fields are checked to be of the declared type, exactly:
 ///

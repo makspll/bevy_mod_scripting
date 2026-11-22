@@ -4,10 +4,10 @@
 //!   such a type reaches Lua.
 //! - Each type is a C struct (`ffi.cdef`) with a metatype: fields are plain FFI fields; functions with an `extern "C"`
 //!   wrapper (`#[ffi]` in `#[script_bindings]` blocks, see [`FfiFunction`]) are called through the FFI with C types, after checking
-//!   their arguments are of the expected types, else (and for other functions) through BMS' typed functions, which read
-//!   cdata in place ([`cdata_at`], [`super::LuaArgs`]); operators call their functions the same way.
-//! - Values Rust returns are copied into new cdata ([`push_from_ptr`]); scripts can write every byte of a cdata at any
-//!   time, so BMS' functions never borrow one: they get copies, written back for `M<T>` (see `CallScope::copy_plain`).
+//!   their arguments are of the expected types, else (and for other functions) through BMS' typed functions, which find
+//!   cdata on the stack ([`cdata_at`], [`super::LuaArgs`]); operators call their functions the same way.
+//! - Values Rust returns are copied into new cdata (see `Ready::Cdata`); scripts can write every byte of a cdata at any
+//!   time, so BMS' functions never borrow one: they get copies, written back for `M<T>` (see `CallScope::copy_value`).
 //! - Types are told apart by LuaJIT's ctype id, which scripts can't change, see [`cdata_at`].
 
 use std::{
@@ -439,12 +439,13 @@ fn nested_fields_source<'a>(
         let from = inner
             .fields
             .iter()
-            .map(|f| format!("x.{}", f.name))
+            .map(|f| format!("x[{:?}]", f.name))
             .collect::<Vec<_>>()
             .join(", ");
         let _ = writeln!(
             out,
-            "do local K, N = ffi.typeof(\"const {c_name}\"), {lua_ctype}\ngetters.{name} = function(v) return K({flat}) end\nsetters.{name} = function(v, x) if not istype(N, x) then error(\"expected a {}\", 2) end {flat} = {from} end end",
+            // names are keys, not identifiers: a field may be named like a keyword of Lua (`end`)
+            "do local K, N = ffi.typeof(\"const {c_name}\"), {lua_ctype}\ngetters[{name:?}] = function(v) return K({flat}) end\nsetters[{name:?}] = function(v, x) if not istype(N, x) then error(\"expected a {}\", 2) end {flat} = {from} end end",
             type_name(type_id)
         );
     }
@@ -498,9 +499,10 @@ fn types_source(
         // the type, and its scratch value: where FFI functions write their result
         let _ = writeln!(
             out,
-            "local C{n} = ffi.typeof(\"{}\") local S{n} = C{n}() assert(ffi.sizeof(C{n}) == {}, \"{} has another size in C\")",
+            "local C{n} = ffi.typeof(\"{}\") local S{n} = C{n}() assert(ffi.sizeof(C{n}) == {} and ffi.alignof(C{n}) == {}, \"{} has another size or alignment in C\")",
             layout_name(native),
             native.ffi.as_ref().map_or(0, |l| l.size),
+            native.ffi.as_ref().map_or(0, |l| l.align),
             native.vtable.type_name,
             n = i + 1,
         );
@@ -595,7 +597,7 @@ fn function_source(
         true => (
             "E",
             format!(
-                "local e = E[0] if e ~= 0 then E[0] = 0 if e == 2 then return nil end return (raise(\"{name}\", O)) end "
+                "local e = E[0] if e ~= 0 then E[0] = 0 if e == 2 then return nil end return (raise({name:?}, O)) end "
             ),
         ),
         false => ("nil", String::new()),
@@ -673,7 +675,7 @@ fn function_source(
     Some(format!(
         // in a block: a chunk has room for 200 locals only
         // other arguments go to the function's FFI form made before this one (see `Union`), else through BMS
-        "do {setup}local f{pointer}, other = cast(\"{c_result} (*)({})\", ptrs[{pointer}]), methods.{name} or slow.{name}\nlocal function w({args}) if {guard} then {call} end return other({args}) end\nmethods.{name} = w statics.{name} = w end\n",
+        "do {setup}local f{pointer}, other = cast(\"{c_result} (*)({})\", ptrs[{pointer}]), methods[{name:?}] or slow[{name:?}]\nlocal function w({args}) if {guard} then {call} end return other({args}) end\nmethods[{name:?}] = w statics[{name:?}] = w end\n",
         c_params.join(", ")
     ))
 }
@@ -844,27 +846,52 @@ mod test {
                 })
             }
         }
+        // a function named like a keyword of Lua, its FFI form also subtracts 100
+        extern "C" fn not(a: *const C, out: *mut C, _failed: *mut u8) {
+            // Safety: called by the generated Lua with a cdata of `C`
+            unsafe { out.write(C { x: -(*a).x - 100.0 }) }
+        }
+        // a type with padding after its fields
+        #[derive(bevy_reflect::Reflect, Clone, Copy, Default)]
+        struct Padded {
+            x: f64,
+            y: f32,
+        }
+        world
+            .get_resource_or_init::<bevy_ecs::reflect::AppTypeRegistry>()
+            .write()
+            .register::<Padded>();
+        bevy_mod_scripting_bindings::script_native!(&mut world, ffi Padded { x: f64, y: f32 });
         NamespaceBuilder::<C>::new(&mut world)
             .register("add", |a: R<C>, b: Union<R<C>, f32>| match b.into_left() {
                 Ok(b) => V(C { x: a.x + b.x }),
                 Err(b) => V(C { x: a.x + b }),
             })
+            .register("not", |a: R<C>| V(C { x: -a.x }))
             .register("eq", |a: R<C>, b: R<C>| a.x == b.x);
         let value = FfiType::Value(std::any::TypeId::of::<C>());
         let registry = world
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .0
             .clone();
-        registry.clone().write().register_ffi_function(
-            std::any::TypeId::of::<C>(),
-            FfiFunction {
-                name: "add",
-                function: add as *const (),
-                params: vec![value, value],
-                result: FfiResult::One(value),
-                fallible: false,
-            },
-        );
+        for (name, function, params) in [
+            ("add", add as *const (), vec![value, value]),
+            ("not", not as *const (), vec![value]),
+        ] {
+            // Safety: the functions take pointers to their parameters, then the out-pointer and the `failed` pointer
+            unsafe {
+                registry.clone().write().register_ffi_function(
+                    std::any::TypeId::of::<C>(),
+                    FfiFunction {
+                        name,
+                        function,
+                        params,
+                        result: FfiResult::One(value),
+                        fallible: false,
+                    },
+                )
+            };
+        }
         let cache = WorldAccessGuard::setup_cache(&world, CurrentScriptAttachment::empty());
         WorldAccessGuard::with_static_guard(&mut world, cache, |_| {
             let lua = Lua::new();
@@ -876,6 +903,10 @@ mod test {
                 (
                     "holder",
                     (|x: f32| V(Holder { c: C { x } })).into_dynamic_script_function(),
+                ),
+                (
+                    "padded",
+                    (|| V(Padded::default())).into_dynamic_script_function(),
                 ),
                 (
                     "call_back",
@@ -917,6 +948,10 @@ mod test {
                 a = value(1)
                 assert((a + a).x == 102 and a:add(a).x == 102, "an operator and a method with an FFI form")
                 assert((a + 3).x == 4 and a == value(1), "other arguments and functions through BMS")
+                assert(a["not"](a).x == -101, "an FFI form named like a keyword")
+                -- padding is scalar bytes: an array would be a reference scripts could index out of bounds
+                local p = padded()
+                assert(type(p) == "cdata" and type(p._pad12) == "number", "padding is no array")
                 local x = call_back(a, function() a.x = 5 end)
                 assert(x == 1 and a.x == 5, "the call reads its copy, the script's write stays")
                 call_back_mut(a, function() assert(a.x == 5) end)
@@ -936,16 +971,19 @@ mod test {
             .exec()
             .unwrap();
             // an FFI function of a type without a C layout (`Holder`): an error when a state makes its C types
-            registry.clone().write().register_ffi_function(
-                std::any::TypeId::of::<C>(),
-                FfiFunction {
-                    name: "holder_of",
-                    function: add as *const (),
-                    params: vec![FfiType::Value(std::any::TypeId::of::<Holder>())],
-                    result: FfiResult::One(value),
-                    fallible: false,
-                },
-            );
+            // Safety: never called, the C types can't be made
+            unsafe {
+                registry.clone().write().register_ffi_function(
+                    std::any::TypeId::of::<C>(),
+                    FfiFunction {
+                        name: "holder_of",
+                        function: add as *const (),
+                        params: vec![FfiType::Value(std::any::TypeId::of::<Holder>())],
+                        result: FfiResult::One(value),
+                        fallible: false,
+                    },
+                )
+            };
             let lua = Lua::new();
             let function = super::super::native_function(
                 &lua,

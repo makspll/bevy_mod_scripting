@@ -750,7 +750,7 @@ enum Ready {
     Integer(i64),
     Boolean(bool),
     Native(PendingNative),
-    /// A value of a type with a C layout, the function making its cdata on the top, see [`cdata::push_from_ptr`]
+    /// A value of a type with a C layout, the function making its cdata on the top, see [`push_ready`]
     #[cfg(any(feature = "luajit", feature = "luajit52"))]
     Cdata(PendingNative),
     /// A reference, its metatable on the top, see [`LuaReturn::prepare`]
@@ -1813,7 +1813,7 @@ pub(crate) fn is_type_object(reference: &ReflectReference) -> bool {
 /// A type (`LuaTypeRef`) or registration (a reference) is an empty table with a metatable of its own, which holds the inner
 /// value and the fields every type object has: functions found through it (see [`type_object_index`]) are kept in the
 /// table which is its `__index`, so `Vec3.new` is a plain field after the first lookup, which LuaJIT compiles. Scripts
-/// can't write it or get the metatable, conversions to Rust unwrap it (see [`push_type_object_inner`]).
+/// can't get the metatable, and writes raise (`rawset` still writes the table: only for the scripts sharing it), conversions to Rust unwrap it (see [`push_type_object_inner`]).
 pub(crate) unsafe fn push_type_object(l: *mut ffi::lua_State) {
     unsafe {
         if ffi::lua_checkstack(l, 8) == 0 {

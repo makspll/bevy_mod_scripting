@@ -692,7 +692,16 @@ impl ScriptFunctionRegistry {
     ///
     /// It's an FFI form of the function registered on the type with this name right now: registering another function
     /// with the name, or removing it, drops its FFI forms.
-    pub fn register_ffi_function(&mut self, type_id: TypeId, function: crate::native::FfiFunction) {
+    ///
+    /// # Safety
+    /// `function.function` is an `extern "C"` function taking `function.params`, then the out-pointer and the `failed`
+    /// pointer, and returning `function.result`, as [`crate::native::FfiFunction`] says; the C types named are those of
+    /// [`crate::native::FfiArg`] and [`crate::native::FfiReturn`]. Languages call it with those types, unchecked.
+    pub unsafe fn register_ffi_function(
+        &mut self,
+        type_id: TypeId,
+        function: crate::native::FfiFunction,
+    ) {
         let functions = self.ffi_functions.entry(type_id).or_default();
         functions.retain(|f| f.name != function.name || f.params != function.params);
         functions.push(function);
@@ -1010,16 +1019,19 @@ mod test {
         let fn_ = |a: usize, b: usize| a + b;
         let namespace = TypeId::of::<()>();
         registry.register(namespace, "test", fn_);
-        registry.register_ffi_function(
-            namespace,
-            crate::native::FfiFunction {
-                name: "test",
-                function: std::ptr::null(),
-                params: vec![],
-                result: crate::native::FfiResult::One(crate::native::FfiType::Scalar("float")),
-                fallible: false,
-            },
-        );
+        // Safety: never called
+        unsafe {
+            registry.register_ffi_function(
+                namespace,
+                crate::native::FfiFunction {
+                    name: "test",
+                    function: std::ptr::null(),
+                    params: vec![],
+                    result: crate::native::FfiResult::One(crate::native::FfiType::Scalar("float")),
+                    fallible: false,
+                },
+            )
+        };
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_some());
         // the FFI form goes with the function

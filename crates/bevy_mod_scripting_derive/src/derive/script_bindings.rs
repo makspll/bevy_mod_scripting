@@ -371,16 +371,19 @@ fn ffi_wrapper(
                     let output = function(#(#conversions),*);
                     unsafe { #ret::into_c(output, out, failed) }
                 }
-                registry.register_ffi_function(
-                    ::std::any::TypeId::of::<#self_ty>(),
-                    #bms::native::FfiFunction {
-                        name: #fun_name,
-                        function: wrapper as *const (),
-                        params: vec![#(#kinds),*],
-                        result: #ret::result(),
-                        fallible: #ret::fallible(),
-                    },
-                );
+                // Safety: the wrapper takes and returns what `FfiArg` and `FfiReturn` say for its types
+                unsafe {
+                    registry.register_ffi_function(
+                        ::std::any::TypeId::of::<#self_ty>(),
+                        #bms::native::FfiFunction {
+                            name: #fun_name,
+                            function: wrapper as *const (),
+                            params: vec![#(#kinds),*],
+                            result: #ret::result(),
+                            fallible: #ret::fallible(),
+                        },
+                    )
+                };
             }
         }
     });
