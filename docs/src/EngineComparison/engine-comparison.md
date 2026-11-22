@@ -11,17 +11,12 @@ Each frame is split into phases, and each phase is timed separately. Every point
 <div id="engine-comparison">Loading results…</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://github.com/makspll/bevy_mod_scripting/releases/download/bench-media/results.js"></script>
 <script>
-(async () => {
+(() => {
   const root = document.getElementById("engine-comparison");
-  let data;
-  try {
-    data = await (await fetch("results.json")).json();
-  } catch (e) {
-    root.textContent = "No results yet.";
-    return;
-  }
-  if (!data.runs.length) {
+  const data = window.ENGINE_RESULTS;
+  if (!data || !data.runs.length) {
     root.textContent = "No results yet.";
     return;
   }

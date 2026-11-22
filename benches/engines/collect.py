@@ -1,6 +1,9 @@
-"""Merges every `<scenario>_<path>.json` result in a directory into the book's results file.
+"""Merges every `<scenario>_<path>.json` result in a directory into `results.js`.
 
-python3 benches/engines/collect.py <results dir> docs/src/EngineComparison/results.json
+python3 benches/engines/collect.py <results dir> results.js
+
+The book page loads it from the `bench-media` release with a `<script>` tag: release assets send no CORS headers,
+so `fetch` can't read them, but scripts don't need CORS.
 """
 
 import json
@@ -26,10 +29,10 @@ def main() -> None:
                 print(f"warning: {run['engine']}/{run['path']} {scenario} diverged from the baseline", file=sys.stderr)
 
     dst.parent.mkdir(parents=True, exist_ok=True)
-    dst.write_text(json.dumps({
+    dst.write_text("window.ENGINE_RESULTS = " + json.dumps({
         "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "runs": runs,
-    }, indent=1))
+    }) + ";\n")
 
 
 def verify(base: dict, run: dict) -> bool:

@@ -1,7 +1,7 @@
 name: Engine benchmarks
 
 # Scenario benchmarks against Godot and Unity, see benches/engines/README.md.
-# Run by hand; results land in a PR updating the book's Engine Comparison page.
+# Run by hand; results go to the `bench-media` release, which the book's Engine Comparison page reads.
 on:
   workflow_dispatch:
     inputs:
@@ -107,20 +107,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: results
       - name: Collect
-        run: python3 benches/engines/collect.py results docs/src/EngineComparison/results.json
-      - name: Open PR
-        if: github.event_name == 'workflow_dispatch'
-        uses: peter-evans/create-pull-request@v7
+        run: python3 benches/engines/collect.py results results.js
+      - uses: actions/upload-artifact@v4
         with:
-          branch: engine-benchmarks/results
-          title: "docs: update engine comparison results"
-          commit-message: "docs: update engine comparison results"
-          add-paths: docs/src/EngineComparison/results.json
-          body: Results of the [engine benchmarks run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          name: results-js
+          path: results.js
+      # the book page reads the latest results (and videos) from this release
+      - name: Upload to the bench-media release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view bench-media >/dev/null 2>&1 || gh release create bench-media --latest=false \
+            --title "Engine benchmark results" --notes "Latest engine benchmark results, overwritten by every run."
+          gh release upload bench-media results.js --clobber
