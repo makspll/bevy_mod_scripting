@@ -92,14 +92,14 @@ public class NoDefaultWorld : Unity.Entities.ICustomBootstrap
 
 public static class Bench
 {
-    // runs before the first frame, the player quits at its end (`Environment.Exit` hangs in a Unity player)
+    // Runs before the first frame, then kills the player: under `-nographics` its first frame segfaults and
+    // `Environment.Exit` hangs. Success is the result file existing, the workflow checks it.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Init()
     {
         var args = ParseArgs();
         if (!args.ContainsKey("scenario"))
             return;
-        int code = 0;
         try
         {
             RunBench(args);
@@ -107,10 +107,9 @@ public static class Bench
         catch (Exception e)
         {
             Console.Error.WriteLine(e);
-            code = 1;
         }
         Console.Error.Flush();
-        Application.Quit(code);
+        Process.GetCurrentProcess().Kill();
     }
 
     static Dictionary<string, string> ParseArgs()
