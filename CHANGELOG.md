@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.24.0...v0.25.0) - 2026-11-22
+
+### Added
+
+- engine scenario benchmarks ([#773](https://github.com/makspll/bevy_mod_scripting/pull/773))
+- LuaJIT FFI for math natives ([#767](https://github.com/makspll/bevy_mod_scripting/pull/767))
+- [**breaking**] typed script arguments: functions, names and plain data (ScriptData) ([#736](https://github.com/makspll/bevy_mod_scripting/pull/736))
+
+### Fixed
+
+- sync bencher plots after every benchmark job published ([#774](https://github.com/makspll/bevy_mod_scripting/pull/774))
+- stay under bencher's plot limit ([#768](https://github.com/makspll/bevy_mod_scripting/pull/768))
+- bencher-migrate archives PR-only new names instead of deleting them ([#752](https://github.com/makspll/bevy_mod_scripting/pull/752))
+- *(xtask)* bencher-migrate deletes new names published only by PR runs ([#751](https://github.com/makspll/bevy_mod_scripting/pull/751))
+
+### Other
+
+- Update main.rs
+- native handles to components ([#749](https://github.com/makspll/bevy_mod_scripting/pull/749))
+- fields of references are found from type info ([#748](https://github.com/makspll/bevy_mod_scripting/pull/748))
+- unary operators of references without ScriptValues ([#746](https://github.com/makspll/bevy_mod_scripting/pull/746))
+- typed calls for every function, native math values in Lua and Rune ([#742](https://github.com/makspll/bevy_mod_scripting/pull/742))
+- hand script functions back to their language without a Rust round trip ([#740](https://github.com/makspll/bevy_mod_scripting/pull/740))
+- read Lua values straight off the stack ([#720](https://github.com/makspll/bevy_mod_scripting/pull/720))
+- convert Lua tables to script values in one pass ([#717](https://github.com/makspll/bevy_mod_scripting/pull/717))
+
 ## [0.24.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.23.0...v0.24.0) - 2026-11-12
 
 ### Added
