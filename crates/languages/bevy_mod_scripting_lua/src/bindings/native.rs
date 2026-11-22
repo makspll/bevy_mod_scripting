@@ -2110,15 +2110,9 @@ unsafe fn push_reference_with_metatable(l: *mut ffi::lua_State, reference: Refle
     }
 }
 
-/// Whether allocating can't raise in this state, as mlua decides for its own userdata: mlua's allocator aborts on out of
-/// memory instead of failing, unless a memory limit is set. LuaJIT allocates by itself, so it always can.
+/// Whether allocating can't raise in this state, as mlua decides for its own userdata: mlua's allocator (LuaJIT's
+/// states use it too) aborts on out of memory instead of failing, unless a memory limit is set.
 fn unlikely_memory_error(lua: &Lua) -> bool {
-    #[cfg(any(feature = "luajit", feature = "luajit52"))]
-    {
-        let _ = lua;
-        false
-    }
-    #[cfg(not(any(feature = "luajit", feature = "luajit52")))]
     // mlua has no getter for the limit: setting one returns the previous one, which is put back
     match lua.set_memory_limit(0) {
         Ok(0) => true,
