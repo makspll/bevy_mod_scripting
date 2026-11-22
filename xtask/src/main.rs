@@ -217,6 +217,9 @@ impl App {
             Xtasks::Miri => {
                 cmd.arg("miri");
             }
+            Xtasks::BencherSyncPlots => {
+                cmd.arg("bencher-sync-plots");
+            }
             Xtasks::BencherMigrate { dry_run } => {
                 cmd.arg("bencher-migrate");
 
@@ -613,6 +616,10 @@ enum Xtasks {
         #[clap(long, default_value = "false")]
         dry_run: bool,
     },
+    /// Archives the benchmarks without results on main and recreates the bencher.dev plots from the others.
+    ///
+    /// Runs on main once every benchmark job published, so the benchmarks they add are plotted
+    BencherSyncPlots,
     /// Runs criterion benchmarks generates json required to be published by bencher and generates html performance report
     Bench {
         /// Whether or not to enable tracy profiling
@@ -804,6 +811,7 @@ impl Xtasks {
             Xtasks::Install { binary } => Self::install(app_settings, binary),
             Xtasks::Bencher { publish, lang } => Self::bencher(app_settings, publish, lang),
             Xtasks::BencherMigrate { dry_run } => Self::bencher_migrate(&app_settings, dry_run),
+            Xtasks::BencherSyncPlots => Self::synch_bencher_graphs(),
             Xtasks::Miri => Self::miri(&app_settings),
             Xtasks::Bench {
                 name,
@@ -1395,15 +1403,7 @@ impl Xtasks {
             bail!("Failed to run bencher: {:?}", out);
         }
 
-        // if we're on linux and publishing and on main synch graphs, once: from the Lua 5.4 job
-        if os == "linux"
-            && is_main
-            && publish
-            && github_token.is_some()
-            && lang.is_none_or(|lang| lang == BenchLanguage::Lua54)
-        {
-            Self::synch_bencher_graphs()?;
-        }
+        // the plots are synced by `cargo xtask bencher-sync-plots`, which runs once every benchmark job published
 
         Ok(())
     }
