@@ -37,6 +37,10 @@
 - [New Languages](./Development/AddingLanguages/introduction.md)
     - [Evaluating Feasibility](./Development/AddingLanguages/evaluating-feasibility.md)
     - [Necessary Features](./Development/AddingLanguages/necessary-features.md)
+- [Language Internals](./Development/LanguageInternals/introduction.md)
+    - [Lua](./Development/LanguageInternals/lua.md)
+    - [LuaJIT](./Development/LanguageInternals/luajit.md)
+    - [Rune](./Development/LanguageInternals/rune.md)
 - [RFCs](./RequestsForComments/summary.md)
     1. [Abandoning Codegen](./RequestsForComments/1-abandoning_codegen/1-abandoning_codegen.md)
 
