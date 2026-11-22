@@ -1,3 +1,4 @@
+-- #bench function/call table args
 local test_utils = import_namespace("test_utils")
 
 -- built once, so the bench measures converting them, not building them

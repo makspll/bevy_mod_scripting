@@ -1,3 +1,4 @@
+-- #bench query/10 entities
 local world = import_namespace("bms").world
 local test_utils = import_namespace("test_utils")
 local entity_a = world.spawn()

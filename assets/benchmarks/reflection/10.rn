@@ -1,3 +1,4 @@
+// #bench reflection/10
 // a dynamic component with a number of nested fields, which are indexed through one after another
 fn make_path(step_keys, index) {
     let path = #{};

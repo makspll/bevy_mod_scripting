@@ -1,3 +1,4 @@
+// #bench component/access
 pub fn pre_bench() {
     let world = import_namespace("bms").world;
     #{

@@ -1,3 +1,4 @@
+-- #bench reflection/10
 -- create a dynamic component with n depth of fields
 local bms = import_namespace("bms")
 local world = bms.world

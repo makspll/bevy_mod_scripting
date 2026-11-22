@@ -1,3 +1,4 @@
+// #bench interop/operator
 pub fn pre_bench() {
     let Vec3 = import_namespace("math").Vec3;
     #{

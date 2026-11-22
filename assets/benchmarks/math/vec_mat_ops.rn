@@ -1,3 +1,4 @@
+// #bench math/vec mat ops
 pub fn main() {
     import_namespace("test_utils").reseed();
 }

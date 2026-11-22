@@ -1,3 +1,4 @@
+-- #bench function/call 4 args
 local test_utils = import_namespace("test_utils")
 
 function bench()

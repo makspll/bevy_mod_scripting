@@ -1,3 +1,4 @@
+-- #bench interop reference/field get
 -- a vector reached through a component: the reflection path, with world access claims
 local world = import_namespace("bms").world
 local Transform = import_namespace("transform").Transform

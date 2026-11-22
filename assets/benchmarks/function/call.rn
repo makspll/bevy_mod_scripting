@@ -1,3 +1,4 @@
+// #bench function/call
 pub fn pre_bench() {
     import_namespace("test_utils")
 }

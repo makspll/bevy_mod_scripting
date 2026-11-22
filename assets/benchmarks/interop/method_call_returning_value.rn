@@ -1,3 +1,4 @@
+// #bench interop/method call returning value
 pub fn pre_bench() {
     let Vec3 = import_namespace("math").Vec3;
     Vec3.new(1.0, 2.0, 3.0)

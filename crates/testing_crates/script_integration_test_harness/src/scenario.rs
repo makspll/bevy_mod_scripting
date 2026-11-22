@@ -16,7 +16,7 @@ use bevy_ecs::message::{Message, MessageCursor, Messages};
 use bevy_log::info;
 use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
 use bevy_mod_scripting_bindings::ScriptValue;
-#[cfg(feature = "lua")]
+#[cfg(any(feature = "lua", feature = "rune"))]
 use bevy_mod_scripting_core::pipeline::ActiveMachines;
 use bevy_mod_scripting_core::{
     ConfigureScriptPlugin, IntoScriptPluginParams, callback_labels,

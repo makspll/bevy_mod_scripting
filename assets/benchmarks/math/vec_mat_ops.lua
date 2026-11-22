@@ -1,3 +1,4 @@
+-- #bench math/vec mat ops
 local test_utils = import_namespace("test_utils")
 local Mat3 = import_namespace("math").Mat3
 local Vec3 = import_namespace("math").Vec3
