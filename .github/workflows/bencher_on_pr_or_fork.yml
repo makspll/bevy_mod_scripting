@@ -83,6 +83,8 @@ jobs:
     if: needs.decide.outputs.run == 'true'
     runs-on: ubuntu-latest
     strategy:
+      # one language failing doesn't stop the others, their results are still published
+      fail-fast: false
       # each language is its own build, see `cargo xtask bench --lang`
       matrix:
         lang: [lua54, luajit, rune]
@@ -106,6 +108,8 @@ jobs:
         run: |
           cargo xtask bench --lang ${{ matrix.lang }} > benchmark_results_${{ matrix.lang }}.txt
       - name: Upload Benchmark Results
+        # a failing benchmark fails the step after the others ran, their results are still published
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           # merged by `bencher_on_pr_or_fork_upload.yml`

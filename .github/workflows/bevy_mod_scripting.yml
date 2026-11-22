@@ -107,6 +107,9 @@ jobs:
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
     strategy:
+      # the full matrix (not on pull requests) runs a benchmark job per language and OS, one failing must not cancel
+      # the others
+      fail-fast: ${{ github.event_name == 'pull_request' }}
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:

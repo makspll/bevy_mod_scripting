@@ -1256,9 +1256,11 @@ impl Xtasks {
             features.0.insert(language.feature());
             // build times are published from the Lua 5.4 build only, so their names stay unique
             let timings = language == BenchLanguage::Lua54;
-            let args = timings
-                .then(|| "--timings".to_owned())
+            // only the benchmarks target: `--workspace` would also build crates the language doesn't enable, i.e. the
+            // Lua crate (mlua needs a dialect) in the Rune build
+            let args = ["--bench".to_owned(), "benchmarks".to_owned()]
                 .into_iter()
+                .chain(timings.then(|| "--timings".to_owned()))
                 .chain(filter_args.clone())
                 .collect::<Vec<_>>();
 
