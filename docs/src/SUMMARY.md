@@ -43,6 +43,7 @@
     - [Rune](./Development/LanguageInternals/rune.md)
 - [RFCs](./RequestsForComments/summary.md)
     1. [Abandoning Codegen](./RequestsForComments/1-abandoning_codegen/1-abandoning_codegen.md)
+    2. [Engine Benchmarks](./RequestsForComments/2-engine_benchmarks/2-engine_benchmarks.md)
 
 # Release Notes
 
