@@ -16,6 +16,10 @@ assert(Vec3.one() == Vec3.new(1, 1, 1), "one")
 assert(Vec3.unit_y() == Vec3.new(0, 1, 0), "unit_y")
 assert(Vec2.new(1, 2).y == 2, "vec2 new")
 assert(Vec4.new(1, 2, 3, 4).w == 4, "vec4 new")
+-- types are tables which keep the functions found in them, read-only
+assert(type(Vec3) == "table" and getmetatable(Vec3) == false and Vec3.new == Vec3.new, "a type keeps its functions")
+---@diagnostic disable-next-line: assign-type-mismatch
+assert(not pcall(function() Vec3.new = 1 end) and Vec3.new(1, 2, 3) == v, "types are read-only")
 
 -- operators, with vectors and numbers
 assert(v + v == Vec3.new(2, 4, 6), "add vector")
@@ -38,7 +42,9 @@ assert(approx(Vec3.unit_x():angle_between(Vec3.unit_y()), math.pi / 2), "angle_b
 
 -- normalization
 assert(approx(v:normalize():length(), 1), "normalize")
-assert(not pcall(function() return Vec3.zero():normalize() end), "normalize errors on zero")
+local normalized, err = pcall(function() return Vec3.zero():normalize() end)
+assert(not normalized and tostring(err):match("cannot normalize") and tostring(err):match("at line: [1-9]"),
+    "normalize errors on zero, at the line of the script")
 assert(Vec3.zero():normalize_or_zero() == Vec3.zero(), "normalize_or_zero")
 assert(Vec3.zero():try_normalize() == nil, "try_normalize")
 
@@ -82,7 +88,9 @@ assert(-t.translation == -w, "unary operators of references")
 t.translation = Vec3.new(7, 8, 9)
 assert(t.translation.x == 7, "assigned to a field")
 assert(tostring(w) == "Vec3 { x: 1.0, y: 5.0, z: 3.0 }", "display")
-assert(getmetatable(w) == false, "the metatable of native values is hidden")
+-- LuaJIT: Vec3 values are cdata, whose metatable is hidden as "ffi"
+local hidden = getmetatable(w)
+assert(hidden == false or hidden == "ffi", "the metatable of native values is hidden")
 ---@diagnostic disable-next-line: param-type-mismatch
 local function fail() w:dot("a") end
 local _, outside = pcall(fail)
@@ -95,12 +103,15 @@ assert(at and tostring(inside):match("at line: %d+") == at, "errors in coroutine
 local world = import_namespace("bms").world
 local label = world._make_native_test_value("label")
 assert(label.label == "label" and getmetatable(label) == false, "a native value which needs dropping")
-local resurrected
-do
-    local holder = setmetatable({}, { __gc = function(self) resurrected = self.v end })
-    holder.v = world._make_native_test_value("collected")
+-- (tables have no finalizers on Lua 5.1 and LuaJIT)
+if not rawget(_G, "jit") then
+    local resurrected
+    do
+        local holder = setmetatable({}, { __gc = function(self) resurrected = self.v end })
+        holder.v = world._make_native_test_value("collected")
+    end
+    collectgarbage()
+    collectgarbage()
+    assert(resurrected ~= nil, "the finalizer ran")
+    assert(not pcall(function() return resurrected.label end), "a dropped native value can't be used")
 end
-collectgarbage()
-collectgarbage()
-assert(resurrected ~= nil, "the finalizer ran")
-assert(not pcall(function() return resurrected.label end), "a dropped native value can't be used")

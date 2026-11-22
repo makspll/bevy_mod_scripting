@@ -2029,6 +2029,19 @@ impl Xtasks {
             },
         });
 
+        // the script tests again on LuaJIT, which has its own (FFI) paths. Needs opt-level >= 2 (the ephemeral
+        // build has it): at opt-level 1 LuaJIT segfaults when the Lua state is dropped (mlua#757)
+        let mut luajit = default_args.features.clone().without(Feature::Lua54);
+        luajit.0.insert(Feature::Luajit);
+        output.push(App {
+            global_args: default_args.clone().with_features(luajit),
+            subcmd: Xtasks::Test {
+                name: Some("script_test".to_owned()),
+                package: None,
+                mobile: None,
+            },
+        });
+
         Ok(output)
     }
 

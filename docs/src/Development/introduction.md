@@ -11,4 +11,5 @@ Please see the [code of conduct](https://github.com/makspll/bevy_mod_scripting/b
 - [Setup](./setup.md): preparing a local development environment
 - [Writing Bindings](./writing-bindings.md): adding bindings for Bevy crates
 - [New Languages](./AddingLanguages/introduction.md): what it takes to support another scripting language
+- [Language Internals](./LanguageInternals/introduction.md): how Lua, LuaJIT and Rune call Rust functions and store values, safely and fast
 - [RFCs](../RequestsForComments/summary.md): design proposals and their discussion

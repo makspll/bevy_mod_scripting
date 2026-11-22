@@ -146,7 +146,11 @@ world.insert_component(entity, transform_type, Transform.from_xyz(1, 2, 3))
 
 local reference = assert(world.get_component(entity, transform_type))
 reference:rotate_y(1.0)
-reference.translation.x = 5
+-- a native field is read as a read-only copy: writing to it would be lost, so it's an error, the whole field is written
+assert(not pcall(function(t) t.translation.x = 5 end, reference), "no write-through into a native field")
+local translation = reference.translation:clone()
+translation.x = 5
+reference.translation = translation
 
 local fetched = assert(world.get_component(entity, transform_type))
 assert(approx(fetched.translation.x, 5), "a field change persists")
@@ -154,5 +158,7 @@ assert(approx(fetched.translation.y, 2), "other fields are unchanged")
 assert(approx_vec3(fetched:forward(), Vec3.new(-math.sin(1.0), 0, -math.cos(1.0))), "a rotation persists")
 fetched.translation = Vec3.new(7, 8, 9)
 assert(fetched.translation:dot(Vec3.unit_x()) == 7 and fetched.translation == Vec3.new(7, 8, 9), "whole fields are written")
+local copy = assert(fetched.translation)
 world.despawn(entity)
+assert(copy.x == 7, "a copy of a field outlives its entity")
 assert(not pcall(function() return fetched.translation.x end), "a handle to a despawned entity errors")

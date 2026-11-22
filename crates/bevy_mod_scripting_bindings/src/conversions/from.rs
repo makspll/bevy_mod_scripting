@@ -81,18 +81,40 @@ fn is_native_arg<T: 'static>(args: &dyn ArgSource, index: usize) -> bool {
     )
 }
 
-/// The native value of `T` at argument `index`, borrowed for the call, if the argument is one: the storage and the value,
-/// which is in the world for a place (see [`crate::native::NativePlace`]).
+/// The error for changing a read-only copy, see [`crate::native::ReturnSink::read_only`].
+fn read_only<T>() -> InteropError {
+    InteropError::string(format!(
+        "this {} is a read-only copy of a field: assign the whole field instead, or `clone` it first",
+        std::any::type_name::<T>()
+    ))
+}
+
+/// The native value of `T` at argument `index` for a reference to it which lives as long as the scope, if the argument
+/// is one: the storage, if it has one, and the value.
 ///
-/// Errors if the value is already borrowed in a conflicting way by another argument, or access to a place can't be claimed.
+/// A value stored by the language is one scripts can write while the call runs (in a callback), so the reference is to a
+/// copy kept by the scope, which replaces the value when the scope ends if the call may change it (`exclusive`). A place
+/// is the value in the world, kept by the access claimed for it.
 fn native_arg<T: 'static>(
     args: &dyn ArgSource,
     index: usize,
     scope: &CallScope<'_>,
     exclusive: bool,
-) -> Result<Option<(*mut u8, *mut T)>, InteropError> {
+) -> Result<Option<(Option<*mut u8>, *mut T)>, InteropError> {
+    let out_of_memory = || InteropError::str("out of memory");
     let Some(base) = args.native(index) else {
-        return Ok(None);
+        // a plain value (i.e. a LuaJIT cdata)
+        let Some((value, is_read_only)) = args.plain(index, TypeId::of::<T>()) else {
+            return Ok(None);
+        };
+        if exclusive && is_read_only {
+            return Err(read_only::<T>());
+        }
+        let layout = std::alloc::Layout::new::<T>();
+        // Safety: `ArgSource` gives a T of a `Copy` type, alive until the call returns, which outlives the scope
+        let copy = unsafe { scope.copy_value(value, layout, None, None, exclusive) }
+            .ok_or_else(out_of_memory)?;
+        return Ok(Some((None, copy as *mut T)));
     };
     // Safety: `ArgSource` gives initialised storage, alive until the call returns, which outlives the scope
     let header = unsafe { NativeStorage::header(base) };
@@ -102,19 +124,27 @@ fn native_arg<T: 'static>(
     // Safety: see above, a place of a T
     if let Some(place) = unsafe { NativeStorage::place(base) } {
         // access claims keep other arguments from aliasing it
-        return Ok(Some(
-            (base, unsafe { place.resolve(scope, exclusive) }? as *mut T)
-        ));
-    }
-    // Safety: see above
-    if !unsafe { scope.borrow(&header.borrow, exclusive) } {
-        return Err(InteropError::string(format!(
-            "a {} is passed to a function in a way which conflicts with another argument",
-            header.vtable.type_name
+        return Ok(Some((
+            Some(base),
+            unsafe { place.resolve(scope, exclusive) }? as *mut T,
         )));
     }
-    // Safety: see above, the value is a T
-    Ok(Some((base, unsafe { NativeStorage::value(base) } as *mut T)))
+    if exclusive && header.read_only.get() {
+        return Err(read_only::<T>());
+    }
+    let vtable = header.vtable;
+    // Safety: see above, the value is a T, which the vtable clones and drops
+    let copy = unsafe {
+        scope.copy_value(
+            NativeStorage::value(base),
+            vtable.layout,
+            Some(vtable.clone_into),
+            vtable.drop,
+            exclusive,
+        )
+    }
+    .ok_or_else(out_of_memory)?;
+    Ok(Some((Some(base), copy as *mut T)))
 }
 
 #[profiling::all_functions]
@@ -146,7 +176,7 @@ impl FromScript for bool {
     {
         match value {
             ScriptValue::Bool(b) => Ok(b),
-            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
+            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()?),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<Self>(),
                 value,
@@ -170,7 +200,7 @@ macro_rules! impl_from_with_downcast {
                     match value {
                         ScriptValue::Integer(i) => Ok(i as $ty),
                         ScriptValue::Float(i) => Ok(i as $ty),
-                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
+                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()?),
                         ScriptValue::Bool(b) => Ok(b as usize as $ty),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
@@ -215,13 +245,21 @@ macro_rules! impl_from_stringlike {
                 fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
                     match value {
                         ScriptValue::String(s) => Ok(s.to_string().into()),
-                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
+                        ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()?),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
                 }
 
                 fn could_convert(value: &ScriptValue) -> bool {
                     matches!(value, ScriptValue::String(_) | ScriptValue::Reference(_))
+                }
+
+                fn from_arg(args: &dyn ArgSource, index: usize, scope: &CallScope<'_>,) -> Result<Self, InteropError> {
+                    // read from the language's string, no script value
+                    if let Some(s) = args.string(index) {
+                        return Ok(s.to_owned().into());
+                    }
+                    Self::from_script(args.script_value(index)?, scope)
                 }
             }
         )*
@@ -268,7 +306,7 @@ impl FromScript for char {
             ScriptValue::String(c) => c.chars().next().ok_or_else(|| {
                 InteropError::value_mismatch(TypeId::of::<char>(), ScriptValue::String(c))
             }),
-            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()),
+            ScriptValue::Reference(r) => r.downcast::<Self>(scope.world()?),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<Self>(),
                 value,
@@ -375,7 +413,7 @@ impl<T: FromReflect> FromScript for V<T> {
     type This<'w> = Self;
     #[profiling::function]
     fn from_script(value: ScriptValue, scope: &CallScope) -> Result<Self, InteropError> {
-        let world = scope.world();
+        let world = scope.world()?;
         match value {
             ScriptValue::Reference(reflect_reference) => {
                 let from_reflect = |reference: &ReflectReference| {
@@ -415,7 +453,29 @@ impl<T: FromReflect> FromScript for V<T> {
         index: usize,
         scope: &'s CallScope<'_>,
     ) -> Result<Self, InteropError> {
-        if let Some((base, src)) = native_arg::<T>(args, index, scope, false)? {
+        // a value stored by the language is read once, where it is: no copy kept by the scope
+        let native = args.native(index);
+        if native.is_none()
+            && let Some((src, _)) = args.plain(index, TypeId::of::<T>())
+        {
+            // Safety: a T of a `Copy` type (see `ArgSource::plain`), which needn't be aligned
+            return Ok(V(unsafe { std::ptr::read_unaligned(src as *const T) }));
+        }
+        // only a place needs the scope, for its access claim
+        // Safety: `ArgSource` gives initialised storage
+        let place = native.filter(|base| unsafe {
+            NativeStorage::header(*base).vtable.type_id == TypeId::of::<T>()
+                && NativeStorage::place(*base).is_some()
+        });
+        let source = match (native, place) {
+            (_, Some(_)) => native_arg::<T>(args, index, scope, false)?,
+            // Safety: see above, the value of a storage of a T
+            (Some(base), None) => (unsafe { NativeStorage::header(base) }.vtable.type_id
+                == TypeId::of::<T>())
+            .then(|| (Some(base), unsafe { NativeStorage::value(base) } as *mut T)),
+            (None, None) => None,
+        };
+        if let Some((Some(base), src)) = source {
             let mut value = std::mem::MaybeUninit::<T>::uninit();
             // Safety: `src` is a T (in the storage, or in the world for a place), borrowed so nothing changes it while it's copied
             unsafe {
@@ -457,7 +517,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
     ) -> Result<Self::This<'s>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
-                let world = scope.world();
+                let world = scope.world()?;
                 // the claim keeps an allocated value alive, the borrow outlives `reflect_reference`
                 // and is released when `scope` ends, which the borrow can't outlive
                 if scope.claim_read_access(&reflect_reference.base.base_id) {
@@ -498,7 +558,7 @@ impl<T: FromReflect> FromScript for R<'_, T> {
         scope: &'s CallScope<'_>,
     ) -> Result<Self::This<'s>, InteropError> {
         if let Some((_, value)) = native_arg::<T>(args, index, scope, false)? {
-            // Safety: a T, borrowed shared until the scope ends: in the storage, alive until the call returns, or in the world for a place, kept by the access claimed for it
+            // Safety: a T, borrowed shared until the scope ends: in the storage, alive until the call returns, in the world for a place, kept by the access claimed for it, or the scope's copy of a plain value
             return Ok(R(unsafe { &*value }));
         }
         Self::from_script(args.script_value(index)?, scope)
@@ -580,7 +640,7 @@ impl<T: FromReflect> FromScript for M<'_, T> {
                 if scope.claim_write_access(&reflect_reference.base.base_id) {
                     // Safety: we just claimed write access
                     let ref_ =
-                        unsafe { reflect_reference.reflect_mut_unsafe_non_empty(scope.world()) }?;
+                        unsafe { reflect_reference.reflect_mut_unsafe_non_empty(scope.world()?) }?;
                     let type_id = ref_.get_represented_type_info().map(|i| i.type_id());
                     let cast = ref_.try_downcast_mut::<T>().ok_or_else(|| {
                         InteropError::type_mismatch(std::any::TypeId::of::<T>(), type_id)
@@ -610,7 +670,7 @@ impl<T: FromReflect> FromScript for M<'_, T> {
         scope: &'s CallScope<'_>,
     ) -> Result<Self::This<'s>, InteropError> {
         if let Some((_, value)) = native_arg::<T>(args, index, scope, true)? {
-            // Safety: a T, borrowed exclusively until the scope ends: in the storage, alive until the call returns, or in the world for a place, kept by the access claimed for it
+            // Safety: a T, borrowed exclusively until the scope ends: in the storage, alive until the call returns, in the world for a place, kept by the access claimed for it, or the scope's copy of a plain value
             return Ok(M(unsafe { &mut *value }));
         }
         Self::from_script(args.script_value(index)?, scope)
@@ -665,6 +725,26 @@ where
 
     fn could_convert(value: &ScriptValue) -> bool {
         matches!(value, ScriptValue::List(_))
+    }
+
+    fn from_arg(
+        args: &dyn ArgSource,
+        index: usize,
+        scope: &CallScope<'_>,
+    ) -> Result<Self, InteropError> {
+        // the items read as arguments, no script values
+        let mut vec = None;
+        if args.list(index, &mut |items| {
+            vec = Some(
+                (0..items.len())
+                    .map(|i| T::from_arg(items, i, scope).map(Into::into))
+                    .collect(),
+            );
+        }) && let Some(vec) = vec
+        {
+            return vec;
+        }
+        Self::from_script(args.script_value(index)?, scope)
     }
 }
 
@@ -812,6 +892,25 @@ macro_rules! impl_from_script_hashmap {
 
             fn could_convert(value: &ScriptValue) -> bool {
                 matches!(value, ScriptValue::Map(_) | ScriptValue::List(_))
+            }
+
+            fn from_arg(
+                args: &dyn ArgSource,
+                index: usize,
+                scope: &CallScope<'_>,
+            ) -> Result<Self, InteropError> {
+                // the entries read as arguments, no script values
+                let mut hashmap = <$hashmap_type>::new();
+                let read = args.map(index, &mut |entry| {
+                    let key = String::from_arg(entry, 0, scope)?;
+                    hashmap.insert(key, V::from_arg(entry, 1, scope)?.into());
+                    Ok(())
+                });
+                match read {
+                    Some(read) => read.map(|()| hashmap),
+                    // not a map with string keys, or no fast way: as before
+                    None => Self::from_script(args.script_value(index)?, scope),
+                }
             }
         }
     };

@@ -20,7 +20,7 @@ Only declare types whose parameter is part of what they are (`Handle`, `Time`, `
 ## What to bind
 
 Every reflected type is already usable from scripts without any bindings:
-- fields are read and written through references, i.e. `transform.translation.x = 2`
+- fields are read and written through references, i.e. `sprite.color = c` or `player.stats.hp = 2`
 - every type can be constructed with `Type.new({...})`, see [Constructing Arbitrary Types](../ScriptingReference/constructing-arbitrary-types.md)
 - enum variants are available as `Type.Variant`
 - containers support `len`, `iter`, `push` etc., and every value can be printed
@@ -44,14 +44,27 @@ Do not write getters or setters for public fields.
 Hot value types, i.e. `Vec3`, can be stored by the languages themselves instead of being referenced through the world. Functions read them without converting to `ScriptValue`s:
 
 ```rust,ignore
-// fields are read and written with typed accessors
-script_native!(world, Vec3 { x: f32, y: f32, z: f32 });
-// components (and resources) of native types are native handles: `get_component` returns one, `t.translation` is a
-// handle to the field, `t.translation.x = 5` writes the component
-script_native!(world, Transform { translation: Vec3, rotation: Quat, scale: Vec3 });
+// Safety: the fields are at their offsets
+unsafe {
+    // `field`: converted like an argument (numbers, `bool`, `String`), read and written with typed accessors
+    NativeType::of::<Vec3>()
+        .field("x", offset_of!(Vec3, x), |v| &v.x)
+        .field("y", offset_of!(Vec3, y), |v| &v.y)
+        .field("z", offset_of!(Vec3, z), |v| &v.z)
+        .register(world);
+    // `value_field`: another reflected type, i.e. a native one. Components (and resources) of native types are native
+    // handles: `get_component` returns one, `t.translation = v` writes the component
+    NativeType::of::<Transform>()
+        .value_field("translation", offset_of!(Transform, translation), |t| &t.translation)
+        .value_field("rotation", offset_of!(Transform, rotation), |t| &t.rotation)
+        .value_field("scale", offset_of!(Transform, scale), |t| &t.scale)
+        .register(world);
+}
 ```
 
-Values of types with fields of native types (`Transform.from_xyz(..)`) stay references, so writes to their fields aren't lost on a copy. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren't native, i.e. references, are converted as usual.
+Nothing is inferred: each kind of field has its method on `NativeBuilder`, and every one is `unsafe`, as languages read and write the fields at the offsets given. The closure names the field, which gives its type. For LuaJIT's C layouts and FFI functions (`ffi`, `register_ffi`), see [LuaJIT internals](./LanguageInternals/luajit.md).
+
+Native types are values, with no write-through: a field of a native type is read as a read-only copy (`t.translation.x = 5` is an error, not a lost write) and written whole (`t.translation = v`); `clone` gives a copy scripts can change. Functions get copies of the native values scripts hold (`M<T>` is written back when the call ends), so a script may use a value while a call has it. Handles claim access to their component for each call, and error once the entity or component is gone. Arguments which aren't native, i.e. references, are converted as usual.
 
 ## Documentation
 

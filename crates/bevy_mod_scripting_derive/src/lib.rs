@@ -144,6 +144,22 @@ pub fn from_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///     fn spawn_enemy(ctxt: FunctionCallContext, hp: usize) -> Result<(), InteropError> { .. }
 /// }
 /// ```
+///
+/// # FFI functions
+///
+/// Functions marked `#[ffi]` also get an FFI form, which languages call through their FFI (LuaJIT's) with C types: the
+/// body is registered with `ScriptFunctionRegistry::register_ffi`, see `bevy_mod_scripting_bindings::native::FfiFn`.
+/// Their parameters must implement `FfiArg` (scalars, `R<T>`, `V<T>`), their result `FfiReturn`, else they don't
+/// compile; `T` needs a C layout (`NativeBuilder::ffi`), checked when a language makes its C types. A function taking a
+/// `Union` isn't marked: register a form for each alternative with `register_ffi`. A panic aborts the process.
+///
+/// ```rust,ignore
+/// #[script_bindings(remote, namespace = "math")]
+/// impl Vec3 {
+///     #[ffi]
+///     fn dot(_self: R<Vec3>, other: R<Vec3>) -> f32 { _self.dot(*other) }
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn script_bindings(
     args: proc_macro::TokenStream,

@@ -48,7 +48,7 @@ The default features are `core_functions` and the ecs, input, math, time, transf
 | `mlua_async` | Enables `mlua/async` |
 | `mlua_serialize` | Enables `mlua/serialize` |
 | `mlua_macros` | Enables `mlua/macros` |
-| `unsafe_lua_modules` | Allows loading native modules via `require` in Lua |
+| `unsafe_lua_modules` | Loads every Lua library (`debug`, LuaJIT's `ffi`) and allows native modules via `require`: scripts are no longer memory safe, see [Sandboxing](./customizing-script-contexts.md#sandboxing) |
 | `profile_with_tracy` | Adds tracy profiling spans |
 
 ## Mobile

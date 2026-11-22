@@ -1,11 +1,15 @@
 //! Matrices: [`Mat3`] and [`Mat4`].
 
+use std::{any::TypeId, mem::offset_of};
+
 // `script_bindings` expects these in scope
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{Mat3, Mat4, Quat, Vec2, Vec3, Vec4};
 use bevy_mod_scripting_bindings::{
-    InteropError,
+    InteropError, assert_ffi_layout,
     conversions::from::{R, Union, V},
+    function::script_function::AppScriptFunctionRegistry,
+    native::NativeType,
 };
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -18,36 +22,43 @@ use bevy_mod_scripting_derive::script_bindings;
 )]
 impl Mat3 {
     /// The identity matrix, which leaves vectors unchanged.
+    #[ffi]
     fn identity() -> V<Mat3> {
         V(Mat3::IDENTITY)
     }
 
     /// A matrix with the given columns.
+    #[ffi]
     fn from_cols(x: R<Vec3>, y: R<Vec3>, z: R<Vec3>) -> V<Mat3> {
         V(Mat3::from_cols(*x, *y, *z))
     }
 
     /// A matrix with the given diagonal and zeros elsewhere.
+    #[ffi]
     fn from_diagonal(diagonal: R<Vec3>) -> V<Mat3> {
         V(Mat3::from_diagonal(*diagonal))
     }
 
     /// The rotation matrix of a rotation.
+    #[ffi]
     fn from_quat(q: R<Quat>) -> V<Mat3> {
         V(Mat3::from_quat(*q))
     }
 
     /// A rotation matrix of `angle` radians around the x axis.
+    #[ffi]
     fn from_rotation_x(angle: f32) -> V<Mat3> {
         V(Mat3::from_rotation_x(angle))
     }
 
     /// A rotation matrix of `angle` radians around the y axis.
+    #[ffi]
     fn from_rotation_y(angle: f32) -> V<Mat3> {
         V(Mat3::from_rotation_y(angle))
     }
 
     /// A rotation matrix of `angle` radians around the z axis.
+    #[ffi]
     fn from_rotation_z(angle: f32) -> V<Mat3> {
         V(Mat3::from_rotation_z(angle))
     }
@@ -71,16 +82,19 @@ impl Mat3 {
     }
 
     /// The matrix with rows and columns swapped.
+    #[ffi]
     fn transpose(_self: R<Mat3>) -> V<Mat3> {
         V(_self.transpose())
     }
 
     /// The matrix that undoes this one.
+    #[ffi]
     fn inverse(_self: R<Mat3>) -> V<Mat3> {
         V(_self.inverse())
     }
 
     /// The determinant of the matrix.
+    #[ffi]
     fn determinant(_self: R<Mat3>) -> f32 {
         _self.determinant()
     }
@@ -97,36 +111,43 @@ impl Mat3 {
     }
 
     /// Whether both matrices have exactly the same components.
+    #[ffi]
     fn eq(_self: R<Mat3>, other: R<Mat3>) -> bool {
         *_self == *other
     }
 
     /// Adds two matrices component-wise.
+    #[ffi]
     fn add(_self: R<Mat3>, other: R<Mat3>) -> V<Mat3> {
         V(*_self + *other)
     }
 
     /// Subtracts two matrices component-wise.
+    #[ffi]
     fn sub(_self: R<Mat3>, other: R<Mat3>) -> V<Mat3> {
         V(*_self - *other)
     }
 
     /// Divides every component by a number.
+    #[ffi]
     fn div(_self: R<Mat3>, rhs: f32) -> V<Mat3> {
         V(*_self / rhs)
     }
 
     /// Transforms a [`Vec3`](bevy_math::Vec3) by this matrix.
+    #[ffi]
     fn mul_vec3(_self: R<Mat3>, v: R<Vec3>) -> V<Vec3> {
         V(_self.mul_vec3(*v))
     }
 
     /// Transforms a point in 2D, treating it as having a z of `1`.
+    #[ffi]
     fn transform_point2(_self: R<Mat3>, point: R<Vec2>) -> V<Vec2> {
         V(_self.transform_point2(*point))
     }
 
     /// Transforms a direction in 2D, ignoring translation.
+    #[ffi]
     fn transform_vector2(_self: R<Mat3>, vector: R<Vec2>) -> V<Vec2> {
         V(_self.transform_vector2(*vector))
     }
@@ -141,36 +162,43 @@ impl Mat3 {
 )]
 impl Mat4 {
     /// The identity matrix, which leaves vectors unchanged.
+    #[ffi]
     fn identity() -> V<Mat4> {
         V(Mat4::IDENTITY)
     }
 
     /// A matrix with the given columns.
+    #[ffi]
     fn from_cols(x: R<Vec4>, y: R<Vec4>, z: R<Vec4>, w: R<Vec4>) -> V<Mat4> {
         V(Mat4::from_cols(*x, *y, *z, *w))
     }
 
     /// The rotation matrix of a rotation.
+    #[ffi]
     fn from_quat(q: R<Quat>) -> V<Mat4> {
         V(Mat4::from_quat(*q))
     }
 
     /// A matrix that moves points by `translation`.
+    #[ffi]
     fn from_translation(translation: R<Vec3>) -> V<Mat4> {
         V(Mat4::from_translation(*translation))
     }
 
     /// A matrix that scales every axis by the matching component of `scale`.
+    #[ffi]
     fn from_scale(scale: R<Vec3>) -> V<Mat4> {
         V(Mat4::from_scale(*scale))
     }
 
     /// A matrix that rotates by `rotation`, then moves by `translation`.
+    #[ffi]
     fn from_rotation_translation(rotation: R<Quat>, translation: R<Vec3>) -> V<Mat4> {
         V(Mat4::from_rotation_translation(*rotation, *translation))
     }
 
     /// A matrix that scales by `scale`, then rotates by `rotation`, then moves by `translation`.
+    #[ffi]
     fn from_scale_rotation_translation(
         scale: R<Vec3>,
         rotation: R<Quat>,
@@ -202,16 +230,19 @@ impl Mat4 {
     }
 
     /// The matrix with rows and columns swapped.
+    #[ffi]
     fn transpose(_self: R<Mat4>) -> V<Mat4> {
         V(_self.transpose())
     }
 
     /// The matrix that undoes this one.
+    #[ffi]
     fn inverse(_self: R<Mat4>) -> V<Mat4> {
         V(_self.inverse())
     }
 
     /// The determinant of the matrix.
+    #[ffi]
     fn determinant(_self: R<Mat4>) -> f32 {
         _self.determinant()
     }
@@ -228,36 +259,43 @@ impl Mat4 {
     }
 
     /// Whether both matrices have exactly the same components.
+    #[ffi]
     fn eq(_self: R<Mat4>, other: R<Mat4>) -> bool {
         *_self == *other
     }
 
     /// Adds two matrices component-wise.
+    #[ffi]
     fn add(_self: R<Mat4>, other: R<Mat4>) -> V<Mat4> {
         V(*_self + *other)
     }
 
     /// Subtracts two matrices component-wise.
+    #[ffi]
     fn sub(_self: R<Mat4>, other: R<Mat4>) -> V<Mat4> {
         V(*_self - *other)
     }
 
     /// Divides every component by a number.
+    #[ffi]
     fn div(_self: R<Mat4>, rhs: f32) -> V<Mat4> {
         V(*_self / rhs)
     }
 
     /// Transforms a point in 3D, including translation and the projection divide.
+    #[ffi]
     fn transform_point3(_self: R<Mat4>, point: R<Vec3>) -> V<Vec3> {
         V(_self.transform_point3(*point))
     }
 
     /// Transforms a direction in 3D, ignoring translation.
+    #[ffi]
     fn transform_vector3(_self: R<Mat4>, vector: R<Vec3>) -> V<Vec3> {
         V(_self.transform_vector3(*vector))
     }
 
     /// Transforms a point in 3D by a projection matrix, including the perspective divide.
+    #[ffi]
     fn project_point3(_self: R<Mat4>, point: R<Vec3>) -> V<Vec3> {
         V(_self.project_point3(*point))
     }
@@ -267,4 +305,47 @@ impl Mat4 {
 pub(crate) fn register(world: &mut World) {
     register_mat3_functions(world);
     register_mat4_functions(world);
+    // `mul` takes a `Union`: an FFI form for each alternative
+    {
+        let mut registry = world
+            .get_resource_or_init::<AppScriptFunctionRegistry>()
+            .0
+            .clone();
+        let mut registry = registry.write();
+        let (mat3, mat4) = (TypeId::of::<Mat3>(), TypeId::of::<Mat4>());
+        registry.register_ffi(mat3, "mul", |a: R<Mat3>, b: R<Mat3>| V(*a * *b));
+        registry.register_ffi(mat3, "mul", |a: R<Mat3>, b: R<Vec3>| V(*a * *b));
+        registry.register_ffi(mat3, "mul", |a: R<Mat3>, b: f32| V(*a * b));
+        registry.register_ffi(mat4, "mul", |a: R<Mat4>, b: R<Mat4>| V(*a * *b));
+        registry.register_ffi(mat4, "mul", |a: R<Mat4>, b: R<Vec4>| V(*a * *b));
+        registry.register_ffi(mat4, "mul", |a: R<Mat4>, b: f32| V(*a * b));
+    }
+    // stored by the languages as values (LuaJIT: cdata): the columns are read as read-only copies and written whole
+    assert_ffi_layout!(Mat3 {
+        x_axis: Vec3,
+        y_axis: Vec3,
+        z_axis: Vec3
+    });
+    assert_ffi_layout!(Mat4 {
+        x_axis: Vec4,
+        y_axis: Vec4,
+        z_axis: Vec4,
+        w_axis: Vec4
+    });
+    // Safety: the columns are at their offsets, matrices have no invalid values
+    unsafe {
+        NativeType::of::<Mat3>()
+            .value_field("x_axis", offset_of!(Mat3, x_axis), |m| &m.x_axis)
+            .value_field("y_axis", offset_of!(Mat3, y_axis), |m| &m.y_axis)
+            .value_field("z_axis", offset_of!(Mat3, z_axis), |m| &m.z_axis)
+            .ffi()
+            .register(world);
+        NativeType::of::<Mat4>()
+            .value_field("x_axis", offset_of!(Mat4, x_axis), |m| &m.x_axis)
+            .value_field("y_axis", offset_of!(Mat4, y_axis), |m| &m.y_axis)
+            .value_field("z_axis", offset_of!(Mat4, z_axis), |m| &m.z_axis)
+            .value_field("w_axis", offset_of!(Mat4, w_axis), |m| &m.w_axis)
+            .ffi()
+            .register(world);
+    }
 }

@@ -44,7 +44,15 @@ pub struct NativeTestValue {
 
 pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
-    bevy_mod_scripting_bindings::script_native!(world, NativeTestValue { label: String });
+    // Safety: the field is at its offset
+    unsafe {
+        bevy_mod_scripting_bindings::native::NativeType::of::<NativeTestValue>().field(
+            "label",
+            std::mem::offset_of!(NativeTestValue, label),
+            |v| &v.label,
+        )
+    }
+    .register(world);
     NamespaceBuilder::<World>::new_unregistered(world)
         .register("_make_native_test_value", |label: String| {
             V(NativeTestValue { label })
@@ -187,6 +195,11 @@ pub fn register_test_functions(world: &mut App) {
         .register(
             "noop_4_args",
             |_a: ScriptValue, _b: ScriptValue, _c: ScriptValue, _d: ScriptValue| {},
+        )
+        // the arguments of `noop_4_args`, typed: read without script values where the language can
+        .register(
+            "noop_typed_args",
+            |_a: i64, _b: String, _c: Vec<i64>, _d: HashMap<String, i64>| {},
         )
         .register("into_script_function", |f: DynamicScriptFunction| f)
         .register(

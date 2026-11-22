@@ -6,6 +6,10 @@ fn approx_vec3(a, b) {
     approx(a.x, b.x) && approx(a.y, b.y) && approx(a.z, b.z)
 }
 
+fn errors(f) {
+    catch(f).is_err()
+}
+
 pub fn main() {
     let EulerRot = import_namespace("math").EulerRot;
     let IVec2 = import_namespace("math").IVec2;
@@ -46,6 +50,11 @@ pub fn main() {
     assert!(m.transpose() == m, "transpose");
     assert!(m * m.inverse() == Mat3.identity(), "inverse");
     assert!(m.col(1) == Vec3.new(0, 2, 0), "col");
+    // matrices are values: a column is read as a read-only copy and written whole
+    let n = m.clone();
+    assert!(n.y_axis == Vec3.new(0, 2, 0) && errors(|| { n.y_axis.x = 1.0; }), "a column is a read-only copy");
+    n.y_axis = Vec3.new(0, 5, 0);
+    assert!(n.col(1) == Vec3.new(0, 5, 0) && m.col(1) == Vec3.new(0, 2, 0), "a column is written whole, to the clone only");
     assert!(m + m == m * 2, "mat3 + mat3");
     assert!(m - m == m * 0, "mat3 - mat3");
     assert!(m / 2 == m * 0.5, "mat3 / number");

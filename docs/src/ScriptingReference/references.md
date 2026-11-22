@@ -15,12 +15,21 @@ Accessing a field extends the path, so the result still points into the same val
 local bms = import_namespace("bms")
 local world = bms.world
 local Transform = import_namespace("transform").Transform
+local Vec3 = import_namespace("math").Vec3
 
 local transform = assert(world.get_component(assert(bms.current_entity()), Transform))
-transform.translation.x = 5        -- writes the component
+transform.translation = Vec3.new(5, 0, 0)   -- writes the component
 
-local copy = transform:clone()     -- a new allocation, independent of the component
-copy.translation.x = 0             -- the component keeps 5
+local copy = transform:clone()              -- a new value, independent of the component
+copy.translation = Vec3.new(0, 0, 0)        -- the component keeps 5
+```
+
+Writes go through references, but not into [native types](../Development/writing-bindings.md#native-types) (vectors, quaternions, `Transform`): those are values. Reading a native field gives a read-only copy, so `transform.translation.x = 5` is an error instead of a lost write. Assign the whole field, starting from a `clone` to change one part:
+
+```lua
+local translation = transform.translation:clone()
+translation.x = 5
+transform.translation = translation
 ```
 
 Access is checked when a reference is used, not when it is made: a reference to a removed component fails with an error, and so does writing a value something else is reading at the same time, i.e. inside a query iteration. Script systems can only access what they declared, and assets, whose access is checked for all assets at once, only from exclusive script systems.

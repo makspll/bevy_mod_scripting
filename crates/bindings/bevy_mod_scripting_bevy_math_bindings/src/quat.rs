@@ -1,11 +1,15 @@
 //! Rotations as quaternions: [`Quat`].
 
+use std::any::TypeId;
+
 // `script_bindings` expects these in scope
 use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use bevy_math::{EulerRot, Mat3, Quat, Vec3};
 use bevy_mod_scripting_bindings::{
     InteropError,
     conversions::from::{R, Union, V},
+    function::script_function::AppScriptFunctionRegistry,
+    native::NativeType,
 };
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -24,32 +28,38 @@ fn direction(v: Vec3) -> Result<Vec3, InteropError> {
 )]
 impl Quat {
     /// The identity rotation, which leaves everything unchanged.
+    #[ffi]
     fn identity() -> V<Quat> {
         V(Quat::IDENTITY)
     }
 
     /// A rotation of `angle` radians around the x axis.
+    #[ffi]
     fn from_rotation_x(angle: f32) -> V<Quat> {
         V(Quat::from_rotation_x(angle))
     }
 
     /// A rotation of `angle` radians around the y axis.
+    #[ffi]
     fn from_rotation_y(angle: f32) -> V<Quat> {
         V(Quat::from_rotation_y(angle))
     }
 
     /// A rotation of `angle` radians around the z axis.
+    #[ffi]
     fn from_rotation_z(angle: f32) -> V<Quat> {
         V(Quat::from_rotation_z(angle))
     }
 
     /// A rotation of `angle` radians around `axis`. Errors if the axis is zero or not finite.
+    #[ffi]
     fn from_axis_angle(axis: R<Vec3>, angle: f32) -> Result<V<Quat>, InteropError> {
         let axis = direction(*axis)?;
         Ok(V(Quat::from_axis_angle(axis, angle)))
     }
 
     /// The rotation that turns the direction `from` onto the direction `to`. Errors if either vector is zero or not finite.
+    #[ffi]
     fn from_rotation_arc(from: R<Vec3>, to: R<Vec3>) -> Result<V<Quat>, InteropError> {
         let from = direction(*from)?;
         let to = direction(*to)?;
@@ -68,6 +78,7 @@ impl Quat {
     }
 
     /// The rotation described by a 3x3 rotation matrix.
+    #[ffi]
     fn from_mat3(m: R<Mat3>) -> V<Quat> {
         V(Quat::from_mat3(&m))
     }
@@ -81,76 +92,91 @@ impl Quat {
     }
 
     /// Rotates a [`Vec3`](bevy_math::Vec3).
+    #[ffi]
     fn mul_vec3(_self: R<Quat>, v: R<Vec3>) -> V<Vec3> {
         V(_self.mul_vec3(*v))
     }
 
     /// Whether both rotations have exactly the same components.
+    #[ffi]
     fn eq(_self: R<Quat>, other: R<Quat>) -> bool {
         *_self == *other
     }
 
     /// The opposite rotation, with every component negated.
+    #[ffi]
     fn neg(_self: R<Quat>) -> V<Quat> {
         V(-*_self)
     }
 
     /// The rotation scaled to a length of `1`.
+    #[ffi]
     fn normalize(_self: R<Quat>) -> V<Quat> {
         V(_self.normalize())
     }
 
     /// The rotation that undoes this one.
+    #[ffi]
     fn inverse(_self: R<Quat>) -> V<Quat> {
         V(_self.inverse())
     }
 
     /// The rotation with the vector part negated, which is the inverse for unit quaternions.
+    #[ffi]
     fn conjugate(_self: R<Quat>) -> V<Quat> {
         V(_self.conjugate())
     }
 
     /// The length of the quaternion, which is `1` for a rotation.
+    #[ffi]
     fn length(_self: R<Quat>) -> f32 {
         _self.length()
     }
 
     /// The dot product of two rotations.
+    #[ffi]
     fn dot(_self: R<Quat>, other: R<Quat>) -> f32 {
         _self.dot(*other)
     }
 
     /// Spherically interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.
+    #[ffi]
     fn slerp(_self: R<Quat>, other: R<Quat>, t: f32) -> V<Quat> {
         V(_self.slerp(*other, t))
     }
 
     /// Linearly interpolates towards `other`, `t = 0` gives this rotation and `t = 1` gives `other`.
+    #[ffi]
     fn lerp(_self: R<Quat>, other: R<Quat>, t: f32) -> V<Quat> {
         V(_self.lerp(*other, t))
     }
 
     /// The angle in radians between two rotations.
+    #[ffi]
     fn angle_between(_self: R<Quat>, other: R<Quat>) -> f32 {
         _self.angle_between(*other)
     }
 
     /// The axis this rotation turns around.
+    #[ffi]
     fn axis(_self: R<Quat>) -> V<Vec3> {
         V(_self.to_axis_angle().0)
     }
 
     /// The angle in radians this rotation turns by around its [`axis`](Self::axis).
+    #[ffi]
     fn angle(_self: R<Quat>) -> f32 {
         _self.to_axis_angle().1
     }
 
     /// The vector part of the quaternion, i.e. the x, y and z components.
+    #[ffi]
     fn xyz(_self: R<Quat>) -> V<Vec3> {
         V(_self.xyz())
     }
 
     /// Whether the quaternion has a length of `1`.
+    #[ffi]
     fn is_normalized(_self: R<Quat>) -> bool {
         _self.is_normalized()
     }
@@ -159,14 +185,33 @@ impl Quat {
 /// Registers the functions of quaternions, which are stored natively by the languages.
 pub(crate) fn register(world: &mut World) {
     register_quat_functions(world);
+    // `mul` takes a `Union`: an FFI form for each alternative
+    {
+        let mut registry = world
+            .get_resource_or_init::<AppScriptFunctionRegistry>()
+            .0
+            .clone();
+        let mut registry = registry.write();
+        let quat = TypeId::of::<Quat>();
+        registry.register_ffi(quat, "mul", |a: R<Quat>, b: R<Quat>| V(*a * *b));
+        registry.register_ffi(quat, "mul", |a: R<Quat>, b: R<Vec3>| V(*a * *b));
+    }
+    bevy_mod_scripting_bindings::assert_ffi_layout!(Quat {
+        x: f32,
+        y: f32,
+        z: f32,
+        w: f32
+    });
     // a SIMD type: fields through `Deref`
-    bevy_mod_scripting_bindings::script_native!(
-        world,
-        deref Quat {
-            x: f32,
-            y: f32,
-            z: f32,
-            w: f32
-        }
-    );
+    // Safety: glam's `Deref` casts the quaternion itself to a `repr(C)` struct of its components, at the same offset in
+    // every value. Any bits are a quaternion: functions needing a normalised one check it.
+    unsafe {
+        NativeType::of::<Quat>()
+            .deref_field("x", |q| &q.x)
+            .deref_field("y", |q| &q.y)
+            .deref_field("z", |q| &q.z)
+            .deref_field("w", |q| &q.w)
+            .ffi()
+            .register(world);
+    }
 }

@@ -89,73 +89,135 @@ pub type RegistryCache = [Rc<RefCell<dyn Any>>; 6];
 /// A scope in which values converted from scripts may borrow from the world, see [`WorldAccessGuard::with_call_scope`].
 ///
 /// Accesses claimed through the scope are released when it ends, which is why borrows from it can't outlive it.
+///
+/// A scope made by [`CallScope::with_lazy`] looks its world up the first time it's needed, so calls whose arguments never
+/// touch the world (numbers, native values) don't.
 pub struct CallScope<'w> {
-    guard: WorldGuard<'w>,
+    guard: std::cell::OnceCell<WorldGuard<'w>>,
     /// The claims made through this scope, released when it's dropped
     claims: RefCell<SmallVec<[WorldAccessRange; 4]>>,
-    /// The borrows of values outside the world made through this scope, see [`Self::borrow`], released when it's dropped
-    borrows: RefCell<SmallVec<[(*const BorrowFlag, bool); 2]>>,
+    /// The copies of values outside the world made through this scope, see [`Self::copy_value`], written back and
+    /// dropped when it's dropped
+    copies: RefCell<SmallVec<[ValueCopy; 4]>>,
+    /// Room for the first copies, the others are allocated
+    slots: std::cell::UnsafeCell<[std::mem::MaybeUninit<CopySlot>; COPY_SLOTS]>,
+    slots_used: std::cell::Cell<usize>,
 }
 
-/// Tracks the borrows of a value outside the world, i.e. one stored natively by a script language, like a `RefCell`.
-///
-/// Positive counts are shared borrows, -1 is an exclusive one. Not thread safe: script values belong to one thread.
-#[derive(Debug, Default)]
-pub struct BorrowFlag(std::cell::Cell<isize>);
+/// How many copies a [`CallScope`] holds without allocating.
+const COPY_SLOTS: usize = 4;
 
-impl BorrowFlag {
-    fn try_borrow(&self, exclusive: bool) -> bool {
-        let current = self.0.get();
-        let next = match exclusive {
-            true if current == 0 => -1,
-            false if (0..isize::MAX).contains(&current) => current + 1,
-            _ => return false,
-        };
-        self.0.set(next);
-        true
-    }
+/// Room for a copy of most values (vectors, quaternions, matrices, transforms).
+#[repr(C, align(16))]
+struct CopySlot([std::mem::MaybeUninit<u8>; 64]);
 
-    fn release(&self, exclusive: bool) {
-        match exclusive {
-            true => self.0.set(0),
-            false => self.0.set(self.0.get() - 1),
-        }
-    }
-
-    /// Whether the value is borrowed exclusively, so it can't be read.
-    pub fn is_borrowed_mut(&self) -> bool {
-        self.0.get() < 0
-    }
+/// A copy of a value, see [`CallScope::copy_value`].
+struct ValueCopy {
+    copy: *mut u8,
+    layout: std::alloc::Layout,
+    /// The slot of the scope the copy is in, if it wasn't allocated. Dropping the scope finds the copy by it: pointers
+    /// into the scope made earlier are no longer valid then
+    slot: Option<usize>,
+    /// Where the copy is written back to, for values the call may change
+    origin: Option<*mut u8>,
+    drop: Option<unsafe fn(*mut u8)>,
 }
 
 impl<'w> CallScope<'w> {
-    fn new(guard: WorldGuard<'w>) -> Self {
+    fn new(guard: Option<WorldGuard<'w>>) -> Self {
         Self {
-            guard,
+            guard: guard.map(std::cell::OnceCell::from).unwrap_or_default(),
             claims: Default::default(),
-            borrows: Default::default(),
+            copies: Default::default(),
+            slots: std::cell::UnsafeCell::new(
+                [const { std::mem::MaybeUninit::uninit() }; COPY_SLOTS],
+            ),
+            slots_used: Default::default(),
         }
     }
 
-    /// Borrows a value outside the world for as long as this scope, shared or `exclusive`.
+    /// Copies a value outside the world, i.e. one stored by a script language, and returns the copy, which lives as long
+    /// as this scope and is never aliased. Scripts can write such a value at any time, also while the call runs (a
+    /// callback), so calls never hold references to them. With `write_back` the copy replaces the value when the scope
+    /// is dropped (the last one wins if a value is copied twice).
     ///
-    /// Returns false if the value is already borrowed in a conflicting way, i.e. passed both as `&mut` and `&` to a function.
+    /// `clone` makes the copy (the bytes are copied without one), `drop` drops a value of the type, if it needs to be.
+    ///
+    /// `None` if the copy can't be allocated.
     ///
     /// # Safety
-    /// The flag must stay valid until the scope is dropped.
-    pub unsafe fn borrow(&self, flag: &BorrowFlag, exclusive: bool) -> bool {
-        let borrowed = flag.try_borrow(exclusive);
-        if borrowed {
-            self.borrows
-                .borrow_mut()
-                .push((flag as *const BorrowFlag, exclusive));
+    /// - `value` is a valid value of `layout`, for reads and, with `write_back`, for writes, until the scope is dropped.
+    ///   Without `clone` it needn't be aligned.
+    /// - `clone` writes a valid copy of its first argument to its second, `drop` drops a value of the type.
+    pub unsafe fn copy_value(
+        &self,
+        value: *mut u8,
+        layout: std::alloc::Layout,
+        clone: Option<unsafe fn(*const u8, *mut u8)>,
+        drop: Option<unsafe fn(*mut u8)>,
+        write_back: bool,
+    ) -> Option<*mut u8> {
+        if layout.size() == 0 {
+            // nothing to copy or write back, any aligned pointer is a value
+            return Some(layout.align() as *mut u8);
         }
-        borrowed
+        let used = self.slots_used.get();
+        let fits =
+            layout.size() <= size_of::<CopySlot>() && layout.align() <= align_of::<CopySlot>();
+        let (copy, slot) = if fits && used < COPY_SLOTS {
+            self.slots_used.set(used + 1);
+            // Safety: inside the slots, each slot is handed out once
+            (
+                unsafe { (self.slots.get() as *mut CopySlot).add(used) } as *mut u8,
+                Some(used),
+            )
+        } else {
+            // Safety: the layout isn't empty
+            let copy = unsafe { std::alloc::alloc(layout) };
+            if copy.is_null() {
+                return None;
+            }
+            (copy, None)
+        };
+        // Safety: the caller's, the copy is new memory of the layout
+        unsafe {
+            match clone {
+                Some(clone) => clone(value, copy),
+                None => std::ptr::copy_nonoverlapping(value, copy, layout.size()),
+            }
+        }
+        self.copies.borrow_mut().push(ValueCopy {
+            copy,
+            layout,
+            slot,
+            origin: write_back.then_some(value),
+            drop,
+        });
+        Some(copy)
     }
 
-    /// The world guard this scope belongs to
-    pub fn world(&self) -> WorldGuard<'w> {
-        self.guard.clone()
+    /// Runs `f` in a new scope of the running script's world ([`ThreadWorldContainer`]), looked up the first time the
+    /// scope needs it, releasing the accesses claimed in it once `f` returns or panics.
+    ///
+    /// Without a running script, the scope's world is an error once it's needed (and claims fail).
+    pub fn with_lazy<O>(f: impl FnOnce(&CallScope<'w>) -> O) -> O {
+        // dropped also when `f` panics
+        let scope = CallScope::new(None);
+        f(&scope)
+    }
+
+    /// The world, looked up for a lazy scope, see [`Self::with_lazy`].
+    fn guard(&self) -> Result<&WorldGuard<'w>, DynWorldAccessError> {
+        if let Some(guard) = self.guard.get() {
+            return Ok(guard);
+        }
+        let world = ThreadWorldContainer::try_get_context()?.world;
+        Ok(self.guard.get_or_init(|| world))
+    }
+
+    /// The world guard this scope belongs to, an error for a lazy scope without a running script, see [`Self::with_lazy`].
+    pub fn world(&self) -> Result<WorldGuard<'w>, DynWorldAccessError> {
+        self.guard().cloned()
     }
 
     /// Claims read access for a borrow that lives as long as this scope.
@@ -172,10 +234,14 @@ impl<'w> CallScope<'w> {
 
     #[track_caller]
     fn claim(&self, key: WorldAccessRange, write: bool) -> bool {
+        // nothing can be claimed without a world
+        let Ok(guard) = self.guard() else {
+            return false;
+        };
         let claimed = if write {
-            self.guard.claim_write_access(key.clone())
+            guard.claim_write_access(key.clone())
         } else {
-            self.guard.claim_read_access(key.clone())
+            guard.claim_read_access(key.clone())
         };
         if claimed {
             self.claims.borrow_mut().push(key);
@@ -186,13 +252,37 @@ impl<'w> CallScope<'w> {
 
 impl Drop for CallScope<'_> {
     fn drop(&mut self) {
-        for key in self.claims.get_mut().drain(..).rev() {
-            // Safety: the borrows made under the claim can't outlive the scope
-            unsafe { self.guard.release_access(key) }
+        // claims are only made with a world
+        if let Some(guard) = self.guard.get() {
+            for key in self.claims.get_mut().drain(..).rev() {
+                // Safety: the borrows made under the claim can't outlive the scope
+                unsafe { guard.release_access(key) }
+            }
         }
-        for (flag, exclusive) in self.borrows.get_mut().drain(..) {
-            // Safety: `borrow`'s caller keeps the flag valid until now
-            unsafe { (*flag).release(exclusive) }
+        let slots = self.slots.get() as *mut CopySlot;
+        for copy in self.copies.get_mut().drain(..) {
+            // Safety: `copy_value` made the copy with this layout, in this slot if it has one; its caller keeps the
+            // origin valid until now
+            unsafe {
+                let value = match copy.slot {
+                    Some(slot) => slots.add(slot) as *mut u8,
+                    None => copy.copy,
+                };
+                match (copy.origin, copy.drop) {
+                    // the copy replaces the value: the old one is dropped, the copy moved
+                    (Some(origin), drop) => {
+                        if let Some(drop) = drop {
+                            drop(origin);
+                        }
+                        std::ptr::copy_nonoverlapping(value, origin, copy.layout.size());
+                    }
+                    (None, Some(drop)) => drop(value),
+                    (None, None) => {}
+                }
+                if copy.slot.is_none() {
+                    std::alloc::dealloc(copy.copy, copy.layout);
+                }
+            }
         }
     }
 }
@@ -545,7 +635,7 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// ```
     /// # use bevy_mod_scripting_world::WorldGuard;
-    /// fn f(guard: WorldGuard) -> WorldGuard { guard.with_call_scope(|scope| scope.world()) }
+    /// fn f(guard: WorldGuard) -> WorldGuard { guard.with_call_scope(|scope| scope.world().unwrap()) }
     /// ```
     ///
     /// ```compile_fail
@@ -554,7 +644,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// ```
     pub fn with_call_scope<O>(&self, f: impl FnOnce(&CallScope<'w>) -> O) -> O {
         // dropped also when `f` panics
-        let scope = CallScope::new(self.clone());
+        let scope = CallScope::new(Some(self.clone()));
         f(&scope)
     }
 
@@ -816,6 +906,22 @@ mod test {
         });
         // claims are released when their scope ends
         assert_eq!(guard.access_len(), 0);
+
+        // a lazy scope looks its world up when needed: without a running script there's none, nothing is claimed
+        CallScope::with_lazy(|scope| {
+            assert!(scope.world().is_err());
+            assert!(!scope.claim_read_access(key()));
+        });
+        // with one, claims are made and released like in other scopes
+        let mut running = World::new();
+        let slots = array::from_fn(|_| Rc::new(RefCell::new(TestRegistry)) as Rc<RefCell<dyn Any>>);
+        WorldAccessGuard::with_static_guard(&mut running, slots, |running| {
+            CallScope::with_lazy(|scope| {
+                assert!(scope.claim_write_access(key()));
+                assert_eq!(running.access_len(), 1);
+            });
+            assert_eq!(running.access_len(), 0);
+        });
 
         // also when it panics
         let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
