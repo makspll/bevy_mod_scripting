@@ -89,12 +89,13 @@ jobs:
           BIN=$(find benches/engines/unity/build -name 'bench.x86_64' | head -1)
           sudo chmod +x "$BIN"
           STAGES_ARG=${STAGES:+--stages $STAGES}
-          COMMON="-batchmode -nographics -logFile -"
+          # a hung player fails the job instead of stalling it
+          RUN="timeout 1800 $BIN -batchmode -nographics -logFile -"
           for s in s1 s2; do
             ARGS="--scenario $s --config benches/engines/scenario.json $STAGES_ARG --out results"
-            "$BIN" $COMMON --path mono --name unity_mono $ARGS
-            "$BIN" $COMMON --path ecs --name unity_ecs_burst $ARGS
-            "$BIN" $COMMON --burst-disable-compilation -job-worker-count 0 --path ecs --name unity_ecs $ARGS
+            $RUN --path mono --name unity_mono $ARGS
+            $RUN --path ecs --name unity_ecs_burst $ARGS
+            $RUN --burst-disable-compilation -job-worker-count 0 --path ecs --name unity_ecs $ARGS
           done
       - uses: actions/upload-artifact@v4
         with:

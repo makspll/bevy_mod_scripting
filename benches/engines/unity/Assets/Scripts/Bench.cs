@@ -92,7 +92,7 @@ public class NoDefaultWorld : Unity.Entities.ICustomBootstrap
 
 public static class Bench
 {
-    // runs before the first frame and exits without rendering one
+    // runs before the first frame, the player quits at its end (`Environment.Exit` hangs in a Unity player)
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Init()
     {
@@ -110,7 +110,7 @@ public static class Bench
             code = 1;
         }
         Console.Error.Flush();
-        Environment.Exit(code);
+        Application.Quit(code);
     }
 
     static Dictionary<string, string> ParseArgs()
