@@ -286,6 +286,7 @@ libtest-mimic = { workspace = true }
 tracing-tracy = { workspace = true }
 regex = { workspace = true }
 bevy_console = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
 
 
 [workspace]
@@ -373,6 +374,11 @@ missing_docs = "deny"
 
 [[bench]]
 name = "benchmarks"
+harness = false
+
+[[bench]]
+name = "engines"
+path = "benches/engines/bevy/main.rs"
 harness = false
 
 [[test]]
