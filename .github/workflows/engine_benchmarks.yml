@@ -1,0 +1,131 @@
+name: Engine benchmarks
+
+# Scenario benchmarks against Godot and Unity, see benches/engines/README.md.
+# Run by hand; results go to the `bench-media` release, which the book's Engine Comparison page reads.
+on:
+  workflow_dispatch:
+    inputs:
+      stages:
+        description: "comma separated entity counts, empty for scenario.json"
+        required: false
+        default: ""
+
+env:
+  STAGES: ${{ inputs.stages }}
+
+jobs:
+  bevy:
+    name: Bevy (${{ matrix.path }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        path: [rust, lua]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: engine-benchmarks
+      - name: Run
+        run: |
+          STAGES_ARG=${STAGES:+--stages $STAGES}
+          for s in s1 s2; do
+            cargo bench --bench engines --features luajit -- --path ${{ matrix.path }} --scenario $s $STAGES_ARG --out results
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-bevy-${{ matrix.path }}
+          path: results
+
+  godot:
+    name: Godot
+    runs-on: ubuntu-latest
+    env:
+      GODOT: "4.7.2-stable"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot
+        run: |
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/$GODOT/Godot_v${GODOT}_linux.x86_64.zip
+          unzip -q godot.zip && mv Godot_v${GODOT}_linux.x86_64 godot
+      - name: Run
+        run: |
+          STAGES_ARG=${STAGES:+--stages $STAGES}
+          for s in s1 s2; do
+            ./godot --headless --path benches/engines/godot --script res://main.gd -- --scenario $s $STAGES_ARG --out $PWD/results
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-godot
+          path: results
+
+  unity:
+    name: Unity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: benches/engines/unity/Library
+          key: unity-library-${{ hashFiles('benches/engines/unity/Packages/**', 'benches/engines/unity/ProjectSettings/**') }}
+      - name: Build player
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: benches/engines/unity
+          targetPlatform: StandaloneLinux64
+          buildMethod: BuildPlayer.Build
+      - name: Run
+        run: |
+          BIN=$(find benches/engines/unity/build -name 'bench.x86_64' | head -1)
+          sudo chmod +x "$BIN"
+          STAGES_ARG=${STAGES:+--stages $STAGES}
+          # the player kills itself after writing its results (it can't exit cleanly under -nographics),
+          # so success is the results file existing; a hung player times out
+          run() {
+            local name=$1; shift
+            timeout 1800 "$BIN" -batchmode -nographics -logFile - "$@" --name $name --out results || true
+            test -f results/${s}_${name}.json || { echo "::error::$name $s wrote no results"; exit 1; }
+          }
+          for s in s1 s2; do
+            ARGS="--scenario $s --config benches/engines/scenario.json $STAGES_ARG"
+            run unity_mono --path mono $ARGS
+            run unity_ecs_burst --path ecs $ARGS
+            run unity_ecs --burst-disable-compilation -job-worker-count 0 --path ecs $ARGS
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-unity
+          path: results
+
+  publish:
+    name: Publish
+    needs: [bevy, godot, unity]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: results
+      - name: Render charts
+        run: |
+          pip install matplotlib
+          python3 benches/engines/collect.py results charts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: charts
+          path: charts
+      # the book page reads the latest results (and videos) from this release
+      - name: Upload to the bench-media release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view bench-media >/dev/null 2>&1 || gh release create bench-media --latest=false \
+            --title "Engine benchmark results" --notes "Latest engine benchmark results, overwritten by every run."
+          gh release upload bench-media charts/*.png --clobber

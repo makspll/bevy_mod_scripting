@@ -16,6 +16,7 @@
 - [Script Pipeline](./ScriptPipeline/pipeline.md)
 - [Editor Support](./ScriptTooling/introduction.md)
 - [Examples](./Examples/introduction.md)
+- [Engine Comparison](./EngineComparison/engine-comparison.md)
 
 # Scripting Reference
 

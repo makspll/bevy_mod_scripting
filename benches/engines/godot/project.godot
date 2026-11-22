@@ -1,0 +1,12 @@
+; Engine benchmarks, see ../README.md
+config_version=5
+
+[application]
+
+config/name="engine_benchmarks"
+config/features=PackedStringArray("4.7")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720

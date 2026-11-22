@@ -1,0 +1,8 @@
+results/
+godot/.godot/
+unity/Library/
+unity/Temp/
+unity/Logs/
+unity/UserSettings/
+unity/build/
+unity/Assets/Bench.unity*

@@ -1,0 +1,67 @@
+{
+    "seed": 12345,
+    "dt": 0.016666668,
+    "arena": [
+        1280,
+        720
+    ],
+    "stages": [
+        1000,
+        5000,
+        10000,
+        25000,
+        50000
+    ],
+    "warmup_frames": 60,
+    "measure_frames": 60,
+    "s1": {
+        "emitter": [
+            640,
+            40
+        ],
+        "gravity": -500,
+        "drag": 0.1,
+        "speed": [
+            300,
+            600
+        ],
+        "angle_deg": [
+            60,
+            120
+        ],
+        "lifetime": [
+            2,
+            4
+        ],
+        "restitution": [
+            0.6,
+            0.9
+        ],
+        "bounces": [
+            3,
+            6
+        ],
+        "spawn_cap_div": 30,
+        "trail_every": 4,
+        "trail_len": 8
+    },
+    "s2": {
+        "cell": 32,
+        "speed": 60,
+        "chase_speed": 90,
+        "jitter": 0.5,
+        "radius": 8,
+        "p_infect": 0.005,
+        "infect_time": 5,
+        "damage_per_s": 2,
+        "hp": 100,
+        "seed_every": 50,
+        "strains": [
+            "alpha",
+            "beta",
+            "gamma",
+            "delta"
+        ],
+        "memory_cap": 16
+    }
+}
