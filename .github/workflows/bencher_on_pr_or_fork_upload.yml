@@ -24,13 +24,19 @@ jobs:
             const { data } = await github.rest.actions.listWorkflowRunArtifacts({
               ...context.repo, run_id: context.payload.workflow_run.id,
             });
-            core.setOutput('ran', data.artifacts.some(a => a.name === 'benchmark_results.txt') ? 'true' : 'false');
+            core.setOutput('ran', data.artifacts.some(a => a.name.startsWith('benchmark_results_')) ? 'true' : 'false');
+      # one file per language job, published as one report
       - name: Download Benchmark Results
         if: steps.ran.outputs.ran == 'true'
-        uses: dawidd6/action-download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
-          name: ${{ env.BENCHMARK_RESULTS }}
-          run_id: ${{ github.event.workflow_run.id }}
+          pattern: benchmark_results_*
+          merge-multiple: true
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge Benchmark Results
+        if: steps.ran.outputs.ran == 'true'
+        run: cat benchmark_results_*.txt > "$BENCHMARK_RESULTS"
       - name: Download PR Event
         if: steps.ran.outputs.ran == 'true'
         uses: dawidd6/action-download-artifact@v6

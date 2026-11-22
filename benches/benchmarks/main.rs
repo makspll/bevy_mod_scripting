@@ -7,6 +7,7 @@ use bevy::log::{tracing, tracing_subscriber, tracing_subscriber::layer::Subscrib
 use criterion::{BenchmarkFilter, criterion_main};
 use regex::Regex;
 
+#[cfg(feature = "lua")]
 mod conversions;
 mod plugin;
 mod scripts;
@@ -73,9 +74,12 @@ pub fn benches() {
         };
 
         scripts::script_benchmarks(&mut criterion, filter);
+        // named after the Lua dialect, so the Lua builds measure them
+        #[cfg(feature = "lua")]
         conversions::conversion_benchmarks(&mut criterion);
         plugin::script_load_benchmarks(&mut criterion);
         plugin::callback_benchmarks(&mut criterion);
+        #[cfg(feature = "lua")]
         plugin::script_system_benchmarks(&mut criterion);
     });
 }

@@ -78,10 +78,14 @@ jobs:
           path: ./event.json
 
   benchmark_fork_pr_branch:
-    name: Run PR Benchmarks
+    name: Run PR Benchmarks (${{ matrix.lang }})
     needs: decide
     if: needs.decide.outputs.run == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      # each language is its own build, see `cargo xtask bench --lang`
+      matrix:
+        lang: [lua54, luajit, rune]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -91,7 +95,7 @@ jobs:
         uses: Swatinem/rust-cache@v2.7.7
         with:
           # shares the cache of the benchmarks job which runs on main
-          shared-key: bencher-ubuntu-latest
+          shared-key: bencher-${{ matrix.lang }}-ubuntu-latest
           # dispatched runs execute on the default branch, where saving would let PR code poison main's cache
           save-if: false
           cache-all-crates: true
@@ -100,9 +104,10 @@ jobs:
           cargo xtask init --dont-update-ide --tools
       - name: Run `cargo xtask bench` and save results
         run: |
-          cargo xtask bench > benchmark_results.txt
+          cargo xtask bench --lang ${{ matrix.lang }} > benchmark_results_${{ matrix.lang }}.txt
       - name: Upload Benchmark Results
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark_results.txt
-          path: ./benchmark_results.txt
+          # merged by `bencher_on_pr_or_fork_upload.yml`
+          name: benchmark_results_${{ matrix.lang }}.txt
+          path: ./benchmark_results_${{ matrix.lang }}.txt

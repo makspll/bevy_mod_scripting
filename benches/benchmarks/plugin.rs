@@ -2,26 +2,29 @@
 use criterion::Criterion;
 #[cfg(feature = "rune")]
 use script_integration_test_harness::make_test_rune_plugin;
+#[cfg(feature = "lua")]
+use script_integration_test_harness::{make_test_lua_plugin, run_plugin_script_system_benchmark};
 use script_integration_test_harness::{
-    make_test_lua_plugin, run_plugin_callback_command_benchmark,
-    run_plugin_callback_event_benchmark, run_plugin_script_load_benchmark,
-    run_plugin_script_system_benchmark,
+    run_plugin_callback_command_benchmark, run_plugin_callback_event_benchmark,
+    run_plugin_script_load_benchmark,
 };
 
+#[cfg(feature = "lua")]
 use crate::LUA;
 
 pub fn script_load_benchmarks(criterion: &mut Criterion) {
     let mut group = criterion.benchmark_group("loading");
-    // lua
-    let content = include_str!("../../assets/benchmarks/plugin/loading/empty.lua");
-    run_plugin_script_load_benchmark(
-        make_test_lua_plugin,
-        &format!("empty {LUA}"),
-        content,
-        &mut group,
-    );
+    #[cfg(feature = "lua")]
+    {
+        let content = include_str!("../../assets/benchmarks/plugin/loading/empty.lua");
+        run_plugin_script_load_benchmark(
+            make_test_lua_plugin,
+            &format!("empty {LUA}"),
+            content,
+            &mut group,
+        );
+    }
 
-    // rune
     #[cfg(feature = "rune")]
     {
         let content = include_str!("../../assets/benchmarks/plugin/loading/empty.rn");
@@ -32,11 +35,13 @@ pub fn script_load_benchmarks(criterion: &mut Criterion) {
 /// benchmarks measuring the overhead of dispatching callbacks to scripts, the callbacks themselves are empty
 pub fn callback_benchmarks(criterion: &mut Criterion) {
     let mut group = criterion.benchmark_group("callbacks");
+    #[cfg(feature = "lua")]
     let lua = include_str!("../../assets/benchmarks/plugin/callbacks/empty_callback.lua");
     #[cfg(feature = "rune")]
     let rune = include_str!("../../assets/benchmarks/plugin/callbacks/empty_callback.rn");
 
     for script_count in [1, 100] {
+        #[cfg(feature = "lua")]
         run_plugin_callback_event_benchmark(
             make_test_lua_plugin,
             &format!("event handler {script_count} scripts {LUA}"),
@@ -54,6 +59,7 @@ pub fn callback_benchmarks(criterion: &mut Criterion) {
         );
     }
 
+    #[cfg(feature = "lua")]
     run_plugin_callback_command_benchmark(
         make_test_lua_plugin,
         &format!("command {LUA}"),
@@ -65,6 +71,7 @@ pub fn callback_benchmarks(criterion: &mut Criterion) {
 }
 
 /// benchmarks running a script system querying the components of many entities, measures building and passing the payload
+#[cfg(feature = "lua")]
 pub fn script_system_benchmarks(criterion: &mut Criterion) {
     let mut group = criterion.benchmark_group("script systems");
     let lua = include_str!("../../assets/benchmarks/plugin/script_systems/query_system.lua");

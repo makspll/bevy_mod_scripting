@@ -23,10 +23,11 @@ use ::{
 use bevy_asset::Assets;
 use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_bindings::{CoreScriptGlobalsPlugin, WorldExtensions};
+#[cfg(feature = "lua")]
+use bevy_mod_scripting_core::error::ScriptError;
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
     commands::{AttachScript, RunScriptCallback},
-    error::ScriptError,
     event::{
         IntoCallbackLabel, ScriptCallbackMessage, ScriptCallbackResponseMessage, ScriptErrorMessage,
     },

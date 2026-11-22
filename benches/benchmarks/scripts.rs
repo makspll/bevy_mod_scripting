@@ -5,6 +5,7 @@ use bevy::log::{Level, tracing::span};
 use bevy_platform::collections::HashMap;
 use criterion::{BenchmarkGroup, Criterion, measurement::Measurement};
 use regex::Regex;
+#[cfg(feature = "lua")]
 use script_integration_test_harness::run_lua_benchmark;
 #[cfg(feature = "rune")]
 use script_integration_test_harness::run_rune_benchmark;
@@ -63,12 +64,15 @@ impl BenchmarkExecutor for Test {
 
     fn execute<M: Measurement>(&self, criterion: &mut BenchmarkGroup<M>) {
         match self.kind {
+            #[cfg(feature = "lua")]
             test_utils::TestKind::Lua => run_lua_benchmark(
                 &self.script_asset_path.to_string_lossy(),
                 &self.benchmark_name(),
                 criterion,
             )
             .expect("Benchmark failed"),
+            #[cfg(not(feature = "lua"))]
+            test_utils::TestKind::Lua => unimplemented!("Lua benchmarks need a Lua feature"),
             #[cfg(feature = "rune")]
             test_utils::TestKind::Rune => run_rune_benchmark(
                 &self.script_asset_path.to_string_lossy(),
@@ -88,6 +92,8 @@ pub fn script_benchmarks(criterion: &mut Criterion, filter: Option<Regex>) {
     let tests = discover_all_tests(manifest_dir, |p| {
         p.script_asset_path.starts_with("benchmarks")
             && !p.script_asset_path.starts_with(PLUGIN_SCRIPTS)
+            // Rune scripts are only discovered with the `rune` feature, Lua scripts always are
+            && (cfg!(feature = "lua") || matches!(p.kind, TestKind::Rune))
             && if let Some(filter) = &filter {
                 let matching = filter.is_match(&p.benchmark_name());
                 if !matching {

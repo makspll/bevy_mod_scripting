@@ -204,11 +204,14 @@ impl App {
             Xtasks::Install { binary } => {
                 cmd.arg("install").arg(binary.as_ref());
             }
-            Xtasks::Bencher { publish } => {
+            Xtasks::Bencher { publish, lang } => {
                 cmd.arg("bencher");
 
                 if publish {
                     cmd.arg("--publish");
+                }
+                if let Some(lang) = lang {
+                    cmd.arg("--lang").arg(lang.as_ref());
                 }
             }
             Xtasks::Miri => {
@@ -225,8 +228,13 @@ impl App {
                 name,
                 enable_profiling: profile,
                 tracy_capture_name,
+                lang,
             } => {
                 cmd.arg("bench");
+
+                if let Some(lang) = lang {
+                    cmd.arg("--lang").arg(lang.as_ref());
+                }
 
                 if let Some(name) = name {
                     cmd.arg("--name").arg(name);
@@ -268,6 +276,13 @@ impl App {
         // mobile builds don't share their cache with the desktop ones
         let target = mobile
             .map(|m| format!("-{}", m.as_ref()))
+            // each benchmarked language is its own build
+            .or(match self.subcmd {
+                Xtasks::Bencher {
+                    lang: Some(lang), ..
+                } => Some(format!("-{}", lang.as_ref())),
+                _ => None,
+            })
             .unwrap_or_default();
         CiMatrixRow {
             command: self.clone().into_command_string().into_string().unwrap(),
@@ -581,6 +596,9 @@ enum Xtasks {
         /// Publish the benchmarks when on main
         #[clap(long, default_value = "false", help = "Publish the benchmarks")]
         publish: bool,
+        /// Only benchmark this language, all of them by default
+        #[clap(long)]
+        lang: Option<BenchLanguage>,
     },
     /// Runs the tests of the unsafe native value paths (typed calls, native storage) under Miri, with a nightly toolchain
     /// (installing the `miri` component). Lua is C, so only the language agnostic and Rune paths can run under Miri.
@@ -608,7 +626,41 @@ enum Xtasks {
         /// The name argument passed to `cargo bench`, can be used in combination with profile to selectively profile benchmarks
         #[clap(long, help = "The name argument passed to `cargo bench`")]
         name: Option<String>,
+        /// Only benchmark this language, all of them by default (one build each)
+        #[clap(long)]
+        lang: Option<BenchLanguage>,
     },
+}
+
+/// The languages benchmarked by their own build: mlua's Lua dialects are exclusive features
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    clap::ValueEnum,
+    strum::EnumIter,
+    strum::AsRefStr,
+)]
+#[strum(serialize_all = "snake_case")]
+enum BenchLanguage {
+    Lua54,
+    Luajit,
+    Rune,
+}
+
+impl BenchLanguage {
+    fn feature(self) -> Feature {
+        match self {
+            BenchLanguage::Lua54 => Feature::Lua54,
+            BenchLanguage::Luajit => Feature::Luajit,
+            BenchLanguage::Rune => Feature::Rune,
+        }
+    }
 }
 
 #[derive(Serialize, Clone)]
@@ -750,19 +802,21 @@ impl Xtasks {
                 return Ok(json);
             }
             Xtasks::Install { binary } => Self::install(app_settings, binary),
-            Xtasks::Bencher { publish } => Self::bencher(app_settings, publish),
+            Xtasks::Bencher { publish, lang } => Self::bencher(app_settings, publish, lang),
             Xtasks::BencherMigrate { dry_run } => Self::bencher_migrate(&app_settings, dry_run),
             Xtasks::Miri => Self::miri(&app_settings),
             Xtasks::Bench {
                 name,
                 enable_profiling,
                 tracy_capture_name,
+                lang,
             } => {
                 let _ = Self::bench(
                     app_settings,
                     enable_profiling,
                     name,
                     tracy_capture_name,
+                    lang,
                     false,
                 )?;
                 Ok(())
@@ -1154,6 +1208,7 @@ impl Xtasks {
         profile: bool,
         name: Option<String>,
         tracy_capture_name: Option<String>,
+        lang: Option<BenchLanguage>,
         capture_streams_in_output: bool,
     ) -> Result<Output> {
         log::info!("Profiling enabled: {profile}");
@@ -1184,65 +1239,74 @@ impl Xtasks {
             unsafe { std::env::set_var("RUST_LOG", "bevy_mod_scripting=error") };
         }
 
-        // mlua's Lua dialects are exclusive features, so LuaJIT is benchmarked by a second build without Rune
-        let mut luajit_features = features
-            .clone()
-            .without(Feature::Lua54)
-            .without(Feature::Rune);
-        luajit_features.0.insert(Feature::Luajit);
-
+        // mlua's Lua dialects are exclusive features, so every language is benchmarked by its own build, CI runs
+        // one job per language
+        let languages = lang
+            .map(|lang| vec![lang])
+            .unwrap_or_else(|| BenchLanguage::iter().collect());
+        let base_features = features.without(Feature::Lua54).without(Feature::Rune);
         let filter_args = name
             .map(|name| vec!["--".to_owned(), name])
             .unwrap_or_default();
-        let args = std::iter::once("--timings".to_owned())
-            .chain(filter_args.clone())
-            .collect::<Vec<_>>();
 
-        let mut output = run_workspace_command(
-            // lua54 and rune
-            &app_settings.clone().with_features(features),
-            "bench",
-            "Failed to run benchmarks",
-            args,
-            None,
-            capture_streams_in_output,
-        )
-        .with_context(|| "when executing criterion benchmarks")?;
+        let mut output: Option<Output> = None;
+        let mut additional_benchmark_lines = String::new();
+        for language in languages {
+            let mut features = base_features.clone();
+            features.0.insert(language.feature());
+            // build times are published from the Lua 5.4 build only, so their names stay unique
+            let timings = language == BenchLanguage::Lua54;
+            let args = timings
+                .then(|| "--timings".to_owned())
+                .into_iter()
+                .chain(filter_args.clone())
+                .collect::<Vec<_>>();
 
-        let workspace_dir = workspace_dir(&app_settings)?;
-        let metadata = main_workspace_cargo_metadata()?;
-        let crates = metadata
-            .workspace_packages()
-            .iter()
-            .map(|p| p.name.to_string())
-            .collect::<Vec<String>>();
+            let language_output = run_workspace_command(
+                &app_settings.clone().with_features(features),
+                "bench",
+                &format!("Failed to run {} benchmarks", language.as_ref()),
+                args,
+                None,
+                capture_streams_in_output,
+            )
+            .with_context(|| {
+                format!("when executing {} criterion benchmarks", language.as_ref())
+            })?;
 
-        info!("Gathering build time for crates: {}", crates.join(","));
+            if timings {
+                let workspace_dir = workspace_dir(&app_settings)?;
+                let metadata = main_workspace_cargo_metadata()?;
+                let crates = metadata
+                    .workspace_packages()
+                    .iter()
+                    .map(|p| p.name.to_string())
+                    .collect::<Vec<String>>();
 
-        // read before the LuaJIT build, the build times come from the first build only
-        let additional_benchmark_lines = xtask::read_cargo_timings_report(&workspace_dir, crates)?;
+                info!("Gathering build time for crates: {}", crates.join(","));
+                additional_benchmark_lines =
+                    xtask::read_cargo_timings_report(&workspace_dir, crates)?;
+            }
 
-        let luajit_output = run_workspace_command(
-            &app_settings.clone().with_features(luajit_features),
-            "bench",
-            "Failed to run LuaJIT benchmarks",
-            filter_args,
-            None,
-            capture_streams_in_output,
-        )
-        .with_context(|| "when executing LuaJIT criterion benchmarks")?;
-        output.stdout.extend(luajit_output.stdout);
+            match &mut output {
+                Some(output) => output.stdout.extend(language_output.stdout),
+                None => output = Some(language_output),
+            }
+        }
+        let mut output = output.context("no benchmark language selected")?;
 
         if !capture_streams_in_output {
-            stdout().write(additional_benchmark_lines.as_bytes())?;
+            stdout().write_all(additional_benchmark_lines.as_bytes())?;
         } else {
-            output.stdout.write(additional_benchmark_lines.as_bytes())?;
+            output
+                .stdout
+                .write_all(additional_benchmark_lines.as_bytes())?;
         }
         drop(tracy_child_capture);
         Ok(output)
     }
 
-    fn bencher(app_settings: GlobalArgs, publish: bool) -> Result<()> {
+    fn bencher(app_settings: GlobalArgs, publish: bool, lang: Option<BenchLanguage>) -> Result<()> {
         // // first of all figure out which branch we're on
         // // run // git rev-parse --abbrev-ref HEAD
         let workspace_dir = workspace_dir(&app_settings).unwrap();
@@ -1286,7 +1350,7 @@ impl Xtasks {
 
         // first of all run bench, and save output to a file
 
-        let result = Self::bench(app_settings, false, None, None, true)?;
+        let result = Self::bench(app_settings, false, None, None, lang, true)?;
         let bench_file_path = PathBuf::from("./bencher_output.txt");
         let mut file = std::fs::File::create(&bench_file_path)?;
         file.write_all(&result.stdout)?;
@@ -1329,8 +1393,13 @@ impl Xtasks {
             bail!("Failed to run bencher: {:?}", out);
         }
 
-        // if we're on linux and publishing and on main synch graphs
-        if os == "linux" && is_main && publish && github_token.is_some() {
+        // if we're on linux and publishing and on main synch graphs, once: from the Lua 5.4 job
+        if os == "linux"
+            && is_main
+            && publish
+            && github_token.is_some()
+            && lang.is_none_or(|lang| lang == BenchLanguage::Lua54)
+        {
             Self::synch_bencher_graphs()?;
         }
 
@@ -1548,22 +1617,33 @@ impl Xtasks {
         };
 
         let token = std::env::var("BENCHER_API_TOKEN").ok();
-        let mut bencher_cmd = Command::new("bencher");
-        let benchmarks = bencher_cmd
-            .stdout(std::process::Stdio::piped())
-            .arg("benchmark")
-            .args(["list", "bms"])
-            .args(["--per-page", "255"])
-            .args(["--token", &token.clone().unwrap_or_default()])
-            .output()
-            .with_context(|| "Could not list benchmarks")?;
-        if !benchmarks.status.success() {
-            bail!("Failed to list benchmarks: {:?}", benchmarks);
+        let token_str = token.clone().unwrap_or_default();
+
+        // bencher lists archived benchmarks only when asked, and at most 255 per page
+        let mut listed = Vec::new();
+        for page in 1.. {
+            let benchmarks = Command::new("bencher")
+                .stdout(std::process::Stdio::piped())
+                .arg("benchmark")
+                .args(["list", "bms"])
+                .args(["--per-page", "255"])
+                .args(["--page", &page.to_string()])
+                .args(["--token", &token_str])
+                .output()
+                .with_context(|| "Could not list benchmarks")?;
+            if !benchmarks.status.success() {
+                bail!("Failed to list benchmarks: {:?}", benchmarks);
+            }
+            let page = parse_list_of_dicts(benchmarks.stdout).unwrap_or_default();
+            let last = page.len() < 255;
+            listed.extend(page);
+            if last {
+                break;
+            }
         }
 
         // parse teh name and uuid pairs
-        let benchmarks = parse_list_of_dicts(benchmarks.stdout)
-            .with_context(|| "Reading benchmarks")?
+        let listed = listed
             .into_iter()
             .map(|p| {
                 let name = p.get("name").expect("no name in project");
@@ -1571,6 +1651,31 @@ impl Xtasks {
                 (name.clone(), uuid.clone())
             })
             .collect::<Vec<_>>();
+
+        // PR runs publish the benchmarks they add or rename, which main may never have. They are archived so they
+        // don't take up plots, bencher unarchives a benchmark when results are reported for it again (i.e. by its PR)
+        let mut benchmarks = Vec::new();
+        for (name, uuid) in listed {
+            match Self::bencher_has_main_results(&uuid, &token_str)? {
+                Some(false) if !name.contains("build_time") => {
+                    log::info!("Archiving `{name}`, it has no results on main");
+                    let output = Command::new("bencher")
+                        .stdout(std::process::Stdio::inherit())
+                        .stderr(std::process::Stdio::inherit())
+                        .args(["benchmark", "update", "bms", &uuid])
+                        .arg("--archive")
+                        .args(["--token", &token_str])
+                        .output()
+                        .with_context(|| "Could not archive benchmark")?;
+                    if !output.status.success() {
+                        log::warn!("Failed to archive `{name}`: {output:?}");
+                    }
+                }
+                // gone, i.e. archived by another job
+                None => {}
+                _ => benchmarks.push((name, uuid)),
+            }
+        }
 
         let testbeds = Self::BENCHER_TESTBEDS;
 
@@ -2032,13 +2137,19 @@ impl Xtasks {
         // benchmarks publish to bencher, so they only run for the full matrix. Pull requests run them on demand,
         // see the `Run benchmarks on PR` workflow
         if full {
-            output.push(App {
-                // benchmarks need to be representative, so they keep cargo's own bench profile
-                global_args: default_args
-                    .clone()
-                    .with_profile(app_settings.profile.clone()),
-                subcmd: Xtasks::Bencher { publish: true },
-            });
+            // one job per language, each is its own build
+            output.extend(BenchLanguage::iter().map(|lang| {
+                App {
+                    // benchmarks need to be representative, so they keep cargo's own bench profile
+                    global_args: default_args
+                        .clone()
+                        .with_profile(app_settings.profile.clone()),
+                    subcmd: Xtasks::Bencher {
+                        publish: true,
+                        lang: Some(lang),
+                    },
+                }
+            }));
         }
 
         // and finally run tests
