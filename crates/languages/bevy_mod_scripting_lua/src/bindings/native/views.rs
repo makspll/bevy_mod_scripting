@@ -16,7 +16,7 @@ use bevy_ecs::{component::ComponentId, entity::Entity};
 use bevy_mod_scripting_bindings::{
     CallScope, InteropError, ReflectBase, ReflectReference, ScriptValue, WorldExtensions,
     native::{FfiType, NativePlace, NativeStorage, PlaceBase},
-    view::{ViewLayout, view_layout},
+    view::{ViewLayout, settled_view_layout, view_layout},
 };
 use bevy_mod_scripting_world::{ThreadWorldContainer, ViewEpoch};
 use mlua::{IntoLua, LightUserData, Lua, Table, ffi};
@@ -97,26 +97,83 @@ pub(crate) unsafe fn make_view(
     reference: &ReflectReference,
     scope: &CallScope,
 ) -> Result<Option<PendingView>, InteropError> {
-    let Some(current) = ViewEpoch::current() else {
-        return Ok(None);
-    };
-    // Safety: the state of the call, which has room for the call's results
-    if !unsafe { epoch_at(l) }.is_some_and(|mine| mine.same(&current)) {
-        return Ok(None);
-    }
     let (entity, component_id) = match *reference.base.base_id() {
         ReflectBase::Component(entity, id) => (Some(entity), id),
         ReflectBase::Resource(id) => (None, id),
         _ => return Ok(None),
     };
+    let type_id = reference.base.type_id();
+    let settled = settled_view_layout(type_id);
+    if let Some(None) = settled {
+        return Ok(None);
+    }
+    ViewEpoch::with_current(|current| unsafe {
+        make_view_in(l, current, entity, component_id, type_id, settled, scope)
+    })
+    .unwrap_or(Ok(None))
+}
+
+/// [`make_view`] in the context whose code runs.
+///
+/// # Safety
+/// See [`make_view`].
+unsafe fn make_view_in(
+    l: *mut ffi::lua_State,
+    current: &ViewEpoch,
+    entity: Option<Entity>,
+    component_id: ComponentId,
+    type_id: std::any::TypeId,
+    settled: Option<Option<&'static ViewLayout>>,
+    scope: &CallScope,
+) -> Result<Option<PendingView>, InteropError> {
+    // the state whose code runs. Safety: the state of the call, which has room for the call's results
+    unsafe {
+        raw_get_p(l, ffi::LUA_REGISTRYINDEX, key(&VIEW_EPOCH));
+        let mine = ffi::lua_touserdata(l, -1);
+        ffi::lua_pop(l, 1);
+        if mine.cast_const() != current.as_raw() {
+            return Ok(None);
+        }
+    }
     let world = scope.world()?;
     // Safety: the address is only given to the view metatype, which checks the epochs before each access (see
     // `view_source`), reads it as the type the layout was measured for, writes only scalars (numbers, `0`/`1` to `bool`)
     // and natives with a C layout, only through write views, writing `this_run` to the changed tick after each write
     // no access: a reference, which raises when it's used, like before views
-    let Ok(Some(row)) = (unsafe { world.row_view(&current, entity, component_id, true) }) else {
+    let Ok(Some(row)) = (unsafe { world.row_view(current, entity, component_id, true) }) else {
         return Ok(None);
     };
+    let layout = match settled {
+        Some(Some(layout)) => layout,
+        _ => match unsafe { measured_layout(&world, type_id, component_id, row.data) }? {
+            Some(layout) => layout,
+            None => return Ok(None),
+        },
+    };
+    Ok(Some(PendingView {
+        layout,
+        data: ViewData {
+            data: row.data as usize,
+            changed_tick: row.changed_tick as usize,
+            epoch: row.epoch,
+            structural: row.structural,
+            entity: entity.map_or(0, Entity::to_bits),
+            component: component_id.index() as u64,
+            resource: entity.is_none() as u8,
+        },
+    }))
+}
+
+/// The view layout of `type_id`, measured on the live value at `value` if needed, see [`view_layout`].
+///
+/// # Safety
+/// `value` is the component `component_id` of that type, alive and not borrowed mutably during the call.
+unsafe fn measured_layout(
+    world: &bevy_mod_scripting_bindings::WorldGuard,
+    type_id: std::any::TypeId,
+    component_id: ComponentId,
+    value: *mut u8,
+) -> Result<Option<&'static ViewLayout>, InteropError> {
     let Some(layout) = world
         .as_unsafe_world_cell()?
         .components()
@@ -137,30 +194,8 @@ pub(crate) unsafe fn make_view(
     };
     let registry = world.type_registry();
     let registry = registry.read();
-    // Safety: a live value of the type (the row view was just made), only read; Lua code isn't running
-    let Some(layout) = (unsafe {
-        view_layout(
-            &registry,
-            &native_layout,
-            reference.base.type_id(),
-            row.data,
-            layout,
-        )
-    }) else {
-        return Ok(None);
-    };
-    Ok(Some(PendingView {
-        layout,
-        data: ViewData {
-            data: row.data as usize,
-            changed_tick: row.changed_tick as usize,
-            epoch: row.epoch,
-            structural: row.structural,
-            entity: entity.map_or(0, Entity::to_bits),
-            component: component_id.index() as u64,
-            resource: entity.is_none() as u8,
-        },
-    }))
+    // Safety: see the function's contract, only read
+    Ok(unsafe { view_layout(&registry, &native_layout, type_id, value, layout) })
 }
 
 /// Pushes the view type of `view`, making it in this state the first time. `[-0, +1, m]` on success, `[-0, +0, -]` on
@@ -276,6 +311,7 @@ fn make_view_type(lua: &Lua, layout: &'static ViewLayout) -> mlua::Result<mlua::
             LightUserData(check as *mut c_void),
             native_types,
             methods,
+            LightUserData(view_refresh as *const () as *mut c_void),
         ))?;
     let layout_key = LightUserData(layout as *const ViewLayout as *mut c_void);
     // the C types of views: `{ [id] = layout }`, `{ [layout] = ctype }`
@@ -340,7 +376,7 @@ fn view_source(
     let tag = format!("{:x}", layout as *const ViewLayout as usize);
     let name = layout.type_name;
     let mut out = String::from(
-        "local ffi, L, G, RUN, index, tostring_, to_reference, check, natives, methods = ...\n\
+        "local ffi, L, G, RUN, index, tostring_, to_reference, check, natives, methods, refresh = ...\n\
          local istype, cast, type, error, tostring = ffi.istype, ffi.cast, type, error, tostring\n\
          L, G, RUN = cast(\"const double*\", L), cast(\"const double*\", G), cast(\"const uint32_t*\", RUN)\n",
     );
@@ -366,8 +402,11 @@ fn view_source(
         out,
         "ffi.cdef[[\ntypedef struct __attribute__((aligned({align}))) {{ {fields}}} bms_vd_{tag};\n\
          typedef struct {{ const uintptr_t _bms_p; const uintptr_t _bms_t; const double _bms_e; const double _bms_g; \
-         const uint64_t _bms_ent; const uint64_t _bms_cid; const uint8_t _bms_res; }} bms_view_{tag};\n]]\n\
-         local D, P, T = ffi.typeof(\"bms_vd_{tag}\"), ffi.typeof(\"bms_vd_{tag}*\"), ffi.typeof(\"uint32_t*\")",
+         const uint64_t _bms_ent; const uint64_t _bms_cid; const uint8_t _bms_res; }} bms_view_{tag};\n\
+         typedef struct {{ uintptr_t p; uintptr_t t; double e; double g; uint64_t ent; uint64_t cid; uint8_t res; }} bms_vs_{tag};\n]]\n\
+         local D, P, T = ffi.typeof(\"bms_vd_{tag}\"), ffi.typeof(\"bms_vd_{tag}*\"), ffi.typeof(\"uint32_t*\")\n\
+         local S = ffi.typeof(\"bms_vs_{tag}*\")\n\
+         local REFRESH = cast(\"bool (*)(bms_vs_{tag}*, const double*)\", refresh)",
         align = layout.align,
     );
     // L1: C agrees with the measured layout
@@ -386,7 +425,7 @@ fn view_source(
     let _ = writeln!(out, ", \"the view of {name} has another layout in C\")");
     let _ = writeln!(
         out,
-        "local function stale() error(\"stale view of {name}: the world changed structurally, or the callback which got it returned\", 3) end\n\
+        "local function gone() error(\"the view of {name} can't be refreshed: its entity or component is gone, or this system has no access to it\", 3) end\n\
          local function bad(k, x, expected) error(\"{name}.\" .. k .. \" expects \" .. expected .. \", got \" .. type(x), 3) end\n\
          local getters, setters = {{}}, {{}}"
     );
@@ -438,7 +477,7 @@ fn view_source(
     }
     // P1: every access re-resolves the view through Bevy in debug builds, catching a missing epoch bump
     let check = if cfg!(debug_assertions) {
-        "if not CHECK(h._bms_ent, h._bms_cid, h._bms_res, h._bms_p) then error(\"view check failed: the view of NAME points elsewhere\", 2) end"
+        "if not CHECK(s.ent, s.cid, s.res, s.p) then error(\"view check failed: the view of NAME points elsewhere\", 2) end"
             .replace("NAME", name)
     } else {
         String::new()
@@ -448,20 +487,22 @@ fn view_source(
         "local CHECK = cast(\"bool (*)(uint64_t, uint64_t, uint8_t, uintptr_t)\", check)\n\
          local mt = {{\n\
          __index = function(h, k)\n\
-           if h._bms_e ~= L[0] or h._bms_g ~= G[0] then stale() end\n\
+           local s = cast(S, h)\n\
+           if s.e ~= L[0] or s.g ~= G[0] then if not REFRESH(s, L) then gone() end end\n\
            {check}\n\
-           local g = getters[k] if g ~= nil then return g(cast(P, h._bms_p)) end\n\
+           local g = getters[k] if g ~= nil then return g(cast(P, s.p)) end\n\
            local m = methods[k] if m ~= nil then return m end\n\
            return index(h, k)\n\
          end,\n\
          __newindex = function(h, k, x)\n\
-           if h._bms_e ~= L[0] or h._bms_g ~= G[0] then stale() end\n\
+           local s = cast(S, h)\n\
+           if s.e ~= L[0] or s.g ~= G[0] then if not REFRESH(s, L) then gone() end end\n\
            {check}\n\
-           local s = setters[k]\n\
-           if s == nil then to_reference(h)[k] = x return end\n\
-           if h._bms_t == 0 then error(\"cannot claim access to write {name}: the view is read-only\", 2) end\n\
-           s(cast(P, h._bms_p), x)\n\
-           cast(T, h._bms_t)[0] = RUN[0]\n\
+           local set = setters[k]\n\
+           if set == nil then to_reference(h)[k] = x return end\n\
+           if s.t == 0 then error(\"cannot claim access to write {name}: the view is read-only\", 2) end\n\
+           set(cast(P, s.p), x)\n\
+           cast(T, s.t)[0] = RUN[0]\n\
          end,\n\
          __tostring = tostring_,\n\
          }}\n\
@@ -594,6 +635,50 @@ unsafe extern "C-unwind" fn view_reference(l: *mut ffi::lua_State) -> c_int {
             .map_err(IntoInteropError::to_bms_error)
         })
     }
+}
+
+/// Refreshes a view whose epochs changed: finds its component again (by entity and component id, so a moved row is
+/// found), claiming access under the running callback's world, and writes the new address, tick and epochs into it.
+/// False if it's gone or can't be accessed, or the view isn't of the state whose code runs (`epoch`). Called through the
+/// FFI: it doesn't touch the Lua state.
+///
+/// The view is read and written through a non-`const` pointer: LuaJIT may reuse loads of `const` fields across calls.
+extern "C" fn view_refresh(view: *mut ViewData, epoch: *const f64) -> bool {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        ViewEpoch::with_current(|current| refresh_in(current, view, epoch)).unwrap_or(false)
+    }))
+    .unwrap_or(false)
+}
+
+/// [`view_refresh`] in the context whose code runs.
+fn refresh_in(current: &ViewEpoch, view: *mut ViewData, epoch: *const f64) -> bool {
+    if current.as_ptr() != epoch {
+        return false;
+    }
+    let Ok(context) = ThreadWorldContainer::try_get_context() else {
+        return false;
+    };
+    // Safety: the view's payload, alive for the call (Lua passed it)
+    let mut data = unsafe { view.read_unaligned() };
+    let id = ComponentId::new(data.component as usize);
+    let entity = match data.resource {
+        0 => match Entity::try_from_bits(data.entity) {
+            Some(entity) => Some(entity),
+            None => return false,
+        },
+        _ => None,
+    };
+    // Safety: as in `make_view`: the same component, so the same type and layout
+    let Ok(Some(row)) = (unsafe { context.world.row_view(current, entity, id, true) }) else {
+        return false;
+    };
+    data.data = row.data as usize;
+    data.changed_tick = row.changed_tick as usize;
+    data.epoch = row.epoch;
+    data.structural = row.structural;
+    // Safety: see above
+    unsafe { view.write_unaligned(data) };
+    true
 }
 
 /// P1 (debug builds): whether a view's address is still where Bevy has its component or resource. Called through the FFI

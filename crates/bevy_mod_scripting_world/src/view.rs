@@ -47,8 +47,9 @@ pub fn structural_epoch() -> *const f64 {
 pub struct ViewEpoch(std::sync::Arc<ViewCells>);
 
 std::thread_local! {
-    /// The epoch of the context whose script code runs on this thread, see [`ViewEpoch::enter`]
-    static CURRENT: std::cell::RefCell<Option<ViewEpoch>> = const { std::cell::RefCell::new(None) };
+    /// The epoch of the context whose script code runs on this thread, borrowed by the innermost
+    /// [`ViewEpoch::enter`] for its duration (null outside of one)
+    static CURRENT: std::cell::Cell<*const ViewEpoch> = const { std::cell::Cell::new(std::ptr::null()) };
 }
 
 #[derive(Debug)]
@@ -90,26 +91,33 @@ impl ViewEpoch {
         self.0.this_run.as_ptr().cast_const()
     }
 
-    /// Runs `f` as script code of this context: views made before are stale in `f`, views made in `f` are stale after
-    /// it, also when it panics. The context is the [current one](Self::current) during `f`: views are only made for it.
+    /// Runs `f` as script code of this context, with a new epoch: views made before are stale in `f`, views made in `f`
+    /// are stale after it, also when it panics. The epoch before `f` is restored after it: views made before are valid
+    /// again once a nested call returns (the Rust code which made it has no borrow left once script code runs again).
+    /// The context is the [current one](Self::with_current) during `f`: views are only made for it.
     pub fn enter<R>(&self, f: impl FnOnce() -> R) -> R {
-        struct Leave<'a>(&'a ViewEpoch, Option<ViewEpoch>);
+        /// Epochs are never reused, so a view of another entry never passes
+        static NEXT: AtomicU64 = AtomicU64::new(2);
+        struct Leave<'a>(&'a ViewEpoch, *const ViewEpoch, u64);
         impl Drop for Leave<'_> {
             fn drop(&mut self) {
-                self.0.bump();
-                let outer = self.1.take();
-                CURRENT.with(|current| *current.borrow_mut() = outer);
+                self.0.0.epoch.store(self.2, Ordering::Relaxed);
+                CURRENT.set(self.1);
             }
         }
-        self.bump();
-        let outer = CURRENT.with(|current| current.borrow_mut().replace(self.clone()));
-        let _leave = Leave(self, outer);
+        let fresh = NEXT.fetch_add(1, Ordering::Relaxed) as f64;
+        let saved = self.0.epoch.swap(fresh.to_bits(), Ordering::Relaxed);
+        let outer = CURRENT.replace(self);
+        let _leave = Leave(self, outer, saved);
         f()
     }
 
-    /// The epoch of the context whose script code runs on this thread (the innermost [`Self::enter`]), if any.
-    pub fn current() -> Option<ViewEpoch> {
-        CURRENT.with(|current| current.borrow().clone())
+    /// Runs `f` with the epoch of the context whose script code runs on this thread (the innermost [`Self::enter`]),
+    /// if any.
+    pub fn with_current<R>(f: impl FnOnce(&ViewEpoch) -> R) -> Option<R> {
+        let current = CURRENT.get();
+        // Safety: set by `enter`, which borrows it until it restores the outer one
+        (!current.is_null()).then(|| f(unsafe { &*current }))
     }
 
     /// The address standing for this epoch, the same as [`Self::as_ptr`], see [`Self::from_raw`].

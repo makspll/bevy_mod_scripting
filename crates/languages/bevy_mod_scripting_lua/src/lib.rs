@@ -34,15 +34,21 @@ make_plugin_config_static!(LuaScriptingPlugin);
 
 /// A newtype around a lua context.
 #[derive(Debug, Clone)]
-pub struct LuaContext(Lua);
+pub struct LuaContext(Lua, bevy_mod_scripting_world::ViewEpoch);
 
 impl LuaContext {
+    /// Wraps a Lua state.
+    pub fn new(lua: Lua) -> Self {
+        let epoch = bindings::native::state_epoch(&lua);
+        Self(lua, epoch)
+    }
+
     /// Runs `f`, which calls into this context's Lua code directly (i.e. a `mlua::Function` it got from the globals).
     ///
     /// BMS' own calls do this already. On LuaJIT, components and resources are only returned as views (read and written
-    /// in place) to code run this way: views made before go stale in `f`, views made in `f` after it.
+    /// in place) to code run this way.
     pub fn enter<R>(&self, f: impl FnOnce() -> R) -> R {
-        bindings::native::enter_script(&self.0, f)
+        bindings::native::enter_with(&self.1, f)
     }
 }
 
@@ -128,11 +134,9 @@ fn register_plugin_globals(lua: &mut Lua) -> Result<(), mlua::Error> {
                                     .map(LuaScriptValue)
                                     .collect::<Variadic<_>>();
 
-                                bindings::native::enter_script(lua, || {
-                                    func.call::<LuaScriptValue>(args)
-                                })
-                                .map_err(IntoInteropError::to_bms_error)
-                                .map(ScriptValue::from)
+                                lua.enter(|| func.call::<LuaScriptValue>(args))
+                                    .map_err(IntoInteropError::to_bms_error)
+                                    .map(ScriptValue::from)
                             },
                         ),
                     )
@@ -199,7 +203,8 @@ fn load_lua_content_into_context(
         .iter()
         .try_for_each(|init| init(context_key, context))?;
 
-    bindings::native::enter_script(context, || context.load(content).exec())
+    context
+        .enter(|| context.load(content).exec())
         .map_err(IntoInteropError::to_bms_error)?;
 
     Ok(())
@@ -220,9 +225,9 @@ pub fn lua_context_load(
     world_id: WorldId,
 ) -> Result<LuaContext, InteropError> {
     #[cfg(feature = "unsafe_lua_modules")]
-    let mut context = LuaContext(unsafe { Lua::unsafe_new() });
+    let mut context = LuaContext::new(unsafe { Lua::unsafe_new() });
     #[cfg(not(feature = "unsafe_lua_modules"))]
-    let mut context = LuaContext(Lua::new());
+    let mut context = LuaContext::new(Lua::new());
 
     context.set_app_data(LuaContextAppData {
         last_loaded_script_name: context_key.script().path().cloned(),
@@ -290,7 +295,8 @@ pub fn lua_handler(
             .map_err(IntoInteropError::to_bms_error)?,
     );
 
-    let out = bindings::native::enter_script(context, || handler.call::<LuaScriptValue>(input))
+    let out = context
+        .enter(|| handler.call::<LuaScriptValue>(input))
         .map_err(IntoInteropError::to_bms_error)?;
 
     Ok(out.into())
@@ -347,7 +353,7 @@ mod test {
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let lua = Lua::new();
-        let mut old_ctxt = LuaContext(lua.clone());
+        let mut old_ctxt = LuaContext::new(lua.clone());
         let handle = Handle::default();
         let context_key = ScriptAttachment::EntityScript(Entity::from_raw_u32(1).unwrap(), handle);
         let world_id = WorldId::new().unwrap();

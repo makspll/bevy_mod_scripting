@@ -63,14 +63,28 @@ pub(crate) mod cdata;
 #[cfg(any(feature = "luajit", feature = "luajit52"))]
 pub(crate) mod views;
 
-/// Runs `f` as script code of `lua`: on LuaJIT, views made before are stale in `f`, views made in `f` are stale after it
-/// (see `bevy_mod_scripting_world::ViewEpoch::enter`). Every call from Rust into Lua code goes through it.
-pub(crate) fn enter_script<R>(lua: &Lua, f: impl FnOnce() -> R) -> R {
+/// The view epoch of `lua`, made the first time (on LuaJIT, see `views`; unused elsewhere).
+pub(crate) fn state_epoch(lua: &Lua) -> bevy_mod_scripting_world::ViewEpoch {
     #[cfg(any(feature = "luajit", feature = "luajit52"))]
-    return views::epoch(lua).enter(f);
+    return views::epoch(lua);
     #[cfg(not(any(feature = "luajit", feature = "luajit52")))]
     {
         let _ = lua;
+        Default::default()
+    }
+}
+
+/// Runs `f` as script code of the state of `epoch` (see `bevy_mod_scripting_world::ViewEpoch::enter`): on LuaJIT views
+/// are made for it. Every call from Rust into Lua code goes through it.
+pub(crate) fn enter_with<R>(
+    epoch: &bevy_mod_scripting_world::ViewEpoch,
+    f: impl FnOnce() -> R,
+) -> R {
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    return epoch.enter(f);
+    #[cfg(not(any(feature = "luajit", feature = "luajit52")))]
+    {
+        let _ = epoch;
         f()
     }
 }
@@ -281,12 +295,13 @@ pub(crate) struct ViewPlace(
     std::cell::UnsafeCell<ViewPlaceBytes>,
 );
 
+/// Uninitialised until a view is stored: not written for calls without one.
 #[repr(C, align(16))]
-pub(crate) struct ViewPlaceBytes([u8; 96]);
+pub(crate) struct ViewPlaceBytes([MaybeUninit<u8>; 96]);
 
 impl Default for ViewPlaceBytes {
     fn default() -> Self {
-        Self([0; 96])
+        Self([MaybeUninit::uninit(); 96])
     }
 }
 

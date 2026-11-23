@@ -300,7 +300,7 @@ fn non_table_value(
                     move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
                         let call = || called.call::<MultiLuaScriptValue>(MultiLuaScriptValue(args));
                         let result = match &epoch {
-                            Some(epoch) => epoch.enter(call),
+                            Some(epoch) => super::native::enter_with(epoch, call),
                             None => call(),
                         };
                         match result {

@@ -204,8 +204,11 @@ Types are made once per state. A type registered later stays a userdata there.
 
 ```lua
 __index = function(h, k)
-  if h._bms_e ~= L[0] or h._bms_g ~= G[0] then stale() end    -- both epochs unchanged
-  local g = getters[k] if g ~= nil then return g(cast(P, h._bms_p)) end
+  local s = cast(S, h)                                        -- not h's `const` fields: LuaJIT reuses their loads across calls
+  if s.e ~= L[0] or s.g ~= G[0] then                          -- an epoch changed: find the component again
+    if not REFRESH(s, L) then gone() end                      -- FFI: row_view by entity + component id, rewrites s
+  end
+  local g = getters[k] if g ~= nil then return g(cast(P, s.p)) end
   local m = methods[k] if m ~= nil then return m end
   return index(h, k)                                          -- other fields: by reflection
 end
@@ -230,7 +233,7 @@ getters["float"] = function(p) return p.f_float end           -- `P`: a C struct
 | A script writing a cdata a call holds | calls get copies |
 | A panic in an `#[ffi]` function | **aborts the process**: it can't unwind through C. Only mark functions which don't panic (no integer arithmetic, no indexing) |
 | Rust reading a foreign cdata | ctype id lookup, unknown ids are refused |
-| A view used after its component moved or was freed | both epochs checked before every access, bumped before every structural change and on every entry and exit |
+| A view used after its component moved or was freed | both epochs checked before every access, bumped before every structural change and on every entry and exit; a changed epoch re-resolves the address |
 | A view made or written without access | access claimed when it's made, read-only without write access |
 
 Like on Lua, bytecode and the `unsafe_lua_modules` feature (which hands scripts `ffi`) void all of this, see [Sandboxing](../../Summary/customizing-script-contexts.md#sandboxing).

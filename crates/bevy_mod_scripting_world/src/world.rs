@@ -1112,9 +1112,12 @@ mod test {
             let structural = crate::structural_epoch_value();
             guard.with_world_mut_access(|w| w.despawn(a)).unwrap();
             assert_ne!(crate::structural_epoch_value(), structural);
+            // a new epoch while script code runs, the outer one again after it
             let before = epoch.get();
-            epoch.enter(|| assert_ne!(epoch.get(), before));
-            assert_ne!(epoch.get(), before);
+            let inner = epoch.enter(|| epoch.get());
+            assert_ne!(inner, before);
+            assert_eq!(epoch.get(), before);
+            assert_ne!(epoch.enter(|| epoch.get()), inner, "epochs aren't reused");
             assert!(
                 guard
                     .row_view(&epoch, Some(a), position, true)

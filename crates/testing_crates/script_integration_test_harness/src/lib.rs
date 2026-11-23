@@ -206,13 +206,17 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
         |ctxt, _runtime, label, criterion| {
             let bencher: Function = ctxt.globals().get("bench").map_err(|e| e.to_string())?;
             let pre_bencher: Option<Function> = ctxt.globals().get("pre_bench").ok();
-            criterion.bench_function(label, |c| {
-                if let Some(pre_bencher) = &pre_bencher {
-                    ctxt.enter(|| pre_bencher.call::<()>(())).unwrap();
-                }
-                c.iter(|| {
-                    span.in_scope(|| {
-                        ctxt.enter(|| bencher.call::<()>(())).unwrap();
+            // the calls are entries into the script (views are made for them), once for the whole benchmark: it measures
+            // the script, not the entry
+            ctxt.enter(|| {
+                criterion.bench_function(label, |c| {
+                    if let Some(pre_bencher) = &pre_bencher {
+                        pre_bencher.call::<()>(()).unwrap();
+                    }
+                    c.iter(|| {
+                        span.in_scope(|| {
+                            bencher.call::<()>(()).unwrap();
+                        })
                     })
                 })
             });

@@ -36,20 +36,21 @@ Access is checked when a reference is used, not when it is made: a reference to 
 
 ## Views (LuaJIT)
 
-On LuaJIT, `world.get_component` and `world.get_resource` return **views**: the component's address, whose fields (numbers, booleans, vectors and other native types) are read and written in place, as fast as plain Lua values. Other fields and methods work as on references. A view is only valid until the world changes structurally (a spawn, despawn, insert or remove, by this script or a function it calls) or the callback which got it returns; using it afterwards is an error, `stale view of ...`. Get the component again instead of keeping it:
+On LuaJIT, `world.get_component` and `world.get_resource` return **views**: the component's address, whose fields (numbers, booleans, vectors and other native types) are read and written in place, as fast as plain Lua values. Other fields and methods work as on references.
+
+A view behaves like a reference: after the world changed structurally (a spawn, despawn, insert or remove) or in a later callback, its next access finds the component again (once), and fails like a reference if it's gone. Changing the world in a loop over views makes every access in it look the component up again, so change it after the loop when you can:
 
 ```lua
-local hits = {}
+local dead = {}
 for _, e in ipairs(targets) do
     local health = world.get_component(e, Health)   -- a view
     health.hp = health.hp - 1                      -- in place
-    if health.hp <= 0 then hits[#hits + 1] = e end
+    if health.hp <= 0 then dead[#dead + 1] = e end
 end
--- change the world after the loop: despawning makes every view stale
-for _, e in ipairs(hits) do world.despawn(e) end
+for _, e in ipairs(dead) do world.despawn(e) end
 ```
 
-Access is checked when a view is made: one from a system without write access is read-only. Views are only made for code BMS calls (callbacks, script systems, exported functions); Rust calling a Lua function directly gets them with `LuaContext::enter`.
+Access is checked when a view is made or finds its component again: without write access it's read-only. Views are only made for code BMS calls (callbacks, script systems, exported functions); Rust calling a Lua function directly gets them with `LuaContext::enter`.
 
 ## Assets
 

@@ -16,6 +16,7 @@ use std::{
 };
 
 use bevy_ecs::ptr::Ptr;
+use bevy_platform::hash::NoOpHash;
 use bevy_reflect::{PartialReflect, ReflectFromPtr, ReflectRef, TypeInfo, TypeRegistry};
 use parking_lot::RwLock;
 
@@ -124,8 +125,35 @@ fn is_view_field_name(name: &str) -> bool {
 }
 
 /// Measured layouts, `None` for types without views. Layouts are fixed per type in a binary.
-static LAYOUTS: LazyLock<RwLock<HashMap<TypeId, Option<&'static ViewLayout>>>> =
+static LAYOUTS: LazyLock<RwLock<HashMap<TypeId, Option<&'static ViewLayout>, NoOpHash>>> =
     LazyLock::new(Default::default);
+
+/// The view layout of `type_id` when it's settled, without measuring: `Some(None)` for a type without views,
+/// `Some(Some(_))` once checked on a second value (D4), `None` when [`view_layout`] is still needed.
+pub fn settled_view_layout(type_id: TypeId) -> Option<Option<&'static ViewLayout>> {
+    /// Settled answers never change: the last few, without the lock
+    type Settled = (TypeId, Option<&'static ViewLayout>);
+    std::thread_local! {
+        static RECENT: std::cell::Cell<[Option<Settled>; 4]> = const { std::cell::Cell::new([None; 4]) };
+    }
+    let mut recent = RECENT.get();
+    if let Some((_, layout)) = recent.iter().flatten().find(|(id, _)| *id == type_id) {
+        return Some(*layout);
+    }
+    let settled = match LAYOUTS.read().get(&type_id).copied()? {
+        None => None,
+        Some(known) => {
+            if known.measured_at.load(Ordering::Relaxed) != usize::MAX {
+                return None;
+            }
+            Some(known)
+        }
+    };
+    recent.rotate_right(1);
+    recent[0] = Some((type_id, settled));
+    RECENT.set(recent);
+    Some(settled)
+}
 
 /// The view layout of `type_id`, measured on the value at `value` the first time, `None` if it has no field a view reads
 /// in place. `natives` gives the size and alignment of native types with a C layout.

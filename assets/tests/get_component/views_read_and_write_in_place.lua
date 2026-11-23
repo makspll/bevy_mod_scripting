@@ -1,5 +1,5 @@
 -- components and resources from `get_component`/`get_resource` are read and written in place; on LuaJIT they are views,
--- which go stale when the world changes structurally or the callback returns
+-- which find their component again after the world changed structurally or in a later callback
 local world = import_namespace("bms").world
 local Transform = import_namespace("transform").Transform
 local Vec3 = import_namespace("math").Vec3
@@ -7,15 +7,6 @@ local TransformType = world.get_type_by_name("bevy_transform::components::transf
 local ResourceType = world.get_type_by_name("test_utils::test_data::TestResourceWithVariousFields")
 ---@diagnostic disable-next-line: undefined-global
 local is_jit = jit ~= nil
-
-local function stale(f)
-    local ok, err = pcall(f)
-    -- other Lua versions return references, which stay valid
-    if not is_jit then
-        return assert(ok, tostring(err))
-    end
-    assert(not ok and tostring(err):find("stale view"), "expected a stale view, got: " .. tostring(err))
-end
 
 local a = world.spawn()
 world.insert_component(a, TransformType, Transform.from_xyz(1, 2, 3))
@@ -49,21 +40,21 @@ end
 r.string = "changed"
 assert(r2.string == "changed", "slow field")
 
--- stale after structural changes: the column may move, a despawn swaps another row into this one
+-- after structural changes the column may have moved, and a despawn swaps another row into this one's: views find
+-- their component again
 local tb = assert(world.get_component(b, TransformType))
 world.despawn(a)
-stale(function() return tb.translation end)
-stale(function() tb.translation = Vec3.new(4, 5, 6) end)
-assert(assert(world.get_component(b, TransformType)).translation.x == 4, "b kept its value")
-local tb2 = assert(world.get_component(b, TransformType))
+assert(tb.translation.x == 4, "b's view after a despawn: " .. tostring(tb.translation.x))
 world.spawn()
-stale(function() return tb2.translation end)
-stale(function() return r.float end)
+tb.translation = Vec3.new(10, 5, 6)
+assert(assert(world.get_component(b, TransformType)).translation.x == 10, "written after a spawn")
+world.insert_component(b, TransformType, Transform.from_xyz(4, 5, 6))
+assert(tb.translation.x == 4, "b's view after an insert")
+assert(r.float == 2.5, "resource view after structural changes")
 
 -- views can't be forged or changed
-local tb3 = assert(world.get_component(b, TransformType))
 ---@diagnostic disable-next-line: inject-field
-assert_throws(function() tb3._bms_p = 0 end, ".*")
+assert_throws(function() tb._bms_p = 0 end, ".*")
 
 function on_test()
     kept = assert(world.get_component(b, TransformType))
@@ -72,7 +63,10 @@ function on_test()
 end
 
 function on_test_post_update()
-    -- another callback: the world may have changed in between
-    stale(function() return kept.translation end)
+    -- another callback: the world may have changed in between, the view finds its component again
+    assert(kept.translation.z == 6, "kept view in a later callback")
+    -- unless it's gone
+    world.despawn(b)
+    assert_throws(function() local _ = kept.translation end, ".*")
     return true
 end
