@@ -35,7 +35,7 @@ pub(crate) const LUA_TCDATA: c_int = 10;
 
 /// The offset from a cdata's payload back to its ctype id (`GCcdata::ctypeid`): 6 on GC64 builds, 2 on others, found
 /// when the first types are made, 0 before.
-static CTYPEID_OFFSET: AtomicUsize = AtomicUsize::new(0);
+pub(super) static CTYPEID_OFFSET: AtomicUsize = AtomicUsize::new(0);
 
 /// Its address keys the table `{ [ctype id] = vtable (light userdata) }` in the registry, see [`cdata_at`].
 static CTYPES: u8 = 0;
@@ -89,8 +89,13 @@ pub(crate) unsafe fn cdata_at(
 /// `idx` is on the stack of `l`, which has 2 free slots.
 pub(crate) unsafe fn cdata_script_value(l: *mut ffi::lua_State, idx: c_int) -> Option<ScriptValue> {
     unsafe {
-        let (vtable, payload, _) = cdata_at(l, idx)?;
-        Some(ScriptValue::Reference(vtable.plain_reference(payload)))
+        match cdata_at(l, idx) {
+            Some((vtable, payload, _)) => {
+                Some(ScriptValue::Reference(vtable.plain_reference(payload)))
+            }
+            // a view: a reference to its component or resource
+            None => super::views::view_script_value(l, idx),
+        }
     }
 }
 
@@ -182,7 +187,7 @@ pub(super) fn ffi_static(
 
 /// The table `{ ctype, from_ptr, statics }` of the type of `vtable`, making the types first if this state has none.
 /// Types are made once per state: `None` for types registered later.
-fn type_info(lua: &Lua, vtable: &'static NativeVTable) -> mlua::Result<Option<Table>> {
+pub(super) fn type_info(lua: &Lua, vtable: &'static NativeVTable) -> mlua::Result<Option<Table>> {
     let key = LightUserData(vtable as *const NativeVTable as *mut c_void);
     // Safety: protected mode, a raw get from the registry
     let types = || unsafe {
@@ -338,7 +343,11 @@ fn make_types(lua: &Lua) -> mlua::Result<()> {
 /// it's taken out of again.
 ///
 /// If the host loaded it already it's used as it is: opening it again would reset the C types of the state.
-fn private_ffi(lua: &Lua) -> mlua::Result<Table> {
+pub(super) fn private_ffi(lua: &Lua) -> mlua::Result<Table> {
+    // opened by BMS already: opening it again would reset the C types of the state
+    if let Some(module) = lua.named_registry_value::<Option<Table>>(FFI_MODULE)? {
+        return Ok(module);
+    }
     let loaded = lua.named_registry_value::<Option<Table>>("_LOADED")?;
     if let Some(loaded) = &loaded
         && let Some(module) = loaded.raw_get::<Option<Table>>("ffi")?
@@ -362,7 +371,7 @@ fn private_ffi(lua: &Lua) -> mlua::Result<Table> {
 }
 
 /// Finds where this LuaJIT build keeps the ctype id of a cdata, from a `probe` of the type `id`.
-fn calibrate(probe: &mlua::Value, id: i64) -> mlua::Result<()> {
+pub(super) fn calibrate(probe: &mlua::Value, id: i64) -> mlua::Result<()> {
     let payload = probe.to_pointer() as *const u8;
     let offset = [6, 2].into_iter().find(|&offset| {
         // Safety: inside the header of the probe, which is alive
@@ -381,7 +390,7 @@ fn calibrate(probe: &mlua::Value, id: i64) -> mlua::Result<()> {
 }
 
 /// The name of the C struct of a native type.
-fn layout_name(native: &NativeType) -> &str {
+pub(super) fn layout_name(native: &NativeType) -> &str {
     native
         .ffi
         .as_ref()
@@ -700,7 +709,7 @@ fn operators_source(out: &mut String, native: &NativeType) {
 
 /// `__index` of cdata for names which are no fields or functions: through a reference to a copy, like native values'
 /// slow path, see [`super::member_at`]. Called with `[v (1), key (2)]`.
-unsafe extern "C-unwind" fn cdata_index(l: *mut ffi::lua_State) -> c_int {
+pub(super) unsafe extern "C-unwind" fn cdata_index(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 2);
         run(l, || {
@@ -742,7 +751,7 @@ unsafe extern "C-unwind" fn raise_ffi_error(l: *mut ffi::lua_State) -> c_int {
 }
 
 /// `__tostring` of cdata, see [`dispatch::display`]. Called with `[v (1)]`.
-unsafe extern "C-unwind" fn cdata_tostring(l: *mut ffi::lua_State) -> c_int {
+pub(super) unsafe extern "C-unwind" fn cdata_tostring(l: *mut ffi::lua_State) -> c_int {
     unsafe {
         ffi::lua_settop(l, 1);
         run(l, || {

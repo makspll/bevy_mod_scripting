@@ -208,11 +208,11 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
             let pre_bencher: Option<Function> = ctxt.globals().get("pre_bench").ok();
             criterion.bench_function(label, |c| {
                 if let Some(pre_bencher) = &pre_bencher {
-                    pre_bencher.call::<()>(()).unwrap();
+                    ctxt.enter(|| pre_bencher.call::<()>(())).unwrap();
                 }
                 c.iter(|| {
                     span.in_scope(|| {
-                        bencher.call::<()>(()).unwrap();
+                        ctxt.enter(|| bencher.call::<()>(())).unwrap();
                     })
                 })
             });

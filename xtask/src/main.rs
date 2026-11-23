@@ -1435,7 +1435,7 @@ impl Xtasks {
                 "miri,rust-src",
             ],
         )?;
-        // the tests of the native paths in the crates whose code Miri can run
+        // the tests of the native paths and views in the crates whose code Miri can run
         run(
             "cargo",
             &[
@@ -1446,8 +1446,12 @@ impl Xtasks {
                 "bevy_mod_scripting_bindings",
                 "-p",
                 "bevy_mod_scripting_rune",
+                "-p",
+                "bevy_mod_scripting_world",
                 "--lib",
+                "--",
                 "native::",
+                "view",
             ],
         )
     }

@@ -24,6 +24,7 @@ pub mod script_value;
 pub mod static_type;
 pub mod system_set;
 pub mod type_data;
+pub mod view;
 pub mod world_extensions;
 
 pub use allocator::*;

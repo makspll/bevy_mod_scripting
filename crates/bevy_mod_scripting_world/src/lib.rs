@@ -2,8 +2,10 @@
 
 mod access_map;
 mod archetype_filter;
+mod view;
 mod world;
 
 pub use access_map::*;
 pub use archetype_filter::*;
+pub use view::*;
 pub use world::*;

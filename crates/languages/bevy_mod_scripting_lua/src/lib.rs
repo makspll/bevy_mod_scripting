@@ -36,6 +36,16 @@ make_plugin_config_static!(LuaScriptingPlugin);
 #[derive(Debug, Clone)]
 pub struct LuaContext(Lua);
 
+impl LuaContext {
+    /// Runs `f`, which calls into this context's Lua code directly (i.e. a `mlua::Function` it got from the globals).
+    ///
+    /// BMS' own calls do this already. On LuaJIT, components and resources are only returned as views (read and written
+    /// in place) to code run this way: views made before go stale in `f`, views made in `f` after it.
+    pub fn enter<R>(&self, f: impl FnOnce() -> R) -> R {
+        bindings::native::enter_script(&self.0, f)
+    }
+}
+
 impl Deref for LuaContext {
     type Target = Lua;
 
@@ -118,9 +128,11 @@ fn register_plugin_globals(lua: &mut Lua) -> Result<(), mlua::Error> {
                                     .map(LuaScriptValue)
                                     .collect::<Variadic<_>>();
 
-                                func.call::<LuaScriptValue>(args)
-                                    .map_err(IntoInteropError::to_bms_error)
-                                    .map(ScriptValue::from)
+                                bindings::native::enter_script(lua, || {
+                                    func.call::<LuaScriptValue>(args)
+                                })
+                                .map_err(IntoInteropError::to_bms_error)
+                                .map(ScriptValue::from)
                             },
                         ),
                     )
@@ -187,9 +199,7 @@ fn load_lua_content_into_context(
         .iter()
         .try_for_each(|init| init(context_key, context))?;
 
-    context
-        .load(content)
-        .exec()
+    bindings::native::enter_script(context, || context.load(content).exec())
         .map_err(IntoInteropError::to_bms_error)?;
 
     Ok(())
@@ -280,8 +290,7 @@ pub fn lua_handler(
             .map_err(IntoInteropError::to_bms_error)?,
     );
 
-    let out = handler
-        .call::<LuaScriptValue>(input)
+    let out = bindings::native::enter_script(context, || handler.call::<LuaScriptValue>(input))
         .map_err(IntoInteropError::to_bms_error)?;
 
     Ok(out.into())

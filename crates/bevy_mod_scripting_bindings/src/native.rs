@@ -108,6 +108,17 @@ pub unsafe trait ReturnSink {
     ) -> bool;
     /// Returns any value, the slow path.
     fn script_value(&mut self, value: ScriptValue) -> Result<(), InteropError>;
+    /// Returns `reference`, a whole component or resource, as a view: its address, which the language reads and writes
+    /// in place (see [`bevy_mod_scripting_world::RowView`]). Returns false without returning anything if the language
+    /// has no views, or none of the type.
+    fn view(
+        &mut self,
+        reference: &crate::ReflectReference,
+        scope: &crate::CallScope,
+    ) -> Result<bool, InteropError> {
+        let _ = (reference, scope);
+        Ok(false)
+    }
     /// Makes the native value returned next a read-only copy: a copy of a field of another value, which scripts can't
     /// write, as the write would be lost (`t.translation.x = 5`), see [`NativeHeader::read_only`]. Native values have
     /// no write-through: scripts assign the whole field. Ignored by languages without read-only values.
