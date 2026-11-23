@@ -179,6 +179,14 @@ impl FromLua for LuaScriptValue {
                 value,
                 |ud| super::native::reference_value(lua, ud),
                 |ud| super::native::native_value_base(lua, ud),
+                || {
+                    // Safety: room is checked, the epoch is read from the registry
+                    lua.exec_raw_lua(|raw| unsafe {
+                        (ffi::lua_checkstack(raw.state(), 1) != 0)
+                            .then(|| super::native::view_epoch_at(raw.state()))
+                            .flatten()
+                    })
+                },
             )
             .map(LuaScriptValue);
         };
@@ -228,8 +236,13 @@ impl FromLua for LuaScriptValue {
                 super::native::cdata::LUA_TCDATA if ffi::lua_checkstack(state, 2) != 0 => {
                     match super::native::cdata::cdata_script_value(state, idx) {
                         Some(value) => Ok(LuaScriptValue(value)),
-                        None => non_table_value(Value::from_stack(idx, lua)?, |_| None, |_| None)
-                            .map(LuaScriptValue),
+                        None => non_table_value(
+                            Value::from_stack(idx, lua)?,
+                            |_| None,
+                            |_| None,
+                            || None,
+                        )
+                        .map(LuaScriptValue),
                     }
                 }
                 // native values are copied into a reference, see `super::native`, only looked for when it's no reference
@@ -249,6 +262,12 @@ impl FromLua for LuaScriptValue {
                         }
                         super::native::native_base(state, idx)
                     },
+                    || {
+                        if ffi::lua_checkstack(state, 1) == 0 {
+                            return None;
+                        }
+                        super::native::view_epoch_at(state)
+                    },
                 )
                 .map(LuaScriptValue),
             }
@@ -261,6 +280,7 @@ fn non_table_value(
     value: Value,
     reference: impl FnOnce(&mlua::AnyUserData) -> Option<ReflectReference>,
     native_base: impl FnOnce(&mlua::AnyUserData) -> Option<*mut u8>,
+    view_epoch: impl FnOnce() -> Option<bevy_mod_scripting_world::ViewEpoch>,
 ) -> mlua::Result<ScriptValue> {
     Ok(match value {
         Value::Nil => ScriptValue::Unit,
@@ -273,10 +293,17 @@ fn non_table_value(
             // kept next to the function calling it, to hand it back to Lua as it is, see `IntoLua`
             let f = Arc::new(f);
             let called = f.clone();
+            // calls are entries into the state's script code, see `enter_script`
+            let epoch = view_epoch();
             ScriptValue::Function(
                 DynamicScriptFunction::from(
                     move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
-                        match called.call::<MultiLuaScriptValue>(MultiLuaScriptValue(args)) {
+                        let call = || called.call::<MultiLuaScriptValue>(MultiLuaScriptValue(args));
+                        let result = match &epoch {
+                            Some(epoch) => super::native::enter_with(epoch, call),
+                            None => call(),
+                        };
+                        match result {
                             Ok(v) => v.into_script_value(),
                             Err(e) => ScriptValue::Error(InteropError::external(Box::new(e))),
                         }

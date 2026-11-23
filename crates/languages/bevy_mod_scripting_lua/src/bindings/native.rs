@@ -60,6 +60,51 @@ use crate::{IntoInteropError, IntoMluaError};
 
 #[cfg(any(feature = "luajit", feature = "luajit52"))]
 pub(crate) mod cdata;
+#[cfg(any(feature = "luajit", feature = "luajit52"))]
+pub(crate) mod views;
+
+/// The view epoch of `lua`, made the first time (on LuaJIT, see `views`; unused elsewhere).
+pub(crate) fn state_epoch(lua: &Lua) -> bevy_mod_scripting_world::ViewEpoch {
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    return views::epoch(lua);
+    #[cfg(not(any(feature = "luajit", feature = "luajit52")))]
+    {
+        let _ = lua;
+        Default::default()
+    }
+}
+
+/// Runs `f` as script code of the state of `epoch` (see `bevy_mod_scripting_world::ViewEpoch::enter`): on LuaJIT views
+/// are made for it. Every call from Rust into Lua code goes through it.
+pub(crate) fn enter_with<R>(
+    epoch: &bevy_mod_scripting_world::ViewEpoch,
+    f: impl FnOnce() -> R,
+) -> R {
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    return epoch.enter(f);
+    #[cfg(not(any(feature = "luajit", feature = "luajit52")))]
+    {
+        let _ = epoch;
+        f()
+    }
+}
+
+/// The view epoch of the state of `l`, see [`enter_script`]. `None` without views. `[-0, +0, -]`, needs 1 free slot.
+///
+/// # Safety
+/// `l` is a running state.
+pub(crate) unsafe fn view_epoch_at(
+    l: *mut ffi::lua_State,
+) -> Option<bevy_mod_scripting_world::ViewEpoch> {
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    // Safety: see the function's contract
+    return unsafe { views::epoch_at(l) };
+    #[cfg(not(any(feature = "luajit", feature = "luajit52")))]
+    {
+        let _ = l;
+        None
+    }
+}
 
 /// Its address keys the marker in the metatables of native values, see [`native_base`]
 static NATIVE_MARKER: u8 = 0;
@@ -232,6 +277,32 @@ pub(crate) struct LuaArgs<'a> {
     raw: Option<&'a RawLua>,
     /// whether the first arguments are native values, looked up once per call (`Union` and `R` both ask)
     natives: [std::cell::Cell<Option<Option<*mut u8>>>; 4],
+    /// the places views among the first arguments are, for the call (see `views::view_place`)
+    #[cfg_attr(
+        not(any(feature = "luajit", feature = "luajit52")),
+        expect(dead_code, reason = "views are LuaJIT only")
+    )]
+    view_places: [ViewPlace; 4],
+}
+
+/// Room for the native storage of a place, see [`LuaArgs::view_places`].
+#[derive(Default)]
+pub(crate) struct ViewPlace(
+    #[cfg_attr(
+        not(any(feature = "luajit", feature = "luajit52")),
+        expect(dead_code, reason = "views are LuaJIT only")
+    )]
+    std::cell::UnsafeCell<ViewPlaceBytes>,
+);
+
+/// Uninitialised until a view is stored: not written for calls without one.
+#[repr(C, align(16))]
+pub(crate) struct ViewPlaceBytes([MaybeUninit<u8>; 96]);
+
+impl Default for ViewPlaceBytes {
+    fn default() -> Self {
+        Self([MaybeUninit::uninit(); 96])
+    }
 }
 
 impl LuaArgs<'_> {
@@ -279,8 +350,19 @@ unsafe impl ArgSource for LuaArgs<'_> {
     }
 
     fn native(&self, i: usize) -> Option<*mut u8> {
-        // Safety: the index is on the stack
-        let look_up = || unsafe { native_base(self.l, self.idx(i)) };
+        // Safety: the index is on the stack; a view among the first arguments is the place of its component, stored in
+        // this call's room for it
+        let look_up = || unsafe {
+            let native = native_base(self.l, self.idx(i));
+            #[cfg(any(feature = "luajit", feature = "luajit52"))]
+            if native.is_none()
+                && let Some(place) = self.view_places.get(i)
+            {
+                let room = place.0.get();
+                return views::view_place(self.l, self.idx(i), room.cast(), size_of_val(&*room));
+            }
+            native
+        };
         let Some(cached) = self.natives.get(i) else {
             return look_up();
         };
@@ -354,6 +436,7 @@ unsafe impl ArgSource for LuaArgs<'_> {
                 len,
                 raw: self.raw,
                 natives: Default::default(),
+                view_places: Default::default(),
             });
         }
         true
@@ -389,6 +472,7 @@ unsafe impl ArgSource for LuaArgs<'_> {
                     len: 2,
                     raw: self.raw,
                     natives: Default::default(),
+                    view_places: Default::default(),
                 };
                 let read = entry(&NoNatives(&args));
                 // [.., key]: the key for `next`
@@ -512,6 +596,8 @@ enum Pending {
     Native(PendingNative),
     Reference(ReflectReference),
     Value(ScriptValue),
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    View(views::PendingView),
 }
 
 /// The result of a typed call, kept until the call is over, see [`LuaReturn::prepare`].
@@ -519,6 +605,12 @@ pub(crate) struct LuaReturn {
     pending: Pending,
     /// Whether the native value returned next is a read-only copy, see [`ReturnSink::read_only`]
     read_only: bool,
+    /// The state of the call, where views may be returned (null: no views)
+    #[cfg_attr(
+        not(any(feature = "luajit", feature = "luajit52")),
+        expect(dead_code, reason = "views are LuaJIT only")
+    )]
+    l: *mut ffi::lua_State,
 }
 
 impl LuaReturn {
@@ -526,6 +618,7 @@ impl LuaReturn {
         Self {
             pending: Pending::Nothing,
             read_only: false,
+            l: std::ptr::null_mut(),
         }
     }
 
@@ -588,6 +681,13 @@ impl LuaReturn {
                 // Safety: `l` is the state of the call
                 unsafe { push_reference_metatable(l, reference.owns_heap()) }?;
                 Ready::Reference(reference)
+            }
+            #[cfg(any(feature = "luajit", feature = "luajit52"))]
+            Pending::View(view) => {
+                // left on the stack for `push_ready`
+                // Safety: `l` is the state of the call
+                unsafe { views::push_view_ctype(l, &view) }?;
+                Ready::View(view)
             }
         })
     }
@@ -706,6 +806,25 @@ unsafe impl ReturnSink for LuaReturn {
     fn read_only(&mut self) {
         self.read_only = true;
     }
+
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    fn view(
+        &mut self,
+        reference: &ReflectReference,
+        scope: &bevy_mod_scripting_bindings::CallScope,
+    ) -> Result<bool, InteropError> {
+        if self.l.is_null() {
+            return Ok(false);
+        }
+        // Safety: the state of the call
+        match unsafe { views::make_view(self.l, reference, scope) }? {
+            Some(view) => {
+                self.pending = Pending::View(view);
+                Ok(true)
+            }
+            None => Ok(false),
+        }
+    }
 }
 
 /// A value pushed without mlua, see [`Ready::Plain`].
@@ -755,6 +874,9 @@ enum Ready {
     Cdata(PendingNative),
     /// A reference, its metatable on the top, see [`LuaReturn::prepare`]
     Reference(ReflectReference),
+    /// A view, its type on the top, see [`views::push_view`]
+    #[cfg(any(feature = "luajit", feature = "luajit52"))]
+    View(views::PendingView),
     /// Several values pushed without mlua, only made when allocating can't raise (see [`unlikely_memory_error`]): the
     /// values not pushed yet are alive while the others are
     Plain(Vec<Plain>),
@@ -833,6 +955,12 @@ unsafe fn push_ready(l: *mut ffi::lua_State, ready: Ready) -> Result<c_int, &'st
                 }
                 // the metatable `LuaReturn::prepare` left on the top
                 push_reference_with_metatable(l, reference);
+                Ok(1)
+            }
+            #[cfg(any(feature = "luajit", feature = "luajit52"))]
+            Ready::View(view) => {
+                // the type `LuaReturn::prepare` left on the top
+                views::push_view(l, view);
                 Ok(1)
             }
             Ready::Plain(values) => {
@@ -1173,8 +1301,12 @@ unsafe fn call(
             len,
             raw,
             natives,
+            view_places: Default::default(),
         };
-        let mut ret = LuaReturn::new();
+        let mut ret = LuaReturn {
+            l,
+            ..LuaReturn::new()
+        };
         let result = function.call_with(&args, &mut ret, LUA_CALLER_CONTEXT);
         match result {
             // Safety: `l` is the state of the call

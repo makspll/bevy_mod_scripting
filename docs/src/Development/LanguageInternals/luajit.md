@@ -198,6 +198,29 @@ sequenceDiagram
 
 Types are made once per state. A type registered later stays a userdata there.
 
+## Views
+
+`world.get_component` and `world.get_resource` return a view instead of a reference (`ViewRef`, `ReturnSink::view`; code in `native/views.rs`): a cdata of `const` fields holding the component's address, its changed tick, and the two epochs it was made in. Its metatype is Lua generated per type, so accesses compile:
+
+```lua
+__index = function(h, k)
+  local s = cast(S, h)                                        -- not h's `const` fields: LuaJIT reuses their loads across calls
+  if s.e ~= L[0] or s.g ~= G[0] then                          -- an epoch changed: find the component again
+    if not REFRESH(s, L) then gone() end                      -- FFI: row_view by entity + component id, rewrites s
+  end
+  local g = getters[k] if g ~= nil then return g(cast(P, s.p)) end
+  local m = methods[k] if m ~= nil then return m end
+  return index(h, k)                                          -- other fields: by reflection
+end
+getters["float"] = function(p) return p.f_float end           -- `P`: a C struct at the measured offsets
+```
+
+- **Layouts** are measured on the first live value through reflection (`bindings::view::view_layout`): scalar and native fields, aligned, inside the value, not overlapping, and the same offsets on a second value; the generated chunk asserts C agrees (`sizeof`, `offsetof`). Other fields go through a reference.
+- **Epochs**: the structural one is bumped by every `with_world_mut_access` (the only way to `&mut World` from a guard); the state's one (`ViewEpoch`) when Rust enters and leaves its Lua code (`enter_script`). Views are only made while the state is the one entered on this thread, so an entry that isn't wrapped gets references, never unchecked views.
+- **Access** is claimed and released when the view is made (`WorldAccessGuard::row_view`), with the archetype filter: no write access makes a read-only view (null tick). Setters write the context's change tick into the row.
+- **Debug builds** also re-resolve the address through Bevy on every access (`view_check`), so a structural path missing its bump fails the tests instead of corrupting the world.
+- A view passed to a typed function becomes the place of its component (claimed for the call), as on other Lua versions.
+
 ## Safety checklist
 
 | Risk | Guard |
@@ -210,6 +233,8 @@ Types are made once per state. A type registered later stays a userdata there.
 | A script writing a cdata a call holds | calls get copies |
 | A panic in an `#[ffi]` function | **aborts the process**: it can't unwind through C. Only mark functions which don't panic (no integer arithmetic, no indexing) |
 | Rust reading a foreign cdata | ctype id lookup, unknown ids are refused |
+| A view used after its component moved or was freed | both epochs checked before every access, bumped before every structural change and on every entry and exit; a changed epoch re-resolves the address |
+| A view made or written without access | access claimed when it's made, read-only without write access |
 
 Like on Lua, bytecode and the `unsafe_lua_modules` feature (which hands scripts `ffi`) void all of this, see [Sandboxing](../../Summary/customizing-script-contexts.md#sandboxing).
 

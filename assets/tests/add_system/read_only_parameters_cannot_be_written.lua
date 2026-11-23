@@ -38,6 +38,11 @@ function check_accesses(resource, query)
 
     local ok, err = pcall(function() resource.string = "changed" end)
     assert(not ok and tostring(err):find("annot claim access"), "resource write: " .. tostring(err))
+    -- a field written in place on LuaJIT (a read-only view)
+    local fetched = assert(world.get_resource(ResourceType))
+    assert(fetched.float == resource.float, "the fetched resource should read the same")
+    ok, err = pcall(function() fetched.float = 2.5 end)
+    assert(not ok and tostring(err):find("annot claim access"), "resource field write: " .. tostring(err))
     ok, err = pcall(function() component[1] = "changed" end)
     assert(not ok and tostring(err):find("annot claim access"), "component write: " .. tostring(err))
 end

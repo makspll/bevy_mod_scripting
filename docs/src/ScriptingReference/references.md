@@ -34,6 +34,24 @@ transform.translation = translation
 
 Access is checked when a reference is used, not when it is made: a reference to a removed component fails with an error, and so does writing a value something else is reading at the same time, i.e. inside a query iteration. Script systems can only access what they declared, and assets, whose access is checked for all assets at once, only from exclusive script systems.
 
+## Views (LuaJIT)
+
+On LuaJIT, `world.get_component` and `world.get_resource` return **views**: the component's address, whose fields (numbers, booleans, vectors and other native types) are read and written in place, as fast as plain Lua values. Other fields and methods work as on references.
+
+A view behaves like a reference: after the world changed structurally (a spawn, despawn, insert or remove) or in a later callback, its next access finds the component again (once), and fails like a reference if it's gone. Changing the world in a loop over views makes every access in it look the component up again, so change it after the loop when you can:
+
+```lua
+local dead = {}
+for _, e in ipairs(targets) do
+    local health = world.get_component(e, Health)   -- a view
+    health.hp = health.hp - 1                      -- in place
+    if health.hp <= 0 then dead[#dead + 1] = e end
+end
+for _, e in ipairs(dead) do world.despawn(e) end
+```
+
+Access is checked when a view is made or finds its component again: without write access it's read-only. Views are only made for code BMS calls (callbacks, script systems, exported functions); Rust calling a Lua function directly gets them with `LuaContext::enter`.
+
 ## Assets
 
 Handles are plain values (allocations holding a `Handle<T>`), and asset references point into the `Assets<T>` resource through one:

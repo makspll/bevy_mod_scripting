@@ -467,6 +467,8 @@ impl<'w> WorldAccessGuard<'w> {
     ) -> Result<O, DynWorldAccessError> {
         self.with_write_access(WorldAccessRange::Global, || {
             let cell = self.as_unsafe_world_cell()?;
+            // the world may change structurally: views are stale
+            crate::bump_structural_epoch();
             // Safety: we have exclusive access
             Ok(f(unsafe { cell.world_mut() }))
         })?
@@ -486,6 +488,8 @@ impl<'w> WorldAccessGuard<'w> {
     {
         self.with_write_access_and_then(WorldAccessRange::Global, || {
             let cell = self.as_unsafe_world_cell().map_err(Into::into)?;
+            // the world may change structurally: views are stale
+            crate::bump_structural_epoch();
             // Safety: we have exclusive access
             f(unsafe { cell.world_mut() })
         })
@@ -593,6 +597,114 @@ impl<'w> WorldAccessGuard<'w> {
                 ),
             ))
         }
+    }
+
+    /// The address of the component `component_id` of `entity`, or of the resource `component_id` if `entity` is
+    /// `None`, for a view of the context of `epoch` (see [`crate::RowView`]). `None` if there is none.
+    ///
+    /// Access is checked like for a reference (claimed and released, and the archetype filter): for writing if `write`
+    /// and the guard allows it, else for reading, when the view is read-only (no changed tick). Writing views of
+    /// mutable columns mark them changed ([`AtomicTick`](bevy_ecs::change_detection::AtomicTick) summary).
+    ///
+    /// # Safety
+    /// The address may be used only by code which, before each use, checks both epochs of the view are unchanged
+    /// (see [`crate::bump_structural_epoch`], [`crate::ViewEpoch`]), which reads it as the component's type, writes only
+    /// fields where every bit pattern is a valid value (or which it writes valid values to), writes only if the view
+    /// has a changed tick, and then writes `this_run` (see [`crate::ViewEpoch::this_run_ptr`]) to it.
+    pub unsafe fn row_view(
+        &self,
+        epoch: &crate::ViewEpoch,
+        entity: Option<Entity>,
+        component_id: ComponentId,
+        write: bool,
+    ) -> Result<Option<crate::RowView>, DynWorldAccessError> {
+        let cell = self.as_unsafe_world_cell()?;
+        let Some(info) = cell.components().get_info(component_id) else {
+            return Ok(None);
+        };
+        let entity = match entity {
+            Some(entity) => {
+                // a write view where the system may write, else a read-only one
+                let write = write && info.mutable();
+                if write
+                    && self
+                        .check_archetype_access(entity, component_id, true)
+                        .is_ok()
+                {
+                    return self.claimed_row_view(epoch, entity, component_id, info, true);
+                }
+                self.check_archetype_access(entity, component_id, false)?;
+                return self.claimed_row_view(epoch, entity, component_id, info, false);
+            }
+            // Safety: only the id of the resource's entity is read
+            None => match unsafe { cell.resource_entities() }.get(component_id) {
+                Some(entity) => entity,
+                None => return Ok(None),
+            },
+        };
+        let write = write && info.mutable();
+        self.claimed_row_view(epoch, entity, component_id, info, write)
+    }
+
+    /// [`Self::row_view`] once the archetype filter allows it: claims access (for writing if `write`, falling back to
+    /// reading) and finds the address.
+    fn claimed_row_view(
+        &self,
+        epoch: &crate::ViewEpoch,
+        entity: Entity,
+        component_id: ComponentId,
+        info: &bevy_ecs::component::ComponentInfo,
+        write: bool,
+    ) -> Result<Option<crate::RowView>, DynWorldAccessError> {
+        use bevy_ecs::component::StorageType;
+        let cell = self.as_unsafe_world_cell()?;
+        let find = |write: bool| {
+            let Ok(entity_cell) = cell.get_entity(entity) else {
+                return None;
+            };
+            let location = entity_cell.location();
+            // Safety: access to the component is claimed for this closure, the storages are only read
+            let storages = unsafe { cell.storages() };
+            let (data, changed, summary) = match info.storage_type() {
+                StorageType::Table => {
+                    let table = storages.tables.get(location.table_id)?;
+                    let changed = table.get_changed_tick(component_id, location.table_row)?;
+                    // Safety: the row is in the table, `get_changed_tick` checked it
+                    let data = unsafe { table.get_component(component_id, location.table_row)? };
+                    (data, changed, table.get_summary_tick(component_id))
+                }
+                StorageType::SparseSet => {
+                    let (data, ticks) = storages
+                        .sparse_sets
+                        .get(component_id)?
+                        .get_with_ticks(entity)?;
+                    (data, ticks.changed, ticks.summary_tick)
+                }
+            };
+            let this_run = cell.change_tick();
+            if write {
+                epoch.set_this_run(this_run.get());
+                if let Some(summary) = summary {
+                    summary.set(this_run);
+                }
+            }
+            Some(crate::RowView {
+                // Safety: the claimed access is exclusive for writes (as Bevy's own `get_mut`); a read-only view is never
+                // written through
+                data: unsafe { data.assert_unique() }.as_ptr(),
+                changed_tick: if write {
+                    changed.get().cast()
+                } else {
+                    std::ptr::null_mut()
+                },
+                epoch: epoch.get(),
+                structural: crate::structural_epoch_value(),
+            })
+        };
+        if write && let Ok(view) = self.with_access(component_id.into(), true, || find(true)) {
+            return Ok(view);
+        }
+        self.with_access(component_id.into(), false, || find(false))
     }
 
     /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world.
@@ -945,5 +1057,79 @@ mod test {
         }));
         assert!(panicked.is_err());
         assert_eq!(guard.access_len(), 0);
+    }
+
+    #[test]
+    fn row_views_write_in_place_and_go_stale() {
+        use bevy_ecs::{prelude::*, query::Changed};
+
+        #[derive(Component)]
+        struct Position(f32);
+        #[derive(Component)]
+        #[component(immutable)]
+        struct Fixed(f32);
+
+        let mut world = World::new();
+        let a = world.spawn((Position(1.0), Fixed(2.0))).id();
+        let b = world.spawn((Position(3.0), Fixed(4.0))).id();
+        let position = world.register_component::<Position>();
+        let fixed = world.register_component::<Fixed>();
+        let mut changed = world.query_filtered::<Entity, Changed<Position>>();
+        changed.iter(&world).count();
+        world.increment_change_tick();
+
+        let epoch = crate::ViewEpoch::default();
+        let guard = WorldAccessGuard::new_exclusive(
+            &mut world,
+            array::from_fn(|_| Rc::new(RefCell::new(TestRegistry)) as Rc<RefCell<dyn Any>>),
+        );
+        // Safety: written as a `Position` (an `f32` at offset 0), with its tick, while both epochs are unchanged
+        unsafe {
+            let view = guard
+                .row_view(&epoch, Some(b), position, true)
+                .unwrap()
+                .unwrap();
+            assert!(!view.changed_tick.is_null(), "a write view");
+            *(view.data as *mut f32) = 5.0;
+            *view.changed_tick = *epoch.this_run_ptr();
+            assert_eq!(
+                (view.epoch, view.structural),
+                (epoch.get(), crate::structural_epoch_value())
+            );
+
+            // immutable components are read-only
+            let view = guard
+                .row_view(&epoch, Some(a), fixed, true)
+                .unwrap()
+                .unwrap();
+            assert!(view.changed_tick.is_null(), "a read-only view");
+            assert_eq!(*(view.data as *const f32), 2.0);
+
+            // claims are released after making a view
+            assert_eq!(guard.access_len(), 0);
+
+            // structural changes and entering script code make views stale
+            let structural = crate::structural_epoch_value();
+            guard.with_world_mut_access(|w| w.despawn(a)).unwrap();
+            assert_ne!(crate::structural_epoch_value(), structural);
+            // a new epoch while script code runs, the outer one again after it
+            let before = epoch.get();
+            let inner = epoch.enter(|| epoch.get());
+            assert_ne!(inner, before);
+            assert_eq!(epoch.get(), before);
+            assert_ne!(epoch.enter(|| epoch.get()), inner, "epochs aren't reused");
+            assert!(
+                guard
+                    .row_view(&epoch, Some(a), position, true)
+                    .unwrap()
+                    .is_none(),
+                "gone"
+            );
+        }
+        drop(guard);
+        assert_eq!(world.get::<Position>(b).unwrap().0, 5.0);
+        assert_eq!(world.get::<Fixed>(b).unwrap().0, 4.0);
+        // the tick write is seen by change detection
+        assert_eq!(changed.iter(&world).collect::<Vec<_>>(), vec![b]);
     }
 }

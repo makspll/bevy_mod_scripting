@@ -32,6 +32,7 @@ use bevy_mod_scripting_bindings::{
         script_function::{FunctionCallContext, ScriptFunctionMut},
     },
     script_value::ScriptValue,
+    view::ViewRef,
 };
 use bevy_mod_scripting_bindings_domain::ReflectionPrimitiveKind;
 use bevy_mod_scripting_core::{
@@ -174,11 +175,11 @@ impl World {
         ctxt: FunctionCallContext,
         entity: V<Entity>,
         registration: TypeOf<V<ScriptComponentRegistration>, A>,
-    ) -> Result<Option<ValueOf<A>>, InteropError> {
+    ) -> Result<Option<ValueOf<A, ViewRef>>, InteropError> {
         profiling::function_scope!("get_component");
         let world = ctxt.world()?;
         let val = world.get_component(*entity, registration.into_inner().into_inner())?;
-        Ok(val.map(ValueOf::new))
+        Ok(val.map(|val| ValueOf::new(ViewRef(val))))
     }
 
     /// Checks if the given entity has the given component.
@@ -225,11 +226,11 @@ impl World {
     fn get_resource(
         ctxt: FunctionCallContext,
         registration: TypeOf<V<ScriptResourceRegistration>, A>,
-    ) -> Result<Option<ValueOf<A>>, InteropError> {
+    ) -> Result<Option<ValueOf<A, ViewRef>>, InteropError> {
         profiling::function_scope!("get_resource");
         let world = ctxt.world()?;
         let val = world.get_resource(registration.resource_id())?;
-        Ok(val.map(ValueOf::new))
+        Ok(val.map(|val| ValueOf::new(ViewRef(val))))
     }
 
     /// Checks if the world has the given resource.
