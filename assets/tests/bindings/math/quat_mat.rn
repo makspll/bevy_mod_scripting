@@ -13,12 +13,20 @@ fn errors(f) {
 pub fn main() {
     let EulerRot = import_namespace("math").EulerRot;
     let IVec2 = import_namespace("math").IVec2;
+    let Mat2 = import_namespace("math").Mat2;
     let Mat3 = import_namespace("math").Mat3;
     let Mat4 = import_namespace("math").Mat4;
     let Quat = import_namespace("math").Quat;
+    let DQuat = import_namespace("math").DQuat;
     let UVec3 = import_namespace("math").UVec3;
     let Vec2 = import_namespace("math").Vec2;
     let Vec3 = import_namespace("math").Vec3;
+    let DVec2 = import_namespace("math").DVec2;
+    let DVec3 = import_namespace("math").DVec3;
+    let Affine2 = import_namespace("math").Affine2;
+    let Affine3 = import_namespace("math").Affine3;
+    let DAffine2 = import_namespace("math").DAffine2;
+    let DAffine3 = import_namespace("math").DAffine3;
     let PI = math::PI;
 
     // quaternions
@@ -44,29 +52,72 @@ pub fn main() {
     assert!(approx(half.angle(), PI / 4.0), "slerp");
 
     // matrices
-    let m = Mat3.from_cols(Vec3.new(1, 0, 0), Vec3.new(0, 2, 0), Vec3.new(0, 0, 3));
-    assert!(m * Vec3.one() == Vec3.new(1, 2, 3), "mat3 * vec3");
-    assert!(m.determinant() == 6.0, "determinant");
-    assert!(m.transpose() == m, "transpose");
-    assert!(m * m.inverse() == Mat3.identity(), "inverse");
-    assert!(m.col(1) == Vec3.new(0, 2, 0), "col");
+    let m2 = Mat2.from_cols(Vec2.new(1, 0), Vec2.new(0, 2));
+    assert!(m2 * Vec2.one() == Vec2.new(1, 2), "mat2 * vec2");
+    assert!(m2.determinant() == 2.0, "mat2 determinant");
+    assert!(m2.transpose() == m2, "mat2 transpose");
+    assert!(m2 * m2.inverse() == Mat2.identity(), "mat2 inverse");
+    assert!(m2.col(1) == Vec2.new(0, 2), "mat2 col");
     // matrices are values: a column is read as a read-only copy and written whole
-    let n = m.clone();
-    assert!(n.y_axis == Vec3.new(0, 2, 0) && errors(|| { n.y_axis.x = 1.0; }), "a column is a read-only copy");
-    n.y_axis = Vec3.new(0, 5, 0);
-    assert!(n.col(1) == Vec3.new(0, 5, 0) && m.col(1) == Vec3.new(0, 2, 0), "a column is written whole, to the clone only");
-    assert!(m + m == m * 2, "mat3 + mat3");
-    assert!(m - m == m * 0, "mat3 - mat3");
-    assert!(m / 2 == m * 0.5, "mat3 / number");
-    assert!(Mat4.identity() / 2 == Mat4.identity() * 0.5, "mat4 / number");
+    let n2 = m2.clone();
+    assert!(n2.y_axis == Vec2.new(0, 2) && errors(|| { n2.y_axis.x = 1.0; }), "a column is a read-only copy");
+    n2.y_axis = Vec2.new(0, 5);
+    assert!(n2.col(1) == Vec2.new(0, 5) && m2.col(1) == Vec2.new(0, 2), "a column is written whole, to the clone only");
+    assert!(m2 + m2 == m2 * 2, "mat2 + mat2");
+    assert!(m2 - m2 == m2 * 0, "mat2 - mat2");
+    assert!(m2 / 2 == m2 * 0.5, "mat2 / number");
     // a matrix and a vector have different shapes, so adding them is an error rather than a guess
-    assert!(catch(|| m + Vec3.one()).is_err(), "mat3 + vec3 errors");
+    assert!(catch(|| m2 + Vec2.one()).is_err(), "mat2 + vec2 errors");
+
+    let m3 = Mat3.from_cols(Vec3.new(1, 0, 0), Vec3.new(0, 2, 0), Vec3.new(0, 0, 3));
+    assert!(m3 * Vec3.one() == Vec3.new(1, 2, 3), "mat3 * vec3");
+    assert!(m3.determinant() == 6.0, "mat3 determinant");
+    assert!(m3.transpose() == m3, "mat3 transpose");
+    assert!(m3 * m3.inverse() == Mat3.identity(), "mat3 inverse");
+    assert!(m3.col(1) == Vec3.new(0, 2, 0), "mat3 col");
+    // matrices are values: a column is read as a read-only copy and written whole
+    let n3 = m3.clone();
+    assert!(n3.y_axis == Vec3.new(0, 2, 0) && errors(|| { n3.y_axis.x = 1.0; }), "a column is a read-only copy");
+    n3.y_axis = Vec3.new(0, 5, 0);
+    assert!(n3.col(1) == Vec3.new(0, 5, 0) && m3.col(1) == Vec3.new(0, 2, 0), "a column is written whole, to the clone only");
+    assert!(m3 + m3 == m3 * 2, "mat3 + mat3");
+    assert!(m3 - m3 == m3 * 0, "mat3 - mat3");
+    assert!(m3 / 2 == m3 * 0.5, "mat3 / number");
+    // a matrix and a vector have different shapes, so adding them is an error rather than a guess
+    assert!(catch(|| m3 + Vec3.one()).is_err(), "mat3 + vec3 errors");
+
+    assert!(Mat4.identity() / 2 == Mat4.identity() * 0.5, "mat4 / number");
 
     let t = Mat4.from_translation(Vec3.new(1, 2, 3));
     assert!(t.transform_point3(Vec3.zero()) == Vec3.new(1, 2, 3), "transform_point3");
     assert!(t.transform_vector3(Vec3.unit_x()) == Vec3.unit_x(), "transform_vector3 ignores translation");
     let srt = Mat4.from_scale_rotation_translation(Vec3.one(), Quat.identity(), Vec3.new(1, 2, 3));
     assert!(srt == t, "from_scale_rotation_translation");
+
+    // transforms
+    let a2 = Affine2.from_mat2(m2);
+    a2.translation = Vec2.one();
+    assert!(a2.transform_point2(Vec2.one()) == Vec2.new(2, 3), "affine2 * point2");
+    assert!(a2.transform_vector2(Vec2.one()) == Vec2.new(1, 2), "affine2 * vec2");
+    assert!(a2 * a2.inverse() == Affine2.identity(), "affine2 inverse");
+
+    let a3 = Affine3.from_mat3(m3);
+    a3.translation = Vec3.one();
+    assert!(a3.transform_point3(Vec3.one()) == Vec3.new(2, 3, 4), "affine3 * point3");
+    assert!(a3.transform_vector3(Vec3.one()) == Vec3.new(1, 2, 3), "affine3 * vec3");
+    assert!(a3 * a3.inverse() == Affine3.identity(), "affine3 inverse");
+
+    let da2 = DAffine2.from_mat2(m2.as_dmat2());
+    da2.translation = DVec2.one();
+    assert!(da2.transform_point2(DVec2.one()) == DVec2.new(2, 3), "daffine2 * dpoint2");
+    assert!(da2.transform_vector2(DVec2.one()) == DVec2.new(1, 2), "daffine2 * dvec2");
+    assert!(da2 * da2.inverse() == DAffine2.identity(), "daffine2 inverse");
+
+    let da3 = DAffine3.from_mat3(m3.as_dmat3());
+    da3.translation = DVec3.one();
+    assert!(da3.transform_point3(DVec3.one()) == DVec3.new(2, 3, 4), "daffine3 * dpoint3");
+    assert!(da3.transform_vector3(DVec3.one()) == DVec3.new(1, 2, 3), "daffine3 * dvec3");
+    assert!(da3 * da3.inverse() == DAffine3.identity(), "daffine3 inverse");
 
     // integer vectors
     let i = IVec2.new(3, -4);
