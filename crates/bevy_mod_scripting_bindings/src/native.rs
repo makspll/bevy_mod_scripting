@@ -1472,6 +1472,29 @@ where
         }
     }
 
+    /// Adds the field `name`, whose values are passed as `V<F>`, reached through `T`'s `Deref`, like [`Self::field`]:
+    /// its offset is measured once, in the default value, so it's read and written in place like any field.
+    ///
+    /// # Safety
+    /// `T`'s `Deref` is to the value itself, the field at the same offset in every value: glam's SIMD types cast `self`
+    /// to a `repr(C)` view of their components. Never when the target depends on the value (an enum holding it inline or
+    /// boxed) or is elsewhere (a `Box`, an `Arc`).
+    ///
+    /// # Panics
+    /// If the field isn't inside the default value, or wouldn't be aligned in every value.
+    pub unsafe fn deref_value_field<F>(self, name: &'static str, field: fn(&T) -> &F) -> Self
+    where
+        T: Default,
+        F: Reflect + Clone,
+        crate::V<F>: crate::IntoScript + for<'s> crate::FromScript<This<'s> = crate::V<F>>,
+    {
+        // Safety: the caller's
+        unsafe {
+            let offset = deref_field_offset(field);
+            self.value_field(name, offset, field)
+        }
+    }
+
     /// Declares the C layout of the values, the fields declared so far in order (see [`FfiLayout`]): languages with an
     /// FFI (LuaJIT) then store them as plain C structs, which scripts can write byte by byte at any time. Fields which
     /// aren't `f32`, `f64`, `i32`, `u32` or a native type with such fields keep the values as they were.

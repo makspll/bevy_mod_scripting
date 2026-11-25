@@ -2,6 +2,7 @@
 
 use bevy_app::{App, Plugin};
 
+mod affine;
 mod dir;
 mod ease;
 mod ivec;
@@ -42,5 +43,6 @@ impl Plugin for BevyMathBindingsPlugin {
         ray::register(world);
         shapes::register(world);
         ease::register(world);
+        affine::register(world);
     }
 }
