@@ -35,6 +35,7 @@ struct Field {
 }
 
 /// A field's probe values as written, resolved against the number of type-level probes after parsing.
+#[allow(clippy::large_enum_variant, reason = "parse-time only")]
 enum FieldProbe {
     /// `#[probe = v]` or `#[probe = _]`
     Single(Option<Expr>),
