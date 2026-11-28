@@ -362,31 +362,47 @@ impl Overlay {
                 ::core::assert!(#p::nonzero_somewhere(&[#(#bytes),*], #mask), #msg);
             }
         });
-        let (p_ref, mask_of_ref) = (&p, &mask_of);
-        let distinct = probed.iter().enumerate().flat_map(|(i, (a, a_ty, a_values))| {
-            probed[i + 1..].iter().filter_map(move |(b, b_ty, b_values)| {
-                let (p, mask_of) = (p_ref, mask_of_ref);
-                let (a_mask, b_mask) = (mask_of(a_ty), mask_of(b_ty));
-                // equal in every probe both are probed in
-                let equal: Vec<_> = a_values
-                    .iter()
-                    .filter_map(|(ai, _, a_const)| {
-                        let (_, _, b_const) = b_values.iter().find(|(bi, ..)| bi == ai)?;
-                        Some(quote!(#p::same_value(#p::bytes(&#a_const), #a_mask, #p::bytes(&#b_const), #b_mask)))
-                    })
-                    .collect();
-                if equal.is_empty() {
-                    return None;
+        // each probed value's bytes occur exactly once in the probed type, in at least one probe. With the probe
+        // check this pins the field's offset: the value can't be another field's bytes read at the wrong place.
+        // Fields not probed in a probe (`_`) hold unknown bytes and are left out of its image.
+        let image_masks = self.probes.iter().enumerate().map(|(i, _)| {
+            let image_mask = format_ident!("__IMAGE_MASK_{}", i);
+            let steps = fields.iter().map(|Field { kind, .. }| match kind {
+                Kind::Pad { len } => quote!(at += #len;),
+                Kind::Data { ty, probes, .. } if probes[i].is_some() => {
+                    let mask = mask_of(ty);
+                    quote!(at = #p::mask_field(&mut mask, at, #mask);)
                 }
-                let msg = lit(if multi {
-                    format!("probe values for `{a}` and `{b}` are equal in every probe, make them differ in at least one")
-                } else {
-                    format!("probe values for `{a}` and `{b}` are equal")
-                });
-                Some(quote_spanned! {at_field(b.span())=>
-                    ::core::assert!(!(#(#equal)&&*), #msg);
-                })
-            })
+                Kind::Data { ty, .. } => {
+                    let ty = field_ty(ty);
+                    quote!(at += #p::size_of::<#ty>();)
+                }
+            });
+            quote! {
+                #[allow(unused_assignments)]
+                const #image_mask: [bool; #p::size_of::<#target>()] = {
+                    let mut mask = [false; #p::size_of::<#target>()];
+                    let mut at = 0usize;
+                    #(#steps)*
+                    mask
+                };
+            }
+        });
+        let unique = probed.iter().map(|(ident, ty, values)| {
+            let mask = mask_of(ty);
+            let once = values.iter().map(|(i, _, konst)| {
+                let (probed_const, image_mask) =
+                    (format_ident!("__PROBED_{}", i), format_ident!("__IMAGE_MASK_{}", i));
+                quote!(#p::occurrences(#p::bytes(&#probed_const), &#image_mask, #p::bytes(&#konst), #mask) == 1)
+            });
+            let msg = lit(if multi {
+                format!("probe values for `{ident}` also occur elsewhere in every probe, make its bytes unique in at least one")
+            } else {
+                format!("probe value for `{ident}` also occurs elsewhere in the probe, use a value whose bytes appear nowhere else")
+            });
+            quote_spanned! {at_field(ident.span())=>
+                ::core::assert!(#(#once)||*, #msg);
+            }
         });
         let probe_checks = self.probes.iter().enumerate().map(|(i, probe)| {
             let probed_const = format_ident!("__PROBED_{}", i);
@@ -543,8 +559,9 @@ impl Overlay {
                     #[allow(clippy::let_unit_value)]
                     let () = LAYOUT;
                     #(#probe_values)*
-                    #(#distinct)*
                     #(#probe_checks)*
+                    #(#image_masks)*
+                    #(#unique)*
                 };
 
                 PROBES

@@ -40,8 +40,10 @@
 //!
 //! By invoking `unsafe_c_overlay!` you promise:
 //! 1. every declared field lives inside the bytes of the type, at the offset implied by declaration order, with the declared type
-//! 2. `#[pad]` bytes hold nothing a probed field depends on
+//!    (the type check sees through `Deref`, a wrapper like `NotNan<f32>` declared as `f32` is yours to rule out)
+//! 2. `#[pad]` bytes are real padding, or valid for any byte value (scripts zero and copy them)
 //! 3. `#[probe = _]` fields are valid for any value of the type
+//! 4. `#[opaque]` fields accept every value of their declared type (scripts can write them)
 //!
 //! Everything else is checked at compile time:
 //!
@@ -49,15 +51,15 @@
 //! |---|---|
 //! | field types are C scalars or overlays | `F: FfiField` |
 //! | fields aligned, no overlap, all bytes covered, align matches | const layout builder |
-//! | fields have the declared type | `let _: &F = &value.field` (works through `Deref`), skipped for `#[opaque]` fields (private or unnamed) |
+//! | fields have the declared type | `let _: &F = &value.field` (works through `Deref`, so it catches mistakes, not `Deref` wrappers), skipped for `#[opaque]` fields (private or unnamed) |
 //! | overlay alignment equals the real type's | `align_of::<Overlay>() == align_of::<T>()`, so overlays made outside Rust (e.g. `ffi.new`) can be read as `T` |
 //! | offsets and sizes match the real type | probe: transmute the probe value into the overlay, compare each field's bytes |
-//! | probes are strong | every byte of every probe value is non-zero, values are pairwise distinct |
+//! | probes are strong | every byte of every probe value is non-zero, and its bytes occur exactly once in the probed type (fields probed with `_` aside) |
 //! | every field is probed | `#[probe(..)]` on the type, `#[probe = ..]` (or `_`) on each non-pad field |
 //!
 //! Types whose fields can't all be told apart by one value (a `bool` has a single non-zero value) take several
 //! `#[probe(..)]` constructors, and each field one value per probe, `#[probe(v0, v1, ..)]`. Then every byte must be
-//! non-zero in at least one probe, and every two fields must differ in at least one probe:
+//! non-zero in at least one probe, and every field's bytes must occur exactly once in at least one probe:
 //! ```text
 //! #[probe(glam::BVec2::new(true, false))]
 //! #[probe(glam::BVec2::new(false, true))]
@@ -209,25 +211,29 @@ pub mod __private {
         true
     }
 
-    /// Two probe values are equal: same size, and equal on the bytes initialized in both.
-    pub const fn same_value(
-        a: &[MaybeUninit<u8>],
-        a_mask: &[bool],
-        b: &[MaybeUninit<u8>],
-        b_mask: &[bool],
-    ) -> bool {
-        if a.len() != b.len() {
-            return false;
-        }
-        let mut i = 0;
-        while i < a.len() {
-            // SAFETY: both masks mark initialized bytes
-            if a_mask[i] && b_mask[i] && unsafe { a[i].assume_init() != b[i].assume_init() } {
-                return false;
+    /// The number of offsets of `image` at which `needle` occurs, comparing the bytes initialized in both.
+    pub const fn occurrences(
+        image: &[MaybeUninit<u8>],
+        image_mask: &[bool],
+        needle: &[MaybeUninit<u8>],
+        needle_mask: &[bool],
+    ) -> usize {
+        let (mut count, mut at) = (0, 0);
+        while at + needle.len() <= image.len() {
+            let (mut i, mut hit) = (0, true);
+            while i < needle.len() && hit {
+                // SAFETY: both masks mark initialized bytes
+                hit = !needle_mask[i]
+                    || (image_mask[at + i]
+                        && unsafe { image[at + i].assume_init() == needle[i].assume_init() });
+                i += 1;
             }
-            i += 1;
+            if hit {
+                count += 1;
+            }
+            at += 1;
         }
-        true
+        count
     }
 
     /// Copies a field's mask into `mask` at `at`, returns the offset after it.
@@ -247,6 +253,7 @@ pub mod __private {
 /// # Safety
 /// `Overlay` is a `#[repr(C)]` mirror of `Self` with the same size and alignment, and `INIT_MASK` has one entry per byte,
 /// `true` exactly where every value of `Self` has an initialized byte, and `C_DECL` declares `Overlay` in C.
+/// Every `Self` is a valid `Overlay`, and every `Overlay` is a valid `Self` (overlays are written by scripts).
 /// Implemented here for scalars and by `unsafe_c_overlay!`.
 pub unsafe trait FfiField {
     /// The `#[repr(C)]` mirror (`Self` for scalars).

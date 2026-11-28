@@ -120,6 +120,20 @@ impl Flags {
     }
 }
 
+/// Mixed sizes: `c` at 0, `a` at 2, `b` at 3.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Mixed {
+    pub c: u16,
+    pub a: u8,
+    pub b: u8,
+}
+impl Mixed {
+    pub const fn new(a: u8, b: u8, c: u16) -> Self {
+        Self { c, a, b }
+    }
+}
+
 #[derive(Clone)]
 pub struct Named {
     pub name: String,
