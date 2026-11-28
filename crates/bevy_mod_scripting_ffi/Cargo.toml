@@ -13,6 +13,7 @@ readme.workspace = true
 
 [dependencies]
 bevy_mod_scripting_derive = { workspace = true }
+const_format = { workspace = true }
 glam = { workspace = true, features = ["std"] }
 
 [dev-dependencies]

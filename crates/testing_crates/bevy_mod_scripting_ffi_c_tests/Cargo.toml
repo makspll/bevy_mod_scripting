@@ -1,0 +1,20 @@
+[package]
+name = "bevy_mod_scripting_ffi_c_tests"
+description = "Round trips of bevy_mod_scripting_ffi overlays through real C code"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+bevy_mod_scripting_ffi = { workspace = true }
+glam = { workspace = true, features = ["std"] }
+
+[build-dependencies]
+cc = { workspace = true }
+
+[lints]
+workspace = true

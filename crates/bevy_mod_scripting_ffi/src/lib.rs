@@ -26,6 +26,16 @@
 //! assert_eq!((c.x, c.y, c.z), (1.0, 2.0, 3.0));
 //! ```
 //!
+//! # C declarations
+//!
+//! Every overlay carries its C declaration in [`FfiField::C_DECL`], named after the overlay (or `#[c_name = "Name"]`
+//! next to `#[probe(..)]`). [`cdef`] gives the LuaJIT `ffi.cdef` for a set of overlays, field types first and each once:
+//! ```text
+//! typedef struct __attribute__((aligned(16))) Vec3AC { float x; float y; float z; float _w; } Vec3AC;
+//! ```
+//! [`c_header`] gives a C11 header with `_Static_assert`s of the Rust layout, compiled and round-tripped through real C
+//! by `bevy_mod_scripting_ffi_c_tests` (UBSan and valgrind in CI). Overlays cross the boundary by pointer only.
+//!
 //! # Safety contract
 //!
 //! By invoking `unsafe_c_overlay!` you promise:
@@ -130,14 +140,17 @@
 // lets `unsafe_c_overlay!` output (which names `::bevy_mod_scripting_ffi`) work inside this crate
 extern crate self as bevy_mod_scripting_ffi;
 
+mod cdef;
 mod impls;
 
 pub use bevy_mod_scripting_derive::unsafe_c_overlay;
+pub use cdef::{CDecl, CNameConflict, c_header, cdef};
 
 /// Const helpers used by `unsafe_c_overlay!` output.
 #[doc(hidden)]
 pub mod __private {
-    pub use core::mem::{ManuallyDrop, MaybeUninit, align_of, size_of};
+    pub use const_format::concatcp;
+    pub use core::mem::{ManuallyDrop, MaybeUninit, align_of, offset_of, size_of};
 
     /// The bytes of `value`, possibly uninitialized.
     pub const fn bytes<T>(value: &T) -> &[MaybeUninit<u8>] {
@@ -213,22 +226,30 @@ pub mod __private {
 ///
 /// # Safety
 /// `Overlay` is a `#[repr(C)]` mirror of `Self` with the same size and alignment, and `INIT_MASK` has one entry per byte,
-/// `true` exactly where every value of `Self` has an initialized byte. Implemented here for scalars and by `unsafe_c_overlay!`.
+/// `true` exactly where every value of `Self` has an initialized byte, and `C_DECL` declares `Overlay` in C.
+/// Implemented here for scalars and by `unsafe_c_overlay!`.
 pub unsafe trait FfiField {
     /// The `#[repr(C)]` mirror (`Self` for scalars).
     type Overlay: Copy;
     /// Per-byte initialized mask, `false` over padding.
     const INIT_MASK: &'static [bool];
+    /// The C declaration of `Overlay`.
+    const C_DECL: CDecl;
 }
 
 macro_rules! impl_scalar_field {
-    ($($ty:ty),*) => {$(
+    ($($ty:ty => $c:literal),*) => {$(
         // SAFETY: C scalars have no padding, every byte is initialized
         unsafe impl FfiField for $ty {
             type Overlay = $ty;
             const INIT_MASK: &'static [bool] = &[true; size_of::<$ty>()];
+            const C_DECL: CDecl = CDecl { name: $c, cdef: "", header: "", deps: &[] };
         }
     )*};
 }
 
-impl_scalar_field!(u8, u16, u32, u64, i8, i16, i32, i64, f32, f64);
+impl_scalar_field!(
+    u8 => "uint8_t", u16 => "uint16_t", u32 => "uint32_t", u64 => "uint64_t",
+    i8 => "int8_t", i16 => "int16_t", i32 => "int32_t", i64 => "int64_t",
+    f32 => "float", f64 => "double"
+);

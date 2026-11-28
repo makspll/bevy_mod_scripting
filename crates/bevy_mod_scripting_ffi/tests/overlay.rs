@@ -3,7 +3,7 @@
 #[path = "ui/support/foreign.rs"]
 mod foreign;
 
-use bevy_mod_scripting_ffi::{FfiField, unsafe_c_overlay};
+use bevy_mod_scripting_ffi::{CDecl, CNameConflict, FfiField, cdef, unsafe_c_overlay};
 
 unsafe_c_overlay! {
     #[probe(foreign::Vec3::new(1.1, 2.2, 3.3))]
@@ -39,6 +39,7 @@ unsafe_c_overlay! {
 
 unsafe_c_overlay! {
     #[probe(foreign::Foo::new(0x11, 0x2233_4455))]
+    #[c_name = "foreign_Foo"]
     foreign::Foo as FooC {
         #[probe = 0x11] a: u8,
         #[pad] _p0: [u8; 3],
@@ -136,12 +137,38 @@ fn overlays_mirror_real_values() {
 }
 
 #[test]
-fn init_masks_exclude_padding() {
-    const FOO: [bool; 8] = [true, false, false, false, true, true, true, true];
-    assert_eq!(<foreign::Foo as FfiField>::INIT_MASK, &FOO);
+fn generated_metadata() {
+    // C declarations: own typedef only, field types first and once, `#[c_name]` respected
+    const FOO: &str = "typedef struct __attribute__((aligned(4))) foreign_Foo { uint8_t a; uint8_t _p0[3]; uint32_t b; } foreign_Foo;\n";
+    const PAIR: &str = "typedef struct __attribute__((aligned(4))) FooPairC { foreign_Foo first; foreign_Foo second; } FooPairC;\n";
+    let (foo, pair) = (
+        <foreign::Foo as FfiField>::C_DECL,
+        <foreign::FooPair as FfiField>::C_DECL,
+    );
+    assert_eq!((foo.cdef, pair.cdef), (FOO, PAIR));
+    assert_eq!(cdef(&[pair, foo]).unwrap(), format!("{FOO}{PAIR}"));
+    assert!(
+        <foreign::Vec3A as FfiField>::C_DECL
+            .cdef
+            .starts_with("typedef struct __attribute__((aligned(16))) Vec3AC {")
+    );
+    assert!(
+        pair.header.contains(
+            "_Static_assert(offsetof(FooPairC, second) == 8, \"FooPairC.second offset\");"
+        )
+    );
+    let impostor = CDecl {
+        cdef: "typedef struct foreign_Foo { float x; } foreign_Foo;\n",
+        ..foo
+    };
+    assert_eq!(cdef(&[foo, impostor]), Err(CNameConflict("foreign_Foo")));
+
+    // init masks
+    const FOO_MASK: [bool; 8] = [true, false, false, false, true, true, true, true];
+    assert_eq!(<foreign::Foo as FfiField>::INIT_MASK, &FOO_MASK);
     assert_eq!(
         <foreign::FooPair as FfiField>::INIT_MASK,
-        &[FOO, FOO].concat()[..]
+        &[FOO_MASK, FOO_MASK].concat()[..]
     );
     assert_eq!(<foreign::Mat3 as FfiField>::INIT_MASK, &[true; 36]);
     assert_eq!(<foreign::Vec3A as FfiField>::INIT_MASK, &[true; 16]);

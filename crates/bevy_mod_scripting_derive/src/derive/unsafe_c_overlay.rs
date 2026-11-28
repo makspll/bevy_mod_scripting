@@ -21,6 +21,8 @@ use syn::{
 
 struct Overlay {
     probe: Expr,
+    /// The C type name, `#[c_name = ".."]` or the overlay's ident
+    c_name: LitStr,
     target: Type,
     name: Ident,
     fields: Vec<Field>,
@@ -45,15 +47,43 @@ enum Kind {
 
 impl Parse for Overlay {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let mut probe = None;
+        let (mut probe, mut c_name) = (None, None);
         for attr in input.call(Attribute::parse_outer)? {
-            if !attr.path().is_ident("probe") || probe.is_some() {
-                return Err(syn::Error::new_spanned(
-                    attr,
-                    "expected a single `#[probe(<const constructor>)]`",
-                ));
+            match &attr.meta {
+                Meta::List(_) if attr.path().is_ident("probe") && probe.is_none() => {
+                    probe = Some(attr.parse_args::<Expr>()?);
+                }
+                Meta::NameValue(nv) if nv.path.is_ident("c_name") && c_name.is_none() => {
+                    let lit = match &nv.value {
+                        Expr::Lit(syn::ExprLit {
+                            lit: syn::Lit::Str(lit),
+                            ..
+                        }) => lit.clone(),
+                        value => {
+                            return Err(syn::Error::new_spanned(
+                                value,
+                                "expected a string, `#[c_name = \"Name\"]`",
+                            ));
+                        }
+                    };
+                    let value = lit.value();
+                    let mut chars = value.chars();
+                    let valid = chars
+                        .next()
+                        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+                        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_');
+                    if !valid {
+                        return Err(syn::Error::new_spanned(lit, "not a C identifier"));
+                    }
+                    c_name = Some(lit);
+                }
+                _ => {
+                    return Err(syn::Error::new_spanned(
+                        attr,
+                        "expected a single `#[probe(<const constructor>)]` and optionally `#[c_name = \"Name\"]`",
+                    ));
+                }
             }
-            probe = Some(attr.parse_args::<Expr>()?);
         }
         let target: Type = input.parse()?;
         input.parse::<Token![as]>()?;
@@ -61,6 +91,7 @@ impl Parse for Overlay {
         let probe = probe.ok_or_else(|| {
             syn::Error::new_spanned(&target, "`#[probe(<const constructor>)]` is required")
         })?;
+        let c_name = c_name.unwrap_or_else(|| LitStr::new(&name.to_string(), name.span()));
         let content;
         braced!(content in input);
         let fields = content
@@ -69,6 +100,7 @@ impl Parse for Overlay {
             .collect();
         Ok(Self {
             probe,
+            c_name,
             target,
             name,
             fields,
@@ -160,6 +192,7 @@ impl Overlay {
             target,
             name,
             fields,
+            ..
         } = self;
         let target_str = pretty(target);
         let field_ty = |ty: &Type| quote!(<#ty as #ffi::FfiField>::Overlay);
@@ -270,6 +303,57 @@ impl Overlay {
             "C overlay of `{target_str}`, generated and checked by `unsafe_c_overlay!`."
         ));
 
+        // C declarations, concatenated at compile time from the field types' C names and the Rust layout
+        let c_name = &self.c_name;
+        let c_name_str = c_name.value();
+        let body: Vec<TokenStream> = fields
+            .iter()
+            .flat_map(|Field { ident, kind }| {
+                let field = lit(ident.to_string());
+                match kind {
+                    Kind::Pad { len } => vec![
+                        quote!(" uint8_t "),
+                        quote!(#field),
+                        quote!("["),
+                        quote!((#len) as usize),
+                        quote!("];"),
+                    ],
+                    Kind::Data { ty, .. } => vec![
+                        quote!(" "),
+                        quote!(<#ty as #ffi::FfiField>::C_DECL.name),
+                        quote!(" "),
+                        quote!(#field),
+                        quote!(";"),
+                    ],
+                }
+            })
+            .collect();
+        let offset_asserts: Vec<TokenStream> = fields
+            .iter()
+            .filter(|f| matches!(f.kind, Kind::Data { .. }))
+            .flat_map(|Field { ident, .. }| {
+                let open = lit(format!(
+                    "_Static_assert(offsetof({c_name_str}, {ident}) == "
+                ));
+                let close = lit(format!(", \"{c_name_str}.{ident} offset\");\n"));
+                vec![
+                    quote!(#open),
+                    quote!(#p::offset_of!(#name, #ident)),
+                    quote!(#close),
+                ]
+            })
+            .collect();
+        let size_open = lit(format!("_Static_assert(sizeof({c_name_str}) == "));
+        let size_close = lit(format!(", \"{c_name_str} size\");\n"));
+        let align_open = lit(format!("_Static_assert(_Alignof({c_name_str}) == "));
+        let align_close = lit(format!(", \"{c_name_str} align\");\n"));
+        let deps = fields.iter().filter_map(|Field { kind, .. }| match kind {
+            Kind::Data { ty, .. } => {
+                Some(quote!((|| <#ty as #ffi::FfiField>::C_DECL) as fn() -> #ffi::CDecl))
+            }
+            Kind::Pad { .. } => None,
+        });
+
         quote! {
             #[doc = #overlay_doc]
             #[repr(C)]
@@ -300,6 +384,23 @@ impl Overlay {
                         mask
                     }
                     init_mask()
+                };
+                const C_DECL: #ffi::CDecl = #ffi::CDecl {
+                    name: #c_name,
+                    cdef: #p::concatcp!(
+                        "typedef struct __attribute__((aligned(", #p::align_of::<#name>(), "))) ", #c_name, " {",
+                        #(#body,)*
+                        " } ", #c_name, ";\n"
+                    ),
+                    header: #p::concatcp!(
+                        "typedef struct BMS_ALIGN(", #p::align_of::<#name>(), ") ", #c_name, " {",
+                        #(#body,)*
+                        " } ", #c_name, ";\n",
+                        #size_open, #p::size_of::<#name>(), #size_close,
+                        #align_open, #p::align_of::<#name>(), #align_close,
+                        #(#offset_asserts),*
+                    ),
+                    deps: &[#(#deps),*],
                 };
             }
 
