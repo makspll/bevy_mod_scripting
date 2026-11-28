@@ -1,0 +1,7 @@
+error[E0080]: evaluation panicked: probe value for `x` has a zero byte, use a value with every byte non-zero
+ --> tests/ui/fail/zero_byte_probe.rs:8:22
+  |
+8 |     foreign::Vec3 as Vec3C {
+  |                      ^^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

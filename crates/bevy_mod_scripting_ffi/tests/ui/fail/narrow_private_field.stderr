@@ -1,0 +1,7 @@
+error[E0080]: evaluation panicked: probe failed: `HandleC::id` expected `0x0102`
+ --> tests/ui/fail/narrow_private_field.rs:9:24
+  |
+9 |     foreign::Handle as HandleC {
+  |                        ^^^^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

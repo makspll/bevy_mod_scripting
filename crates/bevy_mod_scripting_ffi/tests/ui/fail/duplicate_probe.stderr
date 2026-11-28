@@ -1,0 +1,15 @@
+error[E0080]: evaluation panicked: probe value for `y` also occurs elsewhere in the probe, use a value whose bytes appear nowhere else
+ --> tests/ui/fail/duplicate_probe.rs:8:22
+  |
+8 |     foreign::Vec3 as Vec3C {
+  |                      ^^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0080]: evaluation panicked: probe value for `a` also occurs elsewhere in the probe, use a value whose bytes appear nowhere else
+  --> tests/ui/fail/duplicate_probe.rs:17:23
+   |
+17 |     foreign::Mixed as MixedC {
+   |                       ^^^^^^ evaluation of `_` failed here
+   |
+   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -1,0 +1,27 @@
+error[E0080]: reading memory at alloc1328[0x0..0x1], but memory is uninitialized at [0x0..0x1], and this operation requires initialized memory
+ --> tests/ui/fail/real_padding_as_field.rs:8:21
+  |
+8 |     foreign::Foo as FooC {
+  |                     ^^^^ evaluation of `_` failed inside this call
+  |
+  = note: the raw bytes of the constant (size: 1, align: 1) {
+              __                                              │ ░
+          }
+note: inside `layout::masked_eq`
+ --> src/layout.rs
+  |
+  |         if mask[i] && unsafe { image[at + i].assume_init() != value[i].assume_init() } {
+  |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the failure occurred here
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0609]: no field `p` on type `&Foo`
+  --> tests/ui/fail/real_padding_as_field.rs:10:25
+   |
+10 |         #[probe = 0x22] p: u8,
+   |                         ^ unknown field
+   |
+help: a field with a similar name exists
+   |
+10 -         #[probe = 0x22] p: u8,
+10 +         #[probe = 0x22] a: u8,
+   |

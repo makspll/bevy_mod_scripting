@@ -1,0 +1,219 @@
+//! Compile-time verified `#[repr(C)]` overlays over foreign Rust types.
+//!
+//! An overlay is a C-compatible mirror of a type we don't control (e.g. `glam::Vec3`), which scripts can
+//! read directly (e.g. through a LuaJIT `ffi.cdef`). Only types made of C scalars (and other overlays) are supported;
+//! everything else goes through reflection.
+//!
+//! ```rust
+//! # mod foreign {
+//! #     #[repr(C)] #[derive(Clone, Copy)] pub struct Vec3 { pub x: f32, pub y: f32, pub z: f32 }
+//! #     impl Vec3 { pub const fn new(x: f32, y: f32, z: f32) -> Self { Self { x, y, z } } }
+//! # }
+//! use bevy_mod_scripting_ffi::{unsafe_c_overlay, FfiField};
+//!
+//! unsafe_c_overlay! {
+//!     // SAFETY: Vec3 is three f32s at 0/4/8
+//!     #[probe(foreign::Vec3::new(1.1, 2.2, 3.3))]
+//!     foreign::Vec3 as Vec3C {
+//!         #[probe = 1.1] x: f32,
+//!         #[probe = 2.2] y: f32,
+//!         #[probe = 3.3] z: f32,
+//!     }
+//! }
+//!
+//! // the overlay is a C struct with the same bytes as the real type
+//! let c: <foreign::Vec3 as FfiField>::Overlay = unsafe { core::mem::transmute(foreign::Vec3::new(1.0, 2.0, 3.0)) };
+//! assert_eq!((c.x, c.y, c.z), (1.0, 2.0, 3.0));
+//! ```
+//!
+//! # C declarations
+//!
+//! Every overlay carries its C declaration in [`FfiField::C_DECL`], named after the overlay (or `#[c_name = "Name"]`
+//! next to `#[probe(..)]`). [`cdef`] gives the LuaJIT `ffi.cdef` for a set of overlays, field types first and each once:
+//! ```text
+//! typedef struct __attribute__((aligned(16))) Vec3AC { float x; float y; float z; float _w; } Vec3AC;
+//! ```
+//! [`c_header`] gives a C11 header with `_Static_assert`s of the Rust layout, compiled and round-tripped through real C
+//! by `bevy_mod_scripting_ffi_c_tests` (UBSan and valgrind in CI). Overlays cross the boundary by pointer only.
+//!
+//! # Safety contract
+//!
+//! By invoking `unsafe_c_overlay!` you promise:
+//! 1. every declared field lives inside the bytes of the type, at the offset implied by declaration order, with the declared type
+//!    (the type check sees through `Deref`, a wrapper like `NotNan<f32>` declared as `f32` is yours to rule out)
+//! 2. `#[pad]` bytes are real padding, or valid for any byte value (scripts zero and copy them)
+//! 3. `#[probe = _]` fields are valid for any value of the type
+//! 4. `#[opaque]` fields accept every value of their declared type (scripts can write them)
+//!
+//! Everything else is checked at compile time:
+//!
+//! | Rule | Check |
+//! |---|---|
+//! | field types are C scalars or overlays | `F: FfiField` |
+//! | fields aligned, no overlap, all bytes covered, align matches | const layout builder |
+//! | fields have the declared type | `let _: &F = &value.field` (works through `Deref`, so it catches mistakes, not `Deref` wrappers), skipped for `#[opaque]` fields (private or unnamed) |
+//! | overlay alignment equals the real type's | `align_of::<Overlay>() == align_of::<T>()`, so overlays made outside Rust (e.g. `ffi.new`) can be read as `T` |
+//! | offsets and sizes match the real type | probe: transmute the probe value into the overlay, compare each field's bytes |
+//! | probes are strong | every byte of every probe value is non-zero, and its bytes occur exactly once in the probed type (fields probed with `_` aside) |
+//! | every field is probed | `#[probe(..)]` on the type, `#[probe = ..]` (or `_`) on each non-pad field |
+//!
+//! Types whose fields can't all be told apart by one value (a `bool` has a single non-zero value) take several
+//! `#[probe(..)]` constructors, and each field one value per probe, `#[probe(v0, v1, ..)]`. Then every byte must be
+//! non-zero in at least one probe, and every field's bytes must occur exactly once in at least one probe:
+//! ```text
+//! #[probe(glam::BVec2::new(true, false))]
+//! #[probe(glam::BVec2::new(false, true))]
+//! glam::BVec2 as BVec2C {
+//!     #[probe(true, false)] x: bool,
+//!     #[probe(false, true)] y: bool,
+//! }
+//! ```
+//! Padding whose size depends on the target or features is a const expression, e.g.
+//! `#[pad] _p0: [u8; size_of::<glam::Affine2>() - size_of::<glam::Mat2>() - size_of::<glam::Vec2>()]`.
+//!
+//! Fields in the wrong order fail the probe:
+//! ```compile_fail
+//! # mod foreign {
+//! #     #[repr(C)] #[derive(Clone, Copy)] pub struct Vec3 { pub x: f32, pub y: f32, pub z: f32 }
+//! #     impl Vec3 { pub const fn new(x: f32, y: f32, z: f32) -> Self { Self { x, y, z } } }
+//! # }
+//! # use bevy_mod_scripting_ffi::unsafe_c_overlay;
+//! unsafe_c_overlay! {
+//!     #[probe(foreign::Vec3::new(1.1, 2.2, 3.3))]
+//!     foreign::Vec3 as Vec3C {
+//!         #[probe = 1.1] x: f32,
+//!         #[probe = 3.3] z: f32,
+//!         #[probe = 2.2] y: f32,
+//!     }
+//! }
+//! ```
+//!
+//! Undeclared padding fails the layout check:
+//! ```compile_fail
+//! # mod foreign {
+//! #     #[repr(C)] #[derive(Clone, Copy)] pub struct Foo { pub a: u8, pub b: u32 }
+//! #     impl Foo { pub const fn new(a: u8, b: u32) -> Self { Self { a, b } } }
+//! # }
+//! # use bevy_mod_scripting_ffi::unsafe_c_overlay;
+//! unsafe_c_overlay! {
+//!     #[probe(foreign::Foo::new(0x11, 0x2233_4455))]
+//!     foreign::Foo as FooC {
+//!         #[probe = 0x11] a: u8,
+//!         #[probe = 0x2233_4455] b: u32,
+//!     }
+//! }
+//! ```
+//!
+//! A too-narrow private field hidden by padding fails the probe, because probe values have no zero bytes:
+//! ```compile_fail
+//! # mod foreign {
+//! #     #[repr(C)] #[derive(Clone, Copy)] pub struct Handle { id: u32, generation: u32 }
+//! #     impl Handle { pub const fn new(id: u32, generation: u32) -> Self { Self { id, generation } } }
+//! # }
+//! # use bevy_mod_scripting_ffi::unsafe_c_overlay;
+//! unsafe_c_overlay! {
+//!     #[probe(foreign::Handle::new(0x0102_0304, 0x0506_0708))]
+//!     foreign::Handle as HandleC {
+//!         #[opaque] #[probe = 0x0102] id: u16,
+//!         #[pad] _p: [u8; 2],
+//!         #[opaque] #[probe = 0x0506_0708] generation: u32,
+//!     }
+//! }
+//! ```
+//!
+//! Probe values with a zero byte are rejected (`1.0f32` is `0x3F800000`):
+//! ```compile_fail
+//! # mod foreign {
+//! #     #[repr(C)] #[derive(Clone, Copy)] pub struct Vec3 { pub x: f32, pub y: f32, pub z: f32 }
+//! #     impl Vec3 { pub const fn new(x: f32, y: f32, z: f32) -> Self { Self { x, y, z } } }
+//! # }
+//! # use bevy_mod_scripting_ffi::unsafe_c_overlay;
+//! unsafe_c_overlay! {
+//!     #[probe(foreign::Vec3::new(1.0, 2.2, 3.3))]
+//!     foreign::Vec3 as Vec3C {
+//!         #[probe = 1.0] x: f32,
+//!         #[probe = 2.2] y: f32,
+//!         #[probe = 3.3] z: f32,
+//!     }
+//! }
+//! ```
+//!
+//! Fields must be C scalars or overlays:
+//! ```compile_fail
+//! # mod foreign {
+//! #     #[derive(Clone)] pub struct Named { pub name: String }
+//! #     impl Named { pub const fn new() -> Self { Self { name: String::new() } } }
+//! # }
+//! # use bevy_mod_scripting_ffi::unsafe_c_overlay;
+//! unsafe_c_overlay! {
+//!     #[probe(foreign::Named::new())]
+//!     foreign::Named as NamedC {
+//!         #[probe = _] name: String,
+//!     }
+//! }
+//! ```
+
+// lets `unsafe_c_overlay!` output (which names `::bevy_mod_scripting_ffi`) work inside this crate
+extern crate self as bevy_mod_scripting_ffi;
+
+mod cdef;
+mod impls;
+pub mod layout;
+
+pub use bevy_mod_scripting_derive::unsafe_c_overlay;
+pub use cdef::{CDecl, CNameConflict, c_header, cdef};
+
+/// Helpers used by `unsafe_c_overlay!` output.
+#[doc(hidden)]
+pub mod __private {
+    pub use crate::layout::{Expected, Field, Layout, Probe};
+    pub use const_format::concatcp;
+    pub use core::mem::{ManuallyDrop, MaybeUninit, align_of, offset_of, size_of};
+
+    /// The bytes of `value`, possibly uninitialized.
+    pub const fn bytes<T>(value: &T) -> &[MaybeUninit<u8>] {
+        // SAFETY: any initialized `T` is readable as `size_of::<T>()` possibly-uninitialized bytes
+        unsafe {
+            core::slice::from_raw_parts(
+                (value as *const T).cast::<MaybeUninit<u8>>(),
+                size_of::<T>(),
+            )
+        }
+    }
+}
+
+/// A type usable as an overlay field: a C scalar, or a foreign type with a generated overlay.
+///
+/// # Safety
+/// `Overlay` is a `#[repr(C)]` mirror of `Self` with the same size and alignment, and `INIT_MASK` has one entry per byte,
+/// `true` exactly where every value of `Self` has an initialized byte, and `C_DECL` declares `Overlay` in C.
+/// Every `Self` is a valid `Overlay`, and every `Overlay` is a valid `Self` (overlays are written by scripts).
+/// Implemented here for scalars and by `unsafe_c_overlay!`.
+pub unsafe trait FfiField {
+    /// The `#[repr(C)]` mirror (`Self` for scalars).
+    type Overlay: Copy;
+    /// Per-byte initialized mask, `false` over padding.
+    const INIT_MASK: &'static [bool];
+    /// The C declaration of `Overlay`.
+    const C_DECL: CDecl;
+}
+
+macro_rules! impl_scalar_field {
+    ($($ty:ty => $c:literal),*) => {$(
+        // SAFETY: C scalars have no padding, every byte is initialized
+        unsafe impl FfiField for $ty {
+            type Overlay = $ty;
+            const INIT_MASK: &'static [bool] = &[true; size_of::<$ty>()];
+            const C_DECL: CDecl = CDecl { name: $c, cdef: "", header: "", deps: &[] };
+        }
+    )*};
+}
+
+impl_scalar_field!(
+    u8 => "uint8_t", u16 => "uint16_t", u32 => "uint32_t", u64 => "uint64_t",
+    i8 => "int8_t", i16 => "int16_t", i32 => "int32_t", i64 => "int64_t",
+    f32 => "float", f64 => "double",
+    // Rust guarantees `usize` is pointer sized, and `bool` is ABI compatible with C's `_Bool` (1 byte, 0 or 1).
+    // C and LuaJIT convert every value stored through a `bool` field to 0 or 1, so typed writes stay valid
+    usize => "uintptr_t", isize => "intptr_t", bool => "bool"
+);

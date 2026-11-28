@@ -1,0 +1,5 @@
+error: `b` has 2 probe values, but there are 3 probes
+  --> tests/ui/fail/probe_count_mismatch.rs:12:9
+   |
+12 |         #[probe(false, true)] b: bool,
+   |         ^

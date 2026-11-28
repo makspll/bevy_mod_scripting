@@ -1,0 +1,24 @@
+[package]
+name = "bevy_mod_scripting_ffi"
+description = "Compile-time verified C overlays over foreign Rust types, for direct script access"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[dependencies]
+bevy_mod_scripting_derive = { workspace = true }
+const_format = { workspace = true }
+const_panic = { workspace = true }
+glam = { workspace = true, features = ["std", "all-types"] }
+
+[dev-dependencies]
+trybuild = { workspace = true }
+
+[lints]
+workspace = true

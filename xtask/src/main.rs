@@ -217,6 +217,9 @@ impl App {
             Xtasks::Miri => {
                 cmd.arg("miri");
             }
+            Xtasks::Ffi => {
+                cmd.arg("ffi");
+            }
             Xtasks::BencherSyncPlots => {
                 cmd.arg("bencher-sync-plots");
             }
@@ -606,6 +609,10 @@ enum Xtasks {
     /// Runs the tests of the unsafe native value paths (typed calls, native storage) under Miri, with a nightly toolchain
     /// (installing the `miri` component). Lua is C, so only the language agnostic and Rune paths can run under Miri.
     Miri,
+    /// Checks the FFI overlays: runs their C round trips (`bevy_mod_scripting_ffi_c_tests`) under valgrind memcheck,
+    /// which sees both the Rust and the C side, and the overlay tests with glam's `scalar-math` layouts. Linux only,
+    /// installs valgrind with apt in CI.
+    Ffi,
     /// Renames benchmarks on bencher.dev as listed in `benches/bencher_renames.txt`, so their history follows them.
     ///
     /// Only renames which are still needed are done: the old name exists and the new one doesn't yet, or has
@@ -790,6 +797,7 @@ impl Xtasks {
                                 | Xtasks::Docs { .. }
                                 | Xtasks::CheckLuaTypes { .. }
                                 | Xtasks::Miri
+                                | Xtasks::Ffi
                         );
 
                         if !os.is_main_os() && step_should_run_on_main_os {
@@ -813,6 +821,7 @@ impl Xtasks {
             Xtasks::BencherMigrate { dry_run } => Self::bencher_migrate(&app_settings, dry_run),
             Xtasks::BencherSyncPlots => Self::synch_bencher_graphs(),
             Xtasks::Miri => Self::miri(&app_settings),
+            Xtasks::Ffi => Self::ffi(&app_settings),
             Xtasks::Bench {
                 name,
                 enable_profiling,
@@ -1449,7 +1458,88 @@ impl Xtasks {
                 "--lib",
                 "native::",
             ],
+        )?;
+        // the overlay tests: reading foreign types through their C overlays and back
+        run(
+            "cargo",
+            &[
+                "+nightly",
+                "miri",
+                "test",
+                "-p",
+                "bevy_mod_scripting_ffi",
+                "--lib",
+                "--test",
+                "overlay",
+            ],
         )
+    }
+
+    /// See [`Xtasks::Ffi`].
+    fn ffi(app_settings: &GlobalArgs) -> Result<()> {
+        if !cfg!(target_os = "linux") {
+            bail!("valgrind only runs on Linux");
+        }
+        let workspace_dir = workspace_dir(app_settings)?;
+        let installed = Command::new("valgrind")
+            .arg("--version")
+            .output()
+            .is_ok_and(|o| o.status.success());
+        if !installed {
+            if std::env::var_os("CI").is_none() {
+                bail!("valgrind is not installed");
+            }
+            let status = Command::new("sudo")
+                .args([
+                    "apt-get",
+                    "install",
+                    "-y",
+                    "--no-install-recommends",
+                    "valgrind",
+                ])
+                .status()
+                .context("Could not install valgrind")?;
+            if !status.success() {
+                bail!("Installing valgrind failed: {status}");
+            }
+        }
+
+        // cargo runs the test binary through valgrind; errors (invalid accesses, uses of uninitialized bytes, definite
+        // leaks) fail the run
+        let args = ["test", "-p", "bevy_mod_scripting_ffi_c_tests"];
+        log::info!("Running cargo {} under valgrind", args.join(" "));
+        let status = Command::new("cargo")
+            .args(args)
+            .env(
+                "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER",
+                "valgrind --error-exitcode=1 --leak-check=full --errors-for-leak-kinds=definite -q",
+            )
+            .current_dir(&workspace_dir)
+            .status()
+            .context("Could not run cargo test")?;
+        if !status.success() {
+            bail!("cargo test under valgrind failed: {status}");
+        }
+
+        // glam's `scalar-math` changes the alignment of some types (and so their padding), which every overlay must
+        // still match. Only the Rust side: the blessed C header holds the default layouts
+        let args = [
+            "test",
+            "-p",
+            "bevy_mod_scripting_ffi",
+            "--features",
+            "glam/scalar-math",
+        ];
+        log::info!("Running cargo {}", args.join(" "));
+        let status = Command::new("cargo")
+            .args(args)
+            .current_dir(&workspace_dir)
+            .status()
+            .context("Could not run cargo test")?;
+        if !status.success() {
+            bail!("cargo test with glam's scalar-math failed: {status}");
+        }
+        Ok(())
     }
 
     const BENCHER_MAIN_BRANCH: &str = "1d70a4e3-d416-43fc-91bd-4b1c8f9e9580";
@@ -2134,6 +2224,12 @@ impl Xtasks {
         output.push(App {
             global_args: default_args.clone(),
             subcmd: Xtasks::Miri,
+        });
+
+        // the FFI overlays round tripping through real C, under valgrind
+        output.push(App {
+            global_args: default_args.clone(),
+            subcmd: Xtasks::Ffi,
         });
 
         // benchmarks publish to bencher, so they only run for the full matrix. Pull requests run them on demand,

@@ -1,0 +1,7 @@
+error[E0080]: evaluation panicked: probe failed: `FlagsC::b` expected `false` in probe 0
+  --> tests/ui/fail/bool_swapped_fields.rs:11:23
+   |
+11 |     foreign::Flags as FlagsC {
+   |                       ^^^^^^ evaluation of `_` failed here
+   |
+   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

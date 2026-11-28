@@ -1,0 +1,281 @@
+error[E0204]: the trait `Copy` cannot be implemented for this type
+  --> tests/ui/fail/non_ffi_field.rs:8:23
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Named::new())]
+ 8 | |     foreign::Named as NamedC {
+   | |                       ^^^^^^
+ 9 | |         #[probe = _] name: String,
+10 | |     }
+11 | | }
+   | |_- this field does not implement `Copy`
+   |
+note: the `Copy` impl for `[foreign::Named; 0]` requires that `foreign::Named: Copy`
+  --> tests/ui/fail/non_ffi_field.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Named::new())]
+ 8 | |     foreign::Named as NamedC {
+ 9 | |         #[probe = _] name: String,
+10 | |     }
+11 | | }
+   | |_^
+   = note: this error originates in the derive macro `Copy` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied
+  --> tests/ui/fail/non_ffi_field.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Named::new())]
+ 8 | |     foreign::Named as NamedC {
+ 9 | |         #[probe = _] name: String,
+10 | |     }
+11 | | }
+   | |_^ the trait `FfiField` is not implemented for `String`
+   |
+   = help: the following other types implement trait `FfiField`:
+             bool
+             f32
+             f64
+             foreign::Named
+             glam::bool::bvec2::BVec2
+             glam::bool::bvec3::BVec3
+             glam::bool::bvec4::BVec4
+             glam::f32::affine2::Affine2
+           and $N others
+   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
+ --> tests/ui/fail/non_ffi_field.rs:8:23
+  |
+8 |     foreign::Named as NamedC {
+  |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
+  |
+  = help: the following other types implement trait `FfiField`:
+            bool
+            f32
+            f64
+            foreign::Named
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
+          and $N others
+note: required because it appears within the type `NamedC`
+ --> tests/ui/fail/non_ffi_field.rs:8:23
+  |
+8 |     foreign::Named as NamedC {
+  |                       ^^^^^^
+  = note: required for `NamedC` to implement `Clone`
+note: required by a bound in `TrivialClone`
+ --> $RUST/core/src/clone.rs
+  |
+  | pub const unsafe trait TrivialClone: [const] Clone {}
+  |                                      ^^^^^^^^^^^^^ required by this bound in `TrivialClone`
+  = note: this error originates in the derive macro `Clone` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
+ --> tests/ui/fail/non_ffi_field.rs:8:23
+  |
+8 |     foreign::Named as NamedC {
+  |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
+  |
+  = help: the following other types implement trait `FfiField`:
+            bool
+            f32
+            f64
+            foreign::Named
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
+          and $N others
+note: required because it appears within the type `NamedC`
+ --> tests/ui/fail/non_ffi_field.rs:8:23
+  |
+8 |     foreign::Named as NamedC {
+  |                       ^^^^^^
+note: required by a bound in `Clone`
+ --> $RUST/core/src/clone.rs
+  |
+  | pub const trait Clone: Sized {
+  |                        ^^^^^ required by this bound in `Clone`
+  = note: this error originates in the derive macro `Clone` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
+ --> tests/ui/fail/non_ffi_field.rs:8:23
+  |
+8 |     foreign::Named as NamedC {
+  |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
+  |
+  = help: the following other types implement trait `FfiField`:
+            bool
+            f32
+            f64
+            foreign::Named
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
+          and $N others
+note: required because it appears within the type `NamedC`
+ --> tests/ui/fail/non_ffi_field.rs:8:23
+  |
+8 |     foreign::Named as NamedC {
+  |                       ^^^^^^
+  = note: required for `<foreign::Named as FfiField>::Overlay` to implement `Copy`
+note: required by a bound in `bevy_mod_scripting_ffi::FfiField::Overlay`
+ --> src/lib.rs
+  |
+  |     type Overlay: Copy;
+  |                   ^^^^ required by this bound in `FfiField::Overlay`
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
+ --> tests/ui/fail/non_ffi_field.rs:8:23
+  |
+8 |     foreign::Named as NamedC {
+  |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
+  |
+  = help: the following other types implement trait `FfiField`:
+            bool
+            f32
+            f64
+            foreign::Named
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
+          and $N others
+note: required because it appears within the type `NamedC`
+ --> tests/ui/fail/non_ffi_field.rs:8:23
+  |
+8 |     foreign::Named as NamedC {
+  |                       ^^^^^^
+note: required by an implicit `Sized` bound in `std::mem::align_of`
+ --> $RUST/core/src/mem/mod.rs
+  |
+  | pub const fn align_of<T>() -> usize {
+  |                       ^ required by the implicit `Sized` requirement on this type parameter in `align_of`
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied
+ --> tests/ui/fail/non_ffi_field.rs:9:28
+  |
+9 |         #[probe = _] name: String,
+  |                            ^^^^^^ the trait `FfiField` is not implemented for `String`
+  |
+  = help: the following other types implement trait `FfiField`:
+            bool
+            f32
+            f64
+            foreign::Named
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
+          and $N others
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied
+  --> tests/ui/fail/non_ffi_field.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Named::new())]
+ 8 | |     foreign::Named as NamedC {
+ 9 | |         #[probe = _] name: String,
+10 | |     }
+11 | | }
+   | |_^ the trait `FfiField` is not implemented for `String`
+   |
+   = help: the following other types implement trait `FfiField`:
+             bool
+             f32
+             f64
+             foreign::Named
+             glam::bool::bvec2::BVec2
+             glam::bool::bvec3::BVec3
+             glam::bool::bvec4::BVec4
+             glam::f32::affine2::Affine2
+           and $N others
+   = note: this error originates in the macro `::bevy_mod_scripting_ffi::__private::offset_of` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
+  --> tests/ui/fail/non_ffi_field.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Named::new())]
+ 8 | |     foreign::Named as NamedC {
+ 9 | |         #[probe = _] name: String,
+10 | |     }
+11 | | }
+   | |_^ within `NamedC`, the trait `FfiField` is not implemented for `String`
+   |
+   = help: the following other types implement trait `FfiField`:
+             bool
+             f32
+             f64
+             foreign::Named
+             glam::bool::bvec2::BVec2
+             glam::bool::bvec3::BVec3
+             glam::bool::bvec4::BVec4
+             glam::f32::affine2::Affine2
+           and $N others
+note: required because it appears within the type `NamedC`
+  --> tests/ui/fail/non_ffi_field.rs:8:23
+   |
+ 8 |     foreign::Named as NamedC {
+   |                       ^^^^^^
+   = note: the return type of a function must have a statically known size
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
+  --> tests/ui/fail/non_ffi_field.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Named::new())]
+ 8 | |     foreign::Named as NamedC {
+ 9 | |         #[probe = _] name: String,
+10 | |     }
+11 | | }
+   | |_^ within `NamedC`, the trait `FfiField` is not implemented for `String`
+   |
+   = help: the following other types implement trait `FfiField`:
+             bool
+             f32
+             f64
+             foreign::Named
+             glam::bool::bvec2::BVec2
+             glam::bool::bvec3::BVec3
+             glam::bool::bvec4::BVec4
+             glam::f32::affine2::Affine2
+           and $N others
+note: required because it appears within the type `NamedC`
+  --> tests/ui/fail/non_ffi_field.rs:8:23
+   |
+ 8 |     foreign::Named as NamedC {
+   |                       ^^^^^^
+note: required by an implicit `Sized` bound in `std::mem::size_of`
+  --> $RUST/core/src/mem/mod.rs
+   |
+   | pub const fn size_of<T>() -> usize {
+   |                      ^ required by the implicit `Sized` requirement on this type parameter in `size_of`
+   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `String: FfiField` is not satisfied
+ --> tests/ui/fail/non_ffi_field.rs:9:28
+  |
+9 |         #[probe = _] name: String,
+  |                            ^^^^^^ the trait `FfiField` is not implemented for `String`
+  |
+  = help: the following other types implement trait `FfiField`:
+            bool
+            f32
+            f64
+            foreign::Named
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
+          and $N others
+note: required by a bound in `bevy_mod_scripting_ffi::layout::Field::data`
+ --> src/layout.rs
+  |
+  |     pub const fn data<T: FfiField>(name: &'static str, offset: usize) -> Self {
+  |                          ^^^^^^^^ required by this bound in `Field::data`

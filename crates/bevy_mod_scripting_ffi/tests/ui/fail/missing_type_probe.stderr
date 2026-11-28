@@ -1,0 +1,5 @@
+error: `#[probe(<const constructor>)]` is required
+ --> tests/ui/fail/missing_type_probe.rs:7:5
+  |
+7 |     foreign::Vec3 as Vec3C {
+  |     ^^^^^^^^^^^^^

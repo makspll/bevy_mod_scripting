@@ -1,0 +1,12 @@
+error[E0015]: cannot call non-const function `make` in constants
+  --> tests/ui/fail/non_const_probe.rs:11:13
+   |
+11 |     #[probe(make())]
+   |             ^^^^^^
+   |
+note: function `make` is not const
+  --> tests/ui/fail/non_const_probe.rs:6:1
+   |
+ 6 | fn make() -> foreign::Vec3 {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: calls in constants are limited to constant functions, tuple structs and tuple variants

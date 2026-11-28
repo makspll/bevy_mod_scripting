@@ -1,0 +1,7 @@
+error[E0080]: evaluation panicked: probe failed: `Vec3C::z` expected `3.3`
+ --> tests/ui/fail/swapped_fields.rs:8:22
+  |
+8 |     foreign::Vec3 as Vec3C {
+  |                      ^^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

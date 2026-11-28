@@ -1,0 +1,7 @@
+error[E0080]: evaluation panicked: the fields and pads of `Vec3AC` don't add up to the size of `foreign::Vec3A`
+ --> tests/ui/fail/missing_trailing_field.rs:8:23
+  |
+8 |     foreign::Vec3A as Vec3AC {
+  |                       ^^^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
