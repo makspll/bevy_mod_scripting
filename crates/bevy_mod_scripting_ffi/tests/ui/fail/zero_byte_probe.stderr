@@ -3,6 +3,8 @@ error[E0080]: evaluation panicked: probe value for `x` has a zero byte, use a va
   |
 9 |         #[probe = 1.0] x: f32,
   |                        ^ evaluation of `_::PROBES` failed here
+  |
+  = note: this error originates in the macro `$crate::panic::panic_2021` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 note: erroneous constant encountered
   --> tests/ui/fail/zero_byte_probe.rs:6:1

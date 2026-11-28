@@ -26,13 +26,11 @@ error[E0308]: mismatched types
  --> tests/ui/fail/wrong_leaf_type.rs:9:24
   |
 9 |         #[probe = 1.1] x: f64,
-  |                        ^-----
-  |                        |
-  |                        expected `&f64`, found `&f32`
-  |                        expected due to this
+  |                        ^ expected `&f64`, found `&f32`
   |
   = note: expected reference `&f64`
              found reference `&f32`
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0080]: constructing invalid value of type Vec3C: at .z, encountered uninitialized memory, but expected a floating point number
  --> tests/ui/fail/wrong_leaf_type.rs:6:1

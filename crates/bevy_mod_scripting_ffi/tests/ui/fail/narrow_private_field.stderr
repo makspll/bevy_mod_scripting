@@ -3,6 +3,8 @@ error[E0080]: evaluation panicked: probe failed: `HandleC::id` expected `0x0102`
    |
 10 |         #[opaque] #[probe = 0x0102] id: u16,
    |                                     ^^ evaluation of `_::PROBES` failed here
+   |
+   = note: this error originates in the macro `$crate::panic::panic_2021` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 note: erroneous constant encountered
   --> tests/ui/fail/narrow_private_field.rs:7:1

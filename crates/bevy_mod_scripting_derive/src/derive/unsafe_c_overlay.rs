@@ -20,7 +20,8 @@ use syn::{
 };
 
 struct Overlay {
-    probe: Expr,
+    /// The `#[probe(..)]` constructors, in order
+    probes: Vec<Expr>,
     /// The C type name, `#[c_name = ".."]` or the overlay's ident
     c_name: LitStr,
     target: Type,
@@ -33,25 +34,44 @@ struct Field {
     kind: Kind,
 }
 
+/// A field's probe values as written, resolved against the number of type-level probes after parsing.
+enum FieldProbe {
+    /// `#[probe = v]` or `#[probe = _]`
+    Single(Option<Expr>),
+    /// `#[probe(v0, v1, ..)]`, one value (or `_`) per type-level probe
+    List(Vec<Option<Expr>>, Span),
+}
+
+/// `_` means "not probed".
+fn probe_value(value: &Expr) -> Option<Expr> {
+    match value {
+        Expr::Infer(_) => None,
+        value => Some(value.clone()),
+    }
+}
+
 #[allow(clippy::large_enum_variant, reason = "parse-time only")]
 enum Kind {
     /// `#[pad] ident: [u8; len]`
     Pad { len: Expr },
-    /// A scalar or a type with an overlay. `probe` is `None` for `#[probe = _]`.
+    /// A scalar or a type with an overlay.
     Data {
         ty: Type,
-        probe: Option<Expr>,
+        /// as written, resolved into `probes` once the number of type-level probes is known
+        written: FieldProbe,
+        /// one expected value per type-level probe, `None` where the field isn't probed
+        probes: Vec<Option<Expr>>,
         opaque: bool,
     },
 }
 
 impl Parse for Overlay {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let (mut probe, mut c_name) = (None, None);
+        let (mut probes, mut c_name) = (Vec::new(), None);
         for attr in input.call(Attribute::parse_outer)? {
             match &attr.meta {
-                Meta::List(_) if attr.path().is_ident("probe") && probe.is_none() => {
-                    probe = Some(attr.parse_args::<Expr>()?);
+                Meta::List(_) if attr.path().is_ident("probe") => {
+                    probes.push(attr.parse_args::<Expr>()?);
                 }
                 Meta::NameValue(nv) if nv.path.is_ident("c_name") && c_name.is_none() => {
                     let lit = match &nv.value {
@@ -80,7 +100,7 @@ impl Parse for Overlay {
                 _ => {
                     return Err(syn::Error::new_spanned(
                         attr,
-                        "expected a single `#[probe(<const constructor>)]` and optionally `#[c_name = \"Name\"]`",
+                        "expected `#[probe(<const constructor>)]` (one or more) and optionally `#[c_name = \"Name\"]`",
                     ));
                 }
             }
@@ -88,18 +108,58 @@ impl Parse for Overlay {
         let target: Type = input.parse()?;
         input.parse::<Token![as]>()?;
         let name: Ident = input.parse()?;
-        let probe = probe.ok_or_else(|| {
-            syn::Error::new_spanned(&target, "`#[probe(<const constructor>)]` is required")
-        })?;
+        if probes.is_empty() {
+            return Err(syn::Error::new_spanned(
+                &target,
+                "`#[probe(<const constructor>)]` is required",
+            ));
+        }
         let c_name = c_name.unwrap_or_else(|| LitStr::new(&name.to_string(), name.span()));
         let content;
         braced!(content in input);
-        let fields = content
+        let mut fields: Vec<Field> = content
             .parse_terminated(Field::parse, Token![,])?
             .into_iter()
             .collect();
+
+        // one expected value per type-level probe
+        for Field { ident, kind } in &mut fields {
+            let Kind::Data {
+                written,
+                probes: resolved,
+                ..
+            } = kind
+            else {
+                continue;
+            };
+            *resolved = match written {
+                FieldProbe::Single(None) => vec![None; probes.len()],
+                FieldProbe::Single(Some(value)) if probes.len() == 1 => vec![Some(value.clone())],
+                FieldProbe::Single(Some(_)) => {
+                    return Err(syn::Error::new_spanned(
+                        &*ident,
+                        format!(
+                            "`{ident}` needs one value per probe, `#[probe(v0, .., v{})]`",
+                            probes.len() - 1
+                        ),
+                    ));
+                }
+                FieldProbe::List(values, _) if values.len() == probes.len() => values.clone(),
+                FieldProbe::List(values, span) => {
+                    return Err(syn::Error::new(
+                        *span,
+                        format!(
+                            "`{ident}` has {} probe values, but there are {} probes",
+                            values.len(),
+                            probes.len()
+                        ),
+                    ));
+                }
+            };
+        }
+
         Ok(Self {
-            probe,
+            probes,
             c_name,
             target,
             name,
@@ -121,15 +181,21 @@ impl Parse for Field {
                 Meta::Path(p) if p.is_ident("pad") => pad = true,
                 Meta::Path(p) if p.is_ident("opaque") => opaque = true,
                 Meta::NameValue(nv) if nv.path.is_ident("probe") => {
-                    probe = Some(match &nv.value {
-                        Expr::Infer(_) => None,
-                        value => Some(value.clone()),
-                    })
+                    probe = Some(FieldProbe::Single(probe_value(&nv.value)));
+                }
+                Meta::List(_) if attr.path().is_ident("probe") => {
+                    let values = attr.parse_args_with(
+                        syn::punctuated::Punctuated::<Expr, Token![,]>::parse_terminated,
+                    )?;
+                    probe = Some(FieldProbe::List(
+                        values.iter().map(probe_value).collect(),
+                        syn::spanned::Spanned::span(&attr),
+                    ));
                 }
                 _ => {
                     return Err(syn::Error::new_spanned(
                         attr,
-                        "expected `#[probe = <value>]`, `#[probe = _]`, `#[opaque]` or `#[pad]`",
+                        "expected `#[probe = <value>]`, `#[probe(<value per probe>, ..)]`, `#[probe = _]`, `#[opaque]` or `#[pad]`",
                     ));
                 }
             }
@@ -156,13 +222,18 @@ impl Parse for Field {
                 }
             }
         } else {
-            let probe = probe.ok_or_else(|| {
+            let written = probe.ok_or_else(|| {
                 syn::Error::new_spanned(
                     &ident,
                     format!("missing probe for `{ident}`, use `#[probe = _]` to skip"),
                 )
             })?;
-            Kind::Data { ty, probe, opaque }
+            Kind::Data {
+                ty,
+                written,
+                probes: Vec::new(),
+                opaque,
+            }
         };
         Ok(Self { ident, kind })
     }
@@ -179,6 +250,12 @@ fn lit(value: String) -> LitStr {
     LitStr::new(&value, Span::call_site())
 }
 
+/// Errors point at the field, names resolve at the call site (fields can come from a `macro_rules!` expansion, whose
+/// hygiene would hide the generated locals).
+fn at_field(span: Span) -> Span {
+    Span::call_site().located_at(span)
+}
+
 fn pretty(tokens: impl ToTokens) -> String {
     tokens.to_token_stream().to_string().replace(' ', "")
 }
@@ -188,7 +265,6 @@ impl Overlay {
         let ffi = quote!(::bevy_mod_scripting_ffi);
         let p = quote!(#ffi::__private);
         let Self {
-            probe,
             target,
             name,
             fields,
@@ -216,13 +292,13 @@ impl Overlay {
         });
 
         let layout_steps = fields.iter().map(|Field { ident, kind }| match kind {
-            Kind::Pad { len } => quote_spanned!(ident.span()=> at += #len;),
+            Kind::Pad { len } => quote_spanned!(at_field(ident.span())=> at += #len;),
             Kind::Data { ty, .. } => {
                 let ty = field_ty(ty);
                 let msg = lit(format!(
                     "`{name}::{ident}` is misaligned, declare the padding before it with `#[pad]`"
                 ));
-                quote_spanned! {ident.span()=>
+                quote_spanned! {at_field(ident.span())=>
                     ::core::assert!(at % #p::align_of::<#ty>() == 0, #msg);
                     at += #p::size_of::<#ty>();
                 }
@@ -240,62 +316,100 @@ impl Overlay {
             .filter_map(|Field { ident, kind }| match kind {
                 Kind::Data {
                     ty, opaque: false, ..
-                } => Some(quote_spanned!(ident.span()=> let _: &#ty = &value.#ident;)),
+                } => Some(quote_spanned!(at_field(ident.span())=> let _: &#ty = &value.#ident;)),
                 _ => None,
             });
 
-        // (ident, type, probe value const) of each probed field
+        // each probed field with its (probe index, expected value, const holding it)
+        let multi = self.probes.len() > 1;
+        let in_probe = |i: usize| {
+            if multi {
+                format!(" in probe {i}")
+            } else {
+                String::new()
+            }
+        };
         let probed: Vec<_> = fields
             .iter()
             .filter_map(|Field { ident, kind }| match kind {
-                Kind::Data {
-                    ty,
-                    probe: Some(value),
-                    ..
-                } => Some((
-                    ident,
-                    ty,
-                    value,
-                    format_ident!("__PROBE_{}", ident.to_string().to_uppercase()),
-                )),
+                Kind::Data { ty, probes, .. } if probes.iter().any(Option::is_some) => {
+                    let upper = ident.to_string().to_uppercase();
+                    let values: Vec<_> = probes
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(i, v)| {
+                            v.as_ref()
+                                .map(|v| (i, v, format_ident!("__PROBE_{}_{}", upper, i)))
+                        })
+                        .collect();
+                    Some((ident, ty, values))
+                }
                 _ => None,
             })
             .collect();
-        let probe_values = probed.iter().map(|(ident, ty, value, konst)| {
+        let probe_values = probed.iter().map(|(ident, ty, values)| {
             let mask = mask_of(ty);
-            let msg = lit(format!(
-                "probe value for `{ident}` has a zero byte, use a value with every byte non-zero"
-            ));
-            quote_spanned! {ident.span()=>
-                const #konst: #ty = #value;
-                ::core::assert!(#p::all_nonzero(#p::bytes(&#konst), #mask), #msg);
+            let msg = lit(if multi {
+                format!("probe values for `{ident}` have a byte that is zero in every probe, make every byte non-zero in at least one")
+            } else {
+                format!("probe value for `{ident}` has a zero byte, use a value with every byte non-zero")
+            });
+            let consts = values.iter().map(|(_, value, konst)| quote!(const #konst: #ty = #value;));
+            let bytes = values.iter().map(|(_, _, konst)| quote!(#p::bytes(&#konst)));
+            quote_spanned! {at_field(ident.span())=>
+                #(#consts)*
+                ::core::assert!(#p::nonzero_somewhere(&[#(#bytes),*], #mask), #msg);
             }
         });
         let (p_ref, mask_of_ref) = (&p, &mask_of);
-        let distinct = probed.iter().enumerate().flat_map(|(i, (a, a_ty, _, a_const))| {
-            probed[i + 1..].iter().map(move |(b, b_ty, _, b_const)| {
+        let distinct = probed.iter().enumerate().flat_map(|(i, (a, a_ty, a_values))| {
+            probed[i + 1..].iter().filter_map(move |(b, b_ty, b_values)| {
                 let (p, mask_of) = (p_ref, mask_of_ref);
                 let (a_mask, b_mask) = (mask_of(a_ty), mask_of(b_ty));
-                let msg = lit(format!("probe values for `{a}` and `{b}` are equal"));
-                quote_spanned! {b.span()=>
-                    ::core::assert!(
-                        !#p::same_value(#p::bytes(&#a_const), #a_mask, #p::bytes(&#b_const), #b_mask),
-                        #msg
-                    );
+                // equal in every probe both are probed in
+                let equal: Vec<_> = a_values
+                    .iter()
+                    .filter_map(|(ai, _, a_const)| {
+                        let (_, _, b_const) = b_values.iter().find(|(bi, ..)| bi == ai)?;
+                        Some(quote!(#p::same_value(#p::bytes(&#a_const), #a_mask, #p::bytes(&#b_const), #b_mask)))
+                    })
+                    .collect();
+                if equal.is_empty() {
+                    return None;
                 }
+                let msg = lit(if multi {
+                    format!("probe values for `{a}` and `{b}` are equal in every probe, make them differ in at least one")
+                } else {
+                    format!("probe values for `{a}` and `{b}` are equal")
+                });
+                Some(quote_spanned! {at_field(b.span())=>
+                    ::core::assert!(!(#(#equal)&&*), #msg);
+                })
             })
         });
-        let probe_checks = probed.iter().map(|(ident, ty, value, konst)| {
-            let mask = mask_of(ty);
-            let msg = lit(format!(
-                "probe failed: `{name}::{ident}` expected `{}`",
-                pretty(value)
-            ));
-            quote_spanned! {ident.span()=>
-                ::core::assert!(
-                    #p::masked_eq(#p::bytes(&__PROBED.#ident), #p::bytes(&#konst), #mask),
-                    #msg
-                );
+        let probe_checks = self.probes.iter().enumerate().map(|(i, probe)| {
+            let probed_const = format_ident!("__PROBED_{}", i);
+            let checks = probed.iter().filter_map(|(ident, ty, values)| {
+                let (_, value, konst) = values.iter().find(|(vi, ..)| *vi == i)?;
+                let mask = mask_of(ty);
+                let msg = lit(format!(
+                    "probe failed: `{name}::{ident}` expected `{}`{}",
+                    pretty(value),
+                    in_probe(i)
+                ));
+                Some(quote_spanned! {at_field(ident.span())=>
+                    ::core::assert!(
+                        #p::masked_eq(#p::bytes(&#probed_const.#ident), #p::bytes(&#konst), #mask),
+                        #msg
+                    );
+                })
+            });
+            quote! {
+                // SAFETY: the layout check above passed, the overlay covers exactly the bytes of the real type
+                const #probed_const: #name = unsafe {
+                    #p::ManuallyDrop::into_inner(Cast { real: #p::ManuallyDrop::new(#probe) }.overlay)
+                };
+                #(#checks)*
             }
         });
 
@@ -311,13 +425,14 @@ impl Overlay {
             .flat_map(|Field { ident, kind }| {
                 let field = lit(ident.to_string());
                 match kind {
-                    Kind::Pad { len } => vec![
-                        quote!(" uint8_t "),
-                        quote!(#field),
-                        quote!("["),
-                        quote!((#len) as usize),
-                        quote!("];"),
-                    ],
+                    // computed pads can be empty (e.g. depending on glam's `scalar-math`), C has no empty arrays
+                    Kind::Pad { len } => vec![quote! {
+                        if (#len) as usize == 0 {
+                            ""
+                        } else {
+                            #p::concatcp!(" uint8_t ", #field, "[", (#len) as usize, "];")
+                        }
+                    }],
                     Kind::Data { ty, .. } => vec![
                         quote!(" "),
                         quote!(<#ty as #ffi::FfiField>::C_DECL.name),
@@ -428,10 +543,6 @@ impl Overlay {
                     let () = LAYOUT;
                     #(#probe_values)*
                     #(#distinct)*
-                    // SAFETY: the layout check above passed, the overlay covers exactly the bytes of the real type
-                    const __PROBED: #name = unsafe {
-                        #p::ManuallyDrop::into_inner(Cast { real: #p::ManuallyDrop::new(#probe) }.overlay)
-                    };
                     #(#probe_checks)*
                 };
 

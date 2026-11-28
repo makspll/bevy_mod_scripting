@@ -34,14 +34,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied
    | |_^ the trait `FfiField` is not implemented for `String`
    |
    = help: the following other types implement trait `FfiField`:
+             bool
              f32
              f64
              foreign::Named
-             glam::f32::mat3::Mat3
-             glam::f32::sse2::vec3a::Vec3A
-             glam::f32::vec3::Vec3
-             i16
-             i32
+             glam::bool::bvec2::BVec2
+             glam::bool::bvec3::BVec3
+             glam::bool::bvec4::BVec4
+             glam::f32::affine2::Affine2
            and $N others
    = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
@@ -52,14 +52,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
   |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
   |
   = help: the following other types implement trait `FfiField`:
+            bool
             f32
             f64
             foreign::Named
-            glam::f32::mat3::Mat3
-            glam::f32::sse2::vec3a::Vec3A
-            glam::f32::vec3::Vec3
-            i16
-            i32
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
           and $N others
 note: required because it appears within the type `NamedC`
  --> tests/ui/fail/non_ffi_field.rs:8:23
@@ -81,14 +81,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
   |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
   |
   = help: the following other types implement trait `FfiField`:
+            bool
             f32
             f64
             foreign::Named
-            glam::f32::mat3::Mat3
-            glam::f32::sse2::vec3a::Vec3A
-            glam::f32::vec3::Vec3
-            i16
-            i32
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
           and $N others
 note: required because it appears within the type `NamedC`
  --> tests/ui/fail/non_ffi_field.rs:8:23
@@ -109,14 +109,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
   |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
   |
   = help: the following other types implement trait `FfiField`:
+            bool
             f32
             f64
             foreign::Named
-            glam::f32::mat3::Mat3
-            glam::f32::sse2::vec3a::Vec3A
-            glam::f32::vec3::Vec3
-            i16
-            i32
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
           and $N others
 note: required because it appears within the type `NamedC`
  --> tests/ui/fail/non_ffi_field.rs:8:23
@@ -137,14 +137,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
   |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
   |
   = help: the following other types implement trait `FfiField`:
+            bool
             f32
             f64
             foreign::Named
-            glam::f32::mat3::Mat3
-            glam::f32::sse2::vec3a::Vec3A
-            glam::f32::vec3::Vec3
-            i16
-            i32
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
           and $N others
 note: required because it appears within the type `NamedC`
  --> tests/ui/fail/non_ffi_field.rs:8:23
@@ -164,14 +164,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied
   |                            ^^^^^^ the trait `FfiField` is not implemented for `String`
   |
   = help: the following other types implement trait `FfiField`:
+            bool
             f32
             f64
             foreign::Named
-            glam::f32::mat3::Mat3
-            glam::f32::sse2::vec3a::Vec3A
-            glam::f32::vec3::Vec3
-            i16
-            i32
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
           and $N others
 
 error[E0277]: the trait bound `String: FfiField` is not satisfied
@@ -186,14 +186,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied
    | |_^ the trait `FfiField` is not implemented for `String`
    |
    = help: the following other types implement trait `FfiField`:
+             bool
              f32
              f64
              foreign::Named
-             glam::f32::mat3::Mat3
-             glam::f32::sse2::vec3a::Vec3A
-             glam::f32::vec3::Vec3
-             i16
-             i32
+             glam::bool::bvec2::BVec2
+             glam::bool::bvec3::BVec3
+             glam::bool::bvec4::BVec4
+             glam::f32::affine2::Affine2
            and $N others
    = note: this error originates in the macro `::bevy_mod_scripting_ffi::__private::offset_of` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
@@ -209,14 +209,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
    | |_^ within `NamedC`, the trait `FfiField` is not implemented for `String`
    |
    = help: the following other types implement trait `FfiField`:
+             bool
              f32
              f64
              foreign::Named
-             glam::f32::mat3::Mat3
-             glam::f32::sse2::vec3a::Vec3A
-             glam::f32::vec3::Vec3
-             i16
-             i32
+             glam::bool::bvec2::BVec2
+             glam::bool::bvec3::BVec3
+             glam::bool::bvec4::BVec4
+             glam::f32::affine2::Affine2
            and $N others
 note: required because it appears within the type `NamedC`
   --> tests/ui/fail/non_ffi_field.rs:8:23
@@ -237,14 +237,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
   |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
   |
   = help: the following other types implement trait `FfiField`:
+            bool
             f32
             f64
             foreign::Named
-            glam::f32::mat3::Mat3
-            glam::f32::sse2::vec3a::Vec3A
-            glam::f32::vec3::Vec3
-            i16
-            i32
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
           and $N others
 note: required because it appears within the type `NamedC`
  --> tests/ui/fail/non_ffi_field.rs:8:23
@@ -265,14 +265,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
    | |_^ within `NamedC`, the trait `FfiField` is not implemented for `String`
    |
    = help: the following other types implement trait `FfiField`:
+             bool
              f32
              f64
              foreign::Named
-             glam::f32::mat3::Mat3
-             glam::f32::sse2::vec3a::Vec3A
-             glam::f32::vec3::Vec3
-             i16
-             i32
+             glam::bool::bvec2::BVec2
+             glam::bool::bvec3::BVec3
+             glam::bool::bvec4::BVec4
+             glam::f32::affine2::Affine2
            and $N others
 note: required because it appears within the type `NamedC`
   --> tests/ui/fail/non_ffi_field.rs:8:23
@@ -288,14 +288,14 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
   |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
   |
   = help: the following other types implement trait `FfiField`:
+            bool
             f32
             f64
             foreign::Named
-            glam::f32::mat3::Mat3
-            glam::f32::sse2::vec3a::Vec3A
-            glam::f32::vec3::Vec3
-            i16
-            i32
+            glam::bool::bvec2::BVec2
+            glam::bool::bvec3::BVec3
+            glam::bool::bvec4::BVec4
+            glam::f32::affine2::Affine2
           and $N others
 note: required because it appears within the type `NamedC`
  --> tests/ui/fail/non_ffi_field.rs:8:23

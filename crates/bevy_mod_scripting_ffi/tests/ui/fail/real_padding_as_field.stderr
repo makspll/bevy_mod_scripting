@@ -13,12 +13,6 @@ error[E0080]: constructing invalid value of type FooC: at .p, encountered uninit
   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 note: erroneous constant encountered
- --> tests/ui/fail/real_padding_as_field.rs:9:25
-  |
-9 |         #[probe = 0x11] a: u8,
-  |                         ^
-
-note: erroneous constant encountered
   --> tests/ui/fail/real_padding_as_field.rs:6:1
    |
  6 | / unsafe_c_overlay! {

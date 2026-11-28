@@ -55,6 +55,20 @@
 //! | probes are strong | every byte of every probe value is non-zero, values are pairwise distinct |
 //! | every field is probed | `#[probe(..)]` on the type, `#[probe = ..]` (or `_`) on each non-pad field |
 //!
+//! Types whose fields can't all be told apart by one value (a `bool` has a single non-zero value) take several
+//! `#[probe(..)]` constructors, and each field one value per probe, `#[probe(v0, v1, ..)]`. Then every byte must be
+//! non-zero in at least one probe, and every two fields must differ in at least one probe:
+//! ```text
+//! #[probe(glam::BVec2::new(true, false))]
+//! #[probe(glam::BVec2::new(false, true))]
+//! glam::BVec2 as BVec2C {
+//!     #[probe(true, false)] x: bool,
+//!     #[probe(false, true)] y: bool,
+//! }
+//! ```
+//! Padding whose size depends on the target or features is a const expression, e.g.
+//! `#[pad] _p0: [u8; size_of::<glam::Affine2>() - size_of::<glam::Mat2>() - size_of::<glam::Vec2>()]`.
+//!
 //! Fields in the wrong order fail the probe:
 //! ```compile_fail
 //! # mod foreign {
@@ -176,12 +190,18 @@ pub mod __private {
         true
     }
 
-    /// Every byte where `mask` is true is non-zero.
-    pub const fn all_nonzero(a: &[MaybeUninit<u8>], mask: &[bool]) -> bool {
+    /// Every byte where `mask` is true is non-zero in at least one of `values` (all the same size).
+    pub const fn nonzero_somewhere(values: &[&[MaybeUninit<u8>]], mask: &[bool]) -> bool {
         let mut i = 0;
         while i < mask.len() {
-            // SAFETY: `mask` marks initialized bytes
-            if mask[i] && unsafe { a[i].assume_init() } == 0 {
+            let mut nonzero = !mask[i];
+            let mut v = 0;
+            while v < values.len() && !nonzero {
+                // SAFETY: `mask` marks initialized bytes
+                nonzero = unsafe { values[v][i].assume_init() } != 0;
+                v += 1;
+            }
+            if !nonzero {
                 return false;
             }
             i += 1;
@@ -251,5 +271,8 @@ macro_rules! impl_scalar_field {
 impl_scalar_field!(
     u8 => "uint8_t", u16 => "uint16_t", u32 => "uint32_t", u64 => "uint64_t",
     i8 => "int8_t", i16 => "int16_t", i32 => "int32_t", i64 => "int64_t",
-    f32 => "float", f64 => "double"
+    f32 => "float", f64 => "double",
+    // Rust guarantees `usize` is pointer sized, and `bool` is ABI compatible with C's `_Bool` (1 byte, 0 or 1).
+    // C and LuaJIT convert every value stored through a `bool` field to 0 or 1, so typed writes stay valid
+    usize => "uintptr_t", isize => "intptr_t", bool => "bool"
 );

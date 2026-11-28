@@ -217,8 +217,8 @@ impl App {
             Xtasks::Miri => {
                 cmd.arg("miri");
             }
-            Xtasks::Valgrind => {
-                cmd.arg("valgrind");
+            Xtasks::Ffi => {
+                cmd.arg("ffi");
             }
             Xtasks::BencherSyncPlots => {
                 cmd.arg("bencher-sync-plots");
@@ -609,9 +609,10 @@ enum Xtasks {
     /// Runs the tests of the unsafe native value paths (typed calls, native storage) under Miri, with a nightly toolchain
     /// (installing the `miri` component). Lua is C, so only the language agnostic and Rune paths can run under Miri.
     Miri,
-    /// Runs the C round trips of the FFI overlays (`bevy_mod_scripting_ffi_c_tests`) under valgrind memcheck, which
-    /// sees both the Rust and the C side. Linux only, installs valgrind with apt in CI.
-    Valgrind,
+    /// Checks the FFI overlays: runs their C round trips (`bevy_mod_scripting_ffi_c_tests`) under valgrind memcheck,
+    /// which sees both the Rust and the C side, and the overlay tests with glam's `scalar-math` layouts. Linux only,
+    /// installs valgrind with apt in CI.
+    Ffi,
     /// Renames benchmarks on bencher.dev as listed in `benches/bencher_renames.txt`, so their history follows them.
     ///
     /// Only renames which are still needed are done: the old name exists and the new one doesn't yet, or has
@@ -796,7 +797,7 @@ impl Xtasks {
                                 | Xtasks::Docs { .. }
                                 | Xtasks::CheckLuaTypes { .. }
                                 | Xtasks::Miri
-                                | Xtasks::Valgrind
+                                | Xtasks::Ffi
                         );
 
                         if !os.is_main_os() && step_should_run_on_main_os {
@@ -820,7 +821,7 @@ impl Xtasks {
             Xtasks::BencherMigrate { dry_run } => Self::bencher_migrate(&app_settings, dry_run),
             Xtasks::BencherSyncPlots => Self::synch_bencher_graphs(),
             Xtasks::Miri => Self::miri(&app_settings),
-            Xtasks::Valgrind => Self::valgrind(&app_settings),
+            Xtasks::Ffi => Self::ffi(&app_settings),
             Xtasks::Bench {
                 name,
                 enable_profiling,
@@ -1474,8 +1475,8 @@ impl Xtasks {
         )
     }
 
-    /// See [`Xtasks::Valgrind`].
-    fn valgrind(app_settings: &GlobalArgs) -> Result<()> {
+    /// See [`Xtasks::Ffi`].
+    fn ffi(app_settings: &GlobalArgs) -> Result<()> {
         if !cfg!(target_os = "linux") {
             bail!("valgrind only runs on Linux");
         }
@@ -1518,6 +1519,25 @@ impl Xtasks {
             .context("Could not run cargo test")?;
         if !status.success() {
             bail!("cargo test under valgrind failed: {status}");
+        }
+
+        // glam's `scalar-math` changes the alignment of some types (and so their padding), which every overlay must
+        // still match. Only the Rust side: the blessed C header holds the default layouts
+        let args = [
+            "test",
+            "-p",
+            "bevy_mod_scripting_ffi",
+            "--features",
+            "glam/scalar-math",
+        ];
+        log::info!("Running cargo {}", args.join(" "));
+        let status = Command::new("cargo")
+            .args(args)
+            .current_dir(&workspace_dir)
+            .status()
+            .context("Could not run cargo test")?;
+        if !status.success() {
+            bail!("cargo test with glam's scalar-math failed: {status}");
         }
         Ok(())
     }
@@ -2209,7 +2229,7 @@ impl Xtasks {
         // the FFI overlays round tripping through real C, under valgrind
         output.push(App {
             global_args: default_args.clone(),
-            subcmd: Xtasks::Valgrind,
+            subcmd: Xtasks::Ffi,
         });
 
         // benchmarks publish to bencher, so they only run for the full matrix. Pull requests run them on demand,

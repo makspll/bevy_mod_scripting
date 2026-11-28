@@ -106,6 +106,20 @@ impl Velocity {
     }
 }
 
+/// Bools: one non-zero value, so told apart by several probes.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Flags {
+    pub a: bool,
+    pub b: bool,
+    pub c: bool,
+}
+impl Flags {
+    pub const fn new(a: bool, b: bool, c: bool) -> Self {
+        Self { a, b, c }
+    }
+}
+
 #[derive(Clone)]
 pub struct Named {
     pub name: String,

@@ -38,3 +38,25 @@ Vec3AC *bms_ffi_vec3a_new(float x, float y, float z) {
 }
 
 void bms_ffi_vec3a_free(Vec3AC *v) { bms_aligned_free(v); }
+
+/* One representative per glam family, elements by flat index (the order of glam's `to_cols_array`). */
+#define BMS_ACCESS(T, E, N, ...)                                                                                \
+    static E *T##_element(T *v, int i) {                                                                        \
+        E *elements[N] = {__VA_ARGS__};                                                                         \
+        return elements[i];                                                                                     \
+    }                                                                                                           \
+    E bms_ffi_##T##_get(const T *v, int i) { return *T##_element((T *)v, i); }                                  \
+    void bms_ffi_##T##_set(T *v, int i, E value) { *T##_element(v, i) = value; }
+
+BMS_ACCESS(Vec4C, float, 4, &v->x, &v->y, &v->z, &v->w)
+BMS_ACCESS(QuatC, float, 4, &v->x, &v->y, &v->z, &v->w)
+BMS_ACCESS(Mat4C, float, 16, &v->x_axis.x, &v->x_axis.y, &v->x_axis.z, &v->x_axis.w, &v->y_axis.x, &v->y_axis.y,
+           &v->y_axis.z, &v->y_axis.w, &v->z_axis.x, &v->z_axis.y, &v->z_axis.z, &v->z_axis.w, &v->w_axis.x,
+           &v->w_axis.y, &v->w_axis.z, &v->w_axis.w)
+BMS_ACCESS(Affine2C, float, 6, &v->matrix2.x_axis.x, &v->matrix2.x_axis.y, &v->matrix2.y_axis.x,
+           &v->matrix2.y_axis.y, &v->translation.x, &v->translation.y)
+BMS_ACCESS(DVec3C, double, 3, &v->x, &v->y, &v->z)
+BMS_ACCESS(IVec3C, int32_t, 3, &v->x, &v->y, &v->z)
+BMS_ACCESS(U8Vec4C, uint8_t, 4, &v->x, &v->y, &v->z, &v->w)
+BMS_ACCESS(USizeVec2C, uintptr_t, 2, &v->x, &v->y)
+BMS_ACCESS(BVec3C, bool, 3, &v->x, &v->y, &v->z)

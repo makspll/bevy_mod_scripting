@@ -75,6 +75,17 @@ unsafe_c_overlay! {
     }
 }
 
+unsafe_c_overlay! {
+    #[probe(foreign::Flags::new(true, false, false))]
+    #[probe(foreign::Flags::new(false, true, false))]
+    #[probe(foreign::Flags::new(false, false, true))]
+    foreign::Flags as FlagsC {
+        #[probe(true, false, false)] a: bool,
+        #[probe(false, true, false)] b: bool,
+        #[probe(false, false, true)] c: bool,
+    }
+}
+
 /// Reads a real value through its overlay.
 fn view<T: FfiField>(value: &T) -> T::Overlay {
     // SAFETY: FfiField guarantees Overlay mirrors T
@@ -134,6 +145,10 @@ fn overlays_mirror_real_values() {
 
     let c: HandleC = view(&foreign::Handle::new(3, 4));
     assert_eq!((c.id, c.generation), (3, 4));
+
+    let c: FlagsC = view(&foreign::Flags::new(false, true, false));
+    assert_eq!((c.a, c.b, c.c), (false, true, false));
+    assert!(round_trip::<foreign::Flags>(c).b);
 }
 
 #[test]

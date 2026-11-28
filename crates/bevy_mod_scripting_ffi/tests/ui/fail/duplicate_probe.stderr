@@ -3,6 +3,8 @@ error[E0080]: evaluation panicked: probe values for `y` and `z` are equal
    |
 11 |         #[probe = 2.2] z: f32,
    |                        ^ evaluation of `_::PROBES` failed here
+   |
+   = note: this error originates in the macro `$crate::panic::panic_2021` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 note: erroneous constant encountered
   --> tests/ui/fail/duplicate_probe.rs:6:1
