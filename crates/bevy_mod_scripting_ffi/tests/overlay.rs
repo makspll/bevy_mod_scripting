@@ -74,9 +74,10 @@ unsafe_c_overlay! {
     }
 }
 
-fn view<T: FfiField>(value: &T) -> &T::Overlay {
+/// Reads a real value through its overlay.
+fn view<T: FfiField>(value: &T) -> T::Overlay {
     // SAFETY: FfiField guarantees Overlay mirrors T
-    unsafe { &*(value as *const T).cast::<T::Overlay>() }
+    unsafe { *(value as *const T).cast::<T::Overlay>() }
 }
 
 /// Reads an overlay value made outside Rust (like a script's `ffi.new`) back as the real type.
@@ -98,39 +99,39 @@ fn round_trip<T: FfiField + Copy>(overlay: T::Overlay) -> T {
 
 #[test]
 fn overlays_mirror_real_values() {
-    let c: &Vec3C = view(&foreign::Vec3::new(1.0, 2.0, 3.0));
+    let c: Vec3C = view(&foreign::Vec3::new(1.0, 2.0, 3.0));
     assert_eq!((c.x, c.y, c.z), (1.0, 2.0, 3.0));
-    assert_eq!(round_trip::<foreign::Vec3>(*c).y, 2.0);
+    assert_eq!(round_trip::<foreign::Vec3>(c).y, 2.0);
 
-    let c: &Vec3AC = view(&foreign::Vec3A::new(1.0, 2.0, 3.0));
+    let c: Vec3AC = view(&foreign::Vec3A::new(1.0, 2.0, 3.0));
     assert_eq!((c.x, c.y, c.z), (1.0, 2.0, 3.0));
-    assert_eq!(round_trip::<foreign::Vec3A>(*c).y, 2.0);
+    assert_eq!(round_trip::<foreign::Vec3A>(c).y, 2.0);
 
-    let c: &VelocityC = view(&foreign::Velocity::new(
+    let c: VelocityC = view(&foreign::Velocity::new(
         1.0,
         foreign::Vec3A::new(2.0, 3.0, 4.0),
     ));
     assert_eq!((c.speed, c.dir.z), (1.0, 4.0));
-    assert_eq!(round_trip::<foreign::Velocity>(*c).dir.x, 2.0);
+    assert_eq!(round_trip::<foreign::Velocity>(c).dir.x, 2.0);
 
     let m = foreign::Mat3::from_cols(
         foreign::Vec3::new(1.0, 2.0, 3.0),
         foreign::Vec3::new(4.0, 5.0, 6.0),
         foreign::Vec3::new(7.0, 8.0, 9.0),
     );
-    let c: &Mat3C = view(&m);
+    let c: Mat3C = view(&m);
     assert_eq!((c.x_axis.x, c.y_axis.y, c.z_axis.z), (1.0, 5.0, 9.0));
 
-    let c: &FooC = view(&foreign::Foo::new(7, 9));
+    let c: FooC = view(&foreign::Foo::new(7, 9));
     assert_eq!((c.a, c.b), (7, 9));
 
-    let c: &FooPairC = view(&foreign::FooPair::new(
+    let c: FooPairC = view(&foreign::FooPair::new(
         foreign::Foo::new(1, 2),
         foreign::Foo::new(3, 4),
     ));
     assert_eq!((c.first.a, c.second.b), (1, 4));
 
-    let c: &HandleC = view(&foreign::Handle::new(3, 4));
+    let c: HandleC = view(&foreign::Handle::new(3, 4));
     assert_eq!((c.id, c.generation), (3, 4));
 }
 

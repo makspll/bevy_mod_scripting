@@ -1,0 +1,23 @@
+error[E0080]: evaluation panicked: the fields and pads of `Vec3AC` don't add up to the size of `foreign::Vec3A`
+  --> tests/ui/fail/missing_trailing_field.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Vec3A::new(1.1, 2.2, 3.3))]
+ 8 | |     foreign::Vec3A as Vec3AC {
+ 9 | |         #[probe = 1.1] x: f32,
+...  |
+13 | | }
+   | |_^ evaluation of `_::LAYOUT` failed here
+
+note: erroneous constant encountered
+  --> tests/ui/fail/missing_trailing_field.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Vec3A::new(1.1, 2.2, 3.3))]
+ 8 | |     foreign::Vec3A as Vec3AC {
+ 9 | |         #[probe = 1.1] x: f32,
+...  |
+13 | | }
+   | |_^
+   |
+   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

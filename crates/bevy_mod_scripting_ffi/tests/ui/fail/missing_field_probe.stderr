@@ -1,0 +1,5 @@
+error: missing probe for `y`, use `#[probe = _]` to skip
+  --> tests/ui/fail/missing_field_probe.rs:10:9
+   |
+10 |         y: f32,
+   |         ^

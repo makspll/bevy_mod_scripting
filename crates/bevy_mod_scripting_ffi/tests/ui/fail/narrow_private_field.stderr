@@ -1,0 +1,18 @@
+error[E0080]: evaluation panicked: probe failed: `HandleC::id` expected `0x0102`
+  --> tests/ui/fail/narrow_private_field.rs:10:37
+   |
+10 |         #[opaque] #[probe = 0x0102] id: u16,
+   |                                     ^^ evaluation of `_::PROBES` failed here
+
+note: erroneous constant encountered
+  --> tests/ui/fail/narrow_private_field.rs:7:1
+   |
+ 7 | / unsafe_c_overlay! {
+ 8 | |     #[probe(foreign::Handle::new(0x0102_0304, 0x0506_0708))]
+ 9 | |     foreign::Handle as HandleC {
+10 | |         #[opaque] #[probe = 0x0102] id: u16,
+...  |
+14 | | }
+   | |_^
+   |
+   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

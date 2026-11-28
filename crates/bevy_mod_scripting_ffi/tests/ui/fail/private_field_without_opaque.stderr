@@ -1,0 +1,5 @@
+error[E0616]: field `id` of struct `Handle` is private
+ --> tests/ui/fail/private_field_without_opaque.rs:9:32
+  |
+9 |         #[probe = 0x0102_0304] id: u32,
+  |                                ^^ private field

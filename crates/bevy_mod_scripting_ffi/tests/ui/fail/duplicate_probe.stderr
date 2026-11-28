@@ -1,0 +1,18 @@
+error[E0080]: evaluation panicked: probe values for `y` and `z` are equal
+  --> tests/ui/fail/duplicate_probe.rs:11:24
+   |
+11 |         #[probe = 2.2] z: f32,
+   |                        ^ evaluation of `_::PROBES` failed here
+
+note: erroneous constant encountered
+  --> tests/ui/fail/duplicate_probe.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Vec3::new(1.1, 2.2, 2.2))]
+ 8 | |     foreign::Vec3 as Vec3C {
+ 9 | |         #[probe = 1.1] x: f32,
+...  |
+13 | | }
+   | |_^
+   |
+   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

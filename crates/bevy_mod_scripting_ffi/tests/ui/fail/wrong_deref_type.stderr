@@ -1,0 +1,30 @@
+error[E0080]: evaluation panicked: probe failed: `Vec3AC::y` expected `0x0102_0304`
+  --> tests/ui/fail/wrong_deref_type.rs:10:32
+   |
+10 |         #[probe = 0x0102_0304] y: u32,
+   |                                ^ evaluation of `_::PROBES` failed here
+
+note: erroneous constant encountered
+  --> tests/ui/fail/wrong_deref_type.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Vec3A::new(1.1, 2.2, 3.3))]
+ 8 | |     foreign::Vec3A as Vec3AC {
+ 9 | |         #[probe = 1.1] x: f32,
+...  |
+14 | | }
+   | |_^
+   |
+   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/wrong_deref_type.rs:10:32
+   |
+10 |         #[probe = 0x0102_0304] y: u32,
+   |                                ^-----
+   |                                |
+   |                                expected `&u32`, found `&f32`
+   |                                expected due to this
+   |
+   = note: expected reference `&u32`
+              found reference `&f32`

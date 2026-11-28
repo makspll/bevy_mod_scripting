@@ -1,0 +1,18 @@
+error[E0080]: evaluation panicked: probe value for `x` has a zero byte, use a value with every byte non-zero
+ --> tests/ui/fail/zero_byte_probe.rs:9:24
+  |
+9 |         #[probe = 1.0] x: f32,
+  |                        ^ evaluation of `_::PROBES` failed here
+
+note: erroneous constant encountered
+  --> tests/ui/fail/zero_byte_probe.rs:6:1
+   |
+ 6 | / unsafe_c_overlay! {
+ 7 | |     #[probe(foreign::Vec3::new(1.0, 2.2, 3.3))]
+ 8 | |     foreign::Vec3 as Vec3C {
+ 9 | |         #[probe = 1.0] x: f32,
+...  |
+13 | | }
+   | |_^
+   |
+   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

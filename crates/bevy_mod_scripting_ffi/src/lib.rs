@@ -21,7 +21,9 @@
 //!     }
 //! }
 //!
-//! let _: <foreign::Vec3 as FfiField>::Overlay = Vec3C { x: 1.0, y: 2.0, z: 3.0 };
+//! // the overlay is a C struct with the same bytes as the real type
+//! let c: <foreign::Vec3 as FfiField>::Overlay = unsafe { core::mem::transmute(foreign::Vec3::new(1.0, 2.0, 3.0)) };
+//! assert_eq!((c.x, c.y, c.z), (1.0, 2.0, 3.0));
 //! ```
 //!
 //! # Safety contract
@@ -125,9 +127,87 @@
 //! }
 //! ```
 
+// lets `unsafe_c_overlay!` output (which names `::bevy_mod_scripting_ffi`) work inside this crate
+extern crate self as bevy_mod_scripting_ffi;
+
 mod impls;
 
 pub use bevy_mod_scripting_derive::unsafe_c_overlay;
+
+/// Const helpers used by `unsafe_c_overlay!` output.
+#[doc(hidden)]
+pub mod __private {
+    pub use core::mem::{ManuallyDrop, MaybeUninit, align_of, size_of};
+
+    /// The bytes of `value`, possibly uninitialized.
+    pub const fn bytes<T>(value: &T) -> &[MaybeUninit<u8>] {
+        // SAFETY: any initialized `T` is readable as `size_of::<T>()` possibly-uninitialized bytes
+        unsafe {
+            core::slice::from_raw_parts(
+                (value as *const T).cast::<MaybeUninit<u8>>(),
+                size_of::<T>(),
+            )
+        }
+    }
+
+    /// `a == b` on the bytes where `mask` is true; other bytes are never read.
+    pub const fn masked_eq(a: &[MaybeUninit<u8>], b: &[MaybeUninit<u8>], mask: &[bool]) -> bool {
+        let mut i = 0;
+        while i < mask.len() {
+            // SAFETY: `mask` marks initialized bytes
+            if mask[i] && unsafe { a[i].assume_init() != b[i].assume_init() } {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
+
+    /// Every byte where `mask` is true is non-zero.
+    pub const fn all_nonzero(a: &[MaybeUninit<u8>], mask: &[bool]) -> bool {
+        let mut i = 0;
+        while i < mask.len() {
+            // SAFETY: `mask` marks initialized bytes
+            if mask[i] && unsafe { a[i].assume_init() } == 0 {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
+
+    /// Two probe values are equal: same size, and equal on the bytes initialized in both.
+    pub const fn same_value(
+        a: &[MaybeUninit<u8>],
+        a_mask: &[bool],
+        b: &[MaybeUninit<u8>],
+        b_mask: &[bool],
+    ) -> bool {
+        if a.len() != b.len() {
+            return false;
+        }
+        let mut i = 0;
+        while i < a.len() {
+            // SAFETY: both masks mark initialized bytes
+            if a_mask[i] && b_mask[i] && unsafe { a[i].assume_init() != b[i].assume_init() } {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
+
+    /// Copies a field's mask into `mask` at `at`, returns the offset after it.
+    /// Bytes past the end are dropped, an overlay too big for its type is reported by the layout check.
+    pub const fn mask_field(mask: &mut [bool], at: usize, field: &[bool]) -> usize {
+        let mut i = 0;
+        while i < field.len() && at + i < mask.len() {
+            mask[at + i] = field[i];
+            i += 1;
+        }
+        at + field.len()
+    }
+}
 
 /// A type usable as an overlay field: a C scalar, or a foreign type with a generated overlay.
 ///
