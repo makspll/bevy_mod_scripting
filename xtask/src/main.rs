@@ -1449,6 +1449,20 @@ impl Xtasks {
                 "--lib",
                 "native::",
             ],
+        )?;
+        // the overlay tests: reading foreign types through their C overlays and back
+        run(
+            "cargo",
+            &[
+                "+nightly",
+                "miri",
+                "test",
+                "-p",
+                "bevy_mod_scripting_ffi",
+                "--lib",
+                "--test",
+                "overlay",
+            ],
         )
     }
 

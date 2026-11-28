@@ -181,6 +181,13 @@ pub fn impl_get_type_dependencies(input: proc_macro::TokenStream) -> proc_macro:
     derive::get_type_dependencies(input.into()).into()
 }
 
+/// Declares a `#[repr(C)]` overlay over a foreign type and verifies it at compile time.
+/// Use through `bevy_mod_scripting_ffi::unsafe_c_overlay!`, which documents the safety contract.
+#[proc_macro]
+pub fn unsafe_c_overlay(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::unsafe_c_overlay(input.into()).into()
+}
+
 /// Derive macro for generating `Debug` implementations which include type information.
 /// Uses the `DebugWithTypeInfoBuilder` trait from `bevy_mod_scripting_display` to
 /// generate the debug output.

@@ -212,7 +212,7 @@ bevy_window = { version = "0.20", default-features = false, features = [
 bevy_winit = { version = "0.20", default-features = false }
 bevy_utils = { version = "0.20", default-features = false, features = ["std"] }
 
-glam = { version = "0.30.10", default-features = false }
+glam = { version = "0.33", default-features = false }
 uuid = { version = "1.13", default-features = false }
 smol_str = { version = "0.2.0", default-features = false }
 nonmax = { version = "0.5", default-features = false, features = ["std"] }
@@ -259,6 +259,7 @@ libtest-mimic = { version = "0.8", default-features = false }
 criterion = { version = "0.5", default-features = false }
 rand = { version = "0.9", default-features = false }
 rand_chacha = { version = "0.9", default-features = false }
+trybuild = { version = "1", default-features = false }
 
 [dev-dependencies]
 bevy = { workspace = true, features = [
@@ -309,7 +310,7 @@ members = [
     "crates/bevy_mod_scripting_script",
     "crates/bevy_mod_scripting_bindings_domain",
     "crates/bindings/*",
-    "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax", "crates/bevy_mod_scripting_world",
+    "crates/testing_crates/bevy_mod_scripting_test_scenario_syntax", "crates/bevy_mod_scripting_world", "crates/bevy_mod_scripting_ffi",
 ]
 resolver = "2"
 exclude = ["crates/macro_tests", "xtask"]
