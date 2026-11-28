@@ -1,20 +1,7 @@
 error[E0080]: evaluation panicked: probe failed: `FlagsC::b` expected `false` in probe 0
-  --> tests/ui/fail/bool_swapped_fields.rs:12:38
+  --> tests/ui/fail/bool_swapped_fields.rs:11:23
    |
-12 |         #[probe(false, true, false)] b: bool,
-   |                                      ^ evaluation of `_::PROBES` failed here
+11 |     foreign::Flags as FlagsC {
+   |                       ^^^^^^ evaluation of `_` failed here
    |
-   = note: this error originates in the macro `$crate::panic::panic_2021` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-note: erroneous constant encountered
-  --> tests/ui/fail/bool_swapped_fields.rs:7:1
-   |
- 7 | / unsafe_c_overlay! {
- 8 | |     #[probe(foreign::Flags::new(true, false, false))]
- 9 | |     #[probe(foreign::Flags::new(false, true, false))]
-10 | |     #[probe(foreign::Flags::new(false, false, true))]
-...  |
-16 | | }
-   | |_^
-   |
-   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

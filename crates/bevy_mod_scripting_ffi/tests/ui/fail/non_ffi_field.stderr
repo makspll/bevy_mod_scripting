@@ -223,35 +223,7 @@ note: required because it appears within the type `NamedC`
    |
  8 |     foreign::Named as NamedC {
    |                       ^^^^^^
-note: required by a bound in `ManuallyDrop`
-  --> $RUST/core/src/mem/manually_drop.rs
-   |
-   | pub struct ManuallyDrop<T: ?Sized> {
-   |                         ^ required by this bound in `ManuallyDrop`
-   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
- --> tests/ui/fail/non_ffi_field.rs:8:23
-  |
-8 |     foreign::Named as NamedC {
-  |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
-  |
-  = help: the following other types implement trait `FfiField`:
-            bool
-            f32
-            f64
-            foreign::Named
-            glam::bool::bvec2::BVec2
-            glam::bool::bvec3::BVec3
-            glam::bool::bvec4::BVec4
-            glam::f32::affine2::Affine2
-          and $N others
-note: required because it appears within the type `NamedC`
- --> tests/ui/fail/non_ffi_field.rs:8:23
-  |
-8 |     foreign::Named as NamedC {
-  |                       ^^^^^^
-  = note: statics and constants must have a statically known size
+   = note: the return type of a function must have a statically known size
 
 error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
   --> tests/ui/fail/non_ffi_field.rs:6:1
@@ -279,13 +251,18 @@ note: required because it appears within the type `NamedC`
    |
  8 |     foreign::Named as NamedC {
    |                       ^^^^^^
-   = note: the return type of a function must have a statically known size
+note: required by an implicit `Sized` bound in `std::mem::size_of`
+  --> $RUST/core/src/mem/mod.rs
+   |
+   | pub const fn size_of<T>() -> usize {
+   |                      ^ required by the implicit `Sized` requirement on this type parameter in `size_of`
+   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
- --> tests/ui/fail/non_ffi_field.rs:8:23
+error[E0277]: the trait bound `String: FfiField` is not satisfied
+ --> tests/ui/fail/non_ffi_field.rs:9:28
   |
-8 |     foreign::Named as NamedC {
-  |                       ^^^^^^ within `NamedC`, the trait `FfiField` is not implemented for `String`
+9 |         #[probe = _] name: String,
+  |                            ^^^^^^ the trait `FfiField` is not implemented for `String`
   |
   = help: the following other types implement trait `FfiField`:
             bool
@@ -297,13 +274,8 @@ error[E0277]: the trait bound `String: FfiField` is not satisfied in `NamedC`
             glam::bool::bvec4::BVec4
             glam::f32::affine2::Affine2
           and $N others
-note: required because it appears within the type `NamedC`
- --> tests/ui/fail/non_ffi_field.rs:8:23
+note: required by a bound in `bevy_mod_scripting_ffi::layout::Field::data`
+ --> src/layout.rs
   |
-8 |     foreign::Named as NamedC {
-  |                       ^^^^^^
-note: required by an implicit `Sized` bound in `std::mem::size_of`
- --> $RUST/core/src/mem/mod.rs
-  |
-  | pub const fn size_of<T>() -> usize {
-  |                      ^ required by the implicit `Sized` requirement on this type parameter in `size_of`
+  |     pub const fn data<T: FfiField>(name: &'static str, offset: usize) -> Self {
+  |                          ^^^^^^^^ required by this bound in `Field::data`

@@ -1,20 +1,7 @@
 error[E0080]: evaluation panicked: `FooC::b` is misaligned, declare the padding before it with `#[pad]`
-  --> tests/ui/fail/missing_pad.rs:10:32
-   |
-10 |         #[probe = 0x2233_4455] b: u32,
-   |                                ^ evaluation of `_::LAYOUT` failed here
-   |
-   = note: this error originates in the macro `$crate::panic::panic_2021` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-note: erroneous constant encountered
-  --> tests/ui/fail/missing_pad.rs:6:1
-   |
- 6 | / unsafe_c_overlay! {
- 7 | |     #[probe(foreign::Foo::new(0x11, 0x2233_4455))]
- 8 | |     foreign::Foo as FooC {
- 9 | |         #[probe = 0x11] a: u8,
-...  |
-12 | | }
-   | |_^
-   |
-   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+ --> tests/ui/fail/missing_pad.rs:8:21
+  |
+8 |     foreign::Foo as FooC {
+  |                     ^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

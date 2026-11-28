@@ -1,41 +1,15 @@
 error[E0080]: evaluation panicked: probe value for `y` also occurs elsewhere in the probe, use a value whose bytes appear nowhere else
-  --> tests/ui/fail/duplicate_probe.rs:10:24
-   |
-10 |         #[probe = 2.2] y: f32,
-   |                        ^ evaluation of `_::PROBES` failed here
-   |
-   = note: this error originates in the macro `$crate::panic::panic_2021` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-note: erroneous constant encountered
-  --> tests/ui/fail/duplicate_probe.rs:6:1
-   |
- 6 | / unsafe_c_overlay! {
- 7 | |     #[probe(foreign::Vec3::new(1.1, 2.2, 2.2))]
- 8 | |     foreign::Vec3 as Vec3C {
- 9 | |         #[probe = 1.1] x: f32,
-...  |
-13 | | }
-   | |_^
-   |
-   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+ --> tests/ui/fail/duplicate_probe.rs:8:22
+  |
+8 |     foreign::Vec3 as Vec3C {
+  |                      ^^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0080]: evaluation panicked: probe value for `a` also occurs elsewhere in the probe, use a value whose bytes appear nowhere else
-  --> tests/ui/fail/duplicate_probe.rs:18:25
+  --> tests/ui/fail/duplicate_probe.rs:17:23
    |
-18 |         #[probe = 0x11] a: u8,
-   |                         ^ evaluation of `_::PROBES` failed here
+17 |     foreign::Mixed as MixedC {
+   |                       ^^^^^^ evaluation of `_` failed here
    |
-   = note: this error originates in the macro `$crate::panic::panic_2021` which comes from the expansion of the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-note: erroneous constant encountered
-  --> tests/ui/fail/duplicate_probe.rs:15:1
-   |
-15 | / unsafe_c_overlay! {
-16 | |     #[probe(foreign::Mixed::new(0x11, 0x22, u16::from_ne_bytes([0x11, 0x22])))]
-17 | |     foreign::Mixed as MixedC {
-18 | |         #[probe = 0x11] a: u8,
-...  |
-22 | | }
-   | |_^
-   |
-   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)

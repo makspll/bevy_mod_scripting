@@ -263,6 +263,7 @@ rand_chacha = { version = "0.9", default-features = false }
 trybuild = { version = "1", default-features = false }
 cc = { version = "1", default-features = false }
 const_format = { version = "0.2", default-features = false }
+const_panic = { version = "0.2.17", default-features = false }
 
 [dev-dependencies]
 bevy = { workspace = true, features = [

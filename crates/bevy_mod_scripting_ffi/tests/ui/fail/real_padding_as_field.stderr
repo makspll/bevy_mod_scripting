@@ -1,29 +1,18 @@
-error[E0080]: constructing invalid value of type FooC: at .p, encountered uninitialized memory, but expected an integer
- --> tests/ui/fail/real_padding_as_field.rs:6:1
+error[E0080]: reading memory at alloc1328[0x0..0x1], but memory is uninitialized at [0x0..0x1], and this operation requires initialized memory
+ --> tests/ui/fail/real_padding_as_field.rs:8:21
   |
-6 | / unsafe_c_overlay! {
-7 | |     #[probe(foreign::Foo::new(0x11, 0x2233_4455))]
-8 | |     foreign::Foo as FooC {
-  | |________________________^ it is undefined behavior to use this value
+8 |     foreign::Foo as FooC {
+  |                     ^^^^ evaluation of `_` failed inside this call
   |
-  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.
-  = note: the raw bytes of the constant (size: 8, align: 4) {
-              11 __ __ __ 55 44 33 22                         │ .░░░UD3"
+  = note: the raw bytes of the constant (size: 1, align: 1) {
+              __                                              │ ░
           }
+note: inside `layout::masked_eq`
+ --> src/layout.rs
+  |
+  |         if mask[i] && unsafe { image[at + i].assume_init() != value[i].assume_init() } {
+  |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the failure occurred here
   = note: this error originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-note: erroneous constant encountered
-  --> tests/ui/fail/real_padding_as_field.rs:6:1
-   |
- 6 | / unsafe_c_overlay! {
- 7 | |     #[probe(foreign::Foo::new(0x11, 0x2233_4455))]
- 8 | |     foreign::Foo as FooC {
- 9 | |         #[probe = 0x11] a: u8,
-...  |
-14 | | }
-   | |_^
-   |
-   = note: this note originates in the macro `unsafe_c_overlay` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0609]: no field `p` on type `&Foo`
   --> tests/ui/fail/real_padding_as_field.rs:10:25

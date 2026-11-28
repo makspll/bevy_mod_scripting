@@ -12,7 +12,7 @@
 //! Generates the overlay struct, `FfiField for T`, and const assertions for layout, types and probes.
 
 use proc_macro2::{Span, TokenStream};
-use quote::{ToTokens, format_ident, quote, quote_spanned};
+use quote::{ToTokens, quote, quote_spanned};
 use syn::{
     Attribute, Expr, Ident, LitStr, Meta, Token, Type, braced,
     parse::{Parse, ParseStream},
@@ -273,7 +273,6 @@ impl Overlay {
         } = self;
         let target_str = pretty(target);
         let field_ty = |ty: &Type| quote!(<#ty as #ffi::FfiField>::Overlay);
-        let mask_of = |ty: &Type| quote!(<#ty as #ffi::FfiField>::INIT_MASK);
 
         let struct_fields = fields.iter().map(|Field { ident, kind }| match kind {
             Kind::Pad { len } => quote!(#ident: [#p::MaybeUninit<u8>; #len]),
@@ -284,33 +283,18 @@ impl Overlay {
             }
         });
 
-        let mask_steps = fields.iter().map(|Field { kind, .. }| match kind {
-            Kind::Pad { len } => quote!(at += #len;),
-            Kind::Data { ty, .. } => {
-                let mask = mask_of(ty);
-                quote!(at = #p::mask_field(&mut mask, at, #mask);)
-            }
-        });
-
-        let layout_steps = fields.iter().map(|Field { ident, kind }| match kind {
-            Kind::Pad { len } => quote_spanned!(at_field(ident.span())=> at += #len;),
-            Kind::Data { ty, .. } => {
-                let ty = field_ty(ty);
-                let msg = lit(format!(
-                    "`{name}::{ident}` is misaligned, declare the padding before it with `#[pad]`"
-                ));
-                quote_spanned! {at_field(ident.span())=>
-                    ::core::assert!(at % #p::align_of::<#ty>() == 0, #msg);
-                    at += #p::size_of::<#ty>();
+        // the declared layout, checked by `Layout::check` in the ffi crate
+        let name_str = lit(name.to_string());
+        let target_lit = lit(target_str.clone());
+        let layout_fields = fields.iter().map(|Field { ident, kind }| {
+            let field = lit(ident.to_string());
+            match kind {
+                Kind::Pad { len } => quote!(#p::Field::pad(#field, (#len) as usize)),
+                Kind::Data { ty, .. } => {
+                    quote!(#p::Field::data::<#ty>(#field, #p::offset_of!(#name, #ident)))
                 }
             }
         });
-        let size_msg = lit(format!(
-            "the fields and pads of `{name}` don't add up to the size of `{target_str}`"
-        ));
-        let align_msg = lit(format!(
-            "`{name}` has a different alignment than `{target_str}`"
-        ));
 
         let type_checks = fields
             .iter()
@@ -321,114 +305,30 @@ impl Overlay {
                 _ => None,
             });
 
-        // each probed field with its (probe index, expected value, const holding it)
-        let multi = self.probes.len() > 1;
-        let in_probe = |i: usize| {
-            if multi {
-                format!(" in probe {i}")
-            } else {
-                String::new()
+        let probes = self.probes.iter().enumerate().map(|(i, probe)| {
+            let expected = fields.iter().map(|Field { kind, .. }| match kind {
+                Kind::Data { ty, probes, .. } => match &probes[i] {
+                    Some(value) => {
+                        let text = lit(pretty(value));
+                        quote!(::core::option::Option::Some(#p::Expected {
+                            bytes: #p::bytes(&#p::ManuallyDrop::<#ty>::new(#value)),
+                            text: #text,
+                        }))
+                    }
+                    None => quote!(::core::option::Option::None),
+                },
+                Kind::Pad { .. } => quote!(::core::option::Option::None),
+            });
+            quote! {
+                #p::Probe {
+                    image: #p::bytes(&#p::ManuallyDrop::<#target>::new(#probe)),
+                    expected: &[#(#expected),*],
+                }
             }
+        });
+        let check = quote_spanned! {at_field(name.span())=>
+            #name::__LAYOUT.check::<{ #p::size_of::<#target>() }>(&[#(#probes),*]);
         };
-        let probed: Vec<_> = fields
-            .iter()
-            .filter_map(|Field { ident, kind }| match kind {
-                Kind::Data { ty, probes, .. } if probes.iter().any(Option::is_some) => {
-                    let upper = ident.to_string().to_uppercase();
-                    let values: Vec<_> = probes
-                        .iter()
-                        .enumerate()
-                        .filter_map(|(i, v)| {
-                            v.as_ref()
-                                .map(|v| (i, v, format_ident!("__PROBE_{}_{}", upper, i)))
-                        })
-                        .collect();
-                    Some((ident, ty, values))
-                }
-                _ => None,
-            })
-            .collect();
-        let probe_values = probed.iter().map(|(ident, ty, values)| {
-            let mask = mask_of(ty);
-            let msg = lit(if multi {
-                format!("probe values for `{ident}` have a byte that is zero in every probe, make every byte non-zero in at least one")
-            } else {
-                format!("probe value for `{ident}` has a zero byte, use a value with every byte non-zero")
-            });
-            let consts = values.iter().map(|(_, value, konst)| quote!(const #konst: #ty = #value;));
-            let bytes = values.iter().map(|(_, _, konst)| quote!(#p::bytes(&#konst)));
-            quote_spanned! {at_field(ident.span())=>
-                #(#consts)*
-                ::core::assert!(#p::nonzero_somewhere(&[#(#bytes),*], #mask), #msg);
-            }
-        });
-        // each probed value's bytes occur exactly once in the probed type, in at least one probe. With the probe
-        // check this pins the field's offset: the value can't be another field's bytes read at the wrong place.
-        // Fields not probed in a probe (`_`) hold unknown bytes and are left out of its image.
-        let image_masks = self.probes.iter().enumerate().map(|(i, _)| {
-            let image_mask = format_ident!("__IMAGE_MASK_{}", i);
-            let steps = fields.iter().map(|Field { kind, .. }| match kind {
-                Kind::Pad { len } => quote!(at += #len;),
-                Kind::Data { ty, probes, .. } if probes[i].is_some() => {
-                    let mask = mask_of(ty);
-                    quote!(at = #p::mask_field(&mut mask, at, #mask);)
-                }
-                Kind::Data { ty, .. } => {
-                    let ty = field_ty(ty);
-                    quote!(at += #p::size_of::<#ty>();)
-                }
-            });
-            quote! {
-                #[allow(unused_assignments)]
-                const #image_mask: [bool; #p::size_of::<#target>()] = {
-                    let mut mask = [false; #p::size_of::<#target>()];
-                    let mut at = 0usize;
-                    #(#steps)*
-                    mask
-                };
-            }
-        });
-        let unique = probed.iter().map(|(ident, ty, values)| {
-            let mask = mask_of(ty);
-            let once = values.iter().map(|(i, _, konst)| {
-                let (probed_const, image_mask) =
-                    (format_ident!("__PROBED_{}", i), format_ident!("__IMAGE_MASK_{}", i));
-                quote!(#p::occurrences(#p::bytes(&#probed_const), &#image_mask, #p::bytes(&#konst), #mask) == 1)
-            });
-            let msg = lit(if multi {
-                format!("probe values for `{ident}` also occur elsewhere in every probe, make its bytes unique in at least one")
-            } else {
-                format!("probe value for `{ident}` also occurs elsewhere in the probe, use a value whose bytes appear nowhere else")
-            });
-            quote_spanned! {at_field(ident.span())=>
-                ::core::assert!(#(#once)||*, #msg);
-            }
-        });
-        let probe_checks = self.probes.iter().enumerate().map(|(i, probe)| {
-            let probed_const = format_ident!("__PROBED_{}", i);
-            let checks = probed.iter().filter_map(|(ident, ty, values)| {
-                let (_, value, konst) = values.iter().find(|(vi, ..)| *vi == i)?;
-                let mask = mask_of(ty);
-                let msg = lit(format!(
-                    "probe failed: `{name}::{ident}` expected `{}`{}",
-                    pretty(value),
-                    in_probe(i)
-                ));
-                Some(quote_spanned! {at_field(ident.span())=>
-                    ::core::assert!(
-                        #p::masked_eq(#p::bytes(&#probed_const.#ident), #p::bytes(&#konst), #mask),
-                        #msg
-                    );
-                })
-            });
-            quote! {
-                // SAFETY: the layout check above passed, the overlay covers exactly the bytes of the real type
-                const #probed_const: #name = unsafe {
-                    #p::ManuallyDrop::into_inner(Cast { real: #p::ManuallyDrop::new(#probe) }.overlay)
-                };
-                #(#checks)*
-            }
-        });
 
         let overlay_doc = lit(format!(
             "C overlay of `{target_str}`, generated and checked by `unsafe_c_overlay!`."
@@ -507,16 +407,8 @@ impl Overlay {
             // SAFETY: promised by the `unsafe_c_overlay!` invocation, layout and probe checked below
             unsafe impl #ffi::FfiField for #target {
                 type Overlay = #name;
-                const INIT_MASK: &'static [bool] = &{
-                    #[allow(unused_assignments)]
-                    const fn init_mask() -> [bool; #p::size_of::<#target>()] {
-                        let mut mask = [false; #p::size_of::<#target>()];
-                        let mut at = 0usize;
-                        #(#mask_steps)*
-                        mask
-                    }
-                    init_mask()
-                };
+                const INIT_MASK: &'static [bool] =
+                    &#name::__LAYOUT.init_mask::<{ #p::size_of::<#target>() }>();
                 const C_DECL: #ffi::CDecl = #ffi::CDecl {
                     name: #c_name,
                     cdef: #p::concatcp!(
@@ -536,35 +428,27 @@ impl Overlay {
                 };
             }
 
-            const _: () = {
-                const LAYOUT: () = {
-                    let mut at = 0usize;
-                    #(#layout_steps)*
-                    ::core::assert!(at == #p::size_of::<#target>(), #size_msg);
-                    ::core::assert!(#p::size_of::<#name>() == #p::size_of::<#target>(), #size_msg);
-                    ::core::assert!(#p::align_of::<#name>() == #p::align_of::<#target>(), #align_msg);
+            impl #name {
+                /// The declared layout, see `bevy_mod_scripting_ffi::layout`.
+                #[doc(hidden)]
+                pub const __LAYOUT: #p::Layout<'static> = #p::Layout {
+                    overlay: #name_str,
+                    target: #target_lit,
+                    size: #p::size_of::<#target>(),
+                    align: #p::align_of::<#target>(),
+                    overlay_size: #p::size_of::<Self>(),
+                    overlay_align: #p::align_of::<Self>(),
+                    fields: &[#(#layout_fields),*],
                 };
+            }
 
+            const _: () = {
                 #[allow(dead_code)]
                 fn field_types(value: &#target) {
                     #(#type_checks)*
                 }
 
-                union Cast {
-                    real: #p::ManuallyDrop<#target>,
-                    overlay: #p::ManuallyDrop<#name>,
-                }
-
-                const PROBES: () = {
-                    #[allow(clippy::let_unit_value)]
-                    let () = LAYOUT;
-                    #(#probe_values)*
-                    #(#probe_checks)*
-                    #(#image_masks)*
-                    #(#unique)*
-                };
-
-                PROBES
+                #check
             };
         }
     }

@@ -158,13 +158,15 @@ extern crate self as bevy_mod_scripting_ffi;
 
 mod cdef;
 mod impls;
+pub mod layout;
 
 pub use bevy_mod_scripting_derive::unsafe_c_overlay;
 pub use cdef::{CDecl, CNameConflict, c_header, cdef};
 
-/// Const helpers used by `unsafe_c_overlay!` output.
+/// Helpers used by `unsafe_c_overlay!` output.
 #[doc(hidden)]
 pub mod __private {
+    pub use crate::layout::{Expected, Field, Layout, Probe};
     pub use const_format::concatcp;
     pub use core::mem::{ManuallyDrop, MaybeUninit, align_of, offset_of, size_of};
 
@@ -177,74 +179,6 @@ pub mod __private {
                 size_of::<T>(),
             )
         }
-    }
-
-    /// `a == b` on the bytes where `mask` is true; other bytes are never read.
-    pub const fn masked_eq(a: &[MaybeUninit<u8>], b: &[MaybeUninit<u8>], mask: &[bool]) -> bool {
-        let mut i = 0;
-        while i < mask.len() {
-            // SAFETY: `mask` marks initialized bytes
-            if mask[i] && unsafe { a[i].assume_init() != b[i].assume_init() } {
-                return false;
-            }
-            i += 1;
-        }
-        true
-    }
-
-    /// Every byte where `mask` is true is non-zero in at least one of `values` (all the same size).
-    pub const fn nonzero_somewhere(values: &[&[MaybeUninit<u8>]], mask: &[bool]) -> bool {
-        let mut i = 0;
-        while i < mask.len() {
-            let mut nonzero = !mask[i];
-            let mut v = 0;
-            while v < values.len() && !nonzero {
-                // SAFETY: `mask` marks initialized bytes
-                nonzero = unsafe { values[v][i].assume_init() } != 0;
-                v += 1;
-            }
-            if !nonzero {
-                return false;
-            }
-            i += 1;
-        }
-        true
-    }
-
-    /// The number of offsets of `image` at which `needle` occurs, comparing the bytes initialized in both.
-    pub const fn occurrences(
-        image: &[MaybeUninit<u8>],
-        image_mask: &[bool],
-        needle: &[MaybeUninit<u8>],
-        needle_mask: &[bool],
-    ) -> usize {
-        let (mut count, mut at) = (0, 0);
-        while at + needle.len() <= image.len() {
-            let (mut i, mut hit) = (0, true);
-            while i < needle.len() && hit {
-                // SAFETY: both masks mark initialized bytes
-                hit = !needle_mask[i]
-                    || (image_mask[at + i]
-                        && unsafe { image[at + i].assume_init() == needle[i].assume_init() });
-                i += 1;
-            }
-            if hit {
-                count += 1;
-            }
-            at += 1;
-        }
-        count
-    }
-
-    /// Copies a field's mask into `mask` at `at`, returns the offset after it.
-    /// Bytes past the end are dropped, an overlay too big for its type is reported by the layout check.
-    pub const fn mask_field(mask: &mut [bool], at: usize, field: &[bool]) -> usize {
-        let mut i = 0;
-        while i < field.len() && at + i < mask.len() {
-            mask[at + i] = field[i];
-            i += 1;
-        }
-        at + field.len()
     }
 }
 
